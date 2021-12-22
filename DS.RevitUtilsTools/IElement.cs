@@ -8,21 +8,10 @@ using System.Collections.Generic;
 using System.Linq;
 
 
-namespace DS.RevitUtilsTools
+namespace DS.RevitUtils.GPExtractor
 {
     interface IElement
     {
         Element GetElement();
-    }
-
-    interface IOutputElementInfo
-    {
-        void GetInfo();
-
-    }
-
-    interface IModifyElement
-    {
-       
     }
 }

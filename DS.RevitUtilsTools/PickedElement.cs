@@ -1,15 +1,10 @@
-﻿using Autodesk.Revit.ApplicationServices;
-using Autodesk.Revit.DB;
-using Autodesk.Revit.DB.Plumbing;
+﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Selection;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
-namespace DS.RevitUtilsTools
+namespace DS.RevitUtils.GPExtractor
 {
-    class PickedElement: IElement
+    class PickedElement : IElement
     {
         readonly UIDocument Uidoc;
         readonly Document Doc;

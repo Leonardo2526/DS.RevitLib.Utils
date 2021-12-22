@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("AddID")]
-[assembly: AssemblyDescription("Extract all general (vertices) points from element and show it.")]
+[assembly: AssemblyTitle("RVT.Ribbon")]
+[assembly: AssemblyDescription("Revit external application to create ribbon with one button. Framework 4.8")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("AddID")]
+[assembly: AssemblyCompany("DS")]
+[assembly: AssemblyProduct("")]
 [assembly: AssemblyCopyright("Copyright ©  2021")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("d7f54f5e-a0c8-414b-b4b3-b51e591e8a92")]
+[assembly: Guid("bc5d4e36-fa99-43c1-8296-0aeb5be434d5")]
 
 // Version information for an assembly consists of the following four values:
 //
@@ -33,4 +33,4 @@ using System.Runtime.InteropServices;
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: AssemblyFileVersion("1.1")]

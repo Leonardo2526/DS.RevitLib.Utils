@@ -3,14 +3,14 @@ using System.Collections.Generic;
 
 
 
-namespace DS.RevitUtilsTools
+namespace DS.RevitUtils.GPExtractor
 {
-    class GeneralPointExtractor
+    class GPExtractor
     {
 
         public Element element { get; set; }
 
-        public GeneralPointExtractor(Element elem)
+        public GPExtractor(Element elem)
         {
             element = elem;
         }

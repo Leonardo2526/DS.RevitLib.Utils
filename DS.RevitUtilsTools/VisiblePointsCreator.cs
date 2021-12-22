@@ -1,19 +1,18 @@
-﻿using Autodesk.Revit.ApplicationServices;
-using Autodesk.Revit.DB;
+﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
 using Autodesk.Revit.UI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace DS.RevitUtilsTools
+namespace DS.RevitUtils.GPExtractor
 {
     class VisiblePointsCreator
     {
         public void Create(Document Doc, List<XYZ> points)
         {
-        
-            
+
+
             int j;
             foreach (XYZ point in points)
             {
@@ -37,7 +36,7 @@ namespace DS.RevitUtilsTools
             FamilySymbol gotSymbol = collector.FirstElement() as FamilySymbol;
             FamilyInstance instance = null;
 
-            using (Transaction transNew = new Transaction(Doc, "automep_CreateModelLine"))
+            using (Transaction transNew = new Transaction(Doc, "GPExtractor.CreatePoint"))
             {
                 try
                 {
@@ -55,7 +54,7 @@ namespace DS.RevitUtilsTools
 
                 transNew.Commit();
             }
-           
+
         }
     }
 }

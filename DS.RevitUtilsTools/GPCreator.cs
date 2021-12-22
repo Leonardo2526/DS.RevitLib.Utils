@@ -5,16 +5,16 @@ using Autodesk.Revit.UI;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace DS.RevitUtilsTools
+namespace DS.RevitUtils.GPExtractor
 {
-    public class Main
+    public class GPCreator
     {
         readonly Application App;
         readonly UIDocument Uidoc;
         readonly Document Doc;
         readonly UIApplication Uiapp;
 
-        public Main(Application app, UIApplication uiapp, UIDocument uidoc, Document doc)
+        public GPCreator(Application app, UIApplication uiapp, UIDocument uidoc, Document doc)
         {
             App = app;
             Uiapp = uiapp;
@@ -22,12 +22,12 @@ namespace DS.RevitUtilsTools
             Doc = doc;
         }
 
-        public void ExtractPoints()
+        public void Create()
         {
             ElementUtils elementUtils = new ElementUtils();
             Element element = elementUtils.GetCurrent(new PickedElement(Uidoc, Doc));
 
-            GeneralPointExtractor generalPointExtractor = new GeneralPointExtractor(element);
+            GPExtractor generalPointExtractor = new GPExtractor(element);
 
             generalPointExtractor.GetGeneralPoints(out List<XYZ> points);
 
