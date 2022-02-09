@@ -53,12 +53,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DSPipe.cs" />
+    <Compile Include="Test\DSPipe.cs" />
     <Compile Include="ExternalCommand.cs" />
-    <Compile Include="MEP\MEPConnector.cs" />
-    <Compile Include="MEP\PipeSystemCreator.cs" />
+    <Compile Include="MEPConnector.cs" />
+    <Compile Include="PipeSystemCreator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="MEP\PypeSystem.cs" />
+    <Compile Include="PypeSystem.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
