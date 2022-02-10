@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DS.RevitUtils.GPExtractor",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DS.RevitUtils.Ribbon", "DS.RevitUtils.Ribbon\DS.RevitUtils.Ribbon.csproj", "{BC5D4E36-FA99-43C1-8296-0AEB5BE434D5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DS.RevitUtils.MEP", "DS.RevitUtils.MEP\DS.RevitUtils.MEP.csproj", "{77B9B926-E8A4-4B99-82C3-ACD72A79C7B7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{BC5D4E36-FA99-43C1-8296-0AEB5BE434D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BC5D4E36-FA99-43C1-8296-0AEB5BE434D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BC5D4E36-FA99-43C1-8296-0AEB5BE434D5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{77B9B926-E8A4-4B99-82C3-ACD72A79C7B7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{77B9B926-E8A4-4B99-82C3-ACD72A79C7B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{77B9B926-E8A4-4B99-82C3-ACD72A79C7B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{77B9B926-E8A4-4B99-82C3-ACD72A79C7B7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
