@@ -8,18 +8,21 @@ using System.Linq;
 
 namespace DS.RevitUtils.MEP
 {
-    class PypeSystem
+    public class PypeSystem
     {
         readonly UIDocument Uidoc;
         readonly Document Doc;
         readonly UIApplication Uiapp;
+        public readonly Element _element;
 
-        public PypeSystem(UIApplication uiapp, UIDocument uidoc, Document doc)
+        public PypeSystem(UIApplication uiapp, UIDocument uidoc, Document doc, Element element)
         {
             Uiapp = uiapp;
             Uidoc = uidoc;
             Doc = doc;
+            _element = element;
         }
+
 
         public static ElementId MEPTypeElementId;
         public static ElementId PipeTypeElementId;
@@ -29,17 +32,13 @@ namespace DS.RevitUtils.MEP
         {
             GetPipeSystemTypes();
             PipeSystemCreator pipeSystemCreator = new PipeSystemCreator();
-            pipeSystemCreator.CreatePypeSystem(Doc, points);
+            pipeSystemCreator.CreatePypeSystem(Doc, _element ,points);
         }
 
         void GetPipeSystemTypes()
         {
-            // Find collisions between elements and a selected element
-            Reference reference = Uidoc.Selection.PickObject(ObjectType.Element, "Select element that will be checked for intersection with all elements");
-            Element elementA = Doc.GetElement(reference);
-
             //Get pipes sizes
-            Pipe pipeA = elementA as Pipe;
+            Pipe pipeA = _element as Pipe;
 
             MEPTypeElementId = pipeA.MEPSystem.GetTypeId();
             PipeTypeElementId = pipeA.GetTypeId();

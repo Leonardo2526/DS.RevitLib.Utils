@@ -6,15 +6,16 @@ using System.Collections.Generic;
 
 namespace DS.RevitUtils.MEP
 {
-    public class PipeSystemCreator
+    class PipeSystemCreator
     {
         private List<Pipe> PipesList = new List<Pipe>();
+        private Document Doc;
+        private Pipe Elem;
 
-        static Document Doc;
-
-        public void CreatePypeSystem(Document doc, List<XYZ> points)
+        public void CreatePypeSystem(Document doc, Element _element , List<XYZ> points)
         {
             Doc = doc;
+            Elem = _element as Pipe;
 
             for (int i = 0; i < points.Count - 1; i++)
             {
@@ -44,6 +45,8 @@ namespace DS.RevitUtils.MEP
                     transNew.Start();
                     Pipe pipe = Pipe.Create(Doc, PypeSystem.MEPTypeElementId,
                 PypeSystem.PipeTypeElementId, PypeSystem.level.Id, p1, p2);
+                    SetPipeSize(pipe);
+
                     PipesList.Add(pipe);
                 }
 
@@ -87,6 +90,16 @@ namespace DS.RevitUtils.MEP
                 transNew.Commit();
             }
 
+        }
+
+        void SetPipeSize(Pipe pipe)
+        {
+            Parameter parameter = pipe.get_Parameter(BuiltInParameter.RBS_PIPE_DIAMETER_PARAM);
+
+            parameter.Set(Elem.Diameter);
+
+            // Regenerate the docucment before trying to read a parameter that has been edited
+            pipe.Document.Regenerate();
         }
     }
 }

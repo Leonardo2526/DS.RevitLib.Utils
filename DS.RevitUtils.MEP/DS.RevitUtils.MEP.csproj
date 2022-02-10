@@ -53,6 +53,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ElementEraser.cs" />
     <Compile Include="Test\DSPipe.cs" />
     <Compile Include="ExternalCommand.cs" />
     <Compile Include="MEPConnector.cs" />

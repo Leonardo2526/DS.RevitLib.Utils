@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
+using Autodesk.Revit.UI.Selection;
 using System;
 using System.Collections.Generic;
 
@@ -28,7 +29,11 @@ namespace DS.RevitUtils.MEP
                 new XYZ(9,0,0)
             };
 
-            PypeSystem pypeSystem = new PypeSystem(uiapp, uidoc, doc);
+            // Find collisions between elements and a selected element
+            Reference reference = uidoc.Selection.PickObject(ObjectType.Element, "Select element that will be checked for intersection with all elements");
+            Element elementA = doc.GetElement(reference);
+
+            PypeSystem pypeSystem = new PypeSystem(uiapp, uidoc, doc, elementA);
             pypeSystem.CreatePipeSystem(points);
 
             //DSPipe pipe = new DSPipe(uiapp, uidoc, doc);

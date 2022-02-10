@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.DB;
+using System;
 using System.Collections.Generic;
 
 namespace DS.RevitUtils.MEP
@@ -14,9 +15,9 @@ namespace DS.RevitUtils.MEP
             {
                 foreach (Connector connector2 in connectors2)
                 {
-                    if (connector1.Origin.X == connector2.Origin.X &&
-                        connector1.Origin.Y == connector2.Origin.Y &&
-                        connector1.Origin.Z == connector2.Origin.Z)
+                    if (Math.Abs(connector1.Origin.X - connector2.Origin.X) < 0.01 &&
+                        Math.Abs(connector1.Origin.Y - connector2.Origin.Y) < 0.01 &&
+                        Math.Abs(connector1.Origin.Z - connector2.Origin.Z) < 0.01)
                     {
                         con1 = connector1;
                         con2 = connector2;
