@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{77B9B926-E8A4-4B99-82C3-ACD72A79C7B7}</ProjectGuid>
+    <ProjectGuid>{9873F185-F630-4BB2-94A4-D9665F32B802}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>DS.RevitUtils.MEP</RootNamespace>
-    <AssemblyName>DS.RevitUtils.MEP</AssemblyName>
+    <RootNamespace>DS.RevitUtils</RootNamespace>
+    <AssemblyName>DS.RevitUtils</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -53,18 +53,23 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ConnectedElement.cs" />
-    <Compile Include="ConnectorUtils.cs" />
-    <Compile Include="ElementEraser.cs" />
-    <Compile Include="Test\DSPipe.cs" />
     <Compile Include="ExternalCommand.cs" />
-    <Compile Include="MEPConnector.cs" />
-    <Compile Include="PipeSystemCreator.cs" />
+    <Compile Include="Main.cs" />
+    <Compile Include="PickedElement.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="PypeSystem.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="DS.RevitUtils.addin" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DS.RevitUtils.MEP\DS.RevitUtils.MEP.csproj">
+      <Project>{77b9b926-e8a4-4b99-82c3-acd72a79c7b7}</Project>
+      <Name>DS.RevitUtils.MEP</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy /Y  "$(TargetDir)$(TargetName).dll" "$(AppData)\Autodesk\Revit\Addins\2020\$(TargetName)\"</PostBuildEvent>
+    <PostBuildEvent>xcopy /Y  "$(TargetDir)*.*" "C:\ProgramData\Autodesk\Revit\Addins\2020\$(TargetName)\" 
+Copy "$(ProjectDir)$(TargetName).addin" "C:\ProgramData\Autodesk\Revit\Addins\2020"</PostBuildEvent>
   </PropertyGroup>
 </Project>

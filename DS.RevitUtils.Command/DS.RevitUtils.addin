@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+	<AddIn Type="Command">
+		<Name>DS.RevitUtils</Name>
+		<FullClassName>DS.RevitUtils.ExternalCommand</FullClassName>
+		<Text>DS.RevitUtils</Text>
+		<Description>DS.RevitUtils</Description>
+		<VisibilityMode>AlwaysVisible</VisibilityMode>
+		<Assembly>.\DS.RevitUtils\DS.RevitUtils.dll</Assembly>
+		<AddInId>a8bc89a5-5108-490c-892e-c3ad4e9fcf39</AddInId>
+		<VendorId>DS</VendorId>
+	</AddIn> 
+</RevitAddIns>
