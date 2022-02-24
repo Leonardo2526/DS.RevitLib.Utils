@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+	<AddIn Type="Command">
+		<Name>DS.RVT.NewTool</Name>
+		<FullClassName>DS.RVT.NewTool.ExternalCommand</FullClassName>
+		<Text>DS.RVT.NewTool</Text>
+		<Description>DS.RVT.NewTool</Description>
+		<VisibilityMode>AlwaysVisible</VisibilityMode>
+		<Assembly>.\DS.RVT.NewTool\DS.RVT.NewTool.dll</Assembly>
+		<AddInId>3f51a48f-3f17-43ec-bfa8-08208d8a8664</AddInId>
+		<VendorId>DS</VendorId>
+	</AddIn> 
+</RevitAddIns>
