@@ -59,6 +59,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Extensions\CategoryExtension.cs" />
     <Compile Include="ExternalCommand.cs" />
     <Compile Include="External\IvanovUtils.cs" />
     <Compile Include="GPExtractor\ElementUtils.cs" />
