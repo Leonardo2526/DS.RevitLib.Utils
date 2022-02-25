@@ -25,8 +25,8 @@ namespace DS.Revit.Utils.GPExtractor
 
         public void Create()
         {
-            ElementUtils elementUtils = new ElementUtils();
-            Element element = elementUtils.GetCurrent(new DS.Revit.Utils.PickedElement(Uidoc, Doc));
+            PickedElement pickedElement = new PickedElement(Uidoc, Doc);
+            Element element = pickedElement.GetElement();
 
             GPExtractor generalPointExtractor = new GPExtractor(element);
 

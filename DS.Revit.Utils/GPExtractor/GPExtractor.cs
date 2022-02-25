@@ -17,9 +17,8 @@ namespace DS.Revit.Utils.GPExtractor
 
         public void GetGeneralPoints(out List<XYZ> points)
         {
-            ElementUtils elementUtils = new ElementUtils();
             //Get element's solid
-            List<Solid> solids = elementUtils.GetSolids(element);
+            List<Solid> solids = ElementUtils.GetSolids(element);
             points = new List<XYZ>();
 
             Solid elementSolid = null;

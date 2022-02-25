@@ -60,17 +60,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Extensions\CategoryExtension.cs" />
-    <Compile Include="ExternalCommand.cs" />
     <Compile Include="External\IvanovUtils.cs" />
-    <Compile Include="GPExtractor\ElementUtils.cs" />
     <Compile Include="GPExtractor\GPCreator.cs" />
     <Compile Include="GPExtractor\GPExtractor.cs" />
     <Compile Include="IElement.cs" />
     <Compile Include="GPExtractor\VisiblePointsCreator.cs" />
-    <Compile Include="Main.cs" />
-    <Compile Include="MEP\ConnectedElement.cs" />
     <Compile Include="MEP\ConnectorUtils.cs" />
     <Compile Include="MEP\ElementEraser.cs" />
+    <Compile Include="ElementUtils.cs" />
+    <Compile Include="LineUtils.cs" />
     <Compile Include="MEP\MEPConnector.cs" />
     <Compile Include="MEP\PipeSystemCreator.cs" />
     <Compile Include="MEP\PypeSystem.cs" />
