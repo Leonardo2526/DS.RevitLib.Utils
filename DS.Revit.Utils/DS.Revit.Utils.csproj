@@ -59,6 +59,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BoundingBoxUtils.cs" />
+    <Compile Include="ElementFilterUtils.cs" />
     <Compile Include="Extensions\CategoryExtension.cs" />
     <Compile Include="External\IvanovUtils.cs" />
     <Compile Include="GPExtractor\GPCreator.cs" />
@@ -72,6 +74,7 @@
     <Compile Include="MEP\MEPConnector.cs" />
     <Compile Include="MEP\PipeSystemCreator.cs" />
     <Compile Include="MEP\PypeSystem.cs" />
+    <Compile Include="SolidByCollector.cs" />
     <Compile Include="MEP\Test\DSPipe.cs" />
     <Compile Include="PickedElement.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
