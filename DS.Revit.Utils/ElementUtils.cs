@@ -63,8 +63,33 @@ namespace DS.Revit.Utils
             if (geomElem == null)
                 return null;
 
-            solids.AddRange(GetSolidsFromGeometryObject(geomElem));
-
+            foreach (GeometryObject geomObj in geomElem)
+            {
+                if (geomObj is Solid)
+                {
+                    Solid solid = (Solid)geomObj;
+                    if (solid.Faces.Size > 0 && solid.Volume > 0.0)
+                    {
+                        solids.Add(solid);
+                    }
+                }
+                else if (geomObj is GeometryInstance)
+                {
+                    GeometryInstance geomInst = (GeometryInstance)geomObj;
+                    GeometryElement instGeomElem = geomInst.GetInstanceGeometry();
+                    foreach (GeometryObject instGeomObj in instGeomElem)
+                    {
+                        if (instGeomObj is Solid)
+                        {
+                            Solid solid = (Solid)instGeomObj;
+                            if (solid.Faces.Size > 0 && solid.Volume > 0.0)
+                            {
+                                solids.Add(solid);
+                            }
+                        }
+                    }
+                }
+            }
 
             return solids;
         }
