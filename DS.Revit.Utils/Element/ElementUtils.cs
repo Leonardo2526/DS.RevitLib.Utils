@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace DS.Revit.Utils
 {
-    public class ElementUtils
+    public class ElementUtils 
     {
         /// <summary>
         /// Get points of central line of the element.
@@ -50,24 +50,12 @@ namespace DS.Revit.Utils
             XYZ point = new XYZ(X_MM, Y_MM, Z_MM);
 
             return point;
-        }
+        } 
 
         public static List<Solid> GetSolids(Element element)
         {
-            List<Solid> solids = new List<Solid>();
-
-            Options options = new Options();
-            options.DetailLevel = ViewDetailLevel.Fine;
-            GeometryElement geomElem = element.get_Geometry(options);
-
-            if (geomElem == null)
-                return null;
-
-            solids.AddRange(GetSolidsFromGeometryObject(geomElem));
-
-
-            return solids;
-        }
+            return SolidExtractor.GetSolids(element);
+        } 
 
         public static List<Solid> GetSolidsOfElements(List<Element> elements)
         {
@@ -82,74 +70,9 @@ namespace DS.Revit.Utils
             return solids;
         }
 
-        private static List<Solid> solids = new List<Solid>();
-
-        private static List<Solid> GetSolidsFromGeometryObject(GeometryElement geomElem)
-        {
-            foreach (GeometryObject geomObj in geomElem)
-            {
-                if (geomObj is Solid)
-                {
-                    Solid solid = (Solid)geomObj;
-                    if (solid.Faces.Size > 0 && solid.Volume > 0.0)
-                        solids.Add(solid);
-                }
-                else if (geomObj is GeometryInstance)
-                {
-                    GeometryInstance geomInst = (GeometryInstance)geomObj;
-                    GeometryElement instGeomElem = geomInst.GetInstanceGeometry();
-
-                    solids.AddRange(GetSolidsFromGeometryObject(instGeomElem));
-
-                }
-            }
-
-            return solids;
-        }
-
         public static List<Solid> GetTransformedSolids(Element element, XYZ moveVector)
-        {
-            List<Solid> solids = new List<Solid>();
-
-            Options options = new Options();
-            options.DetailLevel = ViewDetailLevel.Fine;
-            GeometryElement geomElem = element.get_Geometry(options);
-
-            if (geomElem == null)
-                return null;
-
-            Transform transform = Transform.CreateTranslation(moveVector);
-            GeometryElement geomElemTransformed = geomElem.GetTransformed(transform);
-
-            foreach (GeometryObject geomObj in geomElemTransformed)
-            {
-                if (geomObj is Solid)
-                {
-                    Solid solid = (Solid)geomObj;
-                    if (solid.Faces.Size > 0 && solid.Volume > 0.0)
-                    {
-                        solids.Add(solid);
-                    }
-                }
-                else if (geomObj is GeometryInstance)
-                {
-                    GeometryInstance geomInst = (GeometryInstance)geomObj;
-                    GeometryElement instGeomElem = geomInst.GetInstanceGeometry();
-                    foreach (GeometryObject instGeomObj in instGeomElem)
-                    {
-                        if (instGeomObj is Solid)
-                        {
-                            Solid solid = (Solid)instGeomObj;
-                            if (solid.Faces.Size > 0 && solid.Volume > 0.0)
-                            {
-                                solids.Add(solid);
-                            }
-                        }
-                    }
-                }
-            }
-
-            return solids;
+        {           
+            return SolidExtractor.GetSolids(element, moveVector);        
         }
 
         public static List<Solid> GetTransformSolidsOfElements(List<Element> elements, XYZ moveVector)
