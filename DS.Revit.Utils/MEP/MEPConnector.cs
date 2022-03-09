@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace DS.Revit.Utils.MEP
 {
-    static class MEPConnector
+    public static class MEPConnector
     {
         public static void GetCommonConnector(out Connector con1, out Connector con2, 
             List<Connector> connectors1, List<Connector> connectors2)

@@ -4,11 +4,49 @@ using System.Collections.Generic;
 
 namespace DS.Revit.Utils
 {
-    public class ElementUtils 
+    public class ElementUtils
     {
         /// <summary>
-        /// Get points of central line of the element.
+        /// Get center point of any types of elements
         /// </summary>
+        /// <param name="element"></param>
+        /// <returns></returns>
+        public static XYZ GetLocationPoint(Element element)
+        {
+            // Get the Location property and judge whether it exists
+            Location position = element.Location;
+
+            // If the location is a point location, give the user information
+            LocationPoint positionPoint = position as LocationPoint;
+            if (null != positionPoint)
+            {
+                return positionPoint.Point;
+            }
+            else
+            {
+                // If the location is a curve location, give the user information
+                LocationCurve positionCurve = position as LocationCurve;
+                if (null != positionCurve)
+                {
+                    XYZ startPoint = positionCurve.Curve.GetEndPoint(0);
+                    XYZ endPoint = positionCurve.Curve.GetEndPoint(1);
+
+                    XYZ centerPoint = new XYZ((startPoint.X + endPoint.X) / 2, 
+                        (startPoint.Y + endPoint.Y) / 2, 
+                        (startPoint.Z + endPoint.Z) / 2);
+                    return centerPoint;
+                }
+            }
+
+            return null;
+        }
+
+
+        /// <summary>
+        /// Get center point of any types of elements in millimeters
+        /// </summary>
+        /// <param name="element"></param>
+        /// <returns></returns>
         public static void GetPoints(Element element, out XYZ startPoint, out XYZ endPoint, out XYZ centerPoint)
         {
             //get the current location           
@@ -30,9 +68,9 @@ namespace DS.Revit.Utils
         /// </summary>
         /// <param name="element"></param>
         /// <returns></returns>
-        public static XYZ GetLocation(Element element)
+        public static XYZ GetLocationPointInMM(Element element)
         {
-            GetPoints(element, out XYZ startPoint, out XYZ endPoint, out XYZ centerPoint);
+            XYZ centerPoint = GetLocationPoint(element);
 
             double X = UnitUtils.Convert(centerPoint.X,
                                            DisplayUnitType.DUT_DECIMAL_FEET,
@@ -50,12 +88,12 @@ namespace DS.Revit.Utils
             XYZ point = new XYZ(X_MM, Y_MM, Z_MM);
 
             return point;
-        } 
+        }
 
         public static List<Solid> GetSolids(Element element)
         {
             return SolidExtractor.GetSolids(element);
-        } 
+        }
 
         public static List<Solid> GetSolidsOfElements(List<Element> elements)
         {
@@ -71,8 +109,8 @@ namespace DS.Revit.Utils
         }
 
         public static List<Solid> GetTransformedSolids(Element element, XYZ moveVector)
-        {           
-            return SolidExtractor.GetSolids(element, moveVector);        
+        {
+            return SolidExtractor.GetSolids(element, moveVector);
         }
 
         public static List<Solid> GetTransformSolidsOfElements(List<Element> elements, XYZ moveVector)

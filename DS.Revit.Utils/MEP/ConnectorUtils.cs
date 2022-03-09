@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace DS.Revit.Utils.MEP
 {
-    public class ConnectorUtils
+    public static class ConnectorUtils
     {
 
         public static List<Connector> GetConnectors(Element element)
@@ -148,5 +148,21 @@ namespace DS.Revit.Utils.MEP
             return connectedElements;
         }
 
+        public static List<Element> GetConnectedWithExclusions(Element sourceElement, List<Element> excludedElements = null)
+        {
+            List<Element> elements = GetConnectedElements(sourceElement);
+
+            var NoIntersections = new List<Element>();
+
+            foreach (var one in elements)
+            {
+                if (!excludedElements.Any(two => two.Id == one.Id))
+                {
+                    NoIntersections.Add(one);
+                }
+            }
+
+            return NoIntersections;
+        }
     }
 }
