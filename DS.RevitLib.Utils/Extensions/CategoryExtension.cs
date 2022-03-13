@@ -1,6 +1,6 @@
 ﻿using Autodesk.Revit.DB;
 
-namespace DS.Revit.Utils.Extensions
+namespace DS.RevitLib.Utils.Extensions
 {
    
     public static class CategoryExtension

@@ -3,7 +3,7 @@ using Autodesk.Revit.UI;
 using System;
 using System.Collections.Generic;
 
-namespace DS.Revit.Utils.MEP
+namespace DS.RevitLib.Utils.MEP
 {
     public class ElementEraser
     {

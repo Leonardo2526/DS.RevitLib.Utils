@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DS.Revit.Utils
+namespace DS.RevitLib.Utils
 {
     public static class ElementFilterUtils
     {

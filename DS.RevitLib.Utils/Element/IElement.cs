@@ -1,7 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 
 
-namespace DS.Revit.Utils
+namespace DS.RevitLib.Utils
 {
     interface IElement
     {

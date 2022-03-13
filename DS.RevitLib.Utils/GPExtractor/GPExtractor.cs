@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 
 
-namespace DS.Revit.Utils.GPExtractor
+namespace DS.RevitLib.Utils.GPExtractor
 {
     class GPExtractor
     {

@@ -4,9 +4,9 @@ using Autodesk.Revit.DB.Structure;
 using Autodesk.Revit.UI;
 using System.Collections.Generic;
 using System.Linq;
-using DS.Revit.Utils;
+using DS.RevitLib.Utils;
 
-namespace DS.Revit.Utils.GPExtractor
+namespace DS.RevitLib.Utils.GPExtractor
 {
     public class GPCreator
     {

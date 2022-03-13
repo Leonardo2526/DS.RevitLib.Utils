@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace DS.Revit.Utils
+namespace DS.RevitLib.Utils
 {
     public class ElementUtils
     {

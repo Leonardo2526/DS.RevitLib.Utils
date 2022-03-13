@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace DS.Revit.Utils.MEP
+namespace DS.RevitLib.Utils.MEP
 {
     public class PypeSystem
     {

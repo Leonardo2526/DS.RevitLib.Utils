@@ -3,9 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31729.503
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "iUtils", "iUtils\iUtils.csproj", "{9B6AC69E-D362-4B7E-A1AC-35EE89CF5D6F}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DS.Revit.Utils", "DS.Revit.Utils\DS.Revit.Utils.csproj", "{9873F185-F630-4BB2-94A4-D9665F32B802}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DS.RevitLib.Utils", "DS.RevitLib.Utils\DS.RevitLib.Utils.csproj", "{9873F185-F630-4BB2-94A4-D9665F32B802}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -13,9 +11,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{9B6AC69E-D362-4B7E-A1AC-35EE89CF5D6F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9B6AC69E-D362-4B7E-A1AC-35EE89CF5D6F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9B6AC69E-D362-4B7E-A1AC-35EE89CF5D6F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9873F185-F630-4BB2-94A4-D9665F32B802}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{9873F185-F630-4BB2-94A4-D9665F32B802}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9873F185-F630-4BB2-94A4-D9665F32B802}.Release|Any CPU.ActiveCfg = Release|Any CPU

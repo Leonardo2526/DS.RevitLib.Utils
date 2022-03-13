@@ -10,8 +10,8 @@
     <ProjectGuid>{9873F185-F630-4BB2-94A4-D9665F32B802}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>DS.Revit.Utils</RootNamespace>
-    <AssemblyName>DS.Revit.Utils</AssemblyName>
+    <RootNamespace>DS.RevitLib.Utils</RootNamespace>
+    <AssemblyName>DS.RevitLib.Utils</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -62,7 +62,6 @@
     <Compile Include="BoundingBoxUtils.cs" />
     <Compile Include="Element\ElementFilterUtils.cs" />
     <Compile Include="Extensions\CategoryExtension.cs" />
-    <Compile Include="External\IvanovUtils.cs" />
     <Compile Include="GPExtractor\GPCreator.cs" />
     <Compile Include="GPExtractor\GPExtractor.cs" />
     <Compile Include="Element\IElement.cs" />
@@ -76,7 +75,6 @@
     <Compile Include="MEP\PipeSystemCreator.cs" />
     <Compile Include="MEP\PypeSystem.cs" />
     <Compile Include="Solid\SolidByCollector.cs" />
-    <Compile Include="MEP\Test\DSPipe.cs" />
     <Compile Include="PickedElement.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Solid\SolidExtractor.cs" />

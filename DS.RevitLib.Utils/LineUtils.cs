@@ -2,7 +2,7 @@
 using Autodesk.Revit.UI;
 using System;
 
-namespace DS.Revit.Utils.MEP
+namespace DS.RevitLib.Utils.MEP
 {
     public static class LineUtils
     {

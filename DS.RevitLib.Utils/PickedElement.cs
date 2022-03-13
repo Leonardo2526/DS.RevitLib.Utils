@@ -2,7 +2,7 @@
 using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Selection;
 
-namespace DS.Revit.Utils
+namespace DS.RevitLib.Utils
 {
     class PickedElement : IElement
     {
