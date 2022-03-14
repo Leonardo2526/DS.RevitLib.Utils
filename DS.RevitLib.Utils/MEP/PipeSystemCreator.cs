@@ -73,10 +73,10 @@ namespace DS.RevitLib.Utils.MEP
                 {
                     transNew.Start();
 
-                    List<Connector> connectors1 = MEPConnector.GetMEPConnectors(pipe1);
-                    List<Connector> connectors2 = MEPConnector.GetMEPConnectors(pipe2);
+                    List<Connector> connectors1 = MEPConnector.GetConnectors(pipe1);
+                    List<Connector> connectors2 = MEPConnector.GetConnectors(pipe2);
 
-                    MEPConnector.GetCommonConnector(out Connector con1, out Connector con2,
+                    MEPConnector.GetNeighbourConnectors(out Connector con1, out Connector con2,
                     connectors1, connectors2);
 
                     Doc.Create.NewElbowFitting(con1, con2);
