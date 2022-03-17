@@ -2,15 +2,13 @@
 using Autodesk.Revit.UI;
 using System;
 
-namespace DS.RevitLib.Utils.MEP
+namespace DS.RevitLib.Utils
 {
     public static class LineUtils
     {
 
         public static ModelCurve CreateModelCurveByPoints(XYZ startPoint, XYZ endPoint, Document doc)
         {
-            ModelCurve line = null;
-
             Line geomLine = Line.CreateBound(startPoint, endPoint);
 
             // Create a geometry plane in Revit application
@@ -22,7 +20,14 @@ namespace DS.RevitLib.Utils.MEP
                 p3 = p2 + XYZ.BasisY;
             else
                 p3 = p2 + XYZ.BasisZ;
-            Plane geomPlane = Plane.CreateByThreePoints(p1, p2, p3);
+            Plane geomPlane = Plane.CreateByThreePoints(p1, p2, p3);            
+
+            return CreateModelCurveTransacion(doc, geomPlane, geomLine);
+        }
+
+        private static ModelCurve CreateModelCurveTransacion(Document doc, Plane geomPlane, Line geomLine)
+        {
+            ModelCurve line = null;
 
             using (Transaction transNew = new Transaction(doc, "DS.CreateModelCurve"))
             {
@@ -34,7 +39,7 @@ namespace DS.RevitLib.Utils.MEP
                     SketchPlane sketch = SketchPlane.Create(doc, geomPlane);
 
                     // Create a ModelLine element using the created geometry line and sketch plane
-                    line = doc.Create.NewModelCurve(geomLine, sketch) as ModelCurve;
+                    line = doc.Create.NewModelCurve(geomLine, sketch);
                 }
 
                 catch (Exception e)
@@ -45,6 +50,7 @@ namespace DS.RevitLib.Utils.MEP
 
                 transNew.Commit();
             }
+
             return line;
         }
 

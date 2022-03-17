@@ -1,5 +1,4 @@
 ﻿using Autodesk.Revit.DB;
-using Autodesk.Revit.UI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,43 +7,6 @@ namespace DS.RevitLib.Utils.MEP
 {
     public static class ConnectorUtils
     {
-
-        public static List<Connector> GetConnectors(Element element)
-        {
-            //1. Get connector set
-            ConnectorSet connectorSet = null;
-
-            Type type = element.GetType();
-
-            if (type.ToString().Contains("FamilyInstance"))
-            {
-                FamilyInstance familyInstance = element as FamilyInstance;
-                connectorSet = familyInstance.MEPModel.ConnectorManager.Connectors;
-            }
-            else
-            {
-                try
-                {
-                    MEPCurve mepCurve = element as MEPCurve;
-                    connectorSet = mepCurve.ConnectorManager.Connectors;
-                }
-                catch (Exception ex)
-                {
-                    TaskDialog.Show("Error", ex.Message);
-                }
-
-            }
-
-            //2. Initialise empty list of connectors
-            List<Connector> connectorList = new List<Connector>();
-
-            //3. Loop through connector set and add to list
-            foreach (Connector connector in connectorSet)
-            {
-                connectorList.Add(connector);
-            }
-            return connectorList;
-        }
 
         /// <summary>
         /// Get elements connected to current element. 
@@ -56,18 +18,35 @@ namespace DS.RevitLib.Utils.MEP
 
             foreach (Connector connector in connectors)
             {
-                ConnectorSet connectorSet = connector.AllRefs;
+                ConnectorSet connectorSet = connector.AllRefs; 
 
                 foreach (Connector con in connectorSet)
                 {
                     ElementId elementId = con.Owner.Id;
-                    if (elementId != element.Id)
+                    if (elementId != element.Id && CheckMEPElement(con.Owner))
+                    {
                         connectedElements.Add(con.Owner);
+                    }
                 }
             }
             return connectedElements;
         }
 
+        /// <summary>
+        /// Check connected elements for type
+        /// </summary>
+        /// <param name="element"></param>
+        /// <returns>Return true if element is not System or Insulation type</returns>
+        private static bool CheckMEPElement(Element element)
+        {
+            Type type = element.GetType();
+            if (type.ToString().Contains("System") | type.ToString().Contains("Insulation"))
+            {
+                return false;
+            }
+
+            return true;
+        }
 
         private static List<Element> ConnectedElements = new List<Element>();
 
@@ -116,13 +95,10 @@ namespace DS.RevitLib.Utils.MEP
 
             foreach (Element element in elements)
             {
-
-                Type type = element.GetType();
-                if (type.ToString().Contains("System") | type.ToString().Contains("Insulation"))
-                    continue;
-
-                elementsForNewSearch.Add(element);
-
+                if (CheckMEPElement(element))
+                {
+                    elementsForNewSearch.Add(element);
+                }
             }
 
             return elementsForNewSearch;
@@ -163,6 +139,91 @@ namespace DS.RevitLib.Utils.MEP
             }
 
             return NoIntersections;
+        }
+
+        public static void GetNeighbourConnectors(out Connector con1, out Connector con2,
+        List<Connector> connectors1, List<Connector> connectors2)
+        {
+            con1 = null;
+            con2 = null;
+            foreach (Connector connector1 in connectors1)
+            {
+                foreach (Connector connector2 in connectors2)
+                {
+                    if (Math.Abs(connector1.Origin.X - connector2.Origin.X) < 0.01 &&
+                        Math.Abs(connector1.Origin.Y - connector2.Origin.Y) < 0.01 &&
+                        Math.Abs(connector1.Origin.Z - connector2.Origin.Z) < 0.01)
+                    {
+                        con1 = connector1;
+                        con2 = connector2;
+                        break;
+                    }
+                }
+            }
+
+        }
+
+        public static List<Connector> GetConnectors(Element element)
+        {
+            ConnectorSet connectorSet = GetConnectorSet(element);
+
+            //Initialise empty list of connectors
+            List<Connector> connectorList = new List<Connector>();
+
+            //Loop through connector set and add to list
+            foreach (Connector connector in connectorSet)
+            {
+                connectorList.Add(connector);
+            }
+            return connectorList;
+        }
+
+        /// <summary>
+        /// Get connectorSet of elemetn. Return new connectorSet if element is FamilyInstance or MEPCurve.
+        /// Return null if it isn't;
+        /// </summary>
+        /// <param name="element"></param>
+        /// <returns></returns>
+        public static ConnectorSet GetConnectorSet(Element element)
+        {
+            if (element.GetType().Name == "FamilyInstance")
+            {
+                //Cast Element to FamilyInstance
+                FamilyInstance inst = element as FamilyInstance;
+
+                //Get MEPModel Property
+                MEPModel mepModel = inst.MEPModel;
+
+                //Get connector set of MEPModel
+                return mepModel.ConnectorManager.Connectors;
+            }
+            else if (ElementUtils.IsElementMEPCurve(element))
+            {
+                MEPCurve mepCurve = element as MEPCurve;
+
+                //Get connector set of MEPModel
+                return mepCurve.ConnectorManager.Connectors;
+            }
+
+            return null;
+        }
+
+        public static List<XYZ> GetConnectorsXYZ(Element element)
+        {
+            ConnectorSet connectorSet = GetConnectorSet(element);
+            List<XYZ> connectorPointList = new List<XYZ>();
+            foreach (Connector connector in connectorSet)
+            {
+                XYZ connectorPoint = connector.Origin;
+                connectorPointList.Add(connectorPoint);
+            }
+
+            return connectorPointList;
+        }
+
+        public static double GetLengthBetweenConnectors(Connector c1, Connector c2)
+        {
+            return c1.Origin.DistanceTo(c2.Origin);
         }
     }
 }

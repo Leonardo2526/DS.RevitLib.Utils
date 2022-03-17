@@ -70,7 +70,6 @@
     <Compile Include="Element\ElementEraser.cs" />
     <Compile Include="Element\ElementUtils.cs" />
     <Compile Include="LineUtils.cs" />
-    <Compile Include="MEP\MEPConnector.cs" />
     <Compile Include="MEP\MEPCurveUtils.cs" />
     <Compile Include="MEP\PipeSystemCreator.cs" />
     <Compile Include="MEP\PypeSystem.cs" />
