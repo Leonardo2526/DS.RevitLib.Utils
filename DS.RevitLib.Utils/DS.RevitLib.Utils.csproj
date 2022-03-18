@@ -66,13 +66,15 @@
     <Compile Include="GPExtractor\GPExtractor.cs" />
     <Compile Include="Element\IElement.cs" />
     <Compile Include="GPExtractor\VisiblePointsCreator.cs" />
+    <Compile Include="MEP\MEPCurveParameter.cs" />
+    <Compile Include="MEP\Insulation.cs" />
     <Compile Include="MEP\ConnectorUtils.cs" />
     <Compile Include="Element\ElementEraser.cs" />
     <Compile Include="Element\ElementUtils.cs" />
     <Compile Include="LineUtils.cs" />
     <Compile Include="MEP\MEPCurveUtils.cs" />
-    <Compile Include="MEP\PipeSystemCreator.cs" />
-    <Compile Include="MEP\PypeSystem.cs" />
+    <Compile Include="MEP\MEPSystemCreator.cs" />
+    <Compile Include="MEP\MEPSystemUtils.cs" />
     <Compile Include="Solid\SolidByCollector.cs" />
     <Compile Include="PickedElement.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
