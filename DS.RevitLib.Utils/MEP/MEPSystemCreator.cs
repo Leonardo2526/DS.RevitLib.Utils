@@ -71,7 +71,7 @@ namespace DS.RevitLib.Utils.MEP
                 CreateMEPCurveByPoints(p1, p2);
 
                 if (MEPCurves.Count > 1)
-                    CreateFittingByPipes(MEPCurves[i - 1] as MEPCurve, MEPCurves[i] as MEPCurve);
+                    CreateFittingByMEPCurves(MEPCurves[i - 1] as MEPCurve, MEPCurves[i] as MEPCurve);
             }
 
             return AllElements;
@@ -122,7 +122,7 @@ namespace DS.RevitLib.Utils.MEP
         /// </summary>
         /// <param name="mepCurve1"></param>
         /// <param name="mepCurve2"></param>
-        public Element CreateFittingByPipes(MEPCurve mepCurve1, MEPCurve mepCurve2)
+        public Element CreateFittingByMEPCurves(MEPCurve mepCurve1, MEPCurve mepCurve2)
         {
             FamilyInstance familyInstance = null;
             using (Transaction transNew = new Transaction(Doc, "CreateFittingByPipes"))
@@ -147,8 +147,34 @@ namespace DS.RevitLib.Utils.MEP
                 }
                 transNew.Commit();
             }
+            AllElements.Insert(AllElements.Count-1, familyInstance);
+            return familyInstance;
+        }
 
-            AllElements.Add(familyInstance);
+        /// <summary>
+        /// Create fitting between two pipes
+        /// </summary>
+        /// <param name="mepCurve1"></param>
+        /// <param name="mepCurve2"></param>
+        public Element CreateFittingByConnectors(Connector con1, Connector con2)
+        {
+            FamilyInstance familyInstance = null;
+            using (Transaction transNew = new Transaction(Doc, "CreateFittingByConnectors"))
+            {
+                try
+                {
+                    transNew.Start();
+                    familyInstance = Doc.Create.NewElbowFitting(con1, con2);
+                }
+
+                catch (Exception e)
+                {
+                    transNew.RollBack();
+                    TaskDialog.Show("Revit", e.ToString());
+                }
+                transNew.Commit();
+            }
+
             return familyInstance;
         }
 

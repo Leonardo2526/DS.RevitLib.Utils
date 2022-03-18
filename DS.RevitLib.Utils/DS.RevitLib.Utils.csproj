@@ -39,6 +39,9 @@
     <Reference Include="iUtils">
       <HintPath>..\iUtils\bin\Release\iUtils.dll</HintPath>
     </Reference>
+    <Reference Include="Ivanov.RevitLib.Utils">
+      <HintPath>..\..\VAR.RevitLib.Utils\Ivanov.RevitLib.Utils\bin\Release\Ivanov.RevitLib.Utils.dll</HintPath>
+    </Reference>
     <Reference Include="RevitAPI">
       <HintPath>C:\Program Files\Autodesk\Revit 2020\RevitAPI.dll</HintPath>
       <Private>False</Private>
