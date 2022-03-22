@@ -141,5 +141,24 @@ namespace DS.RevitLib.Utils
             }
             return false;
         }
+
+        /// <summary>
+        /// Check if checkingCategory coincidence with list of BuiltInCategories
+        /// </summary>
+        /// <param name="checkingCategory"></param>
+        /// <param name="coincidenceCategories"></param>
+        /// <returns></returns>
+        public static bool CheckCategory(BuiltInCategory checkingCategory, List<BuiltInCategory> coincidenceCategories)
+        {
+            foreach (var item in coincidenceCategories)
+            {
+                if (checkingCategory.Equals(item))
+                {
+                    return true;
+                }
+
+            }
+            return false;
+        }
     }
 }
