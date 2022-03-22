@@ -18,7 +18,7 @@ namespace DS.RevitLib.Utils.MEP
             List<BuiltInCategory> builtInCategories = new List<BuiltInCategory>
             { BuiltInCategory.OST_PipeFitting, BuiltInCategory.OST_DuctFitting};
 
-            if (ElementUtils.CheckCategory(familyInstanceCategory, builtInCategories))
+            if (!ElementUtils.CheckCategory(familyInstanceCategory, builtInCategories))
             {
                 TaskDialog.Show("GetElbowCenterPoint", "Error occured! Element is not fitting.");
                 return null;
