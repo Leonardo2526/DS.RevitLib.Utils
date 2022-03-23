@@ -3,27 +3,20 @@ using Autodesk.Revit.DB.Mechanical;
 using Autodesk.Revit.DB.Plumbing;
 using Autodesk.Revit.UI;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 
-namespace DS.RevitLib.Utils.MEP
+namespace DS.RevitLib.Utils.MEP.Creator
 {
-    class MEPSystemCreator
+    public class MEPCurveCreator
     {
-        public MEPSystemCreator(Document doc, MEPCurve baseMEPCurve)
+        private readonly Document Doc;
+        private readonly MEPCurve BaseMEPCurve;
+
+        public MEPCurveCreator(Document doc, MEPCurve baseMEPCurve)
         {
             Doc = doc;
             BaseMEPCurve = baseMEPCurve;
         }
-
-        #region Fields
-
-        private readonly Document Doc;
-        private readonly MEPCurve BaseMEPCurve;
-        private readonly List<Element> MEPCurves = new List<Element>();
-        private readonly List<Element> AllElements = new List<Element>();
-
-        #endregion
 
 
         #region Properties
@@ -61,22 +54,6 @@ namespace DS.RevitLib.Utils.MEP
         #endregion
 
 
-        public List<Element> CreateSystem(List<XYZ> points)
-        {
-            for (int i = 0; i < points.Count - 1; i++)
-            {
-                XYZ p1 = points[i];
-                XYZ p2 = points[i + 1];
-
-                CreateMEPCurveByPoints(p1, p2);
-
-                if (MEPCurves.Count > 1)
-                    CreateFittingByMEPCurves(MEPCurves[i - 1] as MEPCurve, MEPCurves[i] as MEPCurve);
-            }
-
-            return AllElements;
-        }
-
         /// <summary>
         /// Create pipe between 2 points
         /// </summary>
@@ -111,60 +88,34 @@ namespace DS.RevitLib.Utils.MEP
                 }
                 transNew.Commit();
             }
-
-            AllElements.Add(mEPCurve);
-            MEPCurves.Add(mEPCurve);
             return mEPCurve;
         }
 
         /// <summary>
-        /// Create fitting between two pipes
+        /// Create pipe between 2 connectors
         /// </summary>
-        /// <param name="mepCurve1"></param>
-        /// <param name="mepCurve2"></param>
-        public Element CreateFittingByMEPCurves(MEPCurve mepCurve1, MEPCurve mepCurve2)
+        /// <param name="c1"></param>
+        /// <param name="c2"></param>
+        /// <returns></returns>
+        public MEPCurve CreateMEPCurveByConnectors(Connector c1, Connector c2)
         {
-            FamilyInstance familyInstance = null;
-            using (Transaction transNew = new Transaction(Doc, "CreateFittingByPipes"))
+            MEPCurve mEPCurve = null;
+            using (Transaction transNew = new Transaction(Doc, "CreateMEPCurveByConnectors"))
             {
                 try
                 {
                     transNew.Start();
+                    if (ElementTypeName == "Pipe")
+                    {
+                        mEPCurve = Pipe.Create(Doc, MEPSystemTypeId, ElementTypeId, c1, c2);
+                    }
+                    else
+                    {
+                        mEPCurve = Duct.Create(Doc, MEPSystemTypeId, ElementTypeId, c1, c2);
+                    }
 
-                    List<Connector> connectors1 = ConnectorUtils.GetConnectors(mepCurve1);
-                    List<Connector> connectors2 = ConnectorUtils.GetConnectors(mepCurve2);
-
-                    ConnectorUtils.GetNeighbourConnectors(out Connector con1, out Connector con2,
-                    connectors1, connectors2);
-
-                    familyInstance = Doc.Create.NewElbowFitting(con1, con2);
-                }
-
-                catch (Exception e)
-                {
-                    transNew.RollBack();
-                    TaskDialog.Show("Revit", e.ToString());
-                }
-                transNew.Commit();
-            }
-            AllElements.Insert(AllElements.Count-1, familyInstance);
-            return familyInstance;
-        }
-
-        /// <summary>
-        /// Create fitting between two pipes
-        /// </summary>
-        /// <param name="mepCurve1"></param>
-        /// <param name="mepCurve2"></param>
-        public Element CreateFittingByConnectors(Connector con1, Connector con2)
-        {
-            FamilyInstance familyInstance = null;
-            using (Transaction transNew = new Transaction(Doc, "CreateFittingByConnectors"))
-            {
-                try
-                {
-                    transNew.Start();
-                    familyInstance = Doc.Create.NewElbowFitting(con1, con2);
+                    Insulation.Create(BaseMEPCurve, mEPCurve);
+                    MEPCurveParameter.Copy(BaseMEPCurve, mEPCurve);
                 }
 
                 catch (Exception e)
@@ -175,9 +126,7 @@ namespace DS.RevitLib.Utils.MEP
                 transNew.Commit();
             }
 
-            return familyInstance;
+            return mEPCurve;
         }
-
     }
 }
-

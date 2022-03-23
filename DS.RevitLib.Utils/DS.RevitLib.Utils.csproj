@@ -69,6 +69,8 @@
     <Compile Include="GPExtractor\GPExtractor.cs" />
     <Compile Include="Element\IElement.cs" />
     <Compile Include="GPExtractor\VisiblePointsCreator.cs" />
+    <Compile Include="MEP\Creator\MEPCurveCreator.cs" />
+    <Compile Include="MEP\Creator\FamInstCreator.cs" />
     <Compile Include="MEP\MEPCurveParameter.cs" />
     <Compile Include="MEP\Insulation.cs" />
     <Compile Include="MEP\ConnectorUtils.cs" />
@@ -77,8 +79,7 @@
     <Compile Include="LineUtils.cs" />
     <Compile Include="MEP\MEPCurveUtils.cs" />
     <Compile Include="MEP\MEPElementUtils.cs" />
-    <Compile Include="MEP\MEPSystemCreator.cs" />
-    <Compile Include="MEP\MEPSystemUtils.cs" />
+    <Compile Include="MEP\Creator\MEPSystemCreator.cs" />
     <Compile Include="Solid\SolidByCollector.cs" />
     <Compile Include="PickedElement.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
