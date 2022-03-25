@@ -247,5 +247,15 @@ namespace DS.RevitLib.Utils.MEP
 
             return (freeConnector, attachedConnector);
         }
+
+        public static (Connector con1, Connector con2) GetCommonConnectors(Element element1, Element element2)
+        {
+            List<Connector> element1Connectors = GetConnectors(element1);
+            List<Connector> element2Connectors = GetConnectors(element2);
+
+            GetNeighbourConnectors(out Connector con1, out Connector con2, element1Connectors, element2Connectors);
+
+            return (con1, con2);
+        }
     }
 }

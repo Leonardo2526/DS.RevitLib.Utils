@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace DS.RevitLib.Utils
 {
@@ -159,6 +160,59 @@ namespace DS.RevitLib.Utils
 
             }
             return false;
+        }
+
+        /// <summary>
+        /// Select element from the list whose location point is closest to base element point;
+        /// </summary>
+        /// <param name="baseElement"></param>
+        /// <param name="elements"></param>
+        /// <returns>Return closest element. If one of the elements is not valid return another one valid by default.</returns>
+        public static Element SelectClosestToElement(Element baseElement, List<Element> elements)
+        {
+            XYZ basePoint = GetLocationPoint(baseElement);
+
+            return SelectClosestToPoint(basePoint, elements);
+        }
+
+        /// <summary>
+        /// Select element from the list whose location point is closest to base point;
+        /// </summary>
+        /// <param name="baseElement"></param>
+        /// <param name="elements"></param>
+        /// <returns>Return closest element. If one of the elements is not valid return another one valid by default.</returns>
+        public static Element SelectClosestToPoint(XYZ basePoint, List<Element> elements)
+        {
+            Element closestElement = elements.FirstOrDefault();
+
+            foreach (var item in elements)
+            {
+                if (!item.IsValidObject)
+                {
+                    return elements.Where(x => x.IsValidObject).FirstOrDefault();
+                }
+            }
+
+            XYZ point = GetLocationPoint(closestElement);
+
+            double distance = basePoint.DistanceTo(point);
+
+            if (elements.Count > 1)
+            {
+                for (int i = 1; i < elements.Count; i++)
+                {
+                    point = GetLocationPoint(elements[i]);
+
+                    double curDistance = basePoint.DistanceTo(point);
+                    if (curDistance < distance)
+                    {
+                        distance = curDistance;
+                        closestElement = elements[i];
+                    }
+                }
+            }
+
+            return closestElement;
         }
     }
 }

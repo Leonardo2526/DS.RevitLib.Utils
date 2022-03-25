@@ -21,7 +21,7 @@ namespace DS.RevitLib.Utils.MEP
         /// </summary>
         /// <param name="mEPCurve1"></param>
         /// <param name="mEPCurve2"></param>
-        /// <returns>Return real or virtual (in 10 feets range) intersection point.</returns>
+        /// <returns>Return real or virtual (in 10 feets range) intersection point. Return null if no intersection exist.</returns>
         public static XYZ GetIntersection(MEPCurve mEPCurve1, MEPCurve mEPCurve2)
         {
             Line line1 = mEPCurve1.GetCurve() as Line;
@@ -31,6 +31,11 @@ namespace DS.RevitLib.Utils.MEP
             line2 = line2.IncreaseLength(10);
 
             line1.Intersect(line2, out IntersectionResultArray resultArray);
+
+            if (resultArray is null)
+            {
+                return null;
+            }
 
             return resultArray.get_Item(0).XYZPoint;
         }
