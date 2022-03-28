@@ -257,5 +257,33 @@ namespace DS.RevitLib.Utils.MEP
 
             return (con1, con2);
         }
+
+        /// <summary>
+        /// Check connectors direction of the element
+        /// </summary>
+        /// <param name="element"></param>
+        /// <returns>Return true if one of directions is equal to input direction. False if it's not.</returns>
+        public static bool CheckConnectorsDirection(XYZ direction, Element element)
+        {
+            List<Connector> connectors = GetConnectors(element);
+
+            foreach (var con in connectors)
+            {
+                List<Connector> restConnectors = new List<Connector>();
+                restConnectors.AddRange(connectors);
+                restConnectors.Remove(con);
+
+                foreach (var restcon in restConnectors)
+                {
+                    Line line = Line.CreateBound(con.Origin, restcon.Origin);
+                    if (line.Direction.IsAlmostEqualTo(direction) || line.Direction.Negate().IsAlmostEqualTo(direction))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
     }
 }
