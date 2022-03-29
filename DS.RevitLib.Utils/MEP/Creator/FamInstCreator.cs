@@ -51,11 +51,12 @@ namespace DS.RevitLib.Utils.MEP.Creator
             return familyInstance;
         }
 
-        /// <summary>
-        /// Create fitting between two pipes
-        /// </summary>
-        /// <param name="mepCurve1"></param>
-        /// <param name="mepCurve2"></param>
+      /// <summary>
+      /// Create elbow
+      /// </summary>
+      /// <param name="con1"></param>
+      /// <param name="con2"></param>
+      /// <returns></returns>
         public FamilyInstance CreateFittingByConnectors(Connector con1, Connector con2)
         {
             FamilyInstance familyInstance = null;
@@ -65,6 +66,35 @@ namespace DS.RevitLib.Utils.MEP.Creator
                 {
                     transNew.Start();
                     familyInstance = Doc.Create.NewElbowFitting(con1, con2);
+                }
+
+                catch (Exception e)
+                {
+                    transNew.RollBack();
+                    TaskDialog.Show("Revit", e.ToString());
+                }
+                transNew.Commit();
+            }
+
+            return familyInstance;
+        }
+
+       /// <summary>
+       /// Create tee
+       /// </summary>
+       /// <param name="con1"></param>
+       /// <param name="con2"></param>
+       /// <param name="con3"></param>
+       /// <returns></returns>
+        public FamilyInstance CreateTeeByConnectors(Connector con1, Connector con2, Connector con3)
+        {
+            FamilyInstance familyInstance = null;
+            using (Transaction transNew = new Transaction(Doc, "CreateTeeByConnectors"))
+            {
+                try
+                {
+                    transNew.Start();
+                    familyInstance = Doc.Create.NewTeeFitting(con1, con2, con3);
                 }
 
                 catch (Exception e)

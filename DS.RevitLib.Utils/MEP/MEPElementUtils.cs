@@ -36,5 +36,28 @@ namespace DS.RevitLib.Utils.MEP
 
             return MEPCurveUtils.GetIntersection(elements.FirstOrDefault() as MEPCurve, elements.Last() as MEPCurve);
         }
+
+
+        /// <summary>
+        /// Get list of all directions of element's connectors
+        /// </summary>
+        /// <param name="element"></param>
+        /// <returns></returns>
+        public static List<XYZ> GetDirection(Element element)
+        {
+            List<XYZ> direction = new List<XYZ>();
+
+            List<Connector> connectors = ConnectorUtils.GetConnectors(element);
+            Connector defaultCon = connectors.FirstOrDefault();
+
+            connectors.Remove(defaultCon);
+            foreach (var con in connectors)
+            {
+                Line line = Line.CreateBound(defaultCon.Origin, con.Origin);
+                direction.Add(line.Direction);
+            }
+
+            return direction;
+        }
     }
 }
