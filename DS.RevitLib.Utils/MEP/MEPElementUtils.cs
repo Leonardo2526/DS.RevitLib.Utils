@@ -49,10 +49,13 @@ namespace DS.RevitLib.Utils.MEP
 
             List<Connector> connectors = ConnectorUtils.GetConnectors(element);
             Connector defaultCon = connectors.FirstOrDefault();
-
-            connectors.Remove(defaultCon);
+            
             foreach (var con in connectors)
             {
+                if (defaultCon.Origin.IsAlmostEqualTo(con.Origin))
+                {
+                    continue;
+                }
                 Line line = Line.CreateBound(defaultCon.Origin, con.Origin);
                 direction.Add(line.Direction);
             }

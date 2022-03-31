@@ -40,7 +40,8 @@ namespace DS.RevitLib.Utils.MEP
         private static bool CheckMEPElement(Element element)
         {
             Type type = element.GetType();
-            if (type.ToString().Contains("System") | type.ToString().Contains("Insulation"))
+
+            if (type.Name.Contains("System") | type.Name.Contains("Insulation"))
             {
                 return false;
             }
@@ -248,16 +249,6 @@ namespace DS.RevitLib.Utils.MEP
             return (freeConnector, attachedConnector);
         }
 
-        public static (Connector con1, Connector con2) GetCommonConnectors(Element element1, Element element2)
-        {
-            List<Connector> element1Connectors = GetConnectors(element1);
-            List<Connector> element2Connectors = GetConnectors(element2);
-
-            GetNeighbourConnectors(out Connector con1, out Connector con2, element1Connectors, element2Connectors);
-
-            return (con1, con2);
-        }
-
         /// <summary>
         /// Check connectors direction of the element
         /// </summary>
@@ -275,6 +266,10 @@ namespace DS.RevitLib.Utils.MEP
 
                 foreach (var restcon in restConnectors)
                 {
+                    if (con.Origin.IsAlmostEqualTo(restcon.Origin))
+                    {
+                        return true;
+                    }
                     Line line = Line.CreateBound(con.Origin, restcon.Origin);
                     if (line.Direction.IsAlmostEqualTo(direction) || line.Direction.Negate().IsAlmostEqualTo(direction))
                     {
@@ -284,6 +279,31 @@ namespace DS.RevitLib.Utils.MEP
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Get common connectors between two elements
+        /// </summary>
+        /// <param name="element1"></param>
+        /// <param name="element2"></param>
+        /// <returns>Return connectors of element1 and element2</returns>
+        public static (Connector elem1Con, Connector elem2Con) GetCommonConnectors(Element element1, Element element2)
+        {
+            List<Connector> elem1Connectors = GetConnectors(element1);
+
+            foreach (Connector elem1Con in elem1Connectors)
+            {
+                ConnectorSet connectorSet = elem1Con.AllRefs;
+
+                foreach (Connector con in connectorSet)
+                {
+                    if (con.Owner.Id == element2.Id && CheckMEPElement(con.Owner))
+                    {
+                        return (elem1Con, con);
+                    }
+                }
+            }
+            return (null, null);
         }
     }
 }
