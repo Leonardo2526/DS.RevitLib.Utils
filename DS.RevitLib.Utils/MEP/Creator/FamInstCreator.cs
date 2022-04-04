@@ -51,42 +51,15 @@ namespace DS.RevitLib.Utils.MEP.Creator
             return familyInstance;
         }
 
-      /// <summary>
-      /// Create elbow
-      /// </summary>
-      /// <param name="con1"></param>
-      /// <param name="con2"></param>
-      /// <returns></returns>
-        public FamilyInstance CreateFittingByConnectors(Connector con1, Connector con2)
-        {
-            FamilyInstance familyInstance = null;
-            using (Transaction transNew = new Transaction(Doc, "CreateFittingByConnectors"))
-            {
-                try
-                {
-                    transNew.Start();
-                    familyInstance = Doc.Create.NewElbowFitting(con1, con2);
-                }
 
-                catch (Exception e)
-                {
-                    transNew.RollBack();
-                    TaskDialog.Show("Revit", e.ToString());
-                }
-                transNew.Commit();
-            }
-
-            return familyInstance;
-        }
-
-       /// <summary>
-       /// Create tee
-       /// </summary>
-       /// <param name="con1"></param>
-       /// <param name="con2"></param>
-       /// <param name="con3"></param>
-       /// <returns></returns>
-        public FamilyInstance CreateTeeByConnectors(Connector con1, Connector con2, Connector con3)
+        /// <summary>
+        /// Create elbow or tee by given connectors
+        /// </summary>
+        /// <param name="con1"></param>
+        /// <param name="con2"></param>
+        /// <param name="con3"></param>
+        /// <returns></returns>
+        public FamilyInstance CreateFittingByConnectors(Connector con1, Connector con2, Connector con3 = null)
         {
             FamilyInstance familyInstance = null;
             using (Transaction transNew = new Transaction(Doc, "CreateTeeByConnectors"))
@@ -94,7 +67,14 @@ namespace DS.RevitLib.Utils.MEP.Creator
                 try
                 {
                     transNew.Start();
-                    familyInstance = Doc.Create.NewTeeFitting(con1, con2, con3);
+                    if (con3 is null)                    {
+
+                        familyInstance = Doc.Create.NewElbowFitting(con1, con2);
+                    }
+                    else
+                    {
+                        familyInstance = Doc.Create.NewTeeFitting(con1, con2, con3);
+                    }
                 }
 
                 catch (Exception e)
@@ -102,7 +82,10 @@ namespace DS.RevitLib.Utils.MEP.Creator
                     transNew.RollBack();
                     TaskDialog.Show("Revit", e.ToString());
                 }
-                transNew.Commit();
+                if (transNew.HasStarted())
+                {
+                    transNew.Commit();
+                }
             }
 
             return familyInstance;

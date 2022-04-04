@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.UI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -224,6 +225,29 @@ namespace DS.RevitLib.Utils
         {
             Parameter partTypeParam = familyInstance.Symbol.Family.get_Parameter(BuiltInParameter.FAMILY_CONTENT_PART_TYPE);
             return (PartType)partTypeParam.AsInteger();
+        }
+
+        public static void DeleteElement(Document Doc, Element element)
+        {
+            using (Transaction transNew = new Transaction(Doc, "DeleteElement"))
+            {
+                try
+                {
+                    transNew.Start();
+                    Doc.Delete(element.Id);
+                }
+
+                catch (Exception e)
+                {
+                    transNew.RollBack();
+                    TaskDialog.Show("Revit", e.ToString());
+                }
+                if (transNew.HasStarted())
+                {
+                    transNew.Commit();
+                }
+            }
+
         }
     }
 }
