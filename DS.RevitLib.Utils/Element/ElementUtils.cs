@@ -214,5 +214,16 @@ namespace DS.RevitLib.Utils
 
             return closestElement;
         }
+
+        /// <summary>
+        /// Get part type of family instance;
+        /// </summary>
+        /// <param name="familyInstance"></param>
+        /// <returns>Return part type of family instance</returns>
+        public static PartType GetPartType(FamilyInstance familyInstance)
+        {
+            Parameter partTypeParam = familyInstance.Symbol.Family.get_Parameter(BuiltInParameter.FAMILY_CONTENT_PART_TYPE);
+            return (PartType)partTypeParam.AsInteger();
+        }
     }
 }
