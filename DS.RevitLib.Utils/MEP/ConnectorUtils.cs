@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.UI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -331,6 +332,34 @@ namespace DS.RevitLib.Utils.MEP
             }
 
             return resultCon;
+        }
+
+        public static void ConnectConnectors(Document Doc, Connector c1, Connector c2)
+        {
+            if (!c1.IsConnectedTo(c2))
+            {
+                using (Transaction transNew = new Transaction(Doc, "autoMEP_ConnectConnectors"))
+                {
+                    try
+                    {
+                        transNew.Start();
+                        c1.ConnectTo(c2);
+                    }
+
+                    catch (Exception e)
+                    {
+                        transNew.RollBack();
+                        TaskDialog.Show("Revit", e.ToString());
+                    }
+                    if (transNew.HasStarted())
+                    {
+                        transNew.Commit();
+                    }
+                }
+
+
+            }
+
         }
     }
 }
