@@ -128,5 +128,31 @@ namespace DS.RevitLib.Utils.MEP.Creator
 
             return mEPCurve;
         }
+
+        public static Element SplitElement(Document Doc, Element element, XYZ splitPoint)
+        {
+            Element newElement = null;
+            using (Transaction transNew = new Transaction(Doc, "SplitElement"))
+            {
+                try
+                {
+                    transNew.Start();
+                    ElementId newPipeId = PlumbingUtils.BreakCurve(Doc, element.Id, splitPoint);
+                    newElement = Doc.GetElement(newPipeId);
+                }
+
+                catch (Exception e)
+                {
+                    transNew.RollBack();
+                    TaskDialog.Show("Revit", e.ToString());
+                }
+                if (transNew.HasStarted())
+                {
+                    transNew.Commit();
+                }
+            }
+
+            return newElement;
+        }
     }
 }
