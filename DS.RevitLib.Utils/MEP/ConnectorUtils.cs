@@ -18,7 +18,7 @@ namespace DS.RevitLib.Utils.MEP
 
             foreach (Connector connector in connectors)
             {
-                ConnectorSet connectorSet = connector.AllRefs; 
+                ConnectorSet connectorSet = connector.AllRefs;
 
                 foreach (Connector con in connectorSet)
                 {
@@ -304,6 +304,33 @@ namespace DS.RevitLib.Utils.MEP
                 }
             }
             return (null, null);
+        }
+
+        /// <summary>
+        /// Select connector from the list which is closest to baseConnector;
+        /// </summary>
+        /// <param name="baseConnector"></param>
+        /// <param name="connectors"></param>
+        /// <returns>Return closest connector.</returns>
+        public static Connector GetClosest(Connector baseConnector, List<Connector> connectors)
+        {
+            Connector resultCon = connectors.FirstOrDefault();
+            double distance = baseConnector.Origin.DistanceTo(resultCon.Origin);
+
+            if (connectors.Count > 1)
+            {
+                for (int i = 1; i < connectors.Count; i++)
+                {
+                    double curDistance = baseConnector.Origin.DistanceTo(connectors[i].Origin);
+                    if (curDistance < distance)
+                    {
+                        distance = curDistance;
+                        resultCon = connectors[i];
+                    }
+                }
+            }
+
+            return resultCon;
         }
     }
 }
