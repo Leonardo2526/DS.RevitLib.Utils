@@ -54,7 +54,18 @@ namespace DS.RevitLib.Utils
             return line;
         }
 
-       
+
+        public static XYZ GetClosestToLine(Line line, XYZ point1, XYZ point2)
+        {
+            double length1 = line.Distance(point1);
+            double length2 = line.Distance(point2);
+            if (length1 > length2)
+            {
+                return point2;
+            }
+
+            return point1;
+        }
 
     }
 }
