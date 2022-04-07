@@ -132,13 +132,24 @@ namespace DS.RevitLib.Utils.MEP.Creator
         public static Element SplitElement(Document Doc, Element element, XYZ splitPoint)
         {
             Element newElement = null;
+            var elementTypeName = element.GetType().Name;
+
             using (Transaction transNew = new Transaction(Doc, "SplitElement"))
             {
                 try
                 {
                     transNew.Start();
-                    ElementId newPipeId = PlumbingUtils.BreakCurve(Doc, element.Id, splitPoint);
-                    newElement = Doc.GetElement(newPipeId);
+
+                    ElementId newCurveId;
+                    if (elementTypeName == "Pipe")
+                    {
+                        newCurveId = PlumbingUtils.BreakCurve(Doc, element.Id, splitPoint);
+                    }
+                    else
+                    {
+                        newCurveId = MechanicalUtils.BreakCurve(Doc, element.Id, splitPoint);
+                    }
+                    newElement = Doc.GetElement(newCurveId);
                 }
 
                 catch (Exception e)

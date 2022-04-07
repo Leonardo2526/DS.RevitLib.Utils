@@ -84,5 +84,22 @@ namespace DS.RevitLib.Utils.Extensions
 
             return vectorNorm.GetNotZeroCoordinate();
         }
+
+        /// <summary>
+        /// Check if point is on plane.
+        /// </summary>
+        /// <param name="point"></param>
+        /// <returns>Return true if it's. Return false if it isn't.</returns>
+        public static bool IsPointOntoPlane(this XYZ point, Plane plane)
+        {
+            XYZ proj = plane.ProjectOnto(point);
+
+            if (proj.IsAlmostEqualTo(point))
+            {
+                return true;
+            }
+
+            return false;
+        }
     }
 }

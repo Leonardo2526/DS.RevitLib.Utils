@@ -39,5 +39,23 @@ namespace DS.RevitLib.Utils.MEP
 
             return resultArray.get_Item(0).XYZPoint;
         }
+
+
+        public static XYZ GetDirection(MEPCurve mEPCurve)
+        {
+            var locCurve = mEPCurve.Location as LocationCurve;
+            var line = locCurve.Curve as Line;
+
+            return line.Direction;
+        }
+
+        public static XYZ GetVector(MEPCurve mEPCurve)
+        {
+            var locCurve = mEPCurve.Location as LocationCurve;
+            var line = locCurve.Curve as Line;
+            var vector = line.GetEndPoint(1) - line.GetEndPoint(0);
+
+            return vector;
+        }
     }
 }
