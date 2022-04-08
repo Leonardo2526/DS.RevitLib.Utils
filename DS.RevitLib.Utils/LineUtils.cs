@@ -1,6 +1,8 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace DS.RevitLib.Utils
 {
@@ -65,6 +67,32 @@ namespace DS.RevitLib.Utils
             }
 
             return point1;
+        }
+
+        /// <summary>
+        /// Select line from the list which has minimum length;
+        /// </summary>
+        /// <param name="lines"></param>
+        /// <returns>Return shortest line.</returns>
+        public static Line SelectShortest(List<Line> lines)
+        {
+            Line line = lines.FirstOrDefault();
+            double distance = line.Length;
+
+            if (lines.Count > 1)
+            {
+                for (int i = 1; i < lines.Count; i++)
+                {
+                    double curDistance = lines[i].Length;
+                    if (curDistance < distance)
+                    {
+                        distance = curDistance;
+                        line = lines[i];
+                    }
+                }
+            }
+
+            return line;
         }
 
     }
