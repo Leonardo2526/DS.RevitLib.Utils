@@ -36,8 +36,14 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="DS.MainUtils">
+      <HintPath>..\..\DS.CommonLib.Utils\DS.MainUtils\bin\Release\DS.MainUtils.dll</HintPath>
+    </Reference>
     <Reference Include="iUtils">
       <HintPath>..\iUtils\bin\Release\iUtils.dll</HintPath>
+    </Reference>
+    <Reference Include="Ivanov.RevitLib.Utils">
+      <HintPath>..\..\VAR.RevitLib.Utils\Ivanov.RevitLib.Utils\bin\Release\Ivanov.RevitLib.Utils.dll</HintPath>
     </Reference>
     <Reference Include="RevitAPI">
       <HintPath>C:\Program Files\Autodesk\Revit 2020\RevitAPI.dll</HintPath>
@@ -61,19 +67,24 @@
   <ItemGroup>
     <Compile Include="BoundingBoxUtils.cs" />
     <Compile Include="Element\ElementFilterUtils.cs" />
+    <Compile Include="Extensions\XYZExtension.cs" />
+    <Compile Include="PointUtils.cs" />
     <Compile Include="Extensions\CategoryExtension.cs" />
     <Compile Include="GPExtractor\GPCreator.cs" />
     <Compile Include="GPExtractor\GPExtractor.cs" />
     <Compile Include="Element\IElement.cs" />
     <Compile Include="GPExtractor\VisiblePointsCreator.cs" />
+    <Compile Include="MEP\Creator\MEPCurveCreator.cs" />
+    <Compile Include="MEP\Creator\FamInstCreator.cs" />
+    <Compile Include="MEP\MEPCurveParameter.cs" />
+    <Compile Include="MEP\Insulation.cs" />
     <Compile Include="MEP\ConnectorUtils.cs" />
     <Compile Include="Element\ElementEraser.cs" />
     <Compile Include="Element\ElementUtils.cs" />
     <Compile Include="LineUtils.cs" />
-    <Compile Include="MEP\MEPConnector.cs" />
     <Compile Include="MEP\MEPCurveUtils.cs" />
-    <Compile Include="MEP\PipeSystemCreator.cs" />
-    <Compile Include="MEP\PypeSystem.cs" />
+    <Compile Include="MEP\MEPElementUtils.cs" />
+    <Compile Include="MEP\Creator\MEPSystemCreator.cs" />
     <Compile Include="Solid\SolidByCollector.cs" />
     <Compile Include="PickedElement.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

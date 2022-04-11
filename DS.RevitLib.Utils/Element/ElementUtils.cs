@@ -1,6 +1,9 @@
 ﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.Plumbing;
+using Autodesk.Revit.UI;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace DS.RevitLib.Utils
 {
@@ -141,5 +144,113 @@ namespace DS.RevitLib.Utils
             }
             return false;
         }
+
+        /// <summary>
+        /// Check if checkingCategory coincidence with list of BuiltInCategories
+        /// </summary>
+        /// <param name="checkingCategory"></param>
+        /// <param name="coincidenceCategories"></param>
+        /// <returns></returns>
+        public static bool CheckCategory(BuiltInCategory checkingCategory, List<BuiltInCategory> coincidenceCategories)
+        {
+            foreach (var item in coincidenceCategories)
+            {
+                if (checkingCategory.Equals(item))
+                {
+                    return true;
+                }
+
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Select element from the list whose location point is closest to base element point;
+        /// </summary>
+        /// <param name="baseElement"></param>
+        /// <param name="elements"></param>
+        /// <returns>Return closest element. If one of the elements is not valid return another one valid by default.</returns>
+        public static Element SelectClosestToElement(Element baseElement, List<Element> elements)
+        {
+            XYZ basePoint = GetLocationPoint(baseElement);
+
+            return SelectClosestToPoint(basePoint, elements);
+        }
+
+        /// <summary>
+        /// Select element from the list whose location point is closest to base point;
+        /// </summary>
+        /// <param name="baseElement"></param>
+        /// <param name="elements"></param>
+        /// <returns>Return closest element. If one of the elements is not valid return another one valid by default.</returns>
+        public static Element SelectClosestToPoint(XYZ basePoint, List<Element> elements)
+        {
+            Element closestElement = elements.FirstOrDefault();
+
+            foreach (var item in elements)
+            {
+                if (!item.IsValidObject)
+                {
+                    return elements.Where(x => x.IsValidObject).FirstOrDefault();
+                }
+            }
+
+            XYZ point = GetLocationPoint(closestElement);
+
+            double distance = basePoint.DistanceTo(point);
+
+            if (elements.Count > 1)
+            {
+                for (int i = 1; i < elements.Count; i++)
+                {
+                    point = GetLocationPoint(elements[i]);
+
+                    double curDistance = basePoint.DistanceTo(point);
+                    if (curDistance < distance)
+                    {
+                        distance = curDistance;
+                        closestElement = elements[i];
+                    }
+                }
+            }
+
+            return closestElement;
+        }
+
+        /// <summary>
+        /// Get part type of family instance;
+        /// </summary>
+        /// <param name="familyInstance"></param>
+        /// <returns>Return part type of family instance</returns>
+        public static PartType GetPartType(FamilyInstance familyInstance)
+        {
+            Parameter partTypeParam = familyInstance.Symbol.Family.get_Parameter(BuiltInParameter.FAMILY_CONTENT_PART_TYPE);
+            return (PartType)partTypeParam.AsInteger();
+        }
+
+        public static void DeleteElement(Document Doc, Element element)
+        {
+            using (Transaction transNew = new Transaction(Doc, "DeleteElement"))
+            {
+                try
+                {
+                    transNew.Start();
+                    Doc.Delete(element.Id);
+                }
+
+                catch (Exception e)
+                {
+                    transNew.RollBack();
+                    TaskDialog.Show("Revit", e.ToString());
+                }
+                if (transNew.HasStarted())
+                {
+                    transNew.Commit();
+                }
+            }
+
+        }
+
+
     }
 }
