@@ -95,7 +95,7 @@ namespace DS.RevitLib.Utils.Extensions
             XYZ proj = plane.ProjectOnto(point);
             XYZ vector = point - proj;
 
-            if (vector.IsZeroLength())
+            if (vector.RoundVector(0.001).IsZeroLength())
             {
                 return true;
             }
