@@ -93,13 +93,29 @@ namespace DS.RevitLib.Utils.Extensions
         public static bool IsPointOntoPlane(this XYZ point, Plane plane)
         {
             XYZ proj = plane.ProjectOnto(point);
+            XYZ vector = point - proj;
 
-            if (proj.IsAlmostEqualTo(point))
+            if (vector.IsZeroLength())
             {
                 return true;
             }
 
             return false;
+        }
+
+        public static XYZ RoundVector(this XYZ vector, double value = 1e-12)
+        {
+            double x = vector.X;
+            double y = vector.Y;
+            double z = vector.Z;
+
+            if (Math.Abs(x) < value)
+                x = 0;
+            if (Math.Abs(y) < value)
+                y = 0;
+            if (Math.Abs(z) < value)
+                z = 0;
+            return new XYZ(x, y, z);
         }
     }
 }
