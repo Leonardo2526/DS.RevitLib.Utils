@@ -63,6 +63,20 @@ namespace DS.RevitLib.Utils.MEP
             return direction;
         }
 
+        public static XYZ GetCenterPoint(Element element)
+        {
+            List<Connector> connectors = ConnectorUtils.GetConnectors(element);
+
+            if (connectors.Count == 2)
+            {
+                return GetElbowCenterPoint(element as FamilyInstance);
+            }
+            else
+            {
+                return ElementUtils.GetLocationPoint(element);
+            }
+        }
+
 
     }
 }

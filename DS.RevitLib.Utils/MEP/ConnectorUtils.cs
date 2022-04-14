@@ -334,6 +334,33 @@ namespace DS.RevitLib.Utils.MEP
             return resultCon;
         }
 
+        /// <summary>
+        /// Select connector from the list which is closest to basePoint;
+        /// </summary>
+        /// <param name="basePoint"></param>
+        /// <param name="connectors"></param>
+        /// <returns>Return closest connector.</returns>
+        public static Connector GetClosest(XYZ basePoint, List<Connector> connectors)
+        {
+            Connector resultCon = connectors.FirstOrDefault();
+            double distance = basePoint.DistanceTo(resultCon.Origin);
+
+            if (connectors.Count > 1)
+            {
+                for (int i = 1; i < connectors.Count; i++)
+                {
+                    double curDistance = basePoint.DistanceTo(connectors[i].Origin);
+                    if (curDistance < distance)
+                    {
+                        distance = curDistance;
+                        resultCon = connectors[i];
+                    }
+                }
+            }
+
+            return resultCon;
+        }
+
         public static void ConnectConnectors(Document Doc, Connector c1, Connector c2)
         {
             if (!c1.IsConnectedTo(c2))

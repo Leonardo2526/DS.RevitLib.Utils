@@ -103,7 +103,7 @@ namespace DS.RevitLib.Utils.Extensions
             return false;
         }
 
-        public static XYZ RoundVector(this XYZ vector, double value = 1e-12)
+        public static XYZ RoundVector(this XYZ vector, double value = 1e-3)
         {
             double x = vector.X;
             double y = vector.Y;
