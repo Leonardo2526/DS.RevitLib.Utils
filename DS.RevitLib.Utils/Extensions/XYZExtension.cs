@@ -60,8 +60,8 @@ namespace DS.RevitLib.Utils.Extensions
             double distBase_Start = basePoint.DistanceTo(startPoint);
             double distBase_End = basePoint.DistanceTo(endPoint);
 
-            XYZ vectorBase1 = (basePoint - startPoint).AbsXYZ();
-            XYZ vectorBase2 = (basePoint - endPoint).AbsXYZ();
+            XYZ vectorBase1 = (basePoint - startPoint).AbsXYZ().RoundVector();
+            XYZ vectorBase2 = (basePoint - endPoint).AbsXYZ().RoundVector();
 
             double angleRad = vectorBase1.AngleTo(vectorBase2);
             double angleDeg = angleRad * 180 / Math.PI;
@@ -76,9 +76,10 @@ namespace DS.RevitLib.Utils.Extensions
 
         private static int GetNormCoordinate(XYZ p1, XYZ p2, double angleRad)
         {
-            XYZ vector = p1 - p2;
+            XYZ vector = (p1 - p2).RoundVector();
 
-            vector = new XYZ(vector.X * Math.Sin(angleRad), vector.X * Math.Cos(angleRad), vector.Z);
+            vector = new XYZ(vector.X * Math.Cos(angleRad), vector.Y * Math.Cos(angleRad), vector.Z);
+            //vector = new XYZ(vector.X * Math.Sin(angleRad), vector.Y * Math.Cos(angleRad), vector.Z);
 
             XYZ vectorNorm = vector.Normalize();
 
