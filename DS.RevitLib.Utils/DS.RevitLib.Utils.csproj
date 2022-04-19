@@ -66,8 +66,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BoundingBoxUtils.cs" />
+    <Compile Include="Collision.cs" />
     <Compile Include="Element\ElementFilterUtils.cs" />
+    <Compile Include="Extensions\ElementExtension.cs" />
     <Compile Include="Extensions\XYZExtension.cs" />
+    <Compile Include="MEP\Neighbours\INeighbourSearch.cs" />
+    <Compile Include="MEP\Neighbours\Neighbour.cs" />
+    <Compile Include="MEP\Neighbours\SearchWithCollision.cs" />
+    <Compile Include="MEP\Neighbours\Search.cs" />
     <Compile Include="PointUtils.cs" />
     <Compile Include="Extensions\CategoryExtension.cs" />
     <Compile Include="GPExtractor\GPCreator.cs" />
@@ -85,10 +91,11 @@
     <Compile Include="MEP\MEPCurveUtils.cs" />
     <Compile Include="MEP\MEPElementUtils.cs" />
     <Compile Include="MEP\Creator\MEPSystemCreator.cs" />
-    <Compile Include="Solid\SolidByCollector.cs" />
+    <Compile Include="Solids\SolidByCollector.cs" />
     <Compile Include="PickedElement.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Solid\SolidExtractor.cs" />
+    <Compile Include="Solids\SolidExtractor.cs" />
+    <Compile Include="Solids\SolidUtils.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

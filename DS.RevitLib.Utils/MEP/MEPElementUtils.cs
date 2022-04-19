@@ -77,6 +77,21 @@ namespace DS.RevitLib.Utils.MEP
             }
         }
 
+        /// <summary>
+        /// Check connected elements for type
+        /// </summary>
+        /// <param name="element"></param>
+        /// <returns>Return true if element is not System or Insulation type</returns>
+        public static bool CheckMEPElement(Element element)
+        {
+            Type type = element.GetType();
 
+            if (type.Name.Contains("System") | type.Name.Contains("Insulation"))
+            {
+                return false;
+            }
+
+            return true;
+        }
     }
 }

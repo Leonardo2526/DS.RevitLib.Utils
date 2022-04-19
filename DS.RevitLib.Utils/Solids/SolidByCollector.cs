@@ -1,7 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using System.Collections.Generic;
 
-namespace DS.RevitLib.Utils
+namespace DS.RevitLib.Utils.Solids
 {
     public class SolidByCollector
     {
