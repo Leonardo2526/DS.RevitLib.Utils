@@ -63,6 +63,35 @@ namespace DS.RevitLib.Utils.MEP
             return direction;
         }
 
+        public static XYZ GetCenterPoint(Element element)
+        {
+            List<Connector> connectors = ConnectorUtils.GetConnectors(element);
 
+            if (connectors.Count == 2)
+            {
+                return GetElbowCenterPoint(element as FamilyInstance);
+            }
+            else
+            {
+                return ElementUtils.GetLocationPoint(element);
+            }
+        }
+
+        /// <summary>
+        /// Check connected elements for type
+        /// </summary>
+        /// <param name="element"></param>
+        /// <returns>Return true if element is not System or Insulation type</returns>
+        public static bool CheckMEPElement(Element element)
+        {
+            Type type = element.GetType();
+
+            if (type.Name.Contains("System") | type.Name.Contains("Insulation"))
+            {
+                return false;
+            }
+
+            return true;
+        }
     }
 }

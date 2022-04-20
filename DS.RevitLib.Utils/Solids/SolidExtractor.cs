@@ -1,7 +1,8 @@
 ﻿using Autodesk.Revit.DB;
 using System.Collections.Generic;
+using DS.RevitLib.Utils.Solids;
 
-namespace DS.RevitLib.Utils
+namespace DS.RevitLib.Utils.Solids
 {
     public static class SolidExtractor
     {
