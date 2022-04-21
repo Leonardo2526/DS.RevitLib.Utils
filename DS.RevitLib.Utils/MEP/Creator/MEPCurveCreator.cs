@@ -81,9 +81,10 @@ namespace DS.RevitLib.Utils.MEP.Creator
                     Insulation.Create(BaseMEPCurve, mEPCurve);
                     MEPCurveParameter.Copy(BaseMEPCurve, mEPCurve);
 
-                    if (!CheckPosition(mEPCurve))
+                 
+                    if (mEPCurve.IsRecangular() && !mEPCurve.IsEqualDirection(BaseMEPCurve))
                     {
-                        MEPCurveUtils.SwapSize(mEPCurve as Duct);
+                        MEPCurveUtils.SwapSize(mEPCurve);
                     }
                     
                 }
@@ -171,17 +172,6 @@ namespace DS.RevitLib.Utils.MEP.Creator
             }
 
             return newElement;
-        }
-
-        private bool CheckPosition(MEPCurve mEPCurve)
-        {
-            var direction = MEPCurveUtils.GetDirection(mEPCurve);
-
-            if (direction.Z !=0)
-            {
-                return false;
-            }
-            return true;
         }
 
        

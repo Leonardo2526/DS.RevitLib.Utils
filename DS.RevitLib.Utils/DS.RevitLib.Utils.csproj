@@ -69,6 +69,7 @@
     <Compile Include="Collision.cs" />
     <Compile Include="Element\ElementFilterUtils.cs" />
     <Compile Include="Extensions\ElementExtension.cs" />
+    <Compile Include="Extensions\MEPCurveExtension.cs" />
     <Compile Include="Extensions\XYZExtension.cs" />
     <Compile Include="MEP\Creator\Builders\BuilderByPoints.cs" />
     <Compile Include="MEP\Creator\Builders\MEPSystemBuilder.cs" />
