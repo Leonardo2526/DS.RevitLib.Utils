@@ -1,10 +1,5 @@
 ﻿using Autodesk.Revit.DB;
 using Ivanov.RevitLib.Utils;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.MEP
 {
@@ -29,6 +24,12 @@ namespace DS.RevitLib.Utils.MEP
 
             line1 = line1.IncreaseLength(10);
             line2 = line2.IncreaseLength(10);
+
+            _ = line1.GetEndPoint(0);
+            _ = line1.GetEndPoint(1);
+            _ = line2.GetEndPoint(0);
+            _ = line2.GetEndPoint(1);
+
 
             line1.Intersect(line2, out IntersectionResultArray resultArray);
 
@@ -56,6 +57,26 @@ namespace DS.RevitLib.Utils.MEP
             var vector = line.GetEndPoint(1) - line.GetEndPoint(0);
 
             return vector;
+        }
+
+
+        /// <summary>
+        /// Swap MEPCurve's width and height.
+        /// </summary>
+        /// <param name="mEPCurve"></param>
+        /// <returns>Return MEPCurve with swaped parameters.</returns>
+        public static MEPCurve SwapSize(MEPCurve mEPCurve)
+        {
+            double width = mEPCurve.Width;
+            double height = mEPCurve.Height;
+
+            Parameter widthParam = mEPCurve.get_Parameter(BuiltInParameter.RBS_CURVE_WIDTH_PARAM);
+            Parameter heightParam = mEPCurve.get_Parameter(BuiltInParameter.RBS_CURVE_HEIGHT_PARAM);
+
+            widthParam.Set(height);
+            heightParam.Set(width);
+
+            return mEPCurve;
         }
     }
 }

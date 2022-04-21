@@ -69,7 +69,12 @@
     <Compile Include="Collision.cs" />
     <Compile Include="Element\ElementFilterUtils.cs" />
     <Compile Include="Extensions\ElementExtension.cs" />
+    <Compile Include="Extensions\MEPCurveExtension.cs" />
     <Compile Include="Extensions\XYZExtension.cs" />
+    <Compile Include="MEP\Creator\Builders\BuilderByPoints.cs" />
+    <Compile Include="MEP\Creator\Builders\MEPSystemBuilder.cs" />
+    <Compile Include="MEP\Creator\MEPCurvesModel.cs" />
+    <Compile Include="MEP\Creator\MEPSystemModel.cs" />
     <Compile Include="MEP\Neighbours\INeighbourSearch.cs" />
     <Compile Include="MEP\Neighbours\Neighbour.cs" />
     <Compile Include="MEP\Neighbours\SearchWithCollision.cs" />
@@ -90,7 +95,6 @@
     <Compile Include="LineUtils.cs" />
     <Compile Include="MEP\MEPCurveUtils.cs" />
     <Compile Include="MEP\MEPElementUtils.cs" />
-    <Compile Include="MEP\Creator\MEPSystemCreator.cs" />
     <Compile Include="Solids\SolidByCollector.cs" />
     <Compile Include="PickedElement.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

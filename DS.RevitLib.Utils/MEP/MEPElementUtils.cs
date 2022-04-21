@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using DS.RevitLib.Utils.Extensions;
+using Ivanov.RevitLib.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,19 +25,21 @@ namespace DS.RevitLib.Utils.MEP
                 return null;
             }
 
-            List<Element> elements = ConnectorUtils.GetConnectedElements(familyInstance);
+            List<Connector> connectors = ConnectorUtils.GetConnectors(familyInstance);
 
-            if (elements.Count !=2)
-            {
-                TaskDialog.Show("GetElbowCenterPoint", 
-                    $"Error occured! Current connected elements count is {elements.Count }.\n" +
-                    $"It must be 2 elements connected.");
-                return null;
-            }
+            XYZ c0 = connectors[0].CoordinateSystem.BasisZ;
+            Line line0 = Line.CreateBound(connectors[0].Origin + c0, connectors[0].Origin);
+            line0 = line0.IncreaseLength(10);
 
-            return MEPCurveUtils.GetIntersection(elements.FirstOrDefault() as MEPCurve, elements.Last() as MEPCurve);
+            XYZ c1 = connectors[1].CoordinateSystem.BasisZ;
+            Line line1 = Line.CreateBound(connectors[1].Origin + c1, connectors[1].Origin);
+            line1 = line1.IncreaseLength(10);
+
+            var res = line0.Intersect(line1, out IntersectionResultArray resultArray);
+            XYZ intersectionPoint = resultArray.get_Item(0).XYZPoint;
+
+            return intersectionPoint;
         }
-
 
         /// <summary>
         /// Get list of all directions of element's connectors
@@ -93,5 +96,6 @@ namespace DS.RevitLib.Utils.MEP
 
             return true;
         }
+
     }
 }
