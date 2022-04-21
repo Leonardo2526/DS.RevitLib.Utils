@@ -22,7 +22,7 @@ namespace DS.RevitLib.Utils.MEP
                 BuiltInParameter.RBS_DUCT_TOP_ELEVATION,
                 BuiltInParameter.RBS_DUCT_BOTTOM_ELEVATION,
             };
-
+           
             foreach (Parameter oldp in baseMEPCurve.Parameters)
             {
                 if (oldp.Definition is InternalDefinition id && exceptions.Contains(id.BuiltInParameter)) continue;

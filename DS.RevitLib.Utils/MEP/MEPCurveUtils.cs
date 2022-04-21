@@ -57,5 +57,25 @@ namespace DS.RevitLib.Utils.MEP
 
             return vector;
         }
+
+
+        /// <summary>
+        /// Swap MEPCurve's width and height.
+        /// </summary>
+        /// <param name="mEPCurve"></param>
+        /// <returns>Return MEPCurve with swaped parameters.</returns>
+        public static MEPCurve SwapSize(MEPCurve mEPCurve)
+        {
+            double width = mEPCurve.Width;
+            double height = mEPCurve.Height;
+
+            Parameter widthParam = mEPCurve.get_Parameter(BuiltInParameter.RBS_CURVE_WIDTH_PARAM);
+            Parameter heightParam = mEPCurve.get_Parameter(BuiltInParameter.RBS_CURVE_HEIGHT_PARAM);
+
+            widthParam.Set(height);
+            heightParam.Set(width);
+
+            return mEPCurve;
+        }
     }
 }

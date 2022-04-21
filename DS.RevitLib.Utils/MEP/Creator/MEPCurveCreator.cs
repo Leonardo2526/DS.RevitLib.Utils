@@ -2,6 +2,7 @@
 using Autodesk.Revit.DB.Mechanical;
 using Autodesk.Revit.DB.Plumbing;
 using Autodesk.Revit.UI;
+using DS.RevitLib.Utils.Extensions;
 using System;
 using System.Linq;
 
@@ -79,6 +80,12 @@ namespace DS.RevitLib.Utils.MEP.Creator
 
                     Insulation.Create(BaseMEPCurve, mEPCurve);
                     MEPCurveParameter.Copy(BaseMEPCurve, mEPCurve);
+
+                    if (!CheckPosition(mEPCurve))
+                    {
+                        MEPCurveUtils.SwapSize(mEPCurve as Duct);
+                    }
+                    
                 }
 
                 catch (Exception e)
@@ -165,5 +172,18 @@ namespace DS.RevitLib.Utils.MEP.Creator
 
             return newElement;
         }
+
+        private bool CheckPosition(MEPCurve mEPCurve)
+        {
+            var direction = MEPCurveUtils.GetDirection(mEPCurve);
+
+            if (direction.Z !=0)
+            {
+                return false;
+            }
+            return true;
+        }
+
+       
     }
 }
