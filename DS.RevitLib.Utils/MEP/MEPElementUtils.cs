@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using DS.RevitLib.Utils.Extensions;
+using Ivanov.RevitLib.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,11 +25,40 @@ namespace DS.RevitLib.Utils.MEP
                 return null;
             }
 
+            List<Connector> connectors = ConnectorUtils.GetConnectors(familyInstance);
+
+            XYZ c0 = connectors[0].CoordinateSystem.BasisZ;
+            Line line0 = Line.CreateBound(connectors[0].Origin + c0, connectors[0].Origin);
+            line0 = line0.IncreaseLength(10);
+
+            XYZ c1 = connectors[1].CoordinateSystem.BasisZ;
+            Line line1 = Line.CreateBound(connectors[1].Origin + c1, connectors[1].Origin);
+            line1 = line1.IncreaseLength(10);
+
+            var res = line0.Intersect(line1, out IntersectionResultArray resultArray);
+            XYZ intersectionPoint = resultArray.get_Item(0).XYZPoint;
+
+            return intersectionPoint;
+        }
+
+        public static XYZ GetElbowCenterPointOld(FamilyInstance familyInstance)
+        {
+            BuiltInCategory familyInstanceCategory = CategoryExtension.GetBuiltInCategory(familyInstance.Category);
+
+            List<BuiltInCategory> builtInCategories = new List<BuiltInCategory>
+            { BuiltInCategory.OST_PipeFitting, BuiltInCategory.OST_DuctFitting};
+
+            if (!ElementUtils.CheckCategory(familyInstanceCategory, builtInCategories))
+            {
+                TaskDialog.Show("GetElbowCenterPoint", "Error occured! Element is not fitting.");
+                return null;
+            }
+
             List<Element> elements = ConnectorUtils.GetConnectedElements(familyInstance);
 
-            if (elements.Count !=2)
+            if (elements.Count != 2)
             {
-                TaskDialog.Show("GetElbowCenterPoint", 
+                TaskDialog.Show("GetElbowCenterPoint",
                     $"Error occured! Current connected elements count is {elements.Count }.\n" +
                     $"It must be 2 elements connected.");
                 return null;

@@ -1,10 +1,5 @@
 ﻿using Autodesk.Revit.DB;
 using Ivanov.RevitLib.Utils;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.MEP
 {
@@ -29,6 +24,12 @@ namespace DS.RevitLib.Utils.MEP
 
             line1 = line1.IncreaseLength(10);
             line2 = line2.IncreaseLength(10);
+
+            _ = line1.GetEndPoint(0);
+            _ = line1.GetEndPoint(1);
+            _ = line2.GetEndPoint(0);
+            _ = line2.GetEndPoint(1);
+
 
             line1.Intersect(line2, out IntersectionResultArray resultArray);
 
