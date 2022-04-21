@@ -15,8 +15,22 @@ namespace DS.RevitLib.Utils.MEP.Creator
         public List<Element> MEPCurves { get; set; } = new List<Element>();
         public List<Element> AllElements { get; set; } = new List<Element>();
 
-        public Connector StartConnector { get; set; }
-        public Connector EndConnector { get; set; }
+        public Connector StartConnector
+        {
+            get
+            {
+                var cons1 = ConnectorUtils.GetFreeConnector(AllElements.First());
+                return cons1.FirstOrDefault();
+            }
+        }
+        public Connector EndConnector
+        {
+            get
+            {
+                var cons1 = ConnectorUtils.GetFreeConnector(AllElements.Last());
+                return cons1.FirstOrDefault();
+            }
+        }
 
         #endregion
     }

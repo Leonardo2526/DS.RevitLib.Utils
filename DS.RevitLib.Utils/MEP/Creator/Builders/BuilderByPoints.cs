@@ -30,8 +30,6 @@ namespace DS.RevitLib.Utils.MEP.Creator
                 MEPSystemModel.MEPCurves.Add(mEPCurve);
             }
 
-            GetConnectors();
-
             return new MEPCurvesModel(MEPSystemModel, Doc);
         }
     }

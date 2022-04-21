@@ -177,26 +177,20 @@ namespace DS.RevitLib.Utils.MEP
             return c1.Origin.DistanceTo(c2.Origin);
         }
 
-        public static (Connector freeConnector, Connector attachedConnector) GetConnectorsByAttach(Element element)
+        public static List<Connector> GetFreeConnector(Element element)
         {
-            Connector freeConnector = null;
-            Connector attachedConnector = null;
-
             List<Connector> connectors = GetConnectors(element);
+            var freeCons = new List<Connector>();
 
             foreach (var item in connectors)
             {
-                if (item.IsConnected)
+                if (!item.IsConnected)
                 {
-                    attachedConnector = item;
-                }
-                else
-                {
-                    freeConnector = item;
+                    freeCons.Add(item);
                 }
             }
 
-            return (freeConnector, attachedConnector);
+            return freeCons;
         }
 
         /// <summary>

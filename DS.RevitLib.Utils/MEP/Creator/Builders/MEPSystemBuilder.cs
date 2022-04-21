@@ -38,15 +38,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
         #region Methods
 
         abstract public MEPCurvesModel BuildMEPCurves();
-
-        public void GetConnectors()
-        {
-            (var free, var attach) = ConnectorUtils.GetConnectorsByAttach(MEPSystemModel.AllElements.First());
-            MEPSystemModel.StartConnector = free;
-
-            (free, attach) = ConnectorUtils.GetConnectorsByAttach(MEPSystemModel.AllElements.Last());
-            MEPSystemModel.EndConnector = free;
-        }
+     
 
         #endregion
 

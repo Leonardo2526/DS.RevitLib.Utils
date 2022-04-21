@@ -14,8 +14,6 @@ namespace DS.RevitLib.Utils.MEP.Creator
             Doc = doc;
             AllElements = mEPSystemModel.AllElements;
             MEPCurves = mEPSystemModel.MEPCurves;
-            StartConnector = mEPSystemModel.StartConnector;
-            EndConnector = mEPSystemModel.EndConnector;
         }
 
         protected readonly Document Doc;
