@@ -78,5 +78,19 @@ namespace DS.RevitLib.Utils.MEP
 
             return mEPCurve;
         }
+
+        /// <summary>
+        /// Get angle berween two MEPCurves in rads.
+        /// </summary>
+        /// <param name="mEPCurve1"></param>
+        /// <param name="mEPCurve2"></param>
+        /// <returns>Return angle berween two MEPCurves in rads.</returns>
+        public static double GetAngle(MEPCurve mEPCurve1, MEPCurve mEPCurve2)
+        {
+            XYZ vector1 = GetVector(mEPCurve1);
+            XYZ vector2 = GetVector(mEPCurve2);
+
+            return vector1.AngleTo(vector2);
+        }
     }
 }
