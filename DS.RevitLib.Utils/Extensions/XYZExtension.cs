@@ -57,34 +57,21 @@ namespace DS.RevitLib.Utils.Extensions
         /// <returns>Returns positive value if startPoint is between base point and endPoint. 
         /// Returns negative value if endPoint is between base point and startPoint</returns>
         public static double DistanceToByBase(this XYZ startPoint, XYZ basePoint, XYZ endPoint)
-        {
-            double distBase_Start = basePoint.DistanceTo(startPoint);
-            double distBase_End = basePoint.DistanceTo(endPoint);
+        {     
+            XYZ startVector = startPoint - basePoint;
+            XYZ endVector = endPoint - basePoint;
+            XYZ difVector = endVector - startVector;
 
-            XYZ vectorBase1 = (basePoint - startPoint).AbsXYZ().RoundVector();
-            XYZ vectorBase2 = (basePoint - endPoint).AbsXYZ().RoundVector();
-
-            double angleRad = vectorBase1.AngleTo(vectorBase2);
-            double angleDeg = angleRad * 180 / Math.PI;
-
-            int normCoordStart = GetNormCoordinate(startPoint, basePoint, angleRad);
-            int normCoordEnd = GetNormCoordinate(endPoint, basePoint, angleRad);
-
-            double distance = (distBase_End * normCoordEnd - distBase_Start * normCoordStart) * normCoordEnd;
-
-            return distance;
-        }
-
-        private static int GetNormCoordinate(XYZ p1, XYZ p2, double angleRad)
-        {
-            XYZ vector = (p1 - p2).RoundVector();
-
-            vector = new XYZ(vector.X * Math.Cos(angleRad), vector.Y * Math.Cos(angleRad), vector.Z);
-            //vector = new XYZ(vector.X * Math.Sin(angleRad), vector.Y * Math.Cos(angleRad), vector.Z);
-
-            XYZ vectorNorm = vector.Normalize();
-
-            return vectorNorm.GetNotZeroCoordinate();
+            XYZ difVectorNorm = difVector.RoundVector().Normalize();
+            XYZ endVectorNorm = endVector.RoundVector().Normalize();
+            if (difVectorNorm.IsAlmostEqualTo(endVectorNorm))
+            {
+                return difVector.GetLength();
+            }
+            else
+            {
+                return - difVector.GetLength();
+            }
         }
 
         /// <summary>
