@@ -62,8 +62,9 @@ namespace DS.RevitLib.Utils.Extensions
             XYZ endVector = endPoint - basePoint;
             XYZ difVector = endVector - startVector;
 
-            XYZ difVectorNorm = difVector.RoundVector().Normalize();
-            XYZ endVectorNorm = endVector.RoundVector().Normalize();
+            XYZ difVectorNorm = difVector.Normalize().RoundVector();
+            XYZ endVectorNorm = endVector.Normalize().RoundVector();
+
             if (difVectorNorm.IsAlmostEqualTo(endVectorNorm))
             {
                 return difVector.GetLength();
@@ -84,7 +85,7 @@ namespace DS.RevitLib.Utils.Extensions
             XYZ proj = plane.ProjectOnto(point);
             XYZ vector = point - proj;
 
-            if (vector.RoundVector(0.001).IsZeroLength())
+            if (vector.RoundVector().IsZeroLength())
             {
                 return true;
             }
@@ -92,18 +93,12 @@ namespace DS.RevitLib.Utils.Extensions
             return false;
         }
 
-        public static XYZ RoundVector(this XYZ vector, double value = 1e-3)
+        public static XYZ RoundVector(this XYZ vector, int value = 3)
         {
-            double x = vector.X;
-            double y = vector.Y;
-            double z = vector.Z;
+            double x = Math.Round(vector.X, value);
+            double y = Math.Round(vector.Y, value);
+            double z = Math.Round(vector.Z, value);
 
-            if (Math.Abs(x) < value)
-                x = 0;
-            if (Math.Abs(y) < value)
-                y = 0;
-            if (Math.Abs(z) < value)
-                z = 0;
             return new XYZ(x, y, z);
         }
        
