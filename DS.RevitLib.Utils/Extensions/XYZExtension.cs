@@ -62,8 +62,8 @@ namespace DS.RevitLib.Utils.Extensions
             XYZ endVector = endPoint - basePoint;
             XYZ difVector = endVector - startVector;
 
-            XYZ difVectorNorm = difVector.Normalize().RoundVector();
-            XYZ endVectorNorm = endVector.Normalize().RoundVector();
+            XYZ difVectorNorm = difVector.Normalize().RoundVector(0);
+            XYZ endVectorNorm = endVector.Normalize().RoundVector(0);
 
             if (difVectorNorm.IsAlmostEqualTo(endVectorNorm))
             {
