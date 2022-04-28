@@ -57,23 +57,24 @@ namespace DS.RevitLib.Utils.Extensions
         /// <returns>Returns positive value if startPoint is between base point and endPoint. 
         /// Returns negative value if endPoint is between base point and startPoint</returns>
         public static double DistanceToByBase(this XYZ startPoint, XYZ basePoint, XYZ endPoint)
-        {     
+        {
             XYZ startVector = startPoint - basePoint;
             XYZ endVector = endPoint - basePoint;
             XYZ difVector = endVector - startVector;
 
-            XYZ difVectorNorm = difVector.Normalize().RoundVector(0);
-            XYZ endVectorNorm = endVector.Normalize().RoundVector(0);
+            double angle = endVector.AngleTo(difVector);
+            double angleDeg = angle.RadToDeg();
 
-            if (difVectorNorm.IsAlmostEqualTo(endVectorNorm))
+            int prc = 15;
+            if (angleDeg.CompareTo(prc) < 0)
             {
                 return difVector.GetLength();
             }
             else
             {
-                return - difVector.GetLength();
+                return -difVector.GetLength();
             }
-        }
+        } 
 
         /// <summary>
         /// Check if point is on plane.
