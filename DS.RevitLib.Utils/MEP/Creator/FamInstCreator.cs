@@ -67,7 +67,8 @@ namespace DS.RevitLib.Utils.MEP.Creator
                 try
                 {
                     transNew.Start();
-                    if (con3 is null)                    {
+                    if (con3 is null)
+                    {
 
                         familyInstance = Doc.Create.NewElbowFitting(con1, con2);
                     }
@@ -81,6 +82,37 @@ namespace DS.RevitLib.Utils.MEP.Creator
                 {
                     transNew.RollBack();
                     TaskDialog.Show("Revit", e.ToString());
+                }
+                if (transNew.HasStarted())
+                {
+                    transNew.Commit();
+                }
+            }
+
+            return familyInstance;
+        }
+
+        /// <summary>
+        /// Create takeoff fitting
+        /// </summary>
+        /// <param name="con"></param>
+        /// <param name="mEPCurve"></param>
+        /// <returns></returns>
+        public FamilyInstance CreateTakeOffFitting(Connector con, MEPCurve mEPCurve)
+        {
+            FamilyInstance familyInstance = null;
+            using (Transaction transNew = new Transaction(Doc, "CreateTakeOff"))
+            {
+                try
+                {
+                    transNew.Start();
+                    familyInstance = Doc.Create.NewTakeoffFitting(con, mEPCurve);
+                }
+
+                catch (Exception e)
+                {
+                    //transNew.RollBack();
+                    //TaskDialog.Show("Revit", e.ToString());
                 }
                 if (transNew.HasStarted())
                 {

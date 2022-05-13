@@ -14,11 +14,11 @@ namespace DS.RevitLib.Utils
         /// </summary>
         /// <param name="familyInstance"></param>
         /// <returns>Return true if part type is tap.</returns>
-        public static bool IsTap(FamilyInstance familyInstance)
+        public static bool IsSpud(FamilyInstance familyInstance)
         {
             PartType partType = ElementUtils.GetPartType(familyInstance);
 
-            if (partType == PartType.TapPerpendicular)
+            if (partType == PartType.SpudPerpendicular)
             {
                 return true;
             }

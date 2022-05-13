@@ -67,6 +67,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BoundingBoxUtils.cs" />
+    <Compile Include="Element\ElementsMover.cs" />
     <Compile Include="Element\PartTypesChecker.cs" />
     <Compile Include="Collision.cs" />
     <Compile Include="Element\ElementFilterUtils.cs" />
