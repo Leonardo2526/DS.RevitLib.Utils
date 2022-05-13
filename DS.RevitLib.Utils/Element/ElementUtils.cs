@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using DS.RevitLib.Utils.Solids;
+using DS.RevitLib.Utils.MEP;
 
 namespace DS.RevitLib.Utils
 {
@@ -252,6 +253,27 @@ namespace DS.RevitLib.Utils
 
         }
 
+        public static bool DisconnectElements(Element element, Element elementToDisconnect)
+        {
+            List<Connector> connectors = ConnectorUtils.GetConnectors(element);
 
+            foreach (var con in connectors)
+            {
+                ConnectorSet conSet = con.AllRefs;
+                foreach (Connector refCon in conSet)
+                {
+                    if (refCon.Owner.Id == elementToDisconnect.Id && con.IsConnectedTo(refCon))
+                    {
+                        if (ConnectorUtils.DisconnectConnectors(con, refCon))
+                        {
+                            return true;
+                        }
+                        return false; ;
+                    }
+                }
+            }
+
+            return false;
+        }
     }
 }

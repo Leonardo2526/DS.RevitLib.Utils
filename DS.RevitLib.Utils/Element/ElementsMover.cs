@@ -10,7 +10,7 @@ namespace DS.RevitLib.Utils
     public static class ElementsMover
     {
 
-        public static bool MoveElement(Element element, XYZ vector)
+        public static Element MoveElement(Element element, XYZ vector)
         {
             Document Doc = element.Document;
 
@@ -23,7 +23,7 @@ namespace DS.RevitLib.Utils
                 }
 
                 catch (Exception e)
-                { return false; }
+                { return null; }
 
                 if (transNew.HasStarted())
                 {
@@ -31,7 +31,7 @@ namespace DS.RevitLib.Utils
                 }
             }
 
-            return true;
+            return element;
         }
     }
 }

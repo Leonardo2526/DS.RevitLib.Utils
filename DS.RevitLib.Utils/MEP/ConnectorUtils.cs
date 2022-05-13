@@ -33,7 +33,7 @@ namespace DS.RevitLib.Utils.MEP
                 }
             }
             return connectedElements;
-        }       
+        }
 
         /// <summary>
         /// Get all sysytem elements connected to current element. 
@@ -363,6 +363,52 @@ namespace DS.RevitLib.Utils.MEP
                 return null;
             }
             return connectedElements.First();
+        }      
+
+        public static bool DisconnectConnectors(Connector con1, Connector con2)
+        {
+            Document Doc = con1.Owner.Document;
+
+            using (Transaction transNew = new Transaction(Doc, "DisconnectConnectors"))
+            {
+                try
+                {
+                    transNew.Start();
+                    con1.DisconnectFrom(con2);
+                }
+
+                catch (Exception e)
+                { return false; }
+                if (transNew.HasStarted())
+                {
+                    transNew.Commit();
+                }
+            }
+
+            return true;
+        }
+
+        public static bool ConnectConnectors(Connector con1, Connector con2)
+        {
+            Document Doc = con1.Owner.Document;
+
+            using (Transaction transNew = new Transaction(Doc, "ConnectConnectors"))
+            {
+                try
+                {
+                    transNew.Start();
+                    con1.ConnectTo(con2);
+                }
+
+                catch (Exception e)
+                { return false; }
+                if (transNew.HasStarted())
+                {
+                    transNew.Commit();
+                }
+            }
+
+            return true;
         }
     }
 }
