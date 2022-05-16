@@ -5,28 +5,25 @@ using System.Collections.Generic;
 
 namespace DS.RevitLib.Utils.GPExtractor
 {
-    class GPExtractor
+    public static class GPExtractor
     {
+        public static List<XYZ> GetGeneralPoints(List<Solid> solids)
+        {           
+            var points = new List<XYZ>();
 
-        public Element element { get; set; }
-
-        public GPExtractor(Element elem)
-        {
-            element = elem;
-        }
-
-        public void GetGeneralPoints(out List<XYZ> points)
-        {
-            //Get element's solid
-            List<Solid> solids = ElementUtils.GetSolids(element);
-            points = new List<XYZ>();
-
-            Solid elementSolid = null;
             foreach (Solid solid in solids)
             {
-                elementSolid = solid;
+                points.AddRange(GetGeneralPoints(solid));
+            }
 
-                foreach (Face face in elementSolid.Faces)
+            return points;
+        }
+
+        public static List<XYZ> GetGeneralPoints(Solid solid)
+        {
+            var points = new List<XYZ>();
+
+                foreach (Face face in solid.Faces)
                 {
                     Mesh mesh = face.Triangulate();
 
@@ -43,12 +40,12 @@ namespace DS.RevitLib.Utils.GPExtractor
                     }
 
                 }
-            }    
+          
 
-
+            return points;
         }
 
-        bool CheckPoint(XYZ newPoint, List<XYZ> points)
+        static bool CheckPoint(XYZ newPoint, List<XYZ> points)
         {
             foreach (XYZ p in points)
             {

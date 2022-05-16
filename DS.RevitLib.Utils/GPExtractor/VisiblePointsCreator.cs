@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace DS.RevitLib.Utils.GPExtractor
 {
-    class VisiblePointsCreator
+    public class VisiblePointsCreator
     {
         public void Create(Document Doc, List<XYZ> points)
         {
@@ -52,7 +52,10 @@ namespace DS.RevitLib.Utils.GPExtractor
                     TaskDialog.Show("Revit", e.ToString());
                 }
 
-                transNew.Commit();
+                if (transNew.HasStarted())
+                {
+                    transNew.Commit();
+                }
             }
 
         }

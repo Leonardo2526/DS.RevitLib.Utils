@@ -28,9 +28,8 @@ namespace DS.RevitLib.Utils.GPExtractor
             PickedElement pickedElement = new PickedElement(Uidoc, Doc);
             Element element = pickedElement.GetElement();
 
-            GPExtractor generalPointExtractor = new GPExtractor(element);
-
-            generalPointExtractor.GetGeneralPoints(out List<XYZ> points);
+            List<Solid> solids = ElementUtils.GetSolids(element);
+            List<XYZ> points = GPExtractor.GetGeneralPoints(solids);
 
             VisiblePointsCreator linesCreator = new VisiblePointsCreator();
             linesCreator.Create(Doc, points);

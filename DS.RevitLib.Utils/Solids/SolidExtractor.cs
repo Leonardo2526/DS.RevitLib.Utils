@@ -4,7 +4,7 @@ using DS.RevitLib.Utils.Solids;
 
 namespace DS.RevitLib.Utils.Solids
 {
-    public static class SolidExtractor
+    internal static class SolidExtractor
     {
         public static List<Solid> GetSolids(Element element, XYZ moveVector = null)
         {
