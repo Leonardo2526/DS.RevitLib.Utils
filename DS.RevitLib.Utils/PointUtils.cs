@@ -36,5 +36,21 @@ namespace DS.RevitLib.Utils
 
             return point;
         }
+
+        /// <summary>
+        /// Check if point's projection to segment is between start and end poins.
+        /// </summary>
+        /// <param name="startPoint"></param>
+        /// <param name="endPoint"></param>
+        /// <param name="point"></param>
+        /// <returns>Return true if point's projection lies between points of segment.</returns>
+        public static bool IsPointProjInRange(XYZ startPoint, XYZ endPoint, XYZ point)
+        {
+            double dx = endPoint.X - startPoint.X;
+            double dy = endPoint.Y - startPoint.Y;
+            double dz = endPoint.Z - startPoint.Z;
+            double innerProduct = (point.X - startPoint.X) * dx + (point.Y - startPoint.Y) * dy + (point.Z - startPoint.Z) * dz;
+            return 0 <= innerProduct && innerProduct <= dx * dx + dy * dy + dz * dz;
+        }
     }
 }
