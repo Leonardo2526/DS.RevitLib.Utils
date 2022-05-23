@@ -102,7 +102,7 @@ namespace DS.RevitLib.Utils.MEP
         /// Get norm vectors of MEPCurve from it's faces.
         /// </summary>
         /// <param name="mEPCurve"></param>
-        /// <returns>Returns norm vectors of MEPCurve without it's negative/positive values.</returns>
+        /// <returns>Returns norm vectors of MEPCurve.</returns>
         public static List<XYZ> GetNormVectors(MEPCurve mEPCurve)
         {
             var vectors = new List<XYZ>();
@@ -113,10 +113,7 @@ namespace DS.RevitLib.Utils.MEP
                 foreach (Face face in faceArray)
                 {
                     XYZ vector = face.ComputeNormal(UV.Zero);
-                    if (!IsVectorContains(vector, vectors))
-                    {
-                        vectors.Add(vector);
-                    }
+                    vectors.Add(vector);
                 }
             }
 
@@ -125,13 +122,13 @@ namespace DS.RevitLib.Utils.MEP
 
         private static bool IsVectorContains(XYZ vector, List<XYZ> vectors)
         {
-            if(vectors.Count == 0)
+            if (vectors.Count == 0)
             {
                 return false;
             }
             foreach (var item in vectors)
             {
-                if(vector.IsAlmostEqualTo(item) || vector.Negate().IsAlmostEqualTo(item))
+                if (vector.IsAlmostEqualTo(item) || vector.Negate().IsAlmostEqualTo(item))
                 {
                     return true;
                 }
