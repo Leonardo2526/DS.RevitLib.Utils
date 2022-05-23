@@ -275,5 +275,32 @@ namespace DS.RevitLib.Utils
 
             return false;
         }
+
+
+        public static List<FaceArray> GetFaces(Element element)
+        {
+            var facesArray = new List<FaceArray>();
+
+            Options options = new Options();
+            options.DetailLevel = ViewDetailLevel.Fine;
+            GeometryElement geomElem = element.get_Geometry(options);
+
+            if (geomElem == null)
+                return null;
+
+            foreach (GeometryObject geomObj in geomElem)
+            {
+                if (geomObj is Solid)
+                {
+                    Solid solid = (Solid)geomObj;
+                    if (solid.Faces.Size > 0 && solid.Volume > 0.0)
+                    {
+                        facesArray.Add(solid.Faces);
+                    }
+                }
+            }
+
+            return facesArray;
+        }
     }
 }

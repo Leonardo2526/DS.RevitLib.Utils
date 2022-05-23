@@ -1,5 +1,9 @@
 ﻿using Autodesk.Revit.DB;
+using DS.RevitLib.Utils.Solids;
 using Ivanov.RevitLib.Utils;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace DS.RevitLib.Utils.MEP
 {
@@ -91,6 +95,46 @@ namespace DS.RevitLib.Utils.MEP
             XYZ vector2 = GetVector(mEPCurve2);
 
             return vector1.AngleTo(vector2);
+        }
+
+
+        /// <summary>
+        /// Get norm vectors of MEPCurve from it's faces.
+        /// </summary>
+        /// <param name="mEPCurve"></param>
+        /// <returns>Returns norm vectors of MEPCurve.</returns>
+        public static List<XYZ> GetNormVectors(MEPCurve mEPCurve)
+        {
+            var vectors = new List<XYZ>();
+            var faces = ElementUtils.GetFaces(mEPCurve);
+
+            foreach (var faceArray in faces)
+            {
+                foreach (Face face in faceArray)
+                {
+                    XYZ vector = face.ComputeNormal(UV.Zero);
+                    vectors.Add(vector);
+                }
+            }
+
+            return vectors;
+        }
+
+        private static bool IsVectorContains(XYZ vector, List<XYZ> vectors)
+        {
+            if (vectors.Count == 0)
+            {
+                return false;
+            }
+            foreach (var item in vectors)
+            {
+                if (vector.IsAlmostEqualTo(item) || vector.Negate().IsAlmostEqualTo(item))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }
