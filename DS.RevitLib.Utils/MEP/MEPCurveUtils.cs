@@ -3,6 +3,7 @@ using DS.RevitLib.Utils.Solids;
 using Ivanov.RevitLib.Utils;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace DS.RevitLib.Utils.MEP
 {
@@ -96,20 +97,26 @@ namespace DS.RevitLib.Utils.MEP
             return vector1.AngleTo(vector2);
         }
 
+
+        /// <summary>
+        /// Get norm vectors of MEPCurve from it's faces.
+        /// </summary>
+        /// <param name="mEPCurve"></param>
+        /// <returns>Returns norm vectors of MEPCurve without it's negative/positive values.</returns>
         public static List<XYZ> GetNormVectors(MEPCurve mEPCurve)
         {
             var vectors = new List<XYZ>();
-
             var faces = ElementUtils.GetFaces(mEPCurve);
 
-            IEnumerator ie = faces.GetEnumerator(); // получаем IEnumerator
-            while (ie.MoveNext())   // пока не будет возвращено false
+            foreach (var faceArray in faces)
             {
-                var face = (Face)ie.Current;     // берем элемент на текущей позиции
-                XYZ vector = face.ComputeNormal(UV.Zero);
-                if(!IsVectorContains(vector, vectors))
+                foreach (Face face in faceArray)
                 {
-                    vectors.Add(vector);
+                    XYZ vector = face.ComputeNormal(UV.Zero);
+                    if (!IsVectorContains(vector, vectors))
+                    {
+                        vectors.Add(vector);
+                    }
                 }
             }
 

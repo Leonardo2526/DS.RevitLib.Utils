@@ -52,5 +52,36 @@ namespace DS.RevitLib.Utils
             double innerProduct = (point.X - startPoint.X) * dx + (point.Y - startPoint.Y) * dy + (point.Z - startPoint.Z) * dz;
             return 0 <= innerProduct && innerProduct <= dx * dx + dy * dy + dz * dz;
         }
+
+        /// <summary>
+        /// Get min and max points whish distance to line by perpendicular if max and min.
+        /// </summary>
+        /// <param name="points"></param>
+        /// <param name="line"></param>
+        /// <returns>Return max and min points.</returns>
+        public static (XYZ minPoint, XYZ maxPoint) GetMinMaxPoints(List<XYZ> points, Line line)
+        {
+            double maxDist = line.Distance(points.First());
+            XYZ maxPoint = points.First();
+
+            double minDist = line.Distance(points.First());
+            XYZ minPoint = points.First();
+
+            foreach (var point in points)
+            {
+                if (line.Distance(point) > maxDist)
+                {
+                    maxDist = line.Distance(point);
+                    maxPoint = point;
+                }
+                else if (line.Distance(point) < minDist)
+                {
+                    minDist = line.Distance(point);
+                    minPoint = point;
+                }
+            }
+
+            return (minPoint, maxPoint);
+        }
     }
 }
