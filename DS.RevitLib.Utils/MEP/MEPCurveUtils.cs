@@ -119,22 +119,5 @@ namespace DS.RevitLib.Utils.MEP
 
             return vectors;
         }
-
-        private static bool IsVectorContains(XYZ vector, List<XYZ> vectors)
-        {
-            if (vectors.Count == 0)
-            {
-                return false;
-            }
-            foreach (var item in vectors)
-            {
-                if (vector.IsAlmostEqualTo(item) || vector.Negate().IsAlmostEqualTo(item))
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
     }
 }
