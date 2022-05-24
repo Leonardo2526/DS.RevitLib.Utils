@@ -2,6 +2,7 @@
 using DS.RevitLib.Utils.Extensions;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace DS.RevitLib.Utils.MEP
 {
@@ -55,17 +56,9 @@ namespace DS.RevitLib.Utils.MEP
                         break;
                 }
 
-                if (targetMEPCurve.IsRecangular() && IsWrongSize(baseMEPCurve, targetMEPCurve))
-                {
-                    MEPCurveUtils.SwapSize(targetMEPCurve);
-                }
             }
         }
 
 
-        private static bool IsWrongSize(MEPCurve baseMEPCurve, MEPCurve mEPCurve)
-        {
-            throw new NotImplementedException();
-        }
     }
 }
