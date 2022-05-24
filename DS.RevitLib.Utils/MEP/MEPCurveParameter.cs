@@ -1,4 +1,6 @@
 ﻿using Autodesk.Revit.DB;
+using DS.RevitLib.Utils.Extensions;
+using System;
 using System.Collections.Generic;
 
 namespace DS.RevitLib.Utils.MEP
@@ -52,7 +54,18 @@ namespace DS.RevitLib.Utils.MEP
                     default:
                         break;
                 }
+
+                if (targetMEPCurve.IsRecangular() && IsWrongSize(baseMEPCurve, targetMEPCurve))
+                {
+                    MEPCurveUtils.SwapSize(targetMEPCurve);
+                }
             }
+        }
+
+
+        private static bool IsWrongSize(MEPCurve baseMEPCurve, MEPCurve mEPCurve)
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -18,14 +18,15 @@ namespace DS.RevitLib.Utils.MEP.Creator
 
         public override MEPCurvesModel BuildMEPCurves()
         {
-            MEPCurveCreator mEPCurveCreator = new MEPCurveCreator(Doc, BaseMEPCurve);
-
+            MEPCurveCreator mEPCurveCreator = new MEPCurveCreator(Doc);
+            MEPCurve baseMEPCurve = BaseMEPCurve;
             for (int i = 0; i < _Points.Count - 1; i++)
             {
                 XYZ p1 = _Points[i];
                 XYZ p2 = _Points[i + 1];
 
-                MEPCurve mEPCurve = mEPCurveCreator.CreateMEPCurveByPoints(p1, p2);
+                MEPCurve mEPCurve = mEPCurveCreator.CreateMEPCurveByPoints(p1, p2, baseMEPCurve);
+                baseMEPCurve = mEPCurve;
                 MEPSystemModel.AllElements.Add(mEPCurve);
                 MEPSystemModel.MEPCurves.Add(mEPCurve);
             }

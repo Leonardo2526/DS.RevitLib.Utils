@@ -11,12 +11,10 @@ namespace DS.RevitLib.Utils.MEP.Creator
     public class MEPCurveCreator
     {
         private readonly Document Doc;
-        private readonly MEPCurve BaseMEPCurve;
 
-        public MEPCurveCreator(Document doc, MEPCurve baseMEPCurve)
+        public MEPCurveCreator(Document doc)
         {
             Doc = doc;
-            BaseMEPCurve = baseMEPCurve;
         }
 
 
@@ -61,7 +59,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
         /// <param name="p1"></param>
         /// <param name="p2"></param>
         /// <returns></returns>
-        public MEPCurve CreateMEPCurveByPoints(XYZ p1, XYZ p2)
+        public MEPCurve CreateMEPCurveByPoints(XYZ p1, XYZ p2, MEPCurve baseMEPCurve)
         {
             MEPCurve mEPCurve = null;
             using (Transaction transNew = new Transaction(Doc, "CreateMEPCurveByPoints"))
@@ -78,15 +76,8 @@ namespace DS.RevitLib.Utils.MEP.Creator
                         mEPCurve = Duct.Create(Doc, MEPSystemTypeId, ElementTypeId, MEPLevelId, p1, p2);
                     }
 
-                    Insulation.Create(BaseMEPCurve, mEPCurve);
-                    MEPCurveParameter.Copy(BaseMEPCurve, mEPCurve);
-
-                 
-                    if (mEPCurve.IsRecangular() && !mEPCurve.IsEqualDirection(BaseMEPCurve))
-                    {
-                        MEPCurveUtils.SwapSize(mEPCurve);
-                    }
-                    
+                    Insulation.Create(baseMEPCurve, mEPCurve);
+                    MEPCurveParameter.Copy(baseMEPCurve, mEPCurve);
                 }
 
                 catch (Exception e)
@@ -98,6 +89,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
             }
             return mEPCurve;
         }
+
 
         /// <summary>
         /// Create pipe between 2 connectors
