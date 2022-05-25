@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.DB;
+using DS.RevitLib.Utils.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
 {
     public class BuilderByPoints : MEPSystemBuilder
     {
-        public BuilderByPoints(MEPCurve baseMEPCurve, List<XYZ> points) :base(baseMEPCurve)
+        public BuilderByPoints(MEPCurve baseMEPCurve, List<XYZ> points) : base(baseMEPCurve)
         {
             this._Points = points;
         }
@@ -26,10 +27,12 @@ namespace DS.RevitLib.Utils.MEP.Creator
                 XYZ p2 = _Points[i + 1];
 
                 MEPCurve mEPCurve = mEPCurveCreator.CreateMEPCurveByPoints(p1, p2, baseMEPCurve);
-                if(baseMEPCurve is not null)
+
+                if (CheckSwap(baseMEPCurve, mEPCurve))
                 {
-                    MEPCurveCreator.Swap(mEPCurve, baseMEPCurve);
+                    MEPCurveUtils.SwapSize(mEPCurve);
                 }
+
                 baseMEPCurve = mEPCurve;
 
                 MEPSystemModel.AllElements.Add(mEPCurve);
@@ -37,6 +40,27 @@ namespace DS.RevitLib.Utils.MEP.Creator
             }
 
             return new MEPCurvesModel(MEPSystemModel, Doc);
+        }
+
+        /// <summary>
+        /// Check if size of MEPCurve should be swapped.
+        /// </summary>
+        /// <param name="baseMEPCurve"></param>
+        /// <param name="mEPCurve"></param>
+        /// <returns>Return true if size of MEPCurve should be swapped.</returns>
+        private static bool CheckSwap(MEPCurve baseMEPCurve, MEPCurve mEPCurve)
+        {
+            if (baseMEPCurve is not null)
+            {
+                if (baseMEPCurve.IsRecangular() && 
+                    !MEPCurveUtils.IsDirectionEqual(baseMEPCurve, mEPCurve) && 
+                    !MEPCurveUtils.IsEqualSize(baseMEPCurve, mEPCurve))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

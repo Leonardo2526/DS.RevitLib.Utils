@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.DB;
+using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.Solids;
 using Ivanov.RevitLib.Utils;
 using System;
@@ -247,6 +248,96 @@ namespace DS.RevitLib.Utils.MEP
                 return true;
             }
             return false;
+        }
+
+
+        /// <summary>
+        /// Get MEPCurve's size by vector of MEPCurve's center point.
+        /// </summary>
+        /// <param name="mEPCurve"></param>
+        /// <param name="normVector"></param>
+        /// <returns>Return double length between MEPCurve's center point and intersection point between vector and MEPCurve's solid.</returns>
+        public static double GetSizeByVector(MEPCurve mEPCurve, XYZ normVector)
+        {
+            List<Solid> elemSolids = ElementUtils.GetSolids(mEPCurve);
+            Solid elemSolid = elemSolids.First();
+
+            XYZ centerPoint = ElementUtils.GetLocationPoint(mEPCurve);
+
+            var locCurve = mEPCurve.Location as LocationCurve;
+            Line mEPCurveline = locCurve.Curve as Line;
+            Line intersectLine = Line.CreateBound(centerPoint, centerPoint + normVector.Multiply(100));
+
+            SolidCurveIntersectionOptions intersectOptions = new SolidCurveIntersectionOptions();
+            SolidCurveIntersection intersection = elemSolid.IntersectWithCurve(intersectLine, intersectOptions);
+
+            XYZ intersectionPoint = null;
+            if (intersection.SegmentCount != 0)
+            {
+                XYZ p1 = intersection.GetCurveSegment(0).GetEndPoint(0);
+                XYZ p2 = intersection.GetCurveSegment(0).GetEndPoint(1);
+
+                (XYZ minPoint, XYZ maxPoint) = PointUtils.GetMinMaxPoints(new List<XYZ> { p1, p2 }, mEPCurveline);
+                intersectionPoint = maxPoint;
+            }
+
+            return 2 * mEPCurveline.Distance(intersectionPoint);
+        }
+
+        /// <summary>
+        /// Check if sizes of MEPCurves are equal in theirs plane.
+        /// </summary>
+        /// <param name="baseMEPCurve"></param>
+        /// <param name="mEPCurve"></param>
+        /// <returns>Return true if sized are equal. Return false if aren't.</returns>
+        public static bool IsEqualSize(MEPCurve baseMEPCurve, MEPCurve mEPCurve)
+        {
+            Plane plane = GetPlane(mEPCurve, baseMEPCurve);
+
+            if (plane is null)
+            {
+                return false;
+            }
+
+            double baseSize = GetSizeInPlane(baseMEPCurve, plane);
+            double size = GetSizeInPlane(mEPCurve, plane);
+
+            if (Math.Abs(baseSize - size) < 0.001)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private static List<XYZ> GetVectorsInPlane(Plane plane, List<XYZ> vectors)
+        {
+            List<XYZ> planeVectors = new List<XYZ>();
+            foreach (var vector in vectors)
+            {
+                XYZ cpVector = plane.Origin + vector;
+                if (cpVector.IsPointOntoPlane(plane))
+                {
+                    planeVectors.Add(vector);
+                }
+            }
+
+            return planeVectors;
+        }
+
+
+        /// <summary>
+        /// Get size of MEPCurve by one of it's norm vector whose position is in specific plane.
+        /// </summary>
+        /// <param name="mEPCurve"></param>
+        /// <param name="plane"></param>
+        /// <returns>Return size of MEPCurve.</returns>
+        private static double GetSizeInPlane(MEPCurve mEPCurve, Plane plane)
+        {
+            List<XYZ> normOrthoVectors = MEPCurveUtils.GetOrthoNormVectors(mEPCurve);
+            List<XYZ> vectorsInPlane = GetVectorsInPlane(plane, normOrthoVectors);
+
+            return GetSizeByVector(mEPCurve, vectorsInPlane.First());
         }
     }
 }
