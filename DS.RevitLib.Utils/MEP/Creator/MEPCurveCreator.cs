@@ -4,6 +4,7 @@ using Autodesk.Revit.DB.Plumbing;
 using Autodesk.Revit.UI;
 using DS.RevitLib.Utils.Extensions;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace DS.RevitLib.Utils.MEP.Creator
@@ -61,9 +62,15 @@ namespace DS.RevitLib.Utils.MEP.Creator
         /// <param name="p1"></param>
         /// <param name="p2"></param>
         /// <returns></returns>
-        public MEPCurve CreateMEPCurveByPoints(XYZ p1, XYZ p2)
+        public MEPCurve CreateMEPCurveByPoints(XYZ p1, XYZ p2, MEPCurve baseMEPCurve = null)
         {
             MEPCurve mEPCurve = null;
+
+            if(baseMEPCurve is null)
+            {
+                baseMEPCurve = BaseMEPCurve;
+            }
+
             using (Transaction transNew = new Transaction(Doc, "CreateMEPCurveByPoints"))
             {
                 try
@@ -78,23 +85,16 @@ namespace DS.RevitLib.Utils.MEP.Creator
                         mEPCurve = Duct.Create(Doc, MEPSystemTypeId, ElementTypeId, MEPLevelId, p1, p2);
                     }
 
-                    Insulation.Create(BaseMEPCurve, mEPCurve);
-                    MEPCurveParameter.Copy(BaseMEPCurve, mEPCurve);
-
-                 
-                    if (mEPCurve.IsRecangular() && !mEPCurve.IsEqualDirection(BaseMEPCurve))
-                    {
-                        MEPCurveUtils.SwapSize(mEPCurve);
-                    }
-                    
+                    Insulation.Create(baseMEPCurve, mEPCurve);
+                    MEPCurveParameter.Copy(baseMEPCurve, mEPCurve);
                 }
 
                 catch (Exception e)
+                { }
+                if (transNew.HasStarted())
                 {
-                    transNew.RollBack();
-                    TaskDialog.Show("Revit", e.ToString());
+                    transNew.Commit();
                 }
-                transNew.Commit();
             }
             return mEPCurve;
         }

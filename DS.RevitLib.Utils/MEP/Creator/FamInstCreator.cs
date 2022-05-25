@@ -42,11 +42,11 @@ namespace DS.RevitLib.Utils.MEP.Creator
                 }
 
                 catch (Exception e)
+                { }
+                if (transNew.HasStarted())
                 {
-                    transNew.RollBack();
-                    TaskDialog.Show("Revit", e.ToString());
+                    transNew.Commit();
                 }
-                transNew.Commit();
             }
             return familyInstance;
         }
