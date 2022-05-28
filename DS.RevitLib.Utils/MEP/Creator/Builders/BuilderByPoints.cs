@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using DS.MainUtils;
 using DS.RevitLib.Utils.Extensions;
+using Ivanov.RevitLib.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,10 +35,10 @@ namespace DS.RevitLib.Utils.MEP.Creator
                     Rotate(baseMEPCurve, mEPCurve);
                 }
 
-                //if (CheckSwap(baseMEPCurve, mEPCurve))
-                //{
-                //    MEPCurveUtils.SwapSize(mEPCurve);
-                //}
+                if (CheckSwap(baseMEPCurve, mEPCurve))
+                {
+                    MEPCurveUtils.SwapSize(mEPCurve);
+                }
 
                 baseMEPCurve = mEPCurve;
 
@@ -84,28 +85,38 @@ namespace DS.RevitLib.Utils.MEP.Creator
 
         private void Rotate(MEPCurve baseMEPCurve, MEPCurve mEPCurve)
         {
-            XYZ baseDir = MEPCurveUtils.GetDirection(baseMEPCurve);
-            XYZ dir = MEPCurveUtils.GetDirection(mEPCurve);
+            XYZ rotCenter = ElementUtils.GetLocationPoint(mEPCurve);
 
-            Plane plane = null;
-            if (baseDir.IsAlmostEqualTo(dir) || baseDir.Negate().IsAlmostEqualTo(dir))
-            {
-                plane = Plane.CreateByNormalAndOrigin(XYZ.BasisZ, ElementUtils.GetLocationPoint(mEPCurve));
-            }
-            else
-            {
-                plane = MEPCurveUtils.GetPlane(mEPCurve, baseMEPCurve);
-            }
+            //base axe for angle count
+            XYZ xAxe = MEPCurveUtils.GetDirection(baseMEPCurve);
+
+            //Rotation axe
+            XYZ zAxe = MEPCurveUtils.GetDirection(mEPCurve);
+
+            //positive rotation axe (counterclockwise)
+            XYZ yAxe = zAxe.CrossProduct(xAxe);
 
             List<XYZ> normOrthoVectors = MEPCurveUtils.GetOrthoNormVectors(mEPCurve);
-            List<double> angles = GetAngles(baseDir, normOrthoVectors);
+            List<double> angles = GetAngles(xAxe, normOrthoVectors);
+
+            XYZ vectorToRotateNorm = normOrthoVectors.First();
+          
+
+            //Plane plane = null;
+            //if (xAxe.IsAlmostEqualTo(zAxe) || xAxe.Negate().IsAlmostEqualTo(zAxe))
+            //{
+            //    plane = Plane.CreateByNormalAndOrigin(XYZ.BasisZ, ElementUtils.GetLocationPoint(mEPCurve));
+            //}
+            //else
+            //{
+            //    plane = MEPCurveUtils.GetPlane(mEPCurve, baseMEPCurve);
+            //}
 
 
-            XYZ normVector = normOrthoVectors.First();
-           
-            double angleRad = normVector.AngleTo(plane.Normal);
+            double angleRad = vectorToRotateNorm.AngleTo(xAxe);
             double angleDeg = angleRad.RadToDeg();
-            double rotAngle = 0;
+            double rotAngle;
+
             if (angleDeg <= 90)
             {
                 rotAngle = 90 - angleDeg;
@@ -115,13 +126,16 @@ namespace DS.RevitLib.Utils.MEP.Creator
                 rotAngle = angleDeg - 90;
             }
 
-            double prec = 1.0;           
-            if(Math.Abs(rotAngle - 0) < prec || Math.Abs(rotAngle - 180) < prec ||
+            double prec = 3.0;
+            if (Math.Abs(rotAngle - 0) < prec || Math.Abs(rotAngle - 180) < prec ||
                 Math.Abs(rotAngle - 90) < prec || Math.Abs(rotAngle - 270) < prec)
             {
                 return;
             }
-                mEPCurve = RotateMEPCurve(mEPCurve, rotAngle.DegToRad()); 
+
+            int rotDir = GetRotateDirection(xAxe, yAxe, vectorToRotateNorm, rotCenter);
+
+            mEPCurve = RotateMEPCurve(mEPCurve, rotAngle.DegToRad() * rotDir); 
         }
 
         private MEPCurve RotateMEPCurve(MEPCurve mEPCurve, double angleRad)
@@ -174,6 +188,38 @@ namespace DS.RevitLib.Utils.MEP.Creator
             }
 
             return false;
+        }
+
+        private int GetRotateDirection(XYZ xAxe, XYZ yAxe, XYZ vectorToRotateNorm, XYZ rotCenter)
+        {
+          XYZ A = rotCenter + vectorToRotateNorm;
+
+          Line xLine = Line.CreateBound(rotCenter, rotCenter + xAxe).IncreaseLength(100);
+          Line yLine = Line.CreateBound(rotCenter, rotCenter + yAxe).IncreaseLength(100);
+
+            XYZ Ax = xLine.Project(A).XYZPoint;
+            XYZ Ay = yLine.Project(A).XYZPoint;
+
+            XYZ AxVector = Ax - rotCenter;
+            XYZ AyVector = Ay - rotCenter;
+
+            int resDirx = CheckDirection(AxVector, xAxe);
+            int resDiry = CheckDirection(AyVector, yAxe);
+
+            return resDirx * resDiry;           
+        }
+
+        private int CheckDirection(XYZ AxVector, XYZ xAxe)
+        {
+            double angleRad = AxVector.AngleTo(xAxe);
+            double angleDeg = angleRad.RadToDeg();
+           
+            if (Math.Abs(angleDeg) > 3)
+            {
+                return -1;
+            }
+
+            return 1;
         }
     }
 }
