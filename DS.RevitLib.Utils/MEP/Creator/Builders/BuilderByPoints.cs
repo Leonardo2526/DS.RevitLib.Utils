@@ -115,27 +115,34 @@ namespace DS.RevitLib.Utils.MEP.Creator
 
             double angleRad = vectorToRotateNorm.AngleTo(xAxe);
             double angleDeg = angleRad.RadToDeg();
-            double rotAngle;
+            //double angleDeg;
 
-            if (angleDeg <= 90)
-            {
-                rotAngle = 90 - angleDeg;
-            }
-            else
-            {
-                rotAngle = angleDeg - 90;
-            }
+            //if (angleDeg <= 90)
+            //{
+            //    rotAngle = 90 - angleDeg;
+            //}
+            //else
+            //{
+            //    rotAngle = angleDeg - 90;
+            //}
 
             double prec = 3.0;
-            if (Math.Abs(rotAngle - 0) < prec || Math.Abs(rotAngle - 180) < prec ||
-                Math.Abs(rotAngle - 90) < prec || Math.Abs(rotAngle - 270) < prec)
+            if (Math.Abs(angleDeg - 0) < prec || Math.Abs(angleDeg - 180) < prec ||
+                Math.Abs(angleDeg - 90) < prec || Math.Abs(angleDeg - 270) < prec)
             {
                 return;
             }
-
-            int rotDir = GetRotateDirection(xAxe, yAxe, vectorToRotateNorm, rotCenter);
-
-            mEPCurve = RotateMEPCurve(mEPCurve, rotAngle.DegToRad() * rotDir); 
+            int rotDir;
+            //rotDir = GetRotateDirection(xAxe, yAxe, vectorToRotateNorm, rotCenter);
+            if (XYZUtils.Is3DOrientationEqualToOrigin(xAxe, vectorToRotateNorm, zAxe))
+            {
+                rotDir = -1;
+            }
+            else
+            {
+                rotDir = 1;
+            }
+            mEPCurve = RotateMEPCurve(mEPCurve, angleRad * rotDir); 
         }
 
         private MEPCurve RotateMEPCurve(MEPCurve mEPCurve, double angleRad)
