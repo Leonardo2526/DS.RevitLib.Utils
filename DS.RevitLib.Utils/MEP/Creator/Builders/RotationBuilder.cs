@@ -24,9 +24,10 @@ namespace DS.RevitLib.Utils.MEP.Creator.Builders
             this._BaseMEPCurve = baseMEPCurve;
             this._MEPCurve = mEPCurve;
 
-            this.AlignAxe = GetAlignmentVector(baseMEPCurve);
             this.BaseDir = MEPCurveUtils.GetDirection(baseMEPCurve);
             this.CurrentDir = MEPCurveUtils.GetDirection(mEPCurve);
+
+            this.AlignAxe = GetAlignmentVector(baseMEPCurve);
         }
 
         public MEPCurve Rotate()

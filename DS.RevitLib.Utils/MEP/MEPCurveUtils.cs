@@ -248,10 +248,12 @@ namespace DS.RevitLib.Utils.MEP
         /// <returns>Return true if MEPCurves are equal oriented.</returns>
         public static bool EqualOriented(MEPCurve baseMEPCurve, MEPCurve mEPCurve)
         {
+            XYZ baseDir = GetDirection(baseMEPCurve);
             XYZ dir = GetDirection(mEPCurve);
+
             List<XYZ> baseNorms = GetOrthoNormVectors(baseMEPCurve);           
 
-            XYZ measureVector = GetMesureVector(baseNorms, dir);
+            XYZ measureVector = GetMesureVector(baseNorms, dir, baseDir);
 
             double baseSize = GetSizeByVector(baseMEPCurve, measureVector);
             double size = GetSizeByVector(mEPCurve, measureVector);
@@ -270,11 +272,11 @@ namespace DS.RevitLib.Utils.MEP
         /// <param name="baseNorms"></param>
         /// <param name="dir"></param>
         /// <returns>Return vector which direction is not parallel to mEPCurve's direction.</returns>
-        private static XYZ GetMesureVector(List<XYZ> baseNorms, XYZ dir)
+        private static XYZ GetMesureVector(List<XYZ> baseNorms, XYZ dir, XYZ baseDir)
         {
             foreach (var norm in baseNorms)
             {
-                    if(!XYZUtils.Collinearity(dir, norm))
+                    if(!XYZUtils.Collinearity(dir, norm) && !XYZUtils.Collinearity(baseDir, norm))
                     {
                         return norm;
                     }              
