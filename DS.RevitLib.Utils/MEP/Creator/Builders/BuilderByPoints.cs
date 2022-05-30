@@ -50,7 +50,6 @@ namespace DS.RevitLib.Utils.MEP.Creator
         private void RectangularFixing(MEPCurve baseMEPCurve, MEPCurve mEPCurve)
         {
             if (baseMEPCurve is not null && baseMEPCurve.IsRecangular())
-            //if (baseMEPCurve is not null && baseMEPCurve.IsRecangular() && _ElbowAngle ==90)
                 {
                     RotationBuilder rotationBuilder = new RotationBuilder(baseMEPCurve, mEPCurve);
                     rotationBuilder.Rotate();
