@@ -1,5 +1,8 @@
 ﻿using Autodesk.Revit.DB;
+using DS.MainUtils;
 using DS.RevitLib.Utils.Extensions;
+using DS.RevitLib.Utils.MEP.Creator.Builders;
+using Ivanov.RevitLib.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,7 +23,8 @@ namespace DS.RevitLib.Utils.MEP.Creator
         public override MEPCurvesModel BuildMEPCurves()
         {
             MEPCurveCreator mEPCurveCreator = new MEPCurveCreator(Doc, BaseMEPCurve);
-            MEPCurve baseMEPCurve = null; ;
+            MEPCurve baseMEPCurve = BaseMEPCurve;
+
             for (int i = 0; i < _Points.Count - 1; i++)
             {
                 XYZ p1 = _Points[i];
@@ -28,10 +32,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
 
                 MEPCurve mEPCurve = mEPCurveCreator.CreateMEPCurveByPoints(p1, p2, baseMEPCurve);
 
-                if (CheckSwap(baseMEPCurve, mEPCurve))
-                {
-                    MEPCurveUtils.SwapSize(mEPCurve);
-                }
+                RectangularFixing(baseMEPCurve, mEPCurve);
 
                 baseMEPCurve = mEPCurve;
 
@@ -42,25 +43,22 @@ namespace DS.RevitLib.Utils.MEP.Creator
             return new MEPCurvesModel(MEPSystemModel, Doc);
         }
 
-        /// <summary>
-        /// Check if size of MEPCurve should be swapped.
-        /// </summary>
-        /// <param name="baseMEPCurve"></param>
-        /// <param name="mEPCurve"></param>
-        /// <returns>Return true if size of MEPCurve should be swapped.</returns>
-        private static bool CheckSwap(MEPCurve baseMEPCurve, MEPCurve mEPCurve)
+     
+
+        private void RectangularFixing(MEPCurve baseMEPCurve, MEPCurve mEPCurve)
         {
-            if (baseMEPCurve is not null)
+            if (baseMEPCurve is not null && baseMEPCurve.IsRecangular())
             {
-                if (baseMEPCurve.IsRecangular() && 
-                    !MEPCurveUtils.IsDirectionEqual(baseMEPCurve, mEPCurve) && 
-                    !MEPCurveUtils.IsEqualSize(baseMEPCurve, mEPCurve))
+                    RotationBuilder rotationBuilder = new RotationBuilder(baseMEPCurve, mEPCurve);
+                    rotationBuilder.Rotate();
+
+                //Check if size of MEPCurve should be swapped.
+                if (!MEPCurveUtils.EqualOriented(baseMEPCurve, mEPCurve))
                 {
-                    return true;
+                    MEPCurveCreator.SwapSize(mEPCurve);
                 }
             }
-
-            return false;
         }
+
     }
 }

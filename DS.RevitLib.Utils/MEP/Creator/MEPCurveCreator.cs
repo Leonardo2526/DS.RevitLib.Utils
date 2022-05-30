@@ -2,6 +2,7 @@
 using Autodesk.Revit.DB.Mechanical;
 using Autodesk.Revit.DB.Plumbing;
 using Autodesk.Revit.UI;
+using DS.MainUtils;
 using DS.RevitLib.Utils.Extensions;
 using System;
 using System.Collections.Generic;
@@ -46,10 +47,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
         {
             get
             {
-                return new FilteredElementCollector(Doc)
-                .OfClass(typeof(Level))
-                .Cast<Level>()
-                .FirstOrDefault().Id;
+                return BaseMEPCurve.ReferenceLevel.Id;
             }
         }
 
@@ -70,6 +68,9 @@ namespace DS.RevitLib.Utils.MEP.Creator
             {
                 baseMEPCurve = BaseMEPCurve;
             }
+            //var bcons = ConnectorUtils.GetConnectors(baseMEPCurve);
+            //Connector con = ConnectorUtils.GetClosest(p1, bcons);
+
 
             using (Transaction transNew = new Transaction(Doc, "CreateMEPCurveByPoints"))
             {
@@ -83,13 +84,14 @@ namespace DS.RevitLib.Utils.MEP.Creator
                     else
                     {
                         mEPCurve = Duct.Create(Doc, MEPSystemTypeId, ElementTypeId, MEPLevelId, p1, p2);
+                        //mEPCurve = Duct.Create(Doc, ElementTypeId, MEPLevelId, con, p2);
                     }
-
+               
                     Insulation.Create(baseMEPCurve, mEPCurve);
                     MEPCurveParameter.Copy(baseMEPCurve, mEPCurve);
                 }
-
                 catch (Exception e)
+
                 { }
                 if (transNew.HasStarted())
                 {
@@ -174,6 +176,70 @@ namespace DS.RevitLib.Utils.MEP.Creator
             return newElement;
         }
 
-       
+        /// <summary>
+        /// Rotate MEPCurve by angle in rads.
+        /// </summary>
+        /// <param name="mEPCurve"></param>
+        /// <param name="angle"></param>
+        /// <returns>Return rotated MEPCurve.</returns>
+        public static MEPCurve Rotate(MEPCurve mEPCurve, double angle)
+        {
+            using (Transaction transNew = new Transaction(mEPCurve.Document, "RotateMEPCurve"))
+            {
+                try
+                {
+                    transNew.Start();
+
+                    var locCurve = mEPCurve.Location as LocationCurve;
+                    var line = locCurve.Curve as Line;
+
+                    mEPCurve.Location.Rotate(line, angle);
+                }
+                catch (Exception e)
+
+                { }
+                if (transNew.HasStarted())
+                {
+                    transNew.Commit();
+                }
+            }
+
+            return mEPCurve;
+        }
+
+        /// <summary>
+        /// Swap MEPCurve's width and height.
+        /// </summary>
+        /// <param name="mEPCurve"></param>
+        /// <returns>Return MEPCurve with swaped parameters.</returns>
+        public static MEPCurve SwapSize(MEPCurve mEPCurve)
+        {
+            double width = mEPCurve.Width;
+            double height = mEPCurve.Height;
+
+            using (Transaction transNew = new Transaction(mEPCurve.Document, "CreateMEPCurveByPoints"))
+            {
+                try
+                {
+                    transNew.Start();
+
+                    Parameter widthParam = mEPCurve.get_Parameter(BuiltInParameter.RBS_CURVE_WIDTH_PARAM);
+                    Parameter heightParam = mEPCurve.get_Parameter(BuiltInParameter.RBS_CURVE_HEIGHT_PARAM);
+
+                    widthParam.Set(height);
+                    heightParam.Set(width);
+                }
+
+                catch (Exception e)
+                { }
+
+                if (transNew.HasStarted())
+                {
+                    transNew.Commit();
+                }
+            }
+            return mEPCurve;
+        }
+
     }
 }

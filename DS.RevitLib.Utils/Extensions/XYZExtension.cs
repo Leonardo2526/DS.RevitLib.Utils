@@ -102,6 +102,7 @@ namespace DS.RevitLib.Utils.Extensions
 
             return new XYZ(x, y, z);
         }
-       
+
+
     }
 }
