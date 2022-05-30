@@ -13,12 +13,14 @@ namespace DS.RevitLib.Utils.MEP.Creator
 {
     public class BuilderByPoints : MEPSystemBuilder
     {
-        public BuilderByPoints(MEPCurve baseMEPCurve, List<XYZ> points) : base(baseMEPCurve)
+        public BuilderByPoints(MEPCurve baseMEPCurve, List<XYZ> points, double elbowAngle) : base(baseMEPCurve)
         {
             this._Points = points;
+            this._ElbowAngle = elbowAngle;
         }
 
         private List<XYZ> _Points = new List<XYZ>();
+        private double _ElbowAngle;
 
         public override MEPCurvesModel BuildMEPCurves()
         {
@@ -47,7 +49,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
 
         private void RectangularFixing(MEPCurve baseMEPCurve, MEPCurve mEPCurve)
         {
-            if (baseMEPCurve is not null && baseMEPCurve.IsRecangular())
+            if (baseMEPCurve is not null && baseMEPCurve.IsRecangular() && _ElbowAngle ==90)
             {
                     RotationBuilder rotationBuilder = new RotationBuilder(baseMEPCurve, mEPCurve);
                     rotationBuilder.Rotate();

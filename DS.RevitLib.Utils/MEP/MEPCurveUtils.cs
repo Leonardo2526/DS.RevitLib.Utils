@@ -111,11 +111,10 @@ namespace DS.RevitLib.Utils.MEP
 
             foreach (var vector in vectors)
             {
-                if (dir.IsAlmostEqualTo(vector) || dir.Negate().IsAlmostEqualTo(vector))
+                if (!XYZUtils.Collinearity(vector, dir))
                 {
-                    continue;
-                }
                     orthoVectors.Add(vector);
+                }
             }
 
             return orthoVectors;
@@ -276,7 +275,7 @@ namespace DS.RevitLib.Utils.MEP
         {
             foreach (var norm in baseNorms)
             {
-                    if(!XYZUtils.Collinearity(dir, norm) && !XYZUtils.Collinearity(baseDir, norm))
+                    if(!XYZUtils.Collinearity(dir, norm))
                     {
                         return norm;
                     }              
