@@ -61,50 +61,6 @@ namespace DS.RevitLib.Utils.MEP
         }
 
 
-        //public static XYZ GetVector(MEPCurve mEPCurve)
-        //{
-        //    var locCurve = mEPCurve.Location as LocationCurve;
-        //    var line = locCurve.Curve as Line;
-        //    var vector = line.GetEndPoint(1) - line.GetEndPoint(0);
-
-        //    return vector;
-        //}
-
-
-        /// <summary>
-        /// Swap MEPCurve's width and height.
-        /// </summary>
-        /// <param name="mEPCurve"></param>
-        /// <returns>Return MEPCurve with swaped parameters.</returns>
-        public static MEPCurve SwapSize(MEPCurve mEPCurve)
-        {
-            double width = mEPCurve.Width;
-            double height = mEPCurve.Height;
-
-            using (Transaction transNew = new Transaction(mEPCurve.Document, "CreateMEPCurveByPoints"))
-            {
-                try
-                {
-                    transNew.Start();
-
-                    Parameter widthParam = mEPCurve.get_Parameter(BuiltInParameter.RBS_CURVE_WIDTH_PARAM);
-                    Parameter heightParam = mEPCurve.get_Parameter(BuiltInParameter.RBS_CURVE_HEIGHT_PARAM);
-
-                    widthParam.Set(height);
-                    heightParam.Set(width);
-                }
-
-                catch (Exception e)
-                { }
-
-                if (transNew.HasStarted())
-                {
-                    transNew.Commit();
-                }
-            }
-            return mEPCurve;
-        }
-
         /// <summary>
         /// Get angle berween two MEPCurves in rads.
         /// </summary>
@@ -118,7 +74,6 @@ namespace DS.RevitLib.Utils.MEP
 
             return vector1.AngleTo(vector2);
         }
-
 
         /// <summary>
         /// Get norm vectors of MEPCurve from it's faces.
@@ -285,26 +240,18 @@ namespace DS.RevitLib.Utils.MEP
         }
 
         /// <summary>
-        /// Check if sizes of MEPCurves are equal in theirs plane.
+        /// Check if MEPCurves are equal oriented. 
+        /// Check if size by one of baseMEPCurve norm vector is equal to mEPCurve size by the same vector.
         /// </summary>
         /// <param name="baseMEPCurve"></param>
         /// <param name="mEPCurve"></param>
-        /// <returns>Return true if sized are equal. Return false if aren't.</returns>
-        public static bool IsEqualSize(MEPCurve baseMEPCurve, MEPCurve mEPCurve)
+        /// <returns>Return true if MEPCurves are equal oriented.</returns>
+        public static bool EqualOriented(MEPCurve baseMEPCurve, MEPCurve mEPCurve)
         {
-            //Plane plane = GetPlane(mEPCurve, baseMEPCurve);
-
-            //if (plane is null)
-            //{
-            //    return false;
-            //}
             XYZ dir = GetDirection(mEPCurve);
             List<XYZ> baseNorms = GetOrthoNormVectors(baseMEPCurve);           
 
             XYZ measureVector = GetMesureVector(baseNorms, dir);
-
-            //double baseSize = GetSizeInPlane(baseMEPCurve, baseNorms, measureVector);
-            //double size = GetSizeInPlane(mEPCurve, norms, measureVector);
 
             double baseSize = GetSizeByVector(baseMEPCurve, measureVector);
             double size = GetSizeByVector(mEPCurve, measureVector);
@@ -317,40 +264,12 @@ namespace DS.RevitLib.Utils.MEP
             return false;
         }
 
-        private static List<XYZ> GetVectorsInPlane(Plane plane, List<XYZ> vectors)
-        {
-            List<XYZ> planeVectors = new List<XYZ>();
-            foreach (var vector in vectors)
-            {
-                XYZ cpVector = plane.Origin + vector;
-                if (cpVector.IsPointOntoPlane(plane))
-                {
-                    planeVectors.Add(vector);
-                }
-            }
-
-            return planeVectors;
-        }
-
-
         /// <summary>
-        /// Get size of MEPCurve by one of it's norm vector whose position is in specific plane.
+        /// Get vector which direction is not parallel to mEPCurve's direction.
         /// </summary>
-        /// <param name="mEPCurve"></param>
-        /// <param name="plane"></param>
-        /// <returns>Return size of MEPCurve.</returns>
-        private static double GetSizeInPlane(MEPCurve mEPCurve, List<XYZ> norms, XYZ vector)
-        {
-            foreach (var normVector in norms)
-            {
-                if(XYZUtils.Collinearity(normVector, vector))
-                {
-                    return GetSizeByVector(mEPCurve, normVector);
-                }
-            }
-            return 0;
-        }
-
+        /// <param name="baseNorms"></param>
+        /// <param name="dir"></param>
+        /// <returns>Return vector which direction is not parallel to mEPCurve's direction.</returns>
         private static XYZ GetMesureVector(List<XYZ> baseNorms, XYZ dir)
         {
             foreach (var norm in baseNorms)
@@ -365,12 +284,19 @@ namespace DS.RevitLib.Utils.MEP
         }
 
 
-        private static double GetSizeInPlaneOld(MEPCurve mEPCurve, Plane plane)
+        private static List<XYZ> GetVectorsInPlane(Plane plane, List<XYZ> vectors)
         {
-            List<XYZ> normOrthoVectors = MEPCurveUtils.GetOrthoNormVectors(mEPCurve);
-            List<XYZ> vectorsInPlane = GetVectorsInPlane(plane, normOrthoVectors);
+            List<XYZ> planeVectors = new List<XYZ>();
+            foreach (var vector in vectors)
+            {
+                XYZ cpVector = plane.Origin + vector;
+                if (cpVector.IsPointOntoPlane(plane))
+                {
+                    planeVectors.Add(vector);
+                }
+            }
 
-            return GetSizeByVector(mEPCurve, vectorsInPlane.First());
+            return planeVectors;
         }
     }
 }

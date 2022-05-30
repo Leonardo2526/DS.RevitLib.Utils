@@ -182,7 +182,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
         /// <param name="mEPCurve"></param>
         /// <param name="angle"></param>
         /// <returns>Return rotated MEPCurve.</returns>
-        public static MEPCurve CreateRotation(MEPCurve mEPCurve, double angle)
+        public static MEPCurve Rotate(MEPCurve mEPCurve, double angle)
         {
             using (Transaction transNew = new Transaction(mEPCurve.Document, "RotateMEPCurve"))
             {
@@ -206,6 +206,40 @@ namespace DS.RevitLib.Utils.MEP.Creator
 
             return mEPCurve;
         }
-      
+
+        /// <summary>
+        /// Swap MEPCurve's width and height.
+        /// </summary>
+        /// <param name="mEPCurve"></param>
+        /// <returns>Return MEPCurve with swaped parameters.</returns>
+        public static MEPCurve SwapSize(MEPCurve mEPCurve)
+        {
+            double width = mEPCurve.Width;
+            double height = mEPCurve.Height;
+
+            using (Transaction transNew = new Transaction(mEPCurve.Document, "CreateMEPCurveByPoints"))
+            {
+                try
+                {
+                    transNew.Start();
+
+                    Parameter widthParam = mEPCurve.get_Parameter(BuiltInParameter.RBS_CURVE_WIDTH_PARAM);
+                    Parameter heightParam = mEPCurve.get_Parameter(BuiltInParameter.RBS_CURVE_HEIGHT_PARAM);
+
+                    widthParam.Set(height);
+                    heightParam.Set(width);
+                }
+
+                catch (Exception e)
+                { }
+
+                if (transNew.HasStarted())
+                {
+                    transNew.Commit();
+                }
+            }
+            return mEPCurve;
+        }
+
     }
 }

@@ -32,16 +32,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
 
                 MEPCurve mEPCurve = mEPCurveCreator.CreateMEPCurveByPoints(p1, p2, baseMEPCurve);
 
-                if (CheckRotate(baseMEPCurve, mEPCurve))
-                {
-                    RotationBuilder rotationBuilder = new RotationBuilder(baseMEPCurve, mEPCurve);
-                    rotationBuilder.Rotate();
-                }
-
-                if (CheckSwap(baseMEPCurve, mEPCurve))
-                {
-                    MEPCurveUtils.SwapSize(mEPCurve);
-                }
+                RectangularFixing(baseMEPCurve, mEPCurve);
 
                 baseMEPCurve = mEPCurve;
 
@@ -52,37 +43,21 @@ namespace DS.RevitLib.Utils.MEP.Creator
             return new MEPCurvesModel(MEPSystemModel, Doc);
         }
 
-        /// <summary>
-        /// Check if size of MEPCurve should be swapped.
-        /// </summary>
-        /// <param name="baseMEPCurve"></param>
-        /// <param name="mEPCurve"></param>
-        /// <returns>Return true if size of MEPCurve should be swapped.</returns>
-        private bool CheckSwap(MEPCurve baseMEPCurve, MEPCurve mEPCurve)
+     
+
+        private void RectangularFixing(MEPCurve baseMEPCurve, MEPCurve mEPCurve)
         {
-            if (baseMEPCurve is not null)
+            if (baseMEPCurve is not null && baseMEPCurve.IsRecangular())
             {
-                if (baseMEPCurve.IsRecangular() &&
-                    !MEPCurveUtils.IsEqualSize(baseMEPCurve, mEPCurve))
+                    RotationBuilder rotationBuilder = new RotationBuilder(baseMEPCurve, mEPCurve);
+                    rotationBuilder.Rotate();
+
+                //Check if size of MEPCurve should be swapped.
+                if (!MEPCurveUtils.EqualOriented(baseMEPCurve, mEPCurve))
                 {
-                    return true;
+                    MEPCurveCreator.SwapSize(mEPCurve);
                 }
             }
-
-            return false;
-        }
-
-        private bool CheckRotate(MEPCurve baseMEPCurve, MEPCurve mEPCurve)
-        {
-            if (baseMEPCurve is not null)
-            {
-                if (baseMEPCurve.IsRecangular())
-                {
-                    return true;
-                }
-            }
-
-            return false;
         }
 
     }
