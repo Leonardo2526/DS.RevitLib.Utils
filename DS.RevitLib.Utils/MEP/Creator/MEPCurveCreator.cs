@@ -176,6 +176,36 @@ namespace DS.RevitLib.Utils.MEP.Creator
             return newElement;
         }
 
+        /// <summary>
+        /// Rotate MEPCurve by angle in rads.
+        /// </summary>
+        /// <param name="mEPCurve"></param>
+        /// <param name="angle"></param>
+        /// <returns>Return rotated MEPCurve.</returns>
+        public static MEPCurve CreateRotation(MEPCurve mEPCurve, double angle)
+        {
+            using (Transaction transNew = new Transaction(mEPCurve.Document, "RotateMEPCurve"))
+            {
+                try
+                {
+                    transNew.Start();
+
+                    var locCurve = mEPCurve.Location as LocationCurve;
+                    var line = locCurve.Curve as Line;
+
+                    mEPCurve.Location.Rotate(line, angle);
+                }
+                catch (Exception e)
+
+                { }
+                if (transNew.HasStarted())
+                {
+                    transNew.Commit();
+                }
+            }
+
+            return mEPCurve;
+        }
       
     }
 }

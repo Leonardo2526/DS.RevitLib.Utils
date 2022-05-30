@@ -292,15 +292,22 @@ namespace DS.RevitLib.Utils.MEP
         /// <returns>Return true if sized are equal. Return false if aren't.</returns>
         public static bool IsEqualSize(MEPCurve baseMEPCurve, MEPCurve mEPCurve)
         {
-            Plane plane = GetPlane(mEPCurve, baseMEPCurve);
+            //Plane plane = GetPlane(mEPCurve, baseMEPCurve);
 
-            if (plane is null)
-            {
-                return false;
-            }
+            //if (plane is null)
+            //{
+            //    return false;
+            //}
+            XYZ dir = GetDirection(mEPCurve);
+            List<XYZ> baseNorms = GetOrthoNormVectors(baseMEPCurve);           
 
-            double baseSize = GetSizeInPlane(baseMEPCurve, plane);
-            double size = GetSizeInPlane(mEPCurve, plane);
+            XYZ measureVector = GetMesureVector(baseNorms, dir);
+
+            //double baseSize = GetSizeInPlane(baseMEPCurve, baseNorms, measureVector);
+            //double size = GetSizeInPlane(mEPCurve, norms, measureVector);
+
+            double baseSize = GetSizeByVector(baseMEPCurve, measureVector);
+            double size = GetSizeByVector(mEPCurve, measureVector);
 
             if (Math.Abs(baseSize - size) < 0.001)
             {
@@ -332,7 +339,33 @@ namespace DS.RevitLib.Utils.MEP
         /// <param name="mEPCurve"></param>
         /// <param name="plane"></param>
         /// <returns>Return size of MEPCurve.</returns>
-        private static double GetSizeInPlane(MEPCurve mEPCurve, Plane plane)
+        private static double GetSizeInPlane(MEPCurve mEPCurve, List<XYZ> norms, XYZ vector)
+        {
+            foreach (var normVector in norms)
+            {
+                if(XYZUtils.Collinearity(normVector, vector))
+                {
+                    return GetSizeByVector(mEPCurve, normVector);
+                }
+            }
+            return 0;
+        }
+
+        private static XYZ GetMesureVector(List<XYZ> baseNorms, XYZ dir)
+        {
+            foreach (var norm in baseNorms)
+            {
+                    if(!XYZUtils.Collinearity(dir, norm))
+                    {
+                        return norm;
+                    }              
+            }
+
+            return null;
+        }
+
+
+        private static double GetSizeInPlaneOld(MEPCurve mEPCurve, Plane plane)
         {
             List<XYZ> normOrthoVectors = MEPCurveUtils.GetOrthoNormVectors(mEPCurve);
             List<XYZ> vectorsInPlane = GetVectorsInPlane(plane, normOrthoVectors);

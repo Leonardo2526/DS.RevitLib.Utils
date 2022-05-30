@@ -1,0 +1,82 @@
+﻿using Autodesk.Revit.DB;
+using DS.MainUtils;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DS.RevitLib.Utils.MEP.Creator.Builders
+{
+    internal class RotationBuilder
+    {
+        /// <summary>
+        /// Vector for alignment
+        /// </summary>
+        public XYZ AlignAxe { get; }
+        private readonly MEPCurve _BaseMEPCurve;
+        private readonly MEPCurve _MEPCurve;
+        private XYZ BaseDir;
+        private XYZ CurrentDir;
+
+        public RotationBuilder(MEPCurve baseMEPCurve, MEPCurve mEPCurve)
+        {
+            this._BaseMEPCurve = baseMEPCurve;
+            this._MEPCurve = mEPCurve;
+
+            this.AlignAxe = GetAlignmentVector(baseMEPCurve);
+            this.BaseDir = MEPCurveUtils.GetDirection(baseMEPCurve);
+            this.CurrentDir = MEPCurveUtils.GetDirection(mEPCurve);
+        }
+
+        public MEPCurve Rotate()
+        {  
+            //Rotation axe
+            XYZ rotationAxe = MEPCurveUtils.GetDirection(_MEPCurve);
+
+            List<XYZ> normOrthoVectors = MEPCurveUtils.GetOrthoNormVectors(_MEPCurve);
+
+            //Vector for alignment with rotation
+            XYZ vectorToRotateNorm = normOrthoVectors.First();
+
+            double angleRad = vectorToRotateNorm.AngleTo(AlignAxe);
+            double angleDeg = angleRad.RadToDeg();
+
+            double prec = 3.0;
+            if (Math.Abs(angleDeg - 0) < prec || Math.Abs(angleDeg - 180) < prec ||
+                Math.Abs(angleDeg - 90) < prec || Math.Abs(angleDeg - 270) < prec)
+            {
+                return _MEPCurve;
+            }
+
+            int rotDir = GetRotationSide(AlignAxe, vectorToRotateNorm, rotationAxe);
+
+            return MEPCurveCreator.CreateRotation(_MEPCurve, angleRad * rotDir);
+        }
+
+        private XYZ GetAlignmentVector(MEPCurve baseMEPCurve)
+        {
+            List<XYZ> baseNormals = MEPCurveUtils.GetOrthoNormVectors(baseMEPCurve);
+
+            if (XYZUtils.Collinearity(BaseDir, CurrentDir))
+            {
+                return baseNormals.First();
+            }
+            else
+            {
+                return BaseDir;
+            }
+        }
+
+        private int GetRotationSide(XYZ alignAxe,XYZ vectorToRotateNorm,XYZ rotationAxe)
+        {
+            if (XYZUtils.BasisEqualToOrigin(alignAxe, vectorToRotateNorm, rotationAxe))
+            {
+                return -1;
+            }
+
+            return 1;          
+        }
+
+    }
+}

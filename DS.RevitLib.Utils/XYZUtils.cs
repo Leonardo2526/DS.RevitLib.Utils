@@ -1,5 +1,6 @@
 ﻿using Autodesk.Revit.DB;
 using DS.MainUtils;
+using DS.RevitLib.Utils.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,16 +11,22 @@ namespace DS.RevitLib.Utils
 {
     public static class XYZUtils
     {
+        #region PublicMethods
+
         /// <summary>
         /// Check if three vectors system have orientation (left or right) like origin
         /// </summary>
-        /// <param name="vector1"></param>
-        /// <param name="vector2"></param>
-        /// <param name="vector3"></param>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <param name="c"></param>
         /// <returns>Return true if three vectors system have orientation like origin.</returns>
-        public static bool Is3DOrientationEqualToOrigin(XYZ vector1, XYZ vector2, XYZ vector3)
+        public static bool BasisEqualToOrigin(XYZ a, XYZ b, XYZ c)
         {
-            double[,] matrix = CreateMatrix3D(vector1, vector2, vector3);
+            a = a.RoundVector();
+            b = b.RoundVector();
+            c = c.RoundVector();
+
+            double[,] matrix = CreateMatrix3D(a, b, c);
             double det = Matrix.GetMatrixDeterminant(matrix);
 
             if (det > 0)
@@ -29,6 +36,49 @@ namespace DS.RevitLib.Utils
 
             return false;
         }
+
+        /// <summary>
+        /// Check if two vectors are colliner.
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns>Return true if two vectors are colliner.</returns>
+        public static bool Collinearity(XYZ a, XYZ b)
+        {
+            a = a.RoundVector();
+            b = b.RoundVector();
+
+            XYZ crossProduct = a.CrossProduct(b);
+            if (crossProduct.GetLength() == 0)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Check if three vectors are coplanar.
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns>Return true if three vectors are coplanar.</returns>
+        public static bool Coplanarity(XYZ a, XYZ b, XYZ c)
+        {
+            a = a.RoundVector();
+            b = b.RoundVector();
+            c = c.RoundVector();
+            if (a.TripleProduct(b, c) == 0)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        #endregion
+
+
+        #region PrivateMethods
 
         /// <summary>
         /// Get matrix's determinant created by 3 vectors.
@@ -68,5 +118,8 @@ namespace DS.RevitLib.Utils
 
             return matrix;
         }
+
+
+        #endregion
     }
 }
