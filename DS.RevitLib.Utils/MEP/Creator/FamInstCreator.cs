@@ -2,6 +2,7 @@
 using Autodesk.Revit.UI;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace DS.RevitLib.Utils.MEP.Creator
 {
@@ -17,6 +18,30 @@ namespace DS.RevitLib.Utils.MEP.Creator
         private readonly Document Doc;
 
         #endregion
+
+        private ElementId MEPLevelId
+        {
+            get
+            {
+                return new FilteredElementCollector(Doc)
+                .OfClass(typeof(Level))
+                .Cast<Level>()
+                .FirstOrDefault().Id;
+            }
+        }
+
+        private Level MEPLevel
+        {
+            get
+            {
+                return new FilteredElementCollector(Doc)
+                .OfClass(typeof(Level))
+                .Cast<Level>()
+                .FirstOrDefault();
+            }
+        }
+
+
 
         /// <summary>
         /// Create fitting between two pipes
@@ -114,6 +139,31 @@ namespace DS.RevitLib.Utils.MEP.Creator
                     //transNew.RollBack();
                     //TaskDialog.Show("Revit", e.ToString());
                 }
+                if (transNew.HasStarted())
+                {
+                    transNew.Commit();
+                }
+            }
+
+            return familyInstance;
+        }
+
+
+        public FamilyInstance CreateFamilyInstane(FamilySymbol familySymbol)
+        {
+            FamilyInstance familyInstance = null;
+            using (Transaction transNew = new Transaction(Doc, "CreateFamInst"))
+            {
+                try
+                {
+                    transNew.Start();
+
+                    familyInstance = Doc.Create.NewFamilyInstance(new XYZ(0,0,0), familySymbol, MEPLevel, 
+                        Autodesk.Revit.DB.Structure.StructuralType.NonStructural);
+                }
+
+                catch (Exception e)
+                { }
                 if (transNew.HasStarted())
                 {
                     transNew.Commit();
