@@ -68,7 +68,7 @@ namespace DS.RevitLib.Utils
             a = a.RoundVector();
             b = b.RoundVector();
             c = c.RoundVector();
-            if (a.TripleProduct(b, c) == 0)
+            if (Math.Round(a.TripleProduct(b, c), 2) == 0)
             {
                 return true;
             }
