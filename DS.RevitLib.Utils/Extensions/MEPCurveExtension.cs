@@ -1,4 +1,6 @@
 ﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.Mechanical;
+using Autodesk.Revit.DB.Plumbing;
 using DS.RevitLib.Utils.MEP;
 using System;
 using System.Collections.Generic;
@@ -37,7 +39,7 @@ namespace DS.RevitLib.Utils.Extensions
         /// <param name="baseMEPCurve"></param>
         /// <param name="mEPCurve"></param>
         /// <returns>Return true if MEPCurve is rectangular type. Return false if it isn't.</returns>
-        public static bool IsRecangular(this MEPCurve mEPCurve)
+        public static bool IsRectangular(this MEPCurve mEPCurve)
         {
             Document doc = mEPCurve.Document;
             var type = doc.GetElement(mEPCurve.GetTypeId()) as MEPCurveType;
@@ -48,6 +50,27 @@ namespace DS.RevitLib.Utils.Extensions
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Get MEPCurveType object.
+        /// </summary>
+        /// <param name="mEPCurve"></param>
+        /// <returns>Return MEPCurveType object if MEPCurveType is Pipe or Duct.</returns>
+        public static MEPCurveType GetMEPCurveType(this MEPCurve mEPCurve)
+        {
+            ElementType elementType = mEPCurve.GetElementType2();
+
+            if (mEPCurve.GetType().Name == "Pipe")
+            {
+                return elementType as PipeType;
+            }
+            else if (mEPCurve.GetType().Name == "Duct")
+            {
+                return elementType as DuctType;
+            }
+           
+            return null;
         }
     }
 }

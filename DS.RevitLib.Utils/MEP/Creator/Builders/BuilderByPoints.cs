@@ -49,7 +49,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
 
         private void RectangularFixing(MEPCurve baseMEPCurve, MEPCurve mEPCurve)
         {
-            if (baseMEPCurve is not null && baseMEPCurve.IsRecangular())
+            if (baseMEPCurve is not null && baseMEPCurve.IsRectangular())
                 {
                     RotationBuilder rotationBuilder = new RotationBuilder(baseMEPCurve, mEPCurve);
                     rotationBuilder.Rotate();

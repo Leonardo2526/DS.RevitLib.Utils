@@ -22,5 +22,16 @@ namespace DS.RevitLib.Utils.Extensions
             }
             return true;
         }
+
+        /// <summary>
+        /// Get ElementType object.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <returns>Return ElementType object.</returns>
+        public static ElementType GetElementType2(this Element element)
+        {
+            ElementId id = element.GetTypeId();
+            return element.Document.GetElement(id) as ElementType;
+        }
     }
 }
