@@ -299,5 +299,12 @@ namespace DS.RevitLib.Utils.MEP
 
             return planeVectors;
         }
+
+        public static ConnectorProfileType GetProfileType(MEPCurve mEPCurve)
+        {
+            var doc = mEPCurve.Document;
+            var type = doc.GetElement(mEPCurve.GetTypeId()) as MEPCurveType;
+            return type.Shape;           
+        }
     }
 }
