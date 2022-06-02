@@ -49,7 +49,7 @@ namespace DS.RevitLib.Utils
             b = b.RoundVector();
 
             XYZ crossProduct = a.CrossProduct(b);
-            if (crossProduct.GetLength() == 0)
+            if (Math.Round(crossProduct.GetLength(), 2) == 0)
             {
                 return true;
             }
