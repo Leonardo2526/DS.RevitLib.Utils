@@ -32,6 +32,8 @@ namespace DS.RevitLib.Utils.MEP.Creator
             }
         }
 
+        public string ErrorMessages { get; set; }
+
         #endregion
     }
 }

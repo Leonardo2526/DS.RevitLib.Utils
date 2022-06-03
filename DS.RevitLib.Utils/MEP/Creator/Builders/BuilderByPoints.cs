@@ -13,18 +13,17 @@ namespace DS.RevitLib.Utils.MEP.Creator
 {
     public class BuilderByPoints : MEPSystemBuilder
     {
-        public BuilderByPoints(MEPCurve baseMEPCurve, List<XYZ> points, double elbowAngle) : base(baseMEPCurve)
+        public BuilderByPoints(MEPCurve baseMEPCurve, List<XYZ> points, string transactionPrefix = "") : 
+            base(baseMEPCurve, transactionPrefix)
         {
             this._Points = points;
-            this._ElbowAngle = elbowAngle;
         }
 
         private List<XYZ> _Points = new List<XYZ>();
-        private double _ElbowAngle;
 
         public override MEPCurvesModel BuildMEPCurves()
         {
-            MEPCurveCreator mEPCurveCreator = new MEPCurveCreator(Doc, BaseMEPCurve);
+            MEPCurveCreator mEPCurveCreator = new MEPCurveCreator(BaseMEPCurve, TransactionPrefix);
             MEPCurve baseMEPCurve = BaseMEPCurve;
 
             for (int i = 0; i < _Points.Count - 1; i++)
@@ -42,7 +41,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
                 MEPSystemModel.MEPCurves.Add(mEPCurve);
             }
 
-            return new MEPCurvesModel(MEPSystemModel, Doc);
+            return new MEPCurvesModel(MEPSystemModel, Doc, TransactionPrefix, mEPCurveCreator.ErrorMessages);
         }
 
      
@@ -51,13 +50,14 @@ namespace DS.RevitLib.Utils.MEP.Creator
         {
             if (baseMEPCurve is not null && baseMEPCurve.IsRectangular())
                 {
-                    RotationBuilder rotationBuilder = new RotationBuilder(baseMEPCurve, mEPCurve);
+                    RotationBuilder rotationBuilder = new RotationBuilder(baseMEPCurve, mEPCurve, TransactionPrefix);
                     rotationBuilder.Rotate();
 
                 //Check if size of MEPCurve should be swapped.
                 if (!MEPCurveUtils.EqualOriented(baseMEPCurve, mEPCurve))
                 {
-                    MEPCurveCreator.SwapSize(mEPCurve);
+                    MEPCurveCreator mEPCurveCreator = new MEPCurveCreator(mEPCurve, TransactionPrefix);
+                    mEPCurveCreator.SwapSize(mEPCurve);
                 }
             }
         }

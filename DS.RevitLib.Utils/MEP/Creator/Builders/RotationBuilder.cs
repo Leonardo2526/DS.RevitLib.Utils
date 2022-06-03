@@ -18,11 +18,14 @@ namespace DS.RevitLib.Utils.MEP.Creator.Builders
         private readonly MEPCurve _MEPCurve;
         private XYZ BaseDir;
         private XYZ CurrentDir;
+        private readonly string TransactionPrefix;
 
-        public RotationBuilder(MEPCurve baseMEPCurve, MEPCurve mEPCurve)
+        public RotationBuilder(MEPCurve baseMEPCurve, MEPCurve mEPCurve, string transactionPrefix = "")
         {
             this._BaseMEPCurve = baseMEPCurve;
             this._MEPCurve = mEPCurve;
+            TransactionPrefix = transactionPrefix;
+           
 
             this.BaseDir = MEPCurveUtils.GetDirection(baseMEPCurve);
             this.CurrentDir = MEPCurveUtils.GetDirection(mEPCurve);
@@ -52,7 +55,8 @@ namespace DS.RevitLib.Utils.MEP.Creator.Builders
 
             int rotDir = GetRotationSide(AlignAxe, vectorToRotateNorm, rotationAxe);
 
-            return MEPCurveCreator.Rotate(_MEPCurve, angleRad * rotDir);
+            MEPCurveCreator mEPCurveCreator = new MEPCurveCreator(_MEPCurve, TransactionPrefix);
+            return mEPCurveCreator.Rotate(angleRad * rotDir);
         }
 
         private XYZ GetAlignmentVector(MEPCurve baseMEPCurve)

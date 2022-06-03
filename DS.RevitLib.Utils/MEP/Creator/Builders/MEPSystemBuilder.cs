@@ -12,11 +12,12 @@ namespace DS.RevitLib.Utils.MEP.Creator
         #region Constructor
         protected MEPSystemModel MEPSystemModel { get; set; }
 
-        public MEPSystemBuilder(MEPCurve baseMEPCurve)
+        public MEPSystemBuilder(MEPCurve baseMEPCurve, string transactionPrefix)
         {
             Doc = baseMEPCurve.Document;
             BaseMEPCurve = baseMEPCurve;
             MEPSystemModel = new MEPSystemModel();
+            TransactionPrefix = transactionPrefix;
         }
 
         #endregion
@@ -30,6 +31,9 @@ namespace DS.RevitLib.Utils.MEP.Creator
 
         protected readonly Document Doc;
         protected readonly MEPCurve BaseMEPCurve;
+        protected readonly string TransactionPrefix;
+
+        protected string ErrorMessages { get; private set; }
 
         #endregion
 

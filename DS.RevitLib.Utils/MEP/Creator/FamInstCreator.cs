@@ -8,27 +8,23 @@ namespace DS.RevitLib.Utils.MEP.Creator
 {
     public class FamInstCreator
     {
-        public FamInstCreator(Document doc)
+        public FamInstCreator(Document doc, string transactionPrefix = "")
         {
             Doc = doc;
+
+            if (!String.IsNullOrEmpty(transactionPrefix))
+            {
+                TransactionPrefix = transactionPrefix + "_";
+            }
         }
 
         #region Fields
 
         private readonly Document Doc;
+        private readonly string TransactionPrefix;
+
 
         #endregion
-
-        private ElementId MEPLevelId
-        {
-            get
-            {
-                return new FilteredElementCollector(Doc)
-                .OfClass(typeof(Level))
-                .Cast<Level>()
-                .FirstOrDefault().Id;
-            }
-        }
 
         private Level MEPLevel
         {
@@ -41,7 +37,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
             }
         }
 
-
+        public string ErrorMessages { get; private set; }
 
         /// <summary>
         /// Create fitting between two pipes
@@ -51,7 +47,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
         public FamilyInstance CreateFittingByMEPCurves(MEPCurve mepCurve1, MEPCurve mepCurve2)
         {
             FamilyInstance familyInstance = null;
-            using (Transaction transNew = new Transaction(Doc, "CreateFittingByMEPCurves"))
+            using (Transaction transNew = new Transaction(Doc, TransactionPrefix + "CreateFittingByMEPCurves"))
             {
                 try
                 {
@@ -67,7 +63,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
                 }
 
                 catch (Exception e)
-                { }
+                { ErrorMessages += e + "\n"; }
                 if (transNew.HasStarted())
                 {
                     transNew.Commit();
@@ -87,11 +83,12 @@ namespace DS.RevitLib.Utils.MEP.Creator
         public FamilyInstance CreateFittingByConnectors(Connector con1, Connector con2, Connector con3 = null)
         {
             FamilyInstance familyInstance = null;
-            using (Transaction transNew = new Transaction(Doc, "CreateTeeByConnectors"))
+            using (Transaction transNew = new Transaction(Doc, TransactionPrefix + "CreateTeeByConnectors"))
             {
                 try
                 {
                     transNew.Start();
+
                     if (con3 is null)
                     {
 
@@ -104,10 +101,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
                 }
 
                 catch (Exception e)
-                {
-                    transNew.RollBack();
-                    TaskDialog.Show("Revit", e.ToString());
-                }
+                { ErrorMessages += e + "\n"; }
                 if (transNew.HasStarted())
                 {
                     transNew.Commit();
@@ -126,7 +120,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
         public FamilyInstance CreateTakeOffFitting(Connector con, MEPCurve mEPCurve)
         {
             FamilyInstance familyInstance = null;
-            using (Transaction transNew = new Transaction(Doc, "CreateTakeOff"))
+            using (Transaction transNew = new Transaction(Doc, TransactionPrefix + "CreateTakeOff"))
             {
                 try
                 {
@@ -135,10 +129,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
                 }
 
                 catch (Exception e)
-                {
-                    //transNew.RollBack();
-                    //TaskDialog.Show("Revit", e.ToString());
-                }
+                { ErrorMessages += e + "\n"; }
                 if (transNew.HasStarted())
                 {
                     transNew.Commit();
@@ -152,7 +143,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
         public FamilyInstance CreateFamilyInstane(FamilySymbol familySymbol)
         {
             FamilyInstance familyInstance = null;
-            using (Transaction transNew = new Transaction(Doc, "CreateFamInst"))
+            using (Transaction transNew = new Transaction(Doc, TransactionPrefix + "CreateFamInst"))
             {
                 try
                 {
@@ -163,7 +154,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
                 }
 
                 catch (Exception e)
-                { }
+                { ErrorMessages += e + "\n"; }
                 if (transNew.HasStarted())
                 {
                     transNew.Commit();
