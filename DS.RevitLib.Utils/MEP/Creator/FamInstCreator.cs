@@ -140,7 +140,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
         }
 
 
-        public FamilyInstance CreateFamilyInstane(FamilySymbol familySymbol)
+        public FamilyInstance CreateFamilyInstane(FamilySymbol familySymbol, MEPCurve baseMEPCurve)
         {
             FamilyInstance familyInstance = null;
             using (Transaction transNew = new Transaction(Doc, TransactionPrefix + "CreateFamInst"))
@@ -149,7 +149,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
                 {
                     transNew.Start();
 
-                    familyInstance = Doc.Create.NewFamilyInstance(new XYZ(0,0,0), familySymbol, MEPLevel, 
+                    familyInstance = Doc.Create.NewFamilyInstance(new XYZ(0,0,0), familySymbol, baseMEPCurve.ReferenceLevel, 
                         Autodesk.Revit.DB.Structure.StructuralType.NonStructural);
                 }
 

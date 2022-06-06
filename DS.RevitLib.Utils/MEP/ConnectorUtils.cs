@@ -1,5 +1,6 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
+using DS.MainUtils;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.MEP.Neighbours;
 using System;
@@ -117,7 +118,10 @@ namespace DS.RevitLib.Utils.MEP
         public static List<Connector> GetConnectors(Element element)
         {
             ConnectorSet connectorSet = GetConnectorSet(element);
-
+            if (connectorSet is null)
+            {
+                return new List<Connector>();
+            }
             //Initialise empty list of connectors
             List<Connector> connectorList = new List<Connector>();
 
@@ -126,6 +130,7 @@ namespace DS.RevitLib.Utils.MEP
             {
                 connectorList.Add(connector);
             }
+
             return connectorList;
         }
 
@@ -363,7 +368,7 @@ namespace DS.RevitLib.Utils.MEP
                 return null;
             }
             return connectedElements.First();
-        }      
+        }
 
         public static bool DisconnectConnectors(Connector con1, Connector con2)
         {
