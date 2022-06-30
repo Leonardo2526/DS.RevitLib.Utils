@@ -36,9 +36,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="DS.MainUtils, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\DS.CommonLib.Utils\DS.MainUtils\bin\Debug\DS.MainUtils.dll</HintPath>
+    <Reference Include="DS.ClassLib.VarUtils">
+      <HintPath>..\..\DS.CommonLib.Utils\DS.ClassLib.VarUtils\bin\Debug\DS.ClassLib.VarUtils.dll</HintPath>
     </Reference>
     <Reference Include="iUtils">
       <HintPath>..\iUtils\bin\Release\iUtils.dll</HintPath>

@@ -15,7 +15,11 @@ namespace DS.RevitLib.Utils.MEP.Creator
         /// <param name="mEPCurve"></param>
         /// <returns>Return MEPCurve with swaped parameters.</returns>
         public static Element SetValue(Element element, Parameter parameter, double value)
-        {            
+        {     
+            if(parameter is null)
+            {
+                return element;
+            }
             using (Transaction transNew = new Transaction(element.Document, "SetParameter"))
             {
                 try
