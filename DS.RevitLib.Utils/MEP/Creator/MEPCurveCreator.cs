@@ -239,7 +239,30 @@ namespace DS.RevitLib.Utils.MEP.Creator
         }
 
 
-      
+        /// <summary>
+        /// Move MEPCurve by specified vector.
+        /// </summary>
+        /// <param name="vector"></param>
+        /// <returns>Return moved MEPCurve.</returns>
+        public MEPCurve Move(XYZ vector)
+        {
+            using (Transaction transNew = new Transaction(Doc, TransactionPrefix + "MoveMEPCurve"))
+            {
+                try
+                {
+                    transNew.Start();
+                    ElementTransformUtils.MoveElement(Doc, BaseMEPCurve.Id, vector);
+                }
+                catch (Exception e)
+                { ErrorMessages += e + "\n"; }
+                if (transNew.HasStarted())
+                {
+                    transNew.Commit();
+                }
+            }
+
+            return BaseMEPCurve;
+        }
 
     }
 }
