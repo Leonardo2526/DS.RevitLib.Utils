@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using DS.RevitLib.Utils.Solids;
+using DS.RevitLib.Utils.MEP;
 
 namespace DS.RevitLib.Utils
 {
@@ -252,6 +253,54 @@ namespace DS.RevitLib.Utils
 
         }
 
+        public static bool DisconnectElements(Element element, Element elementToDisconnect)
+        {
+            List<Connector> connectors = ConnectorUtils.GetConnectors(element);
 
+            foreach (var con in connectors)
+            {
+                ConnectorSet conSet = con.AllRefs;
+                foreach (Connector refCon in conSet)
+                {
+                    if (refCon.Owner.Id == elementToDisconnect.Id && con.IsConnectedTo(refCon))
+                    {
+                        if (ConnectorUtils.DisconnectConnectors(con, refCon))
+                        {
+                            return true;
+                        }
+                        return false; ;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+
+        public static List<FaceArray> GetFaces(Element element)
+        {
+            var facesArray = new List<FaceArray>();
+
+            Options options = new Options();
+            options.DetailLevel = ViewDetailLevel.Fine;
+            GeometryElement geomElem = element.get_Geometry(options);
+
+            if (geomElem == null)
+                return null;
+
+            foreach (GeometryObject geomObj in geomElem)
+            {
+                if (geomObj is Solid)
+                {
+                    Solid solid = (Solid)geomObj;
+                    if (solid.Faces.Size > 0 && solid.Volume > 0.0)
+                    {
+                        facesArray.Add(solid.Faces);
+                    }
+                }
+            }
+
+            return facesArray;
+        }
     }
 }

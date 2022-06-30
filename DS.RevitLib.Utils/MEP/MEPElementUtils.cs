@@ -97,5 +97,33 @@ namespace DS.RevitLib.Utils.MEP
             return true;
         }
 
+        /// <summary>
+        /// Get element's parameter associated with parameter of connectors.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <param name="connectorParameter"></param>
+        /// <returns>Return assiciated parameter.</returns>
+        public static Parameter GetAssociatedParameter(Element element, BuiltInParameter connectorParameter)
+        {
+            var connectors = ConnectorUtils.GetConnectors(element);
+
+            var connectorInfo = (MEPFamilyConnectorInfo)connectors.First().GetMEPConnectorInfo();
+
+            var associatedFamilyParameterId = connectorInfo.GetAssociateFamilyParameterId(new ElementId(connectorParameter));
+
+            if (associatedFamilyParameterId == ElementId.InvalidElementId)
+                return null;
+
+            var document = element.Document;
+
+            var parameterElement = document.GetElement(associatedFamilyParameterId) as ParameterElement;
+
+            if (parameterElement == null)
+                return null;
+
+            var paramterDefinition = parameterElement.GetDefinition();
+
+            return element.get_Parameter(paramterDefinition);
+        }
     }
 }

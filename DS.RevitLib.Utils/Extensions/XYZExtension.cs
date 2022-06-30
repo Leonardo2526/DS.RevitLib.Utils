@@ -1,10 +1,10 @@
 ﻿using Autodesk.Revit.DB;
 using System.Collections.Generic;
-using DS.MainUtils;
 using System;
 using System.Linq;
 using Ivanov.RevitLib.Utils;
 using DS.RevitLib.Utils.MEP;
+using DS.ClassLib.VarUtils;
 
 namespace DS.RevitLib.Utils.Extensions
 {
@@ -58,34 +58,23 @@ namespace DS.RevitLib.Utils.Extensions
         /// Returns negative value if endPoint is between base point and startPoint</returns>
         public static double DistanceToByBase(this XYZ startPoint, XYZ basePoint, XYZ endPoint)
         {
-            double distBase_Start = basePoint.DistanceTo(startPoint);
-            double distBase_End = basePoint.DistanceTo(endPoint);
+            XYZ startVector = startPoint - basePoint;
+            XYZ endVector = endPoint - basePoint;
+            XYZ difVector = endVector - startVector;
 
-            XYZ vectorBase1 = (basePoint - startPoint).AbsXYZ().RoundVector();
-            XYZ vectorBase2 = (basePoint - endPoint).AbsXYZ().RoundVector();
+            double angle = endVector.AngleTo(difVector);
+            double angleDeg = angle.RadToDeg();
 
-            double angleRad = vectorBase1.AngleTo(vectorBase2);
-            double angleDeg = angleRad * 180 / Math.PI;
-
-            int normCoordStart = GetNormCoordinate(startPoint, basePoint, angleRad);
-            int normCoordEnd = GetNormCoordinate(endPoint, basePoint, angleRad);
-
-            double distance = (distBase_End * normCoordEnd - distBase_Start * normCoordStart) * normCoordEnd;
-
-            return distance;
-        }
-
-        private static int GetNormCoordinate(XYZ p1, XYZ p2, double angleRad)
-        {
-            XYZ vector = (p1 - p2).RoundVector();
-
-            vector = new XYZ(vector.X * Math.Cos(angleRad), vector.Y * Math.Cos(angleRad), vector.Z);
-            //vector = new XYZ(vector.X * Math.Sin(angleRad), vector.Y * Math.Cos(angleRad), vector.Z);
-
-            XYZ vectorNorm = vector.Normalize();
-
-            return vectorNorm.GetNotZeroCoordinate();
-        }
+            int prc = 15;
+            if (angleDeg.CompareTo(prc) < 0)
+            {
+                return difVector.GetLength();
+            }
+            else
+            {
+                return -difVector.GetLength();
+            }
+        } 
 
         /// <summary>
         /// Check if point is on plane.
@@ -97,7 +86,7 @@ namespace DS.RevitLib.Utils.Extensions
             XYZ proj = plane.ProjectOnto(point);
             XYZ vector = point - proj;
 
-            if (vector.RoundVector(0.001).IsZeroLength())
+            if (vector.RoundVector(1).IsZeroLength())
             {
                 return true;
             }
@@ -105,20 +94,15 @@ namespace DS.RevitLib.Utils.Extensions
             return false;
         }
 
-        public static XYZ RoundVector(this XYZ vector, double value = 1e-3)
+        public static XYZ RoundVector(this XYZ vector, int value = 3)
         {
-            double x = vector.X;
-            double y = vector.Y;
-            double z = vector.Z;
+            double x = Math.Round(vector.X, value);
+            double y = Math.Round(vector.Y, value);
+            double z = Math.Round(vector.Z, value);
 
-            if (Math.Abs(x) < value)
-                x = 0;
-            if (Math.Abs(y) < value)
-                y = 0;
-            if (Math.Abs(z) < value)
-                z = 0;
             return new XYZ(x, y, z);
         }
-       
+
+
     }
 }
