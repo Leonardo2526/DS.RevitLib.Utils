@@ -69,7 +69,7 @@
     <Compile Include="Class1.cs" />
     <Compile Include="Element\ElementsMover.cs" />
     <Compile Include="Element\PartTypesChecker.cs" />
-    <Compile Include="Collision.cs" />
+    <Compile Include="CollisionUtils.cs" />
     <Compile Include="Element\ElementFilterUtils.cs" />
     <Compile Include="Extensions\ElementExtension.cs" />
     <Compile Include="Extensions\MEPCurveExtension.cs" />

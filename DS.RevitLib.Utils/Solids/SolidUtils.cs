@@ -181,7 +181,7 @@ namespace DS.RevitLib.Utils.Solids
                 return null;
             }
 
-            IList<Element> collisionElements = DS.RevitLib.Utils.Collision.GetByElements(element1, connectedToNoband, new List<Element>() { element2 });
+            IList<Element> collisionElements = DS.RevitLib.Utils.CollisionUtils.GetByElements(element1, connectedToNoband, new List<Element>() { element2 });
 
             if (collisionElements.Count == 0)
             {

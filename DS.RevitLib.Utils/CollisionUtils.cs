@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace DS.RevitLib.Utils
 {
-    public static class Collision
+    public static class CollisionUtils
     {
         /// <summary>
         /// Check collisions between elements and one another element with exluded as option.
