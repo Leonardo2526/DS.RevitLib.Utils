@@ -54,10 +54,19 @@ namespace DS.RevitLib.Utils.MEP
         /// <returns>Return vector(direction)</returns>
         public static XYZ GetDirection(MEPCurve mEPCurve)
         {
-            var locCurve = mEPCurve.Location as LocationCurve;
-            var line = locCurve.Curve as Line;
-
+            var line = GetLine(mEPCurve);
             return line.Direction;
+        }
+
+        /// <summary>
+        /// Get MEPCurve's line.
+        /// </summary>
+        /// <param name="mEPCurve"></param>
+        /// <returns>Return vector(direction)</returns>
+        public static Line GetLine(MEPCurve mEPCurve)
+        {
+            var locCurve = mEPCurve.Location as LocationCurve;
+            return locCurve.Curve as Line;
         }
 
 
