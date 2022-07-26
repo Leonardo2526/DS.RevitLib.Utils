@@ -351,5 +351,35 @@ namespace DS.RevitLib.Utils.MEP
 
             return (width, heigth);
         }
+
+        /// <summary>
+        /// Get cross-sectional area of MEPCurve.
+        /// </summary>
+        /// <param name="mEPCurve"></param>
+        /// <returns></returns>
+        public static double GetCrossSectionArea(MEPCurve mEPCurve)
+        {
+            var doc = mEPCurve.Document;
+            var type = doc.GetElement(mEPCurve.GetTypeId()) as MEPCurveType;
+            var shape = type.Shape;
+
+            double area = 0;
+
+            switch (shape)
+            {
+                case ConnectorProfileType.Invalid:
+                    break;
+                case ConnectorProfileType.Round:
+                    area = Math.PI * Math.Pow(mEPCurve.Diameter, 2) / 4;
+                    break;
+                case ConnectorProfileType.Rectangular:
+                    area = mEPCurve.Width * mEPCurve.Height;
+                    break;
+                case ConnectorProfileType.Oval:
+                    break;
+            }
+
+            return area;
+        }
     }
 }
