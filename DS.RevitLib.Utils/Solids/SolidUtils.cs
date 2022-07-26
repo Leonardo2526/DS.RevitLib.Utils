@@ -178,14 +178,14 @@ namespace DS.RevitLib.Utils.Solids
 
             if (connectedToNoband.Count == 0)
             {
-                return null;
+                return intersectionSolid;
             }
 
             IList<Element> collisionElements = DS.RevitLib.Utils.CollisionUtils.GetByElements(element1, connectedToNoband, new List<Element>() { element2 });
 
             if (collisionElements.Count == 0)
             {
-                return null;
+                return intersectionSolid;
             }
 
             List<Solid> solidIntersections = GetIntersection(new List<Element>() { element1 }, collisionElements.ToList());
