@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.MEP.Creator.Builders;
+using DS.RevitLib.Utils.TransactionCommitter;
 using Ivanov.RevitLib.Utils;
 using System;
 using System.Collections.Generic;
@@ -12,17 +13,27 @@ namespace DS.RevitLib.Utils.MEP.Creator
 {
     public class BuilderByPoints : MEPSystemBuilder
     {
-        public BuilderByPoints(MEPCurve baseMEPCurve, List<XYZ> points, string transactionPrefix = "") : 
+        private List<XYZ> _Points = new List<XYZ>();
+        private readonly Committer _committer;
+
+        public BuilderByPoints(MEPCurve baseMEPCurve, List<XYZ> points, Committer committer=null, string transactionPrefix = "") : 
             base(baseMEPCurve, transactionPrefix)
         {
             this._Points = points;
+            if (committer is null)
+            {
+                _committer = new BaseCommitter();
+            }
+            else
+            {
+                _committer = committer;
+            }
         }
 
-        private List<XYZ> _Points = new List<XYZ>();
 
         public override MEPCurvesModel BuildMEPCurves()
         {
-            MEPCurveCreator mEPCurveCreator = new MEPCurveCreator(BaseMEPCurve, TransactionPrefix);
+            MEPCurveCreator mEPCurveCreator = new MEPCurveCreator(BaseMEPCurve, _committer, TransactionPrefix);
             MEPCurve baseMEPCurve = BaseMEPCurve;
 
             for (int i = 0; i < _Points.Count - 1; i++)
@@ -40,7 +51,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
                 MEPSystemModel.MEPCurves.Add(mEPCurve);
             }
 
-            return new MEPCurvesModel(MEPSystemModel, Doc, TransactionPrefix, mEPCurveCreator.ErrorMessages);
+            return new MEPCurvesModel(MEPSystemModel, Doc, _committer, TransactionPrefix, mEPCurveCreator.ErrorMessages);
         }
 
      
@@ -55,7 +66,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
                 //Check if size of MEPCurve should be swapped.
                 if (!MEPCurveUtils.EqualOriented(baseMEPCurve, mEPCurve))
                 {
-                    MEPCurveCreator mEPCurveCreator = new MEPCurveCreator(mEPCurve, TransactionPrefix);
+                    MEPCurveCreator mEPCurveCreator = new MEPCurveCreator(mEPCurve, _committer, TransactionPrefix);
                     mEPCurveCreator.SwapSize(mEPCurve);
                 }
             }

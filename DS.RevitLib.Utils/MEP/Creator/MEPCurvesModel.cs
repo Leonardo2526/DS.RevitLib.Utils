@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.DB;
+using DS.RevitLib.Utils.TransactionCommitter;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,21 +10,25 @@ namespace DS.RevitLib.Utils.MEP.Creator
 {
     public class MEPCurvesModel : MEPSystemModel
     {
-        public MEPCurvesModel(MEPSystemModel mEPSystemModel, Document doc, string transactionPrefix, string errorMessages = "")
+        protected readonly Document _doc;
+        private readonly Committer _committer;
+        private readonly string _transactionPrefix;
+
+        public MEPCurvesModel(MEPSystemModel mEPSystemModel, Document doc, Committer committer, 
+            string transactionPrefix, string errorMessages = "")
         {
-            Doc = doc;
+            _doc = doc;
+            this._committer = committer;
             AllElements = mEPSystemModel.AllElements;
             MEPCurves = mEPSystemModel.MEPCurves;
-            TransactionPrefix = transactionPrefix;
+            _transactionPrefix = transactionPrefix;
             ErrorMessages = errorMessages;
         }
 
-        protected readonly Document Doc;
-        private readonly string TransactionPrefix;
 
         public MEPSystemModel WithFittings()
         {
-            FamInstCreator famInstCreator = new FamInstCreator(Doc, TransactionPrefix);
+            FamInstCreator famInstCreator = new FamInstCreator(_doc, _committer, _transactionPrefix);
             FamilyInstance familyInstance;
 
             for (int i = 0; i < MEPCurves.Count - 1; i++)

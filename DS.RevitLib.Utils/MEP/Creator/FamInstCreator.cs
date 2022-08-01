@@ -1,5 +1,6 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
+using DS.RevitLib.Utils.TransactionCommitter;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,29 +9,38 @@ namespace DS.RevitLib.Utils.MEP.Creator
 {
     public class FamInstCreator
     {
-        public FamInstCreator(Document doc, string transactionPrefix = "")
+        #region Fields
+
+        private readonly Document _doc;
+        private readonly string _transactionPrefix;
+        private readonly Committer _committer;
+
+        #endregion
+
+        public FamInstCreator(Document doc, Committer committer = null, string transactionPrefix = "")
         {
-            Doc = doc;
+            _doc = doc;
+            if (committer is null)
+            {
+                _committer = new BaseCommitter();
+            }
+            else
+            {
+                _committer = committer;
+            }
 
             if (!String.IsNullOrEmpty(transactionPrefix))
             {
-                TransactionPrefix = transactionPrefix + "_";
+                _transactionPrefix = transactionPrefix + "_";
             }
         }
 
-        #region Fields
-
-        private readonly Document Doc;
-        private readonly string TransactionPrefix;
-
-
-        #endregion
 
         private Level MEPLevel
         {
             get
             {
-                return new FilteredElementCollector(Doc)
+                return new FilteredElementCollector(_doc)
                 .OfClass(typeof(Level))
                 .Cast<Level>()
                 .FirstOrDefault();
@@ -47,7 +57,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
         public FamilyInstance CreateFittingByMEPCurves(MEPCurve mepCurve1, MEPCurve mepCurve2)
         {
             FamilyInstance familyInstance = null;
-            using (Transaction transNew = new Transaction(Doc, TransactionPrefix + "CreateFittingByMEPCurves"))
+            using (Transaction transNew = new Transaction(_doc, _transactionPrefix + "CreateFittingByMEPCurves"))
             {
                 try
                 {
@@ -59,15 +69,18 @@ namespace DS.RevitLib.Utils.MEP.Creator
                     ConnectorUtils.GetNeighbourConnectors(out Connector con1, out Connector con2,
                     connectors1, connectors2);
 
-                    familyInstance = Doc.Create.NewElbowFitting(con1, con2);
+                    familyInstance = _doc.Create.NewElbowFitting(con1, con2);
                 }
 
                 catch (Exception e)
                 { ErrorMessages += e + "\n"; }
-                if (transNew.HasStarted())
-                {
-                    transNew.Commit();
-                }
+
+                _committer.Commit(transNew);
+                ErrorMessages += _committer?.ErrorMessages;
+                //if (transNew.HasStarted())
+                //{
+                //    transNew.Commit();
+                //}
             }
             return familyInstance;
         }
@@ -83,7 +96,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
         public FamilyInstance CreateFittingByConnectors(Connector con1, Connector con2, Connector con3 = null)
         {
             FamilyInstance familyInstance = null;
-            using (Transaction transNew = new Transaction(Doc, TransactionPrefix + "CreateTeeByConnectors"))
+            using (Transaction transNew = new Transaction(_doc, _transactionPrefix + "CreateFittingByConnectors"))
             {
                 try
                 {
@@ -92,20 +105,19 @@ namespace DS.RevitLib.Utils.MEP.Creator
                     if (con3 is null)
                     {
 
-                        familyInstance = Doc.Create.NewElbowFitting(con1, con2);
+                        familyInstance = _doc.Create.NewElbowFitting(con1, con2);
                     }
                     else
                     {
-                        familyInstance = Doc.Create.NewTeeFitting(con1, con2, con3);
+                        familyInstance = _doc.Create.NewTeeFitting(con1, con2, con3);
                     }
                 }
 
                 catch (Exception e)
                 { ErrorMessages += e + "\n"; }
-                if (transNew.HasStarted())
-                {
-                    transNew.Commit();
-                }
+
+                _committer.Commit(transNew);
+                ErrorMessages += _committer?.ErrorMessages;
             }
 
             return familyInstance;
@@ -120,20 +132,19 @@ namespace DS.RevitLib.Utils.MEP.Creator
         public FamilyInstance CreateTakeOffFitting(Connector con, MEPCurve mEPCurve)
         {
             FamilyInstance familyInstance = null;
-            using (Transaction transNew = new Transaction(Doc, TransactionPrefix + "CreateTakeOff"))
+            using (Transaction transNew = new Transaction(_doc, _transactionPrefix + "CreateTakeOffFitting"))
             {
                 try
                 {
                     transNew.Start();
-                    familyInstance = Doc.Create.NewTakeoffFitting(con, mEPCurve);
+                    familyInstance = _doc.Create.NewTakeoffFitting(con, mEPCurve);
                 }
 
                 catch (Exception e)
                 { ErrorMessages += e + "\n"; }
-                if (transNew.HasStarted())
-                {
-                    transNew.Commit();
-                }
+
+                _committer.Commit(transNew);
+                ErrorMessages += _committer?.ErrorMessages;
             }
 
             return familyInstance;
@@ -143,22 +154,21 @@ namespace DS.RevitLib.Utils.MEP.Creator
         public FamilyInstance CreateFamilyInstane(FamilySymbol familySymbol, MEPCurve baseMEPCurve)
         {
             FamilyInstance familyInstance = null;
-            using (Transaction transNew = new Transaction(Doc, TransactionPrefix + "CreateFamInst"))
+            using (Transaction transNew = new Transaction(_doc, _transactionPrefix + "CreateFamilyInstane"))
             {
                 try
                 {
                     transNew.Start();
 
-                    familyInstance = Doc.Create.NewFamilyInstance(new XYZ(0,0,0), familySymbol, baseMEPCurve.ReferenceLevel, 
+                    familyInstance = _doc.Create.NewFamilyInstance(new XYZ(0,0,0), familySymbol, baseMEPCurve.ReferenceLevel, 
                         Autodesk.Revit.DB.Structure.StructuralType.NonStructural);
                 }
 
                 catch (Exception e)
                 { ErrorMessages += e + "\n"; }
-                if (transNew.HasStarted())
-                {
-                    transNew.Commit();
-                }
+
+                _committer.Commit(transNew);
+                ErrorMessages += _committer?.ErrorMessages;
             }
 
             return familyInstance;

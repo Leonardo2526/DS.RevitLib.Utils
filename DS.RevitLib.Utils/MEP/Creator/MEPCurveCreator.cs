@@ -3,6 +3,7 @@ using Autodesk.Revit.DB.Mechanical;
 using Autodesk.Revit.DB.Plumbing;
 using Autodesk.Revit.UI;
 using DS.RevitLib.Utils.Extensions;
+using DS.RevitLib.Utils.TransactionCommitter;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,12 +14,20 @@ namespace DS.RevitLib.Utils.MEP.Creator
     {
         private readonly Document Doc;
         private readonly MEPCurve BaseMEPCurve;
+        private readonly Committer _committer;
 
-        public MEPCurveCreator(MEPCurve baseMEPCurve, string transactionPrefix = "")
+        public MEPCurveCreator(MEPCurve baseMEPCurve, Committer committer = null, string transactionPrefix = "")
         {
             Doc = baseMEPCurve.Document;
             BaseMEPCurve = baseMEPCurve;
-
+            if (committer is null)
+            {
+                _committer = new BaseCommitter();
+            }
+            else
+            {
+                _committer = committer;
+            }
             if (!String.IsNullOrEmpty(transactionPrefix))
             {
                 TransactionPrefix = transactionPrefix + "_";
@@ -95,12 +104,10 @@ namespace DS.RevitLib.Utils.MEP.Creator
                     MEPCurveParameter.Copy(baseMEPCurve, mEPCurve);
                 }
                 catch (Exception e)
-
                 { ErrorMessages += e + "\n"; }
-                if (transNew.HasStarted())
-                {
-                    transNew.Commit();
-                }
+
+                _committer?.Commit(transNew);
+                ErrorMessages += _committer?.ErrorMessages;
             }
             return mEPCurve;
         }
@@ -134,7 +141,9 @@ namespace DS.RevitLib.Utils.MEP.Creator
 
                 catch (Exception e)
                 { ErrorMessages += e + "\n"; }
-                transNew.Commit();
+
+                _committer?.Commit(transNew);
+                ErrorMessages += _committer?.ErrorMessages;
             }
 
             return mEPCurve;
@@ -165,10 +174,9 @@ namespace DS.RevitLib.Utils.MEP.Creator
 
                 catch (Exception e)
                 { ErrorMessages += e + "\n"; }
-                if (transNew.HasStarted())
-                {
-                    transNew.Commit();
-                }
+
+                _committer?.Commit(transNew);
+                ErrorMessages += _committer?.ErrorMessages;
             }
 
             return newElement;
@@ -195,10 +203,9 @@ namespace DS.RevitLib.Utils.MEP.Creator
                 }
                 catch (Exception e)
                 { ErrorMessages += e + "\n"; }
-                if (transNew.HasStarted())
-                {
-                    transNew.Commit();
-                }
+
+                _committer?.Commit(transNew);
+                ErrorMessages += _committer?.ErrorMessages;
             }
 
             return BaseMEPCurve;
@@ -228,12 +235,10 @@ namespace DS.RevitLib.Utils.MEP.Creator
                 }
 
                 catch (Exception e)
-                { }
+                { ErrorMessages += e + "\n"; }
 
-                if (transNew.HasStarted())
-                {
-                    transNew.Commit();
-                }
+                _committer?.Commit(transNew);
+                ErrorMessages += _committer?.ErrorMessages;
             }
             return mEPCurve;
         }
@@ -255,10 +260,9 @@ namespace DS.RevitLib.Utils.MEP.Creator
                 }
                 catch (Exception e)
                 { ErrorMessages += e + "\n"; }
-                if (transNew.HasStarted())
-                {
-                    transNew.Commit();
-                }
+
+                _committer?.Commit(transNew);
+                ErrorMessages += _committer?.ErrorMessages;
             }
 
             return BaseMEPCurve;

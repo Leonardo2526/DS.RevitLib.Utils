@@ -106,8 +106,12 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Solids\SolidExtractor.cs" />
     <Compile Include="Solids\SolidUtils.cs" />
+    <Compile Include="TransactionCommitter\Committer.cs" />
+    <Compile Include="TransactionCommitter\BaseCommitter.cs" />
+    <Compile Include="TransactionCommitter\RollBackCommitter.cs" />
     <Compile Include="XYZUtils.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>
