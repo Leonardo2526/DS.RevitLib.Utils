@@ -24,17 +24,15 @@ namespace DS.RevitLib.Utils.Solids
             double minVolumeCm = UnitUtils.ConvertToInternalUnits(minVolume, DisplayUnitType.DUT_CUBIC_CENTIMETERS);
 
             Solid initialSolid = solids.FirstOrDefault();
-            solids.Remove(initialSolid);
-
-            foreach (var solid in solids)
+            for (int i = 1; i < solids.Count; i++)
             {
-                if (solid.Volume < minVolumeCm)
+                if (solids[i].Volume < minVolumeCm)
                 {
                     continue;
                 }
                 try
                 {
-                    initialSolid = BooleanOperationsUtils.ExecuteBooleanOperation(solid, initialSolid, BooleanOperationsType.Union);
+                    initialSolid = BooleanOperationsUtils.ExecuteBooleanOperation(solids[i], initialSolid, BooleanOperationsType.Union);
                 }
                 catch (Exception ex)
                 {

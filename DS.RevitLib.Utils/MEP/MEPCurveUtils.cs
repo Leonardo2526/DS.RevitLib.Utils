@@ -370,10 +370,13 @@ namespace DS.RevitLib.Utils.MEP
                 case ConnectorProfileType.Invalid:
                     break;
                 case ConnectorProfileType.Round:
-                    area = Math.PI * Math.Pow(mEPCurve.Diameter, 2) / 4;
+                    double d = mEPCurve.get_Parameter(BuiltInParameter.RBS_PIPE_OUTER_DIAMETER).AsDouble();
+                    area = Math.PI * Math.Pow(d, 2) / 4;
                     break;
                 case ConnectorProfileType.Rectangular:
-                    area = mEPCurve.Width * mEPCurve.Height;
+                    double width = mEPCurve.get_Parameter(BuiltInParameter.RBS_CURVE_WIDTH_PARAM).AsDouble();
+                    double height = mEPCurve.get_Parameter(BuiltInParameter.RBS_CURVE_HEIGHT_PARAM).AsDouble();
+                    area = width * height;
                     break;
                 case ConnectorProfileType.Oval:
                     break;
