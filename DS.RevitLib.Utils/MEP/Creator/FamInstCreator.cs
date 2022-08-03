@@ -77,10 +77,6 @@ namespace DS.RevitLib.Utils.MEP.Creator
 
                 _committer.Commit(transNew);
                 ErrorMessages += _committer?.ErrorMessages;
-                //if (transNew.HasStarted())
-                //{
-                //    transNew.Commit();
-                //}
             }
             return familyInstance;
         }
