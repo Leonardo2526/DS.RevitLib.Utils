@@ -74,6 +74,7 @@
     <Compile Include="Extensions\ElementExtension.cs" />
     <Compile Include="Extensions\MEPCurveExtension.cs" />
     <Compile Include="Extensions\XYZExtension.cs" />
+    <Compile Include="MEP\AbstractCreator.cs" />
     <Compile Include="MEP\Creator\Builders\BuilderByPoints.cs" />
     <Compile Include="MEP\Creator\Builders\MEPSystemBuilder.cs" />
     <Compile Include="MEP\Creator\Builders\RotationBuilder.cs" />

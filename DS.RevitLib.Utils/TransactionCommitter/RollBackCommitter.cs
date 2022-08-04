@@ -19,6 +19,10 @@ namespace DS.RevitLib.Utils.TransactionCommitter
                 {
                     ErrorMessages += name + "\n";
                 }
+                if (name.Contains("Warning"))
+                {
+                    WarningMessages += name + "\n";
+                }
             }
         }
     }
