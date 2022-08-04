@@ -155,7 +155,7 @@ namespace DS.RevitLib.Utils.MEP
 
             List<XYZ> difPlanePoints = GetNotEqualPoints(planePoints);
 
-            if(difPlanePoints.Count <3)
+            if (difPlanePoints.Count < 3)
             {
                 return null;
             }
@@ -172,7 +172,7 @@ namespace DS.RevitLib.Utils.MEP
             };
 
             foreach (var point in planePoints)
-            {               
+            {
                 if (IsPointContainsInList(difPlanePoints, point))
                 {
                     continue;
@@ -205,9 +205,9 @@ namespace DS.RevitLib.Utils.MEP
         /// <returns>Return true if directions are equal.</returns>
         public static bool IsDirectionEqual(MEPCurve mEPCurve1, MEPCurve mEPCurve2)
         {
-            if(GetDirection(mEPCurve1).IsAlmostEqualTo(GetDirection(mEPCurve2)) ||
+            if (GetDirection(mEPCurve1).IsAlmostEqualTo(GetDirection(mEPCurve2)) ||
                 GetDirection(mEPCurve1).Negate().IsAlmostEqualTo(GetDirection(mEPCurve2)))
-                {
+            {
                 return true;
             }
             return false;
@@ -259,7 +259,7 @@ namespace DS.RevitLib.Utils.MEP
             XYZ baseDir = GetDirection(baseMEPCurve);
             XYZ dir = GetDirection(mEPCurve);
 
-            List<XYZ> baseNorms = GetOrthoNormVectors(baseMEPCurve);           
+            List<XYZ> baseNorms = GetOrthoNormVectors(baseMEPCurve);
 
             XYZ measureVector = GetMesureVector(baseNorms, dir, baseDir);
 
@@ -284,10 +284,10 @@ namespace DS.RevitLib.Utils.MEP
         {
             foreach (var norm in baseNorms)
             {
-                    if(!XYZUtils.Collinearity(dir, norm))
-                    {
-                        return norm;
-                    }              
+                if (!XYZUtils.Collinearity(dir, norm))
+                {
+                    return norm;
+                }
             }
 
             return null;
@@ -313,7 +313,7 @@ namespace DS.RevitLib.Utils.MEP
         {
             var doc = mEPCurve.Document;
             var type = doc.GetElement(mEPCurve.GetTypeId()) as MEPCurveType;
-            return type.Shape;           
+            return type.Shape;
         }
 
         /// <summary>
@@ -360,8 +360,10 @@ namespace DS.RevitLib.Utils.MEP
         public static double GetCrossSectionArea(MEPCurve mEPCurve)
         {
             var doc = mEPCurve.Document;
+
             var type = doc.GetElement(mEPCurve.GetTypeId()) as MEPCurveType;
             var shape = type.Shape;
+            string typeName = mEPCurve.GetType().Name;
 
             double area = 0;
 
@@ -370,7 +372,15 @@ namespace DS.RevitLib.Utils.MEP
                 case ConnectorProfileType.Invalid:
                     break;
                 case ConnectorProfileType.Round:
-                    double d = mEPCurve.get_Parameter(BuiltInParameter.RBS_CURVE_DIAMETER_PARAM).AsDouble();
+                    double d;
+                    if (typeName == "Pipe")
+                    {
+                        d = mEPCurve.get_Parameter(BuiltInParameter.RBS_PIPE_OUTER_DIAMETER).AsDouble();
+                    }
+                    else
+                    {
+                        d = mEPCurve.get_Parameter(BuiltInParameter.RBS_CURVE_DIAMETER_PARAM).AsDouble();
+                    }
                     area = Math.PI * Math.Pow(d, 2) / 4;
                     break;
                 case ConnectorProfileType.Rectangular:
