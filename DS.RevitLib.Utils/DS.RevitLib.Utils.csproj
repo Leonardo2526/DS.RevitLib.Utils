@@ -78,8 +78,8 @@
     <Compile Include="MEP\Creator\Builders\BuilderByPoints.cs" />
     <Compile Include="MEP\Creator\Builders\MEPSystemBuilder.cs" />
     <Compile Include="MEP\Creator\Builders\RotationBuilder.cs" />
-    <Compile Include="MEP\Creator\MEPCurvesModel.cs" />
-    <Compile Include="MEP\Creator\MEPSystemModel.cs" />
+    <Compile Include="MEP\Models\MEPCurvesModel.cs" />
+    <Compile Include="MEP\Models\MEPSystemModel.cs" />
     <Compile Include="MEP\Creator\ParameterSetter.cs" />
     <Compile Include="MEP\Neighbours\INeighbourSearch.cs" />
     <Compile Include="MEP\Neighbours\Neighbour.cs" />

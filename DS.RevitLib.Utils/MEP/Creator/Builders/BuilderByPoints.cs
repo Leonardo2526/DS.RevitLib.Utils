@@ -51,7 +51,8 @@ namespace DS.RevitLib.Utils.MEP.Creator
                 MEPSystemModel.MEPCurves.Add(mEPCurve);
             }
 
-            return new MEPCurvesModel(MEPSystemModel, Doc, _committer, TransactionPrefix, mEPCurveCreator.ErrorMessages);
+            ErrorMessages = mEPCurveCreator.ErrorMessages;
+            return new MEPCurvesModel(MEPSystemModel, Doc, _committer, TransactionPrefix);
         }
 
      

@@ -15,14 +15,13 @@ namespace DS.RevitLib.Utils.MEP.Creator
         private readonly string _transactionPrefix;
 
         public MEPCurvesModel(MEPSystemModel mEPSystemModel, Document doc, Committer committer, 
-            string transactionPrefix, string errorMessages = "")
+            string transactionPrefix)
         {
             _doc = doc;
             this._committer = committer;
             AllElements = mEPSystemModel.AllElements;
             MEPCurves = mEPSystemModel.MEPCurves;
             _transactionPrefix = transactionPrefix;
-            ErrorMessages = errorMessages;
         }
 
 
@@ -37,7 +36,6 @@ namespace DS.RevitLib.Utils.MEP.Creator
                     CreateFittingByMEPCurves(MEPCurves[i] as MEPCurve, MEPCurves[i + 1] as MEPCurve);
                 AllElements.Insert(i + 1, familyInstance);
             }
-            ErrorMessages = famInstCreator.ErrorMessages;
             return this;
         }
     }

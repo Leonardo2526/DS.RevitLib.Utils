@@ -33,7 +33,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
         protected readonly MEPCurve BaseMEPCurve;
         protected readonly string TransactionPrefix;
 
-        protected string ErrorMessages { get; private set; }
+        public string ErrorMessages { get; protected set; }
 
         #endregion
 
