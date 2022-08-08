@@ -13,19 +13,25 @@ namespace DS.RevitLib.Utils.MEP.Models
     {
         private readonly Document _doc;
         private Element _baseElement;
+        private readonly XYZ _direction;
 
         public Element _nodeElem1;
         public Element _nodeElem2;
-
-        private List<BuiltInCategory> BoundaryCategories { get; } = new List<BuiltInCategory>()
-        {BuiltInCategory.OST_PipeFitting, BuiltInCategory.OST_DuctFitting };
 
 
         public ComponentBuilder(Element baseElement)
         {
             _baseElement = baseElement;
             _doc = baseElement.Document;
+            _direction = ElementUtils.GetDirections(baseElement).First();
         }
+
+        public List<MEPSystemComponent> MEPSystemComponents { get; private set; } = new List<MEPSystemComponent>();
+
+        private List<BuiltInCategory> BoundaryCategories { get; } = new List<BuiltInCategory>()
+        {BuiltInCategory.OST_PipeFitting, BuiltInCategory.OST_DuctFitting };
+
+
 
         public MEPSystemComponent Build()
         {
@@ -55,16 +61,22 @@ namespace DS.RevitLib.Utils.MEP.Models
 
                 if (connectedElements is null | !connectedElements.Any())
                 {
-                    _elements.Move(0, _elements.Count -1);
+                    _elements.Move(0, _elements.Count - 1);
                 }
                 else
                 {
-                    foreach (var connetedElement in connectedElements)
+                    foreach (var connectedElement in connectedElements)
                     {
-                        if (!IsNodeElement(connetedElement))
+                        if (ConnectorUtils.CheckConnectorsDirection(_direction, connectedElement))
                         {
-                            stack.Push(connetedElement);
+                            stack.Push(connectedElement);
                         }
+                        else
+                        {
+                            var comp = new ComponentBuilder(connectedElement).Build();
+                            MEPSystemComponents.Add(comp);
+                        }
+
                     }
                 }
 
@@ -78,7 +90,7 @@ namespace DS.RevitLib.Utils.MEP.Models
             return false;
         }
 
-     
+
         /// <summary>
         /// Get element from connected whose direction is equal to group direction
         /// </summary>

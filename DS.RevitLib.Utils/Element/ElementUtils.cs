@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using DS.RevitLib.Utils.Solids;
 using DS.RevitLib.Utils.MEP;
+using DS.RevitLib.Utils.Extensions;
 
 namespace DS.RevitLib.Utils
 {
@@ -301,6 +302,32 @@ namespace DS.RevitLib.Utils
             }
 
             return facesArray;
+        }
+
+        /// <summary>
+        /// Get element's directions.
+        /// </summary>
+        /// <param name="mEPCurve"></param>
+        /// <returns>Return vectors(directions) by all connectors of element</returns>
+        public static List<XYZ> GetDirections(Element element)
+        {
+            var dirs = new List<XYZ>();
+
+            var connectors = new Stack<Connector>(ConnectorUtils.GetConnectors(element));
+
+            while (connectors.Count>1)
+            {
+                var currentConnector = connectors.Pop();
+                var restConnectors = new List<Connector>(connectors);
+
+                foreach (var con in restConnectors)
+                {
+                    var dir = (currentConnector.Origin - con.Origin).RoundVector().Normalize();
+                    dirs.Add(dir);
+                }
+            }
+
+            return dirs;
         }
     }
 }
