@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.MEP.Creator
 {
-    public class BuilderByPoints : MEPSystemBuilder
+    public class BuilderByPoints : MEPSystemComponentBuilder
     {
         private List<XYZ> _Points = new List<XYZ>();
         private readonly Committer _committer;
@@ -47,12 +47,12 @@ namespace DS.RevitLib.Utils.MEP.Creator
 
                 baseMEPCurve = mEPCurve;
 
-                MEPSystemModel.AllElements.Add(mEPCurve);
-                MEPSystemModel.MEPCurves.Add(mEPCurve);
+                MEPSystemComponent.Elements.Add(mEPCurve);
+                MEPSystemComponent.MEPCurves.Add(mEPCurve);
             }
 
             ErrorMessages = mEPCurveCreator.ErrorMessages;
-            return new MEPCurvesModel(MEPSystemModel, Doc, _committer, TransactionPrefix);
+            return new MEPCurvesModel(MEPSystemComponent, Doc, _committer, TransactionPrefix);
         }
 
      

@@ -85,7 +85,7 @@ namespace DS.RevitLib.Utils.MEP
         /// </summary>
         /// <param name="element"></param>
         /// <returns>Return true if element is not System or Insulation type</returns>
-        public static bool CheckMEPElement(Element element)
+        public static bool IsValidType(Element element)
         {
             Type type = element.GetType();
 

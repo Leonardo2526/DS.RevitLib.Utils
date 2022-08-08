@@ -1,37 +1,33 @@
 ﻿using Autodesk.Revit.DB;
+using DS.RevitLib.Utils.MEP.Creator;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DS.RevitLib.Utils.MEP.Creator
+namespace DS.RevitLib.Utils.MEP.Models
 {
-    public class MEPSystemModel
+    public class MEPSystemModel : MEPSystemComponent
     {
 
-        #region Properties
+        public MEPSystemModel(Element baseElement) : base(baseElement)
+        {
+        }
 
-        public List<Element> MEPCurves { get; set; } = new List<Element>();
-        public List<Element> AllElements { get; set; } = new List<Element>();
-
-        public Connector StartConnector
+        public List<MEPSystemComponent> MEPSystemComponents { get; private set; } = new List<MEPSystemComponent>();
+        public List<Element> AllElements
         {
             get
             {
-                var cons1 = ConnectorUtils.GetFreeConnector(AllElements.First());
-                return cons1.FirstOrDefault();
-            }
-        }
-        public Connector EndConnector
-        {
-            get
-            {
-                var cons1 = ConnectorUtils.GetFreeConnector(AllElements.Last());
-                return cons1.FirstOrDefault();
+                return MEPSystemComponents.SelectMany(x => x.Elements).ToList();
             }
         }
 
-        #endregion
+
+        public void Add(MEPSystemComponent c)
+        {
+            MEPSystemComponents.Add(c);
+        }
     }
 }

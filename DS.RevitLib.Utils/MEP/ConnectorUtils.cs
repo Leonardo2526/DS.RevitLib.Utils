@@ -26,7 +26,7 @@ namespace DS.RevitLib.Utils.MEP
                 foreach (Connector con in connectorSet)
                 {
                     ElementId elementId = con.Owner.Id;
-                    if (elementId != element.Id && MEPElementUtils.CheckMEPElement(con.Owner))
+                    if (elementId != element.Id && MEPElementUtils.IsValidType(con.Owner))
                     {
                         connectedElements.Add(con.Owner);
                     }
@@ -83,13 +83,23 @@ namespace DS.RevitLib.Utils.MEP
 
             foreach (var one in elements)
             {
-                if (!excludedElements.Any(two => two.Id == one.Id))
+                if ((bool)!excludedElements?.Any(two => two.Id == one.Id))
                 {
                     NoIntersections.Add(one);
                 }
             }
 
             return NoIntersections;
+        }
+
+        /// <summary>
+        /// Get all sysytem elements connected to current element. 
+        /// </summary>
+        public static List<Element> GetConnectedElements(Element element, Document Doc)
+        {
+            INeighbourSearch neighbourSearch = new Search();
+            NeighbourElement neighbourElement = new NeighbourElement(neighbourSearch);
+            return neighbourElement.GetAllNeighbours(new List<Element>() { element }, new List<Element>(), Doc);
         }
 
         public static void GetNeighbourConnectors(out Connector con1, out Connector con2,
@@ -250,7 +260,7 @@ namespace DS.RevitLib.Utils.MEP
 
                 foreach (Connector con in connectorSet)
                 {
-                    if (con.Owner.Id == element2.Id && MEPElementUtils.CheckMEPElement(con.Owner))
+                    if (con.Owner.Id == element2.Id && MEPElementUtils.IsValidType(con.Owner))
                     {
                         return (elem1Con, con);
                     }
