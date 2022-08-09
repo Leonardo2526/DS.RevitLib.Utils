@@ -10,20 +10,39 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
 {
     public class MEPSystemModel
     {
-        public Component RootComponent { get; set; }
+        public Composite RootComponent { get; set; }
 
-        public MEPSystemModel(Component rootComponent)
+        public MEPSystemModel(Composite rootComponent)
         {
             RootComponent = rootComponent;
         }
 
-        //public List<MEPSystemComponent> MEPSystemComponents { get; private set; } = new List<MEPSystemComponent>();
-        //public List<Element> AllElements
-        //{
-        //    get
-        //    {
-        //        return MEPSystemComponents.SelectMany(x => x.Elements).ToList();
-        //    }
-        //}
+        public List<MEPSystemComponent> MEPSystemComponents
+        {
+            get
+            {
+                return GetMEPSystemComponents();
+            }
+        }
+        public List<Element> AllElements
+        {
+            get
+            {
+                return MEPSystemComponents.SelectMany(x => x.Elements).ToList();
+            }
+        }
+
+
+        private List<MEPSystemComponent> GetMEPSystemComponents()
+        {
+            List<MEPSystemComponent> list = new List<MEPSystemComponent>();
+            foreach (var comp in RootComponent.children)
+            {
+                var mepComp = comp as MEPSystemComponent;
+                list.Add(mepComp);
+            }
+
+            return list;
+        }
     }
 }

@@ -9,14 +9,14 @@ namespace DS.RevitLib.Utils.MEP.SystemTree.Relatives
 {
     internal abstract class ElementRelation
     {
-        private readonly Element _element;
-        private readonly Element _ownNode;
-        private readonly XYZ _ownDirection;
+        protected readonly Element _element;
+        protected readonly Element _connectedElement;
+        protected readonly XYZ _ownDirection;
 
-        protected ElementRelation(Element element, Element ownNode, XYZ ownDirection)
+        protected ElementRelation(Element element, Element connectedToElement, XYZ ownDirection)
         {
             _element = element;
-            _ownNode = ownNode;
+            _connectedElement = connectedToElement;
             _ownDirection = ownDirection;
         }
 

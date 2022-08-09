@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.MEP.SystemTree
 {
-    internal class Composite : Component
+    public class Composite : Component
     {
         public Composite(Element baseElement) : base(baseElement)
         {

@@ -14,7 +14,7 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
     {
         private readonly Document _doc;
         private Element _baseElement;
-        private readonly XYZ _direction;
+        public XYZ _direction;
         public MEPSystemBuilder _mEPSystemBuilder;
 
         public ComponentBuilder(Element baseElement, MEPSystemBuilder mEPSystemBuilder)
@@ -28,6 +28,7 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
 
         public List<NodeElement> Nodes { get; set; } = new List<NodeElement>();
         public Stack<Element> OwnStack { get; set; } = new Stack<Element>();
+        public ObservableCollection<Element> Elements { get; set; } = new ObservableCollection<Element>();
 
         private List<BuiltInCategory> BoundaryCategories { get; } = new List<BuiltInCategory>()
         {BuiltInCategory.OST_PipeFitting, BuiltInCategory.OST_DuctFitting };
@@ -44,7 +45,6 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
 
         private ObservableCollection<Element> GetElements(Element element)
         {
-            var elements = new ObservableCollection<Element>();
 
             OwnStack.Push(element);
 
@@ -53,14 +53,14 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
                 var currentElement = OwnStack.Pop();
 
                 List<Element> connectedElements = ConnectorUtils.GetConnectedElements(currentElement);
-                connectedElements = elements.Any() ?
-                    connectedElements.Where(x => x.Id != elements.Last().Id).ToList() : connectedElements;
+                connectedElements = Elements.Any() ?
+                    connectedElements.Where(x => x.Id != Elements.Last().Id).ToList() : connectedElements;
 
-                elements.Add(currentElement);
+                Elements.Add(currentElement);
 
                 if (connectedElements is null | !connectedElements.Any() && OwnStack.Count == 1)
                 {
-                    elements.Move(0, elements.Count - 1);
+                    Elements.Move(0, Elements.Count - 1);
                 }
                 else
                 {
@@ -68,7 +68,7 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
                 }
             }
 
-            return elements;
+            return Elements;
         }
 
         private void SortByRelation(List<Element> connectedElements, Stack<Element> stack, Element currentElement)
@@ -76,22 +76,30 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
             foreach (var connectedElement in connectedElements)
             {
 
-                //if (IsNodeElement(currentElement, out PartType partType))
-                //{
-                    //var postNodePusher = new PostNodePusher(connectedElement);
-                    //postNodePusher.Push();
-                //}
+                if (MEPElementUtils.IsNodeElement(currentElement))
+                {
+                    NodeElement nodeElement = Nodes.Where(x => x.Element.Id == currentElement.Id).First();
+                    var postNodePusher = new PostNodePusher(connectedElement, nodeElement, this);
+                    postNodePusher.Push();
 
-                //if (IsNodeElement(_element, out PartType partType))
-                //{
-                //    var relationFinder = new RelationFinder(connectedElement, currentElement, _direction, _mEPSystemBuilder);
-                //    var relation = relationFinder.Find();
-                //    Nodes.Add(new NodeElement(connectedElement, relation));
-                //}
+                    if (postNodePusher.PushedToParent)
+                    {
+                        break;
+                    }
+
+                    continue;
+                }
+
+                if (MEPElementUtils.IsNodeElement(connectedElement))
+                {
+                    var nodePusher = new NodePusher(connectedElement, currentElement, _direction, this);
+                    nodePusher.Push();
+
+
+                    continue;
+                }
 
                 stack.Push(connectedElement);
-
-
 
             }
 
