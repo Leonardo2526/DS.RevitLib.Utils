@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.DB;
+using DS.RevitLib.Utils.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,24 +10,59 @@ namespace DS.RevitLib.Utils.MEP.SystemTree.Relatives
 {
     internal class TeeRelation : ElementRelation
     {
-        public TeeRelation(Element element, Element connectedToElement, XYZ ownDirection) : base(element, connectedToElement, ownDirection)
+        public TeeRelation(FamilyInstance familyInst, Element connectedElement) : base(familyInst, connectedElement)
         {
         }
 
         public override Relation Get()
         {
-            var conDirs = ElementUtils.GetDirections(_element);
-            var collinears = conDirs.Where(x => XYZUtils.Collinearity(x, _ownDirection)).ToList();
+            var collinear = GetCollinear();
 
-            if (collinears.Any())
-            {
-                return Relation.Child; 
-            }
-            else
+            if (collinear is null)
             {
                 return Relation.Parent;
             }
+            else
+            {
+                return Relation.Child;
+            }
 
         }
+
+        private XYZ GetCollinear()
+        {
+            var center = ElementUtils.GetLocationPoint(_familyInst);
+            var commonConnector = ConnectorUtils.GetCommonConnectors(_familyInst, _connectedElement).elem2Con;
+            var systemDirection = (center - commonConnector.Origin).RoundVector().Normalize();
+
+            var conDirs = ElementUtils.GetDirections(_familyInst);
+
+            foreach (var dir in conDirs)
+            {              
+                if (XYZUtils.Collinearity(dir, systemDirection))
+                {
+                    return dir;
+                }
+            }
+
+            return null;
+        }
+
+
+        //public override Relation Get()
+        //{
+        //    var conDirs = ElementUtils.GetDirections(_element);
+        //    var collinears = conDirs.Where(x => XYZUtils.Collinearity(x, _connectedDirection)).ToList();
+
+        //    if (collinears.Any())
+        //    {
+        //        return Relation.Child;
+        //    }
+        //    else
+        //    {
+        //        return Relation.Parent;
+        //    }
+
+        //}
     }
 }

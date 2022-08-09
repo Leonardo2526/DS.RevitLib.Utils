@@ -12,10 +12,6 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
     /// </summary>
     public class MEPSystemComponent : Component
     {
-        public MEPSystemComponent(Element baseElement) : base(baseElement)
-        {
-        }
-
         #region Properties
 
         public List<MEPCurve> MEPCurves
@@ -29,7 +25,7 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
 
         public List<Element> Elements { get; set; }
 
-        public List<Element> ChildNodes { get; set; }
+        public List<FamilyInstance> ChildNodes { get; set; }
 
         public Element ParentNode1 { get; set; }
 

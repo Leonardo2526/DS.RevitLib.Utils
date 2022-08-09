@@ -85,9 +85,11 @@
     <Compile Include="MEP\Models\MEPCurvesModel.cs" />
     <Compile Include="MEP\Models\MEPElement.cs" />
     <Compile Include="MEP\SystemTree\Composite.cs" />
+    <Compile Include="MEP\SystemTree\Pusher.cs" />
     <Compile Include="MEP\SystemTree\Relatives\Node.cs" />
     <Compile Include="MEP\SystemTree\Relatives\NodePusher.cs" />
     <Compile Include="MEP\SystemTree\Relatives\PostNodePusher.cs" />
+    <Compile Include="MEP\SystemTree\Relatives\Pusher.cs" />
     <Compile Include="MEP\SystemTree\Relatives\RealtionshipsFinder.cs" />
     <Compile Include="MEP\SystemTree\MEPSystemComponent.cs" />
     <Compile Include="MEP\Creator\ParameterSetter.cs" />

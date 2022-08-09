@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DS.RevitLib.Utils.MEP.SystemTree.Relatives
+namespace DS.RevitLib.Utils.MEP.SystemTree
 {
-    public enum Relation
+    internal class Pusher
     {
-        Child, Parent, Default
     }
 }

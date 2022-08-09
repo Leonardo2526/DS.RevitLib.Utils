@@ -19,27 +19,53 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
 
         //public Stack<Element> OwnStack { get; set; } = new Stack<Element>();
         public Stack<Element> ParentStack { get; set; } = new Stack<Element>();
-        public Stack<Element> ChildStack { get; set; } = new Stack<Element>();
 
         public MEPSystemModel Build()
         {
-            var rootModel = new Composite(_element);
+            var rootModel = new Composite();
             var builder = new ComponentBuilder(_element, this);
             var comp = builder.Build();
             rootModel.Add(comp);
 
-            var childModel = new Composite(_element);
+            var childs = GetChilds(builder);
+            rootModel.Add(childs);
 
-            foreach (var childNode in ChildStack)
+
+
+
+
+
+            return new MEPSystemModel(rootModel);
+        }
+
+
+        private Composite GetChilds(ComponentBuilder builder)
+        {
+            if (!builder.ChildElements.Any())
+            {
+                return null;
+            }
+
+            //add childs components
+            var childModel = new Composite();
+
+            foreach (var childNode in builder.ChildElements)
             {
                 var childBuilder = new ComponentBuilder(childNode, this);
                 var childComp = childBuilder.Build();
+
+                //add childs of child
+                var childs = GetChilds(childBuilder);
+                if (childs is not null && childs.children.Any())
+                {
+                    childModel.Add(childs);
+                }
+
+                //add child component
                 childModel.Add(childComp);
             }
 
-            rootModel.Add(childModel);
-
-            return new MEPSystemModel(rootModel);
+            return childModel;
         }
     }
 }

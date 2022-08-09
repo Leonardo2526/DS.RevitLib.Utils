@@ -27,7 +27,9 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
 
 
         public List<NodeElement> Nodes { get; set; } = new List<NodeElement>();
-        public Stack<Element> OwnStack { get; set; } = new Stack<Element>();
+        public Stack<Element> Stack { get; set; } = new Stack<Element>();
+        public List<Element> ChildElements { get; set; } = new List<Element>();
+
         public ObservableCollection<Element> Elements { get; set; } = new ObservableCollection<Element>();
 
         //private List<BuiltInCategory> BoundaryCategories { get; } = new List<BuiltInCategory>()
@@ -37,7 +39,7 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
 
         public MEPSystemComponent Build()
         {
-            var mEPSystemComponent = new MEPSystemComponent(_baseElement);
+            var mEPSystemComponent = new MEPSystemComponent();
 
             //fill elements
             mEPSystemComponent.Elements = GetElements(_baseElement).ToList();
@@ -45,7 +47,7 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
             if (Nodes.Any())
             {
                 //fill parent Nodes
-                var parentNodes = Nodes.Where(x => x.Relation == Relation.Parent).ToList();
+                var parentNodes = Nodes.Where(x => x.SystemRelation == Relation.Parent).ToList();
                 switch (parentNodes.Count)
                 {
                     case 1:
@@ -62,7 +64,7 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
                 }
 
                 //fill child nodes
-                var childNodes = Nodes.Where(x => x.Relation == Relation.Child).ToList();
+                var childNodes = Nodes.Where(x => x.SystemRelation == Relation.Child).ToList();
                 if (childNodes.Any())
                 {
                     mEPSystemComponent.ChildNodes = childNodes.Select(x => x.Element).ToList();
@@ -77,11 +79,11 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
         private ObservableCollection<Element> GetElements(Element element)
         {
 
-            OwnStack.Push(element);
+            Stack.Push(element);
 
-            while (OwnStack.Any())
+            while (Stack.Any())
             {
-                var currentElement = OwnStack.Pop();
+                var currentElement = Stack.Pop();
 
                 List<Element> connectedElements = ConnectorUtils.GetConnectedElements(currentElement);
                 connectedElements = Elements.Any() ?
@@ -89,13 +91,13 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
 
                 Elements.Add(currentElement);
 
-                if (connectedElements is null | !connectedElements.Any() && OwnStack.Count == 1)
+                if (connectedElements is null | !connectedElements.Any() && Stack.Count == 1)
                 {
                     Elements.Move(0, Elements.Count - 1);
                 }
                 else
                 {
-                    SortByRelation(connectedElements, OwnStack, currentElement);
+                    SortByRelation(connectedElements, Stack, currentElement);
                 }
             }
 
@@ -114,7 +116,7 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
             {
                 if (currentNodeElement is not null)
                 {
-                    var postNodePusher = new PostNodePusher(connectedElement, currentNodeElement, this);
+                    var postNodePusher = new PostNodePusher(currentNodeElement, connectedElement, this);
                     postNodePusher.Push();
 
                     if (postNodePusher.PushedToParent)
@@ -127,7 +129,8 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
 
                 if (MEPElementUtils.IsNodeElement(connectedElement))
                 {
-                    var nodePusher = new NodePusher(connectedElement, currentElement, _direction, this);
+                    var nodePusher = new NodePusher
+                        (new NodeElement(connectedElement as FamilyInstance), currentElement, this);
                     nodePusher.Push();
 
 

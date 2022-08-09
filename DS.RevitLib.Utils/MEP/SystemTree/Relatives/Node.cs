@@ -9,13 +9,13 @@ namespace DS.RevitLib.Utils.MEP.SystemTree.Relatives
 {
     public class NodeElement
     {
-        public NodeElement(Element element, Relation relation)
+        public NodeElement(FamilyInstance element, Relation relation = Relation.Default)
         {
             this.Element = element;
-            Relation = relation;
+            SystemRelation = relation;
         }
 
-        public Element Element { get; }
-        public Relation Relation { get; }
+        public FamilyInstance Element { get; }
+        public Relation SystemRelation { get; set; }
     }
 }
