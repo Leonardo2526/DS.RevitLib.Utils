@@ -16,7 +16,7 @@ namespace DS.RevitLib.Utils.MEP.SystemTree.Relatives
         private readonly ComponentBuilder _componentBuilder;
 
 
-        public NodePusher(Element connectedElement, Element currentElement, XYZ ownDirection, ComponentBuilder componentBuilder) 
+        public NodePusher(Element connectedElement, Element currentElement, XYZ ownDirection, ComponentBuilder componentBuilder)
         {
             _currentElement = currentElement;
             _node = connectedElement;
@@ -27,21 +27,21 @@ namespace DS.RevitLib.Utils.MEP.SystemTree.Relatives
 
         public void Push()
         {
-                    _componentBuilder.OwnStack.Push(_node);
+            _componentBuilder.OwnStack.Push(_node);
 
             Relation relation = GetRelation(_node);
 
-            switch (relation)
-            {               
-                case Relation.Child:
-                    _componentBuilder._mEPSystemBuilder.ChildStack.Push(_node);
-                    break;
-                case Relation.Parent:
-                    _componentBuilder._mEPSystemBuilder.ParentStack.Push(_node);
-                    break;
-                default:
-                    break;
-            }
+            //switch (relation)
+            //{               
+            //    case Relation.Child:
+            //        _componentBuilder._mEPSystemBuilder.ChildStack.Push(_node);
+            //        break;
+            //    case Relation.Parent:
+            //        _componentBuilder._mEPSystemBuilder.ParentStack.Push(_node);
+            //        break;
+            //    default:
+            //        break;
+            //}
 
             _componentBuilder.Nodes.Add(new NodeElement(_node, relation));
         }

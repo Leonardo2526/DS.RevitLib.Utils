@@ -18,35 +18,25 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
 
         #region Properties
 
-        public List<MEPCurve> MEPCurves { get; set; } = new List<MEPCurve>();
-        public List<Element> Elements { get; set; } = new List<Element>();
-
-        public Connector StartConnector
+        public List<MEPCurve> MEPCurves
         {
             get
             {
-                var cons1 = ConnectorUtils.GetFreeConnector(Elements.First());
-                return cons1.FirstOrDefault();
-            }
-        }
-        public Connector EndConnector
-        {
-            get
-            {
-                var cons1 = ConnectorUtils.GetFreeConnector(Elements.Last());
-                return cons1.FirstOrDefault();
+                return Elements.Where(x => ElementUtils.IsElementMEPCurve(x)).
+                    Select(x => x as MEPCurve).ToList();
             }
         }
 
+        public List<Element> Elements { get; set; }
 
-        public Element NodeElem1 { get; set; }
-        public Element NodeElem2{ get; set; }
+        public List<Element> ChildNodes { get; set; }
+
+        public Element ParentNode1 { get; set; }
+
+        public Element ParentNode2{ get; set; }
+
 
         #endregion
 
-        private Element GetNodeElement()
-        {
-            return Elements.FirstOrDefault();
-        }
     }
 }

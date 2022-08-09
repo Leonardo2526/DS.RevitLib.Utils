@@ -22,7 +22,7 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
             _baseElement = baseElement;
             _doc = baseElement.Document;
             _direction = ElementUtils.GetDirections(baseElement).First();
-            this._mEPSystemBuilder = mEPSystemBuilder;
+            _mEPSystemBuilder = mEPSystemBuilder;
         }
 
 
@@ -30,15 +30,46 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
         public Stack<Element> OwnStack { get; set; } = new Stack<Element>();
         public ObservableCollection<Element> Elements { get; set; } = new ObservableCollection<Element>();
 
-        private List<BuiltInCategory> BoundaryCategories { get; } = new List<BuiltInCategory>()
-        {BuiltInCategory.OST_PipeFitting, BuiltInCategory.OST_DuctFitting };
+        //private List<BuiltInCategory> BoundaryCategories { get; } = new List<BuiltInCategory>()
+        //{BuiltInCategory.OST_PipeFitting, BuiltInCategory.OST_DuctFitting };
 
 
 
         public MEPSystemComponent Build()
         {
             var mEPSystemComponent = new MEPSystemComponent(_baseElement);
+
+            //fill elements
             mEPSystemComponent.Elements = GetElements(_baseElement).ToList();
+
+            if (Nodes.Any())
+            {
+                //fill parent Nodes
+                var parentNodes = Nodes.Where(x => x.Relation == Relation.Parent).ToList();
+                switch (parentNodes.Count)
+                {
+                    case 1:
+                        mEPSystemComponent.ParentNode1 = parentNodes.First().Element;
+                        break;
+                    case 2:
+                        mEPSystemComponent.ParentNode1 = parentNodes.First().Element;
+                        mEPSystemComponent.ParentNode2 = parentNodes.Last().Element;
+                        break;
+                    case > 2:
+                        throw new ArgumentException();
+                    default:
+                        break;
+                }
+
+                //fill child nodes
+                var childNodes = Nodes.Where(x => x.Relation == Relation.Child).ToList();
+                if (childNodes.Any())
+                {
+                    mEPSystemComponent.ChildNodes = childNodes.Select(x => x.Element).ToList();
+                }
+            }
+
+
 
             return mEPSystemComponent;
         }
@@ -73,13 +104,17 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
 
         private void SortByRelation(List<Element> connectedElements, Stack<Element> stack, Element currentElement)
         {
+            NodeElement currentNodeElement = null;
+            if (MEPElementUtils.IsNodeElement(currentElement))
+            {
+                currentNodeElement = Nodes.Where(x => x.Element.Id == currentElement.Id).First();
+            }
+
             foreach (var connectedElement in connectedElements)
             {
-
-                if (MEPElementUtils.IsNodeElement(currentElement))
+                if (currentNodeElement is not null)
                 {
-                    NodeElement nodeElement = Nodes.Where(x => x.Element.Id == currentElement.Id).First();
-                    var postNodePusher = new PostNodePusher(connectedElement, nodeElement, this);
+                    var postNodePusher = new PostNodePusher(connectedElement, currentNodeElement, this);
                     postNodePusher.Push();
 
                     if (postNodePusher.PushedToParent)
