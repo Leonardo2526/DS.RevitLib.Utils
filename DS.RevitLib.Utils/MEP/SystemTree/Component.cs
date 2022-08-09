@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DS.RevitLib.Utils.MEP.Models
+namespace DS.RevitLib.Utils.MEP.SystemTree
 {
     /// <summary>
     /// The 'Component' abstract class
@@ -19,6 +19,10 @@ namespace DS.RevitLib.Utils.MEP.Models
         {
             this._baseElement = baseElement;
         }
+
+        public Component()
+        { }
+
         public virtual void Add(Component c) { }
         public virtual void Remove(Component c) { }
         public virtual void Display(int depth) { }

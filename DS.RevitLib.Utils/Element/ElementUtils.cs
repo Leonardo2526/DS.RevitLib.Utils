@@ -315,7 +315,7 @@ namespace DS.RevitLib.Utils
 
             var connectors = new Stack<Connector>(ConnectorUtils.GetConnectors(element));
 
-            while (connectors.Count>1)
+            while (connectors.Count > 1)
             {
                 var currentConnector = connectors.Pop();
                 var restConnectors = new List<Connector>(connectors);

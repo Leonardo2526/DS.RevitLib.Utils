@@ -5,18 +5,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DS.RevitLib.Utils.MEP.Models
+namespace DS.RevitLib.Utils.MEP.SystemTree
 {
-    public class MEPSystemComponent
+    /// <summary>
+    /// Leaf
+    /// </summary>
+    public class MEPSystemComponent : Component
     {
-        protected Element _baseElement;
-
-        public MEPSystemComponent()
-        { }
-
-        public MEPSystemComponent(Element baseElement)
+        public MEPSystemComponent(Element baseElement) : base(baseElement)
         {
-            _baseElement = baseElement;
         }
 
         #region Properties

@@ -52,7 +52,7 @@ namespace DS.RevitLib.Utils.MEP
 
             List<Connector> connectors = ConnectorUtils.GetConnectors(element);
             Connector defaultCon = connectors.FirstOrDefault();
-            
+
             foreach (var con in connectors)
             {
                 if (defaultCon.Origin.IsAlmostEqualTo(con.Origin))
@@ -124,6 +124,38 @@ namespace DS.RevitLib.Utils.MEP
             var paramterDefinition = parameterElement.GetDefinition();
 
             return element.get_Parameter(paramterDefinition);
+        }
+
+        /// <summary>
+        /// Check if element is node element.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <returns>Return true if element is of tee, spud or cross type.</returns>
+        public static bool IsNodeElement(Element element)
+        {
+            if (element is not FamilyInstance familyInstance)
+            {
+                return false;
+            }
+
+            var partType = ElementUtils.GetPartType(familyInstance);
+            switch (partType)
+            {
+                case PartType.Tee:
+                    return true;
+                case PartType.Cross:
+                    return true;
+                case PartType.TapPerpendicular:
+                    return true;
+                case PartType.TapAdjustable:
+                    return true;
+                case PartType.SpudAdjustable:
+                    return true;
+                case PartType.SpudPerpendicular:
+                    return true;
+                default:
+                    return false;
+            }
         }
     }
 }
