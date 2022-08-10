@@ -36,9 +36,9 @@ namespace DS.RevitLib.Test
             var elemsCount = system.Composite.Children.Count;
 
             HighlightElements(system.ParentElements);
-            HighlightElements(system.AllElements);
+            //HighlightElements(system.AllElements);
 
-            TaskDialog.Show("Revit", "There are " + elemsCount.ToString() + " top level parent elements in model.");
+            //TaskDialog.Show("Revit", "There are " + elemsCount.ToString() + " top level parent elements in model.");
         }
 
         private void HighlightElements(List<Element> elements)

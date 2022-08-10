@@ -15,12 +15,12 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
 
         public MEPSystemModel Build()
         {
+            var _model = new Composite();
+
             Composite rootComposite = GetRoot(_element, out List <Element> parentElements);
 
             //Get parents
-            var _model = new Composite();
             var modelComponent = GetParents(parentElements, rootComposite);
-
 
             if (modelComponent is not null && modelComponent.Any())
             {
@@ -31,6 +31,7 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
                 return new MEPSystemModel(_model);
             }
 
+            _model.Add(rootComposite);
             return new MEPSystemModel(_model);
         }
 
@@ -98,15 +99,10 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
                 }
                 else
                 {
-                    //foreach (var parent in parents)
-                    //{
-                    //    parent.Add(childComposite);
-                    //}
+                 
                     composites.AddRange(parents);
                 }
-
             }
-
             return composites;
         }
 
@@ -145,8 +141,6 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
                     {
                         composite.Add(child);
                     }
-                    //composite.AddRange(childs.Cast<Component>().ToList());
-
                 }
 
                 composites.Add(composite);
