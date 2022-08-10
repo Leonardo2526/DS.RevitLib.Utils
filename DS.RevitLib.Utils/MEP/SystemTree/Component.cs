@@ -16,6 +16,11 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
         {
             throw new NotImplementedException();
         }
+
+        public virtual void AddRange(List<Component> list)
+        {
+            throw new NotImplementedException();
+        }
         //public virtual void Remove(Component c) { }
         //public virtual void Display(int depth) { }
     }

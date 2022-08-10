@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TextBox;
 
 namespace DS.RevitLib.Utils.MEP.SystemTree
 {
@@ -79,10 +80,7 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
                     {
                         parent.Add(composite);
                     }
-                    foreach (var item in parents)
-                    {
-                        composite.Add(item);
-                    }
+                    composite.AddRange(parents.Cast<Component>().ToList());
                 }
 
             }

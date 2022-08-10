@@ -15,5 +15,10 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
         {
             children.Add(c);
         }
+
+        public override void AddRange(List<Component> list)
+        {
+            children.AddRange(list);
+        }
     }
 }

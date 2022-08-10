@@ -5,7 +5,9 @@ VisualStudioVersion = 17.2.32516.85
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DS.RevitLib.Utils", "DS.RevitLib.Utils\DS.RevitLib.Utils.csproj", "{9873F185-F630-4BB2-94A4-D9665F32B802}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DS.ReviLib.Utils.TestProject", "DS.ReviLib.Utils.TestProject\DS.ReviLib.Utils.TestProject.csproj", "{AC2449DB-B52C-4345-A02F-DFF9F0FDA305}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DS.ReviLib.Utils.TestProject", "DS.ReviLib.Utils.TestProject\DS.ReviLib.Utils.TestProject.csproj", "{AC2449DB-B52C-4345-A02F-DFF9F0FDA305}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DS.RevitLib.Test", "DS.RevitLib.Test\DS.RevitLib.Test.csproj", "{D09A7AB1-033E-4247-BCAF-7A0D714F451E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{AC2449DB-B52C-4345-A02F-DFF9F0FDA305}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AC2449DB-B52C-4345-A02F-DFF9F0FDA305}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AC2449DB-B52C-4345-A02F-DFF9F0FDA305}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D09A7AB1-033E-4247-BCAF-7A0D714F451E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D09A7AB1-033E-4247-BCAF-7A0D714F451E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D09A7AB1-033E-4247-BCAF-7A0D714F451E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D09A7AB1-033E-4247-BCAF-7A0D714F451E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
