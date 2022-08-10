@@ -28,7 +28,7 @@ namespace DS.RevitLib.Utils.MEP.SystemTree.Relatives
                     }
                     else if(_node.SystemRelation == Relation.Parent)
                     {
-                        _componentBuilder._mEPSystemBuilder.ParentStack.Push(_element);
+                        _componentBuilder.ParentElements.Add(_element);
                         _componentBuilder.Elements.Move(0, _componentBuilder.Elements.Count - 1);
                         PushedToParent = true;
                     }

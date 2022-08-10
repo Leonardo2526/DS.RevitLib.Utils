@@ -12,8 +12,11 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
     /// </summary>
     public abstract class Component
     {
-        public virtual void Add(Component c) { }
-        public virtual void Remove(Component c) { }
-        public virtual void Display(int depth) { }
+        public virtual void Add(Component c)
+        {
+            throw new NotImplementedException();
+        }
+        //public virtual void Remove(Component c) { }
+        //public virtual void Display(int depth) { }
     }
 }

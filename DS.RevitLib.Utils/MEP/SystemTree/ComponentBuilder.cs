@@ -29,6 +29,7 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
         public List<NodeElement> Nodes { get; set; } = new List<NodeElement>();
         public Stack<Element> Stack { get; set; } = new Stack<Element>();
         public List<Element> ChildElements { get; set; } = new List<Element>();
+        public List<Element> ParentElements { get; set; } = new List<Element>();
 
         public ObservableCollection<Element> Elements { get; set; } = new ObservableCollection<Element>();
 
