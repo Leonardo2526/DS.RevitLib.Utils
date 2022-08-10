@@ -36,7 +36,7 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
         private List<MEPSystemComponent> GetMEPSystemComponents()
         {
             List<MEPSystemComponent> list = new List<MEPSystemComponent>();
-            foreach (var comp in RootComponent.children)
+            foreach (var comp in RootComponent.Children)
             {
                 var mepComp = comp as MEPSystemComponent;
                 list.Add(mepComp);

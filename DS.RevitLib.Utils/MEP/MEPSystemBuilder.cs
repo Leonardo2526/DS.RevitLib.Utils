@@ -1,13 +1,6 @@
 ﻿using Autodesk.Revit.DB;
-using DS.RevitLib.Utils.MEP.Models;
-using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.TextBox;
 
 namespace DS.RevitLib.Utils.MEP.SystemTree
 {
@@ -24,19 +17,14 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
         {
             var rootModel = new Composite();
             var builder = new ComponentBuilder(_element, this);
-            var comp = builder.Build();
-            rootModel.Add(comp);
-
-            if (builder.ChildElements.Any())
-            {
-                var childs = GetChilds(builder);
-                rootModel.Add(childs);
-            }
+            builder.ParentElements.Add(_element);
+            //var comp = builder.Build();
+            //rootModel.Root = comp;
 
 
             //Get parents
             var _model = new Composite();
-            var modelComponent = GetParents(builder, rootModel);
+            var modelComponent = GetParents(builder);
             if (modelComponent is not null && modelComponent.Any())
             {
                 foreach (var item in modelComponent)
@@ -46,10 +34,17 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
                 return new MEPSystemModel(_model);
             }
 
-            return new MEPSystemModel(rootModel);
+
+            //var childs = GetChilds(builder);
+            //if (childs is not null)
+            //{
+            //    rootModel.Add(childs);
+            //}
+
+            return new MEPSystemModel(_model);
         }
 
-        private List<Composite> GetParents(ComponentBuilder builder, Composite childComp)
+        private List<Composite> GetParents(ComponentBuilder builder, Composite childComposite = null)
         {
             if (!builder.ParentElements.Any())
             {
@@ -57,7 +52,7 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
             }
 
             //add parent components
-            List<Composite> _composites = new List<Composite>();
+            var composites = new List<Composite>();
 
             foreach (var parentElem in builder.ParentElements)
             {
@@ -65,53 +60,98 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
 
                 var rootBuilder = new ComponentBuilder(parentElem, this);
                 MEPSystemComponent rootComp = rootBuilder.Build();
-                composite.Add(childComp);
-                composite.Add(rootComp);
+                composite.Root = rootComp;
 
-                //add parents of root
+
+                //add children to root
+                var newChilds = GetChilds(rootBuilder, childComposite?.Root as MEPSystemComponent);
+                if (newChilds is not null)
+                {
+                    foreach (var newChild in newChilds)
+                    {
+                        composite.Add(newChild);
+                    }
+                }
+
+                //add root to it's parents
                 List<Composite> parents = GetParents(rootBuilder, composite);
                 if (parents is null || !parents.Any())
                 {
-                    _composites.Add(composite);
+                    composites.Add(composite);
                 }
                 else
                 {
                     foreach (var parent in parents)
                     {
-                        parent.Add(composite);
+                        parent.Add(childComposite);
                     }
-                    composite.AddRange(parents.Cast<Component>().ToList());
+                    composites.AddRange(parents);
                 }
 
             }
 
-            return _composites;
+            return composites;
         }
 
 
 
-        private Composite GetChilds(ComponentBuilder builder)
+        private List<Composite> GetChilds(ComponentBuilder builder, MEPSystemComponent currentChildComp = null)
         {
+            if (!builder.ChildElements.Any())
+            {
+                return null;
+            }
+
             //add childs components
-            var childModel = new Composite();
+            var composites = new List<Composite>();
 
             foreach (var childElem in builder.ChildElements)
             {
+                if (currentChildComp is not null && IsElementInCurrentChildComp(childElem, currentChildComp))
+                {
+                    continue;
+                }
+
+                var composite = new Composite();
+
                 var childBuilder = new ComponentBuilder(childElem, this);
                 var childComp = childBuilder.Build();
 
+                //add child component
+                composite.Root = childComp;
+
                 //add childs of child
-                var childs = GetChilds(childBuilder);
-                if (childs is not null && childs.children.Any())
+                List<Composite> childs = GetChilds(childBuilder);
+                if (childs is not null && childs.Any())
                 {
-                    childModel.Add(childs);
+                    foreach (var child in childs)
+                    {
+                        composite.Add(child);
+                    }
+                    //composite.AddRange(childs.Cast<Component>().ToList());
+
                 }
 
-                //add child component
-                childModel.Add(childComp);
+                composites.Add(composite);
             }
 
-            return childModel;
+            return composites;
+        }
+
+        private bool IsElementInCurrentChildComp(Element childElem, MEPSystemComponent currentChildComp)
+        {
+            var connected = ConnectorUtils.GetConnectedElements(childElem);
+
+            foreach (var connectedToChildElem in connected)
+            {
+                if (connectedToChildElem.Id == currentChildComp.ParentNode1?.Id ||
+                    connectedToChildElem.Id == currentChildComp.ParentNode2?.Id)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

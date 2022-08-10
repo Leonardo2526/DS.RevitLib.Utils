@@ -32,7 +32,7 @@ namespace DS.RevitLib.Test
             var mEPSystemBuilder = new MEPSystemBuilder(element);
             var system = mEPSystemBuilder.Build();
 
-            var elemsCount = system.RootComponent.children.Count;
+            var elemsCount = system.RootComponent.Children.Count;
 
             TaskDialog.Show("Revit", "There are " + elemsCount.ToString() + " top level parent elements in model.");
         }

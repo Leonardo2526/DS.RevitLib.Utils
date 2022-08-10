@@ -9,16 +9,17 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
 {
     public class Composite : Component
     {
-        public List<Component> children = new List<Component>();
+        public Component Root { get; set; }
+        public List<Component> Children { get; } = new List<Component>();
 
         public override void Add(Component c)
         {
-            children.Add(c);
+            Children.Add(c);
         }
 
         public override void AddRange(List<Component> list)
         {
-            children.AddRange(list);
+            Children.AddRange(list);
         }
     }
 }
