@@ -10,18 +10,30 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
 {
     public class MEPSystemModel
     {
-        public Composite RootComponent { get; set; }
+        public Composite Composite { get; set; }
 
         public MEPSystemModel(Composite rootComponent)
         {
-            RootComponent = rootComponent;
+            Composite = rootComponent;
+            GetMEPSystemComponents(Composite);
+
         }
 
-        public List<MEPSystemComponent> MEPSystemComponents
+        public List<MEPSystemComponent> MEPSystemComponents { get; private set; } = new List<MEPSystemComponent>();
+
+        public List<MEPSystemComponent> ParentComponents
         {
             get
             {
-                return GetMEPSystemComponents();
+                return GetParentComponents(Composite);
+            }
+        }
+
+        public List<Element> ParentElements
+        {
+            get
+            {
+                return ParentComponents.SelectMany(x => x.Elements).ToList();
             }
         }
         public List<Element> AllElements
@@ -33,16 +45,33 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
         }
 
 
-        private List<MEPSystemComponent> GetMEPSystemComponents()
+        private List<MEPSystemComponent> GetParentComponents(Composite composite)
         {
             List<MEPSystemComponent> list = new List<MEPSystemComponent>();
-            foreach (var comp in RootComponent.Children)
+
+            foreach (Composite child in composite.Children)
             {
-                var mepComp = comp as MEPSystemComponent;
-                list.Add(mepComp);
+                MEPSystemComponent mep = child.Root as MEPSystemComponent;
+                list.Add(mep);
             }
 
             return list;
+        }
+
+        private void GetMEPSystemComponents(Composite composite)
+        {         
+
+            if (composite.Root is not null)
+            {
+                MEPSystemComponent mep = composite.Root as MEPSystemComponent;
+                MEPSystemComponents.Add(mep);
+            }
+
+            foreach (Composite child in composite.Children)
+            {
+                GetMEPSystemComponents(child);
+            }
+
         }
     }
 }

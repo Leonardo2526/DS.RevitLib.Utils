@@ -12,11 +12,19 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
         public Component Root { get; set; }
         public List<Component> Children { get; } = new List<Component>();
 
+        /// <summary>
+        /// Add component ro Children
+        /// </summary>
+        /// <param name="c"></param>
         public override void Add(Component c)
         {
             Children.Add(c);
         }
 
+        /// <summary>
+        /// Add list of components to Children
+        /// </summary>
+        /// <param name="list"></param>
         public override void AddRange(List<Component> list)
         {
             Children.AddRange(list);

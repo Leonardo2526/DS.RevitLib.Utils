@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace DS.RevitLib.Test
 {
@@ -32,9 +33,27 @@ namespace DS.RevitLib.Test
             var mEPSystemBuilder = new MEPSystemBuilder(element);
             var system = mEPSystemBuilder.Build();
 
-            var elemsCount = system.RootComponent.Children.Count;
+            var elemsCount = system.Composite.Children.Count;
+
+            HighlightElements(system.ParentElements);
+            HighlightElements(system.AllElements);
 
             TaskDialog.Show("Revit", "There are " + elemsCount.ToString() + " top level parent elements in model.");
+        }
+
+        private void HighlightElements(List<Element> elements)
+        {
+            ICollection<ElementId> ids = new List<ElementId>();
+            foreach (var elem in elements)
+            {
+                ids.Add(elem.Id);
+            }
+
+            UIDocument uiDoc = new UIDocument(elements.First().Document);
+
+            uiDoc.Selection.SetElementIds(ids);
+
+            uiDoc.ShowElements(ids);
         }
     }
 }

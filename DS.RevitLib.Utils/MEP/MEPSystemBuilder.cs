@@ -15,16 +15,13 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
 
         public MEPSystemModel Build()
         {
-            var rootModel = new Composite();
-            var builder = new ComponentBuilder(_element, this);
-            builder.ParentElements.Add(_element);
-            //var comp = builder.Build();
-            //rootModel.Root = comp;
-
+            Composite rootComposite = GetRoot(_element, out List <Element> parentElements);
 
             //Get parents
             var _model = new Composite();
-            var modelComponent = GetParents(builder);
+            var modelComponent = GetParents(parentElements, rootComposite);
+
+
             if (modelComponent is not null && modelComponent.Any())
             {
                 foreach (var item in modelComponent)
@@ -34,19 +31,39 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
                 return new MEPSystemModel(_model);
             }
 
-
-            //var childs = GetChilds(builder);
-            //if (childs is not null)
-            //{
-            //    rootModel.Add(childs);
-            //}
-
             return new MEPSystemModel(_model);
         }
 
-        private List<Composite> GetParents(ComponentBuilder builder, Composite childComposite = null)
+
+        private Composite GetRoot(Element element, out List<Element> parentElements)
         {
-            if (!builder.ParentElements.Any())
+            parentElements = new List<Element>();
+
+            var rootComposite = new Composite();
+
+            var builder = new ComponentBuilder(element, this);
+            var component = builder.Build();
+            rootComposite.Root = component;
+
+            //get children
+            var newChilds = GetChildren(builder);
+            if (newChilds is not null)
+            {
+                foreach (var newChild in newChilds)
+                {
+                    rootComposite.Add(newChild);
+                }
+            }
+
+            parentElements.AddRange(builder.ParentElements);
+
+            return rootComposite;
+        }
+
+
+        private List<Composite> GetParents(List<Element> parentElements, Composite childComposite)
+        {
+            if (!parentElements.Any())
             {
                 return null;
             }
@@ -54,37 +71,37 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
             //add parent components
             var composites = new List<Composite>();
 
-            foreach (var parentElem in builder.ParentElements)
+            foreach (var parentElem in parentElements)
             {
                 var composite = new Composite();
+                composite.Add(childComposite);
 
                 var rootBuilder = new ComponentBuilder(parentElem, this);
                 MEPSystemComponent rootComp = rootBuilder.Build();
                 composite.Root = rootComp;
 
-
                 //add children to root
-                var newChilds = GetChilds(rootBuilder, childComposite?.Root as MEPSystemComponent);
-                if (newChilds is not null)
+                var restChildren = GetChildren(rootBuilder, childComposite?.Root as MEPSystemComponent);
+                if (restChildren is not null && restChildren.Any())
                 {
-                    foreach (var newChild in newChilds)
+                    foreach (var newChild in restChildren)
                     {
                         composite.Add(newChild);
                     }
                 }
 
                 //add root to it's parents
-                List<Composite> parents = GetParents(rootBuilder, composite);
+                List<Composite> parents = GetParents(rootBuilder.ParentElements, composite);
                 if (parents is null || !parents.Any())
                 {
                     composites.Add(composite);
                 }
                 else
                 {
-                    foreach (var parent in parents)
-                    {
-                        parent.Add(childComposite);
-                    }
+                    //foreach (var parent in parents)
+                    //{
+                    //    parent.Add(childComposite);
+                    //}
                     composites.AddRange(parents);
                 }
 
@@ -95,7 +112,7 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
 
 
 
-        private List<Composite> GetChilds(ComponentBuilder builder, MEPSystemComponent currentChildComp = null)
+        private List<Composite> GetChildren(ComponentBuilder builder, MEPSystemComponent currentChildComp = null)
         {
             if (!builder.ChildElements.Any())
             {
@@ -121,7 +138,7 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
                 composite.Root = childComp;
 
                 //add childs of child
-                List<Composite> childs = GetChilds(childBuilder);
+                List<Composite> childs = GetChildren(childBuilder);
                 if (childs is not null && childs.Any())
                 {
                     foreach (var child in childs)
