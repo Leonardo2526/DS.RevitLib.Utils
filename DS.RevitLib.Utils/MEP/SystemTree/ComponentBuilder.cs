@@ -27,18 +27,6 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
         public Stack<Element> Stack { get; set; } = new Stack<Element>();
         public ObservableCollection<Element> Elements { get; set; } = new ObservableCollection<Element>();
 
-        /// <summary>
-        /// Elements in children by one in each one component for build.
-        /// </summary>
-        //public List<Element> ChildrenElements { get; set; } = new List<Element>();
-
-        /// <summary>
-        /// Elements in parents by one in each one component for build.
-        /// </summary>
-        //public List<Element> ParentElements { get; set; } = new List<Element>();
-
-        //private List<BuiltInCategory> BoundaryCategories { get; } = new List<BuiltInCategory>()
-        //{BuiltInCategory.OST_PipeFitting, BuiltInCategory.OST_DuctFitting };
 
 
 
@@ -55,34 +43,12 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
             {
                 //fill parent Nodes
                 var parentNodes = Nodes.Where(x => x.SystemRelation == Relation.Parent).ToList();
-                mEPSystemComponent.ParentNodes = parentNodes;
-
-                //switch (parentNodes.Count)
-                //{
-                //    case 1:
-                //        mEPSystemComponent.ParentNode1 = parentNodes.First().Element;
-                //        break;
-                //    case 2:
-                //        mEPSystemComponent.ParentNode1 = parentNodes.First().Element;
-                //        mEPSystemComponent.ParentNode2 = parentNodes.Last().Element;
-                //        break;
-                //    case > 2:
-                //        throw new ArgumentException();
-                //    default:
-                //        break;
-                //}
+                mEPSystemComponent.ParentNodes = parentNodes;             
 
                 //fill child nodes
                 var childNodes = Nodes.Where(x => x.SystemRelation == Relation.Child).ToList();
                 mEPSystemComponent.ChildrenNodes = childNodes;
-
-                //if (childNodes.Any())
-                //{
-                //    mEPSystemComponent.ChildNodes = childNodes.Select(x => x.Element).ToList();
-                //}
             }
-
-
 
             return mEPSystemComponent;
         }

@@ -47,22 +47,5 @@ namespace DS.RevitLib.Utils.MEP.SystemTree.Relatives
 
             return null;
         }
-
-
-        //public override Relation Get()
-        //{
-        //    var conDirs = ElementUtils.GetDirections(_element);
-        //    var collinears = conDirs.Where(x => XYZUtils.Collinearity(x, _connectedDirection)).ToList();
-
-        //    if (collinears.Any())
-        //    {
-        //        return Relation.Child;
-        //    }
-        //    else
-        //    {
-        //        return Relation.Parent;
-        //    }
-
-        //}
     }
 }
