@@ -26,11 +26,16 @@ namespace DS.RevitLib.Utils.MEP.SystemTree.Relatives
         {
             var composite = new Composite(_rootComponent);
 
-            List<MEPSystemComponent> children = GetRelations(_rootComponent.ChildrenNodes);
-            List<MEPSystemComponent> parents = GetRelations(_rootComponent.ParentNodes);
-
-            composite.AddChildren(children.Cast<Component>().ToList());
-            composite.AddParents(parents.Cast<Component>().ToList());
+            if (_rootComponent.ChildrenNodes is not null)
+            {
+                List<MEPSystemComponent> children = GetRelations(_rootComponent.ChildrenNodes);
+                composite.AddChildren(children.Cast<Component>().ToList());
+            }
+            if (_rootComponent.ChildrenNodes is not null)
+            {
+                List<MEPSystemComponent> parents = GetRelations(_rootComponent.ParentNodes);
+                composite.AddParents(parents.Cast<Component>().ToList());
+            }
 
             return composite;
         }

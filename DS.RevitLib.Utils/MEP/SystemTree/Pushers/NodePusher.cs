@@ -21,25 +21,6 @@ namespace DS.RevitLib.Utils.MEP.SystemTree.Relatives
             _node.SystemRelation = relation;
             _componentBuilder.Nodes.Add(_node);
         }
-
-        //private Relation GetRelation()
-        //{
-        //    PartType partType = ElementUtils.GetPartType(_node);
-        //    switch (partType)
-        //    {
-        //        case PartType.Tee:
-        //            {
-        //                return new TeeRelation(_node, _element).Get();
-        //            }
-        //        case PartType.SpudPerpendicular:
-        //            break;
-        //        default:
-        //            break;
-        //    }
-
-
-        //    return Relation.Default;
-        //}
     }
 
 

@@ -98,6 +98,7 @@
     <Compile Include="MEP\Neighbours\Neighbour.cs" />
     <Compile Include="MEP\Neighbours\SearchWithCollision.cs" />
     <Compile Include="MEP\Neighbours\Search.cs" />
+    <Compile Include="MEP\SystemTree\Relatives\SpudRelation.cs" />
     <Compile Include="MEP\SystemTree\Relatives\TeeRelation.cs" />
     <Compile Include="MEP\SystemTree\Relatives\Relation.cs" />
     <Compile Include="ModelCurveUtils\ModelCurveCreator.cs" />

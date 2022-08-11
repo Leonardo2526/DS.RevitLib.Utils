@@ -1,7 +1,9 @@
 ﻿using Autodesk.Revit.DB;
+using DS.ClassLib.VarUtils;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.MEP.SystemTree.Relatives;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -43,7 +45,7 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
             {
                 //fill parent Nodes
                 var parentNodes = Nodes.Where(x => x.SystemRelation == Relation.Parent).ToList();
-                mEPSystemComponent.ParentNodes = parentNodes;             
+                mEPSystemComponent.ParentNodes = parentNodes;
 
                 //fill child nodes
                 var childNodes = Nodes.Where(x => x.SystemRelation == Relation.Child).ToList();
@@ -64,7 +66,7 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
 
                 List<Element> connectedElements = ConnectorUtils.GetConnectedElements(currentElement);
                 connectedElements = Elements.Any() ?
-                    connectedElements.Where(x => x.Id != Elements.Last().Id).ToList() : connectedElements;
+                    GetConnected(connectedElements) : connectedElements;
 
                 Elements.Add(currentElement);
 
@@ -79,6 +81,20 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
             }
 
             return Elements;
+        }
+
+
+
+        private List<Element> GetConnected(List<Element> connectedElements)
+        {
+            var intersected = connectedElements.Select(x => x.Id).Intersect(Elements.Select(x => x.Id));
+
+            foreach (var inter in intersected)
+            {
+                connectedElements = connectedElements.Where(x => x.Id != inter).ToList();
+            }
+
+            return connectedElements;
         }
 
         private void SortByRelation(List<Element> connectedElements, Stack<Element> stack, Element currentElement)

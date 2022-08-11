@@ -9,7 +9,8 @@ namespace DS.RevitLib.Utils.MEP.SystemTree.Relatives
 {
     internal class PostNodePusher : Pusher
     {
-        public PostNodePusher(NodeElement node, Element element, ComponentBuilder componentBuilder) : base(node, element, componentBuilder)
+        public PostNodePusher(NodeElement node, Element element, ComponentBuilder componentBuilder) : 
+            base(node, element, componentBuilder)
         {
         }
 
@@ -28,14 +29,12 @@ namespace DS.RevitLib.Utils.MEP.SystemTree.Relatives
                     }
                     else if(_node.SystemRelation == Relation.Parent)
                     {
-                        //_componentBuilder.ParentElements.Add(_element);
                         _node.RelationElement = _element;
                         _componentBuilder.Elements.Move(0, _componentBuilder.Elements.Count - 1);
                         PushedToParent = true;
                     }
                     break;
                 case Relation.Parent:
-                    //_componentBuilder.ChildrenElements.Add(_element);
                     _node.RelationElement = _element;
                     break;
                 default:

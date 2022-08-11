@@ -33,7 +33,9 @@ namespace DS.RevitLib.Utils.MEP.SystemTree.Relatives
                         return new TeeRelation(familyInstance, element).Get();
                     }
                 case PartType.SpudPerpendicular:
-                    break;
+                    {
+                        return new SpudRelation(familyInstance, element).Get();
+                    }
                 default:
                     break;
             }
