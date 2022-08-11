@@ -11,7 +11,6 @@ namespace DS.RevitLib.Utils.MEP.SystemTree.Relatives
     {
         protected readonly Element _element;
         protected readonly NodeElement _node;
-        protected readonly MEPSystemBuilder _mEPSystemBuilder;
         protected readonly ComponentBuilder _componentBuilder;
 
         public Pusher(NodeElement node, Element element, ComponentBuilder componentBuilder)
@@ -19,7 +18,6 @@ namespace DS.RevitLib.Utils.MEP.SystemTree.Relatives
             _element = element;
             _node = node;
             _componentBuilder = componentBuilder;
-            _mEPSystemBuilder = componentBuilder._mEPSystemBuilder;
         }
 
         public abstract void Push();

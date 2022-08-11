@@ -26,12 +26,12 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
             {
                 foreach (var item in modelComponent)
                 {
-                    _model.Add(item);
+                    _model.AddChild(item);
                 }
                 return new MEPSystemModel(_model);
             }
 
-            _model.Add(rootComposite);
+            _model.AddChild(rootComposite);
             return new MEPSystemModel(_model);
         }
 
@@ -42,7 +42,7 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
 
             var rootComposite = new Composite();
 
-            var builder = new ComponentBuilder(element, this);
+            var builder = new ComponentBuilder(element);
             var component = builder.Build();
             rootComposite.Root = component;
 
@@ -52,7 +52,7 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
             {
                 foreach (var newChild in newChilds)
                 {
-                    rootComposite.Add(newChild);
+                    rootComposite.AddChild(newChild);
                 }
             }
 
@@ -75,9 +75,9 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
             foreach (var parentElem in parentElements)
             {
                 var composite = new Composite();
-                composite.Add(childComposite);
+                composite.AddChild(childComposite);
 
-                var rootBuilder = new ComponentBuilder(parentElem, this);
+                var rootBuilder = new ComponentBuilder(parentElem);
                 MEPSystemComponent rootComp = rootBuilder.Build();
                 composite.Root = rootComp;
 
@@ -87,7 +87,7 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
                 {
                     foreach (var newChild in restChildren)
                     {
-                        composite.Add(newChild);
+                        composite.AddChild(newChild);
                     }
                 }
 
@@ -110,7 +110,7 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
 
         private List<Composite> GetChildren(ComponentBuilder builder, MEPSystemComponent currentChildComp = null)
         {
-            if (!builder.ChildElements.Any())
+            if (!builder.ChildrenElements.Any())
             {
                 return null;
             }
@@ -118,7 +118,7 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
             //add childs components
             var composites = new List<Composite>();
 
-            foreach (var childElem in builder.ChildElements)
+            foreach (var childElem in builder.ChildrenElements)
             {
                 if (currentChildComp is not null && IsElementInCurrentChildComp(childElem, currentChildComp))
                 {
@@ -127,7 +127,7 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
 
                 var composite = new Composite();
 
-                var childBuilder = new ComponentBuilder(childElem, this);
+                var childBuilder = new ComponentBuilder(childElem);
                 var childComp = childBuilder.Build();
 
                 //add child component
@@ -139,7 +139,7 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
                 {
                     foreach (var child in childs)
                     {
-                        composite.Add(child);
+                        composite.AddChild(child);
                     }
                 }
 

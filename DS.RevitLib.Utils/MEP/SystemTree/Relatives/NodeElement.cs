@@ -16,6 +16,7 @@ namespace DS.RevitLib.Utils.MEP.SystemTree.Relatives
         }
 
         public FamilyInstance Element { get; }
+        public Element RelationElement { get; set; }
         public Relation SystemRelation { get; set; }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.DB;
+using DS.RevitLib.Utils.MEP.SystemTree.Relatives;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,6 +15,8 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
     {
         #region Properties
 
+        public Element BaseElement { get; set; }
+
         public List<MEPCurve> MEPCurves
         {
             get
@@ -25,11 +28,9 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
 
         public List<Element> Elements { get; set; }
 
-        public List<FamilyInstance> ChildNodes { get; set; }
+        public List<NodeElement> ChildrenNodes { get; set; }
 
-        public Element ParentNode1 { get; set; }
-
-        public Element ParentNode2{ get; set; }
+        public List<NodeElement> ParentNodes { get; set; }
 
 
         #endregion

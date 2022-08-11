@@ -30,12 +30,16 @@ namespace DS.RevitLib.Test
             Reference reference = Uidoc.Selection.PickObject(ObjectType.Element, "Select element that will be checked for intersection with all elements");
             Element element = Doc.GetElement(reference);
 
-            var mEPSystemBuilder = new MEPSystemBuilder(element);
+            var mEPSystemBuilder = new NewMEPSystemBuilder(element);
+            //var mEPSystemBuilder = new MEPSystemBuilder(element);
             var system = mEPSystemBuilder.Build();
 
-            var elemsCount = system.Composite.Children.Count;
+            //var elemsCount = system.Composite.Children.Count;
 
-            HighlightElements(system.ParentElements);
+            var elements = system.GetElements(system.Composite);
+
+            HighlightElements(elements);
+            //HighlightElements(system.ParentElements);
             //HighlightElements(system.AllElements);
 
             //TaskDialog.Show("Revit", "There are " + elemsCount.ToString() + " top level parent elements in model.");

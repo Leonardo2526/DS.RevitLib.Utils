@@ -15,7 +15,7 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
         public MEPSystemModel(Composite rootComponent)
         {
             Composite = rootComponent;
-            GetMEPSystemComponents(Composite);
+            //GetMEPSystemComponents(Composite);
 
         }
 
@@ -58,20 +58,41 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
             return list;
         }
 
-        private void GetMEPSystemComponents(Composite composite)
-        {         
+        //private void GetMEPSystemComponents(Component composite)
+        //{
 
-            if (composite.Root is not null)
-            {
-                MEPSystemComponent mep = composite.Root as MEPSystemComponent;
-                MEPSystemComponents.Add(mep);
-            }
+        //    if (composite.Root is not null)
+        //    {
+        //        MEPSystemComponent mep = composite.Root as MEPSystemComponent;
+        //        MEPSystemComponents.Add(mep);
+        //    }
 
-            foreach (Composite child in composite.Children)
-            {
-                GetMEPSystemComponents(child);
-            }
+        //    foreach (Component child in composite.Children)
+        //    {
+        //        GetMEPSystemComponents(child);
+        //    }
 
+        //}
+
+
+        public List<Element> GetElements(Composite composite)
+        {
+            List<Element> list = new List<Element>();
+
+            MEPSystemComponent rootMEPComp = composite.Root as MEPSystemComponent;
+            list.AddRange(rootMEPComp.Elements);
+
+            List<MEPSystemComponent> childrenMEPComp = composite.Children.Select(x => x as MEPSystemComponent).ToList();
+            List<Element> children = childrenMEPComp.SelectMany(x => x.Elements).ToList();
+            list.AddRange(children);
+
+
+            List<MEPSystemComponent> parentsMEPComp = composite.Parents.Select(x => x as MEPSystemComponent).ToList();
+            List<Element> parents = parentsMEPComp.SelectMany(x => x.Elements).ToList();
+            list.AddRange(parents);
+
+            return list;
         }
+
     }
 }
