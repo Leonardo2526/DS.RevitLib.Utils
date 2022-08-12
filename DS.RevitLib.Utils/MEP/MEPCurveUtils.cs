@@ -1,12 +1,8 @@
 ﻿using Autodesk.Revit.DB;
-using Autodesk.Revit.DB.Architecture;
 using DS.RevitLib.Utils.Extensions;
-using DS.RevitLib.Utils.Solids;
 using Ivanov.RevitLib.Utils;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using System.Security.Cryptography;
 
@@ -428,63 +424,48 @@ namespace DS.RevitLib.Utils.MEP
         }
 
 
-        public static List<Element> GetOrderedConnected(MEPCurve mEPCurve)
+        public static List<Element> GetOrderedConnected(MEPCurve mEPCurve, XYZ basePoint)
         {
-            List<Element> orderedElements = new List<Element>();
-
             var connectedElems = ConnectorUtils.GetConnectedElements(mEPCurve);
             if (connectedElems is null || !connectedElems.Any())
             {
                 return connectedElems;
+            }           
+
+            return connectedElems.OrderByPoint(basePoint);
+        }
+
+
+        /// <summary>
+        /// Get not spud connectors of MEPCurve.
+        /// </summary>
+        /// <param name="mEPCurve"></param>
+        /// <returns></returns>
+        public static List<Connector> GetNotSpudConnectors(MEPCurve mEPCurve)
+        {
+            var connectedElems = ConnectorUtils.GetConnectedElements(mEPCurve);
+            if (connectedElems is null || !connectedElems.Any())
+            {
+                return null;
             }
 
-            var rootElems = new List<Element>();
-            var roots = connectedElems.Where(x => IsRoot(mEPCurve, x));
+            var notSpudElements = connectedElems.ExludeSpudes();            
 
-            //get base reference point
-            XYZ basePoint = null;
-            if (roots is not null && roots.Any())
+            if (notSpudElements is not null && notSpudElements.Any())
             {
-                rootElems.AddRange(roots);
-                orderedElements.Add(rootElems.First());
-                connectedElems.RemoveAll(x => rootElems.Contains(x));
-                basePoint = ElementUtils.GetLocationPoint(orderedElements.First());
+                var cons = new List<Connector>();
+                foreach (var elem in notSpudElements)
+                {
+                    var (elem1Con, elem2Con) = ConnectorUtils.GetCommonConnectors(elem, mEPCurve);
+                    cons.Add(elem2Con);
+                }
+               return cons;
             }
             else
             {
                 var freeCons = ConnectorUtils.GetFreeConnector(mEPCurve);
-                basePoint = freeCons.First().Origin;
+                return freeCons;
             };
-
-            if (!connectedElems.Any())
-            {
-                return rootElems;
-            }
-
-            //get distenced dictionary
-            var distances = GetDistancesByPoint(basePoint, connectedElems);
-            orderedElements.AddRange(distances.Values);
-
-            if (rootElems.Count > 1)
-            {
-                orderedElements.Add(rootElems.Last());
-            }
-
-            return orderedElements;
-        }
-
-        public static Dictionary<double, Element> GetDistancesByPoint(XYZ basePoint, List<Element> elements)
-        {
-            Dictionary<double, Element> distances = new Dictionary<double, Element>();
-
-            foreach (var elem in elements)
-            {
-                XYZ point = ElementUtils.GetLocationPoint(elem);
-                double distance = basePoint.DistanceTo(point);
-                distances.Add(distance, elem);
-            }
-           
-            return distances.OrderByDescending(x => x.Key).Reverse().ToDictionary(x => x.Key, x => x.Value);
         }
     }
 }

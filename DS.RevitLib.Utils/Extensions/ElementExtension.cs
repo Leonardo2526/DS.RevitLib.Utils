@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.DB;
+using DS.RevitLib.Utils.MEP;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,5 +34,55 @@ namespace DS.RevitLib.Utils.Extensions
             ElementId id = element.GetTypeId();
             return element.Document.GetElement(id) as ElementType;
         }
+
+        /// <summary>
+        /// Order elements list by base point.
+        /// </summary>
+        /// <param name="basePoint"></param>
+        /// <returns>Return ordered elements by descending distances from location points to base point.</returns>
+        public static List<Element> OrderByPoint(this List<Element> elements, XYZ basePoint)
+        {
+            var distances = new Dictionary<double, Element>();
+
+            foreach (var elem in elements)
+            {
+                XYZ point = ElementUtils.GetLocationPoint(elem);
+                double distance = basePoint.DistanceTo(point);
+                distances.Add(distance, elem);
+            }
+
+            distances = distances.OrderByDescending(x => x.Key).ToDictionary(x => x.Key, x => x.Value);
+
+            return distances.Values.ToList();
+        }
+
+        /// <summary>
+        /// Get elements without spuds
+        /// </summary>
+        /// <param name="elements"></param>
+        /// <returns>Return list of elements without spuds.</returns>
+        public static List<Element> ExludeSpudes(this List<Element> elements)
+        {
+            var roots = new List<Element>();
+
+            foreach (var elem in elements)
+            {
+                if (MEPElementUtils.IsNodeElement(elem))
+                {
+                    var pt = ElementUtils.GetPartType(elem as FamilyInstance);
+                    if (pt != PartType.SpudPerpendicular && pt != PartType.SpudAdjustable)
+                    {
+                        roots.Add(elem);
+                    }
+                }
+                else
+                {
+                    roots.Add(elem);
+                }
+            }
+
+            return roots.Any() ? roots : elements;
+        }
+
     }
 }

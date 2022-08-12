@@ -20,11 +20,14 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
         public XYZ _direction;
         private List<Element> _spudsOnBase = new List<Element>();
         private List<Element> _connectedToBase = new List<Element>();
-        public ComponentBuilder(Element baseElement)
+        private XYZ _basePoint;
+
+        public ComponentBuilder(Element baseElement, XYZ basePoint)
         {
             _baseElement = baseElement;
             _doc = baseElement.Document;
             _direction = ElementUtils.GetDirections(baseElement).First();
+            _basePoint = basePoint;
         }
 
         public List<NodeElement> Nodes { get; set; } = new List<NodeElement>();
@@ -66,7 +69,6 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
             while (Stack.Any())
             {
                 var currentElement = Stack.Pop();
-
                 if (!reversed && _connectedToBase.Any() && _connectedToBase.Where(x => x.Id == currentElement.Id).Any())
                 {
                     i++;
@@ -89,6 +91,11 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
 
             }
 
+            if (_connectedToBase.Count == 1)
+            {
+                Elements.Reverse();
+            }
+
             return Elements;
         }
 
@@ -96,15 +103,7 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
 
         private List<Element> GetConnected(Element element)
         {
-            List<Element> connectedElements = null;
-            if (ElementUtils.IsElementMEPCurve(element))
-            {
-                connectedElements = MEPCurveUtils.GetOrderedConnected(element as MEPCurve);
-            }
-            else
-            {
-                connectedElements = ConnectorUtils.GetConnectedElements(element);
-            }
+            List<Element> connectedElements =  ConnectorUtils.GetConnectedElements(element);           
 
             var intersected = connectedElements.Select(x => x.Id).Intersect(Elements.Select(x => x.Id));
 
@@ -113,14 +112,20 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
                 connectedElements = connectedElements.Where(x => x.Id != inter).ToList();
             }
 
+            var (elem1Con, elem2Con) = ConnectorUtils.GetCommonConnectors(element, Elements.Last());
+            if (connectedElements.Count > 1)
+            {
+                connectedElements = connectedElements.OrderByPoint(elem1Con.Origin);
+            }
+
             return connectedElements;
         }
 
         private List<Element> GetConnectedToBase(Element element)
         {
             if (ElementUtils.IsElementMEPCurve(element))
-            {
-                _connectedToBase = MEPCurveUtils.GetOrderedConnected(element as MEPCurve);
+            {               
+                _connectedToBase = MEPCurveUtils.GetOrderedConnected(element as MEPCurve, _basePoint);
                 return _connectedToBase;
             }
 

@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.DB;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -18,8 +19,18 @@ namespace DS.RevitLib.Utils.MEP.SystemTree.Relatives
         {
             _element = element;
 
-            var builder = new ComponentBuilder(_element);
-            _rootComponent = builder.Build();
+            if (ElementUtils.IsElementMEPCurve(element))
+            {
+                var notSpuds = MEPCurveUtils.GetNotSpudConnectors(element as MEPCurve);
+                XYZ basePoint = notSpuds.First().Origin;
+                var builder = new ComponentBuilder(_element, basePoint);
+                _rootComponent = builder.Build();
+            }
+            else
+            {
+                throw new ArgumentException("CompositeBuilder - Element is not MEPCurve");
+            }
+
         }
 
         public Composite Build()
@@ -46,7 +57,8 @@ namespace DS.RevitLib.Utils.MEP.SystemTree.Relatives
 
             foreach (var node in nodes)
             {
-                var builder = new ComponentBuilder(node.RelationElement);
+                var point = ElementUtils.GetLocationPoint(node.Element);
+                var builder = new ComponentBuilder(node.RelationElement, point);
                 var component = builder.Build();
                 components.Add(component);
             }
