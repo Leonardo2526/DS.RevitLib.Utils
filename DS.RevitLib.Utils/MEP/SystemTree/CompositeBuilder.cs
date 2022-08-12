@@ -31,7 +31,7 @@ namespace DS.RevitLib.Utils.MEP.SystemTree.Relatives
                 List<MEPSystemComponent> children = GetRelations(_rootComponent.ChildrenNodes);
                 composite.AddChildren(children.Cast<Component>().ToList());
             }
-            if (_rootComponent.ChildrenNodes is not null)
+            if (_rootComponent.ParentNodes is not null)
             {
                 List<MEPSystemComponent> parents = GetRelations(_rootComponent.ParentNodes);
                 composite.AddParents(parents.Cast<Component>().ToList());

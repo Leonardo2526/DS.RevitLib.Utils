@@ -26,6 +26,14 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
             }
         }
 
+        public List<FamilyInstance> FamilyInstances
+        {
+            get
+            {
+                return (List<FamilyInstance>)Elements.OfType<FamilyInstance>();
+            }
+        }
+
         public List<Element> Elements { get; set; }
 
         public List<NodeElement> ChildrenNodes { get; set; }

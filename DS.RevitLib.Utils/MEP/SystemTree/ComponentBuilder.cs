@@ -9,6 +9,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace DS.RevitLib.Utils.MEP.SystemTree
 {
@@ -17,7 +18,8 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
         private readonly Document _doc;
         private Element _baseElement;
         public XYZ _direction;
-
+        private List<Element> _spudsOnBase = new List<Element>();
+        private List<Element> _connectedToBase = new List<Element>();
         public ComponentBuilder(Element baseElement)
         {
             _baseElement = baseElement;
@@ -27,7 +29,7 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
 
         public List<NodeElement> Nodes { get; set; } = new List<NodeElement>();
         public Stack<Element> Stack { get; set; } = new Stack<Element>();
-        public ObservableCollection<Element> Elements { get; set; } = new ObservableCollection<Element>();
+        public List<Element> Elements { get; set; } = new List<Element>();
 
 
 
@@ -55,29 +57,36 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
             return mEPSystemComponent;
         }
 
-        private ObservableCollection<Element> GetElements(Element element)
+        private List<Element> GetElements(Element element)
         {
-
+            bool reversed = false;
+            int i = 0;
             Stack.Push(element);
 
             while (Stack.Any())
             {
                 var currentElement = Stack.Pop();
 
-                List<Element> connectedElements = ConnectorUtils.GetConnectedElements(currentElement);
-                connectedElements = Elements.Any() ?
-                    GetConnected(connectedElements) : connectedElements;
+                if (!reversed && _connectedToBase.Any() && _connectedToBase.Where(x => x.Id == currentElement.Id).Any())
+                {
+                    i++;
+                    if (i == 2)
+                    {
+                        Elements.Reverse();
+                        reversed = true;
+                    }
+                }
+
+                List<Element> connectedElements = currentElement.Id == _baseElement.Id ?
+                    GetConnectedToBase(currentElement) : GetConnected(currentElement);
 
                 Elements.Add(currentElement);
 
-                if (connectedElements is null | !connectedElements.Any() && Stack.Count == 1)
-                {
-                    Elements.Move(0, Elements.Count - 1);
-                }
-                else
+                if (connectedElements is not null && connectedElements.Any())
                 {
                     SortByRelation(connectedElements, Stack, currentElement);
                 }
+
             }
 
             return Elements;
@@ -85,8 +94,18 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
 
 
 
-        private List<Element> GetConnected(List<Element> connectedElements)
+        private List<Element> GetConnected(Element element)
         {
+            List<Element> connectedElements = null;
+            if (ElementUtils.IsElementMEPCurve(element))
+            {
+                connectedElements = MEPCurveUtils.GetOrderedConnected(element as MEPCurve);
+            }
+            else
+            {
+                connectedElements = ConnectorUtils.GetConnectedElements(element);
+            }
+
             var intersected = connectedElements.Select(x => x.Id).Intersect(Elements.Select(x => x.Id));
 
             foreach (var inter in intersected)
@@ -96,6 +115,18 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
 
             return connectedElements;
         }
+
+        private List<Element> GetConnectedToBase(Element element)
+        {
+            if (ElementUtils.IsElementMEPCurve(element))
+            {
+                _connectedToBase = MEPCurveUtils.GetOrderedConnected(element as MEPCurve);
+                return _connectedToBase;
+            }
+
+            return ConnectorUtils.GetConnectedElements(element);
+        }
+
 
         private void SortByRelation(List<Element> connectedElements, Stack<Element> stack, Element currentElement)
         {

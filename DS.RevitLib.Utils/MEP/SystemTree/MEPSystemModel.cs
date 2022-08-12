@@ -94,5 +94,15 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
             return list;
         }
 
+        public List<Element> GetRootElements(Composite composite)
+        {
+            List<Element> list = new List<Element>();
+
+            MEPSystemComponent rootMEPComp = composite.Root as MEPSystemComponent;
+            list.AddRange(rootMEPComp.Elements);
+
+            return list;
+        }
+
     }
 }

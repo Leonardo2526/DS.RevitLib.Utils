@@ -36,9 +36,11 @@ namespace DS.RevitLib.Test
 
             //var elemsCount = system.Composite.Children.Count;
 
-            var elements = system.GetElements(system.Composite);
+            //var elements = system.GetElements(system.Composite);
+            var rootElements = system.GetRootElements(system.Composite);
+            var rootFamilies = rootElements.OfType<FamilyInstance>();
 
-            HighlightElements(elements);
+            HighlightElements(rootElements);
             //HighlightElements(system.ParentElements);
             //HighlightElements(system.AllElements);
 

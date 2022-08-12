@@ -1,11 +1,14 @@
 ﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.Architecture;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.Solids;
 using Ivanov.RevitLib.Utils;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
+using System.Security.Cryptography;
 
 namespace DS.RevitLib.Utils.MEP
 {
@@ -393,6 +396,95 @@ namespace DS.RevitLib.Utils.MEP
             }
 
             return area;
+        }
+
+        /// <summary>
+        /// Check if connected element is root element.
+        /// </summary>
+        /// <param name="mEPCurve"></param>
+        /// <param name="element"></param>
+        /// <returns>Return true if element is not child spud.</returns>
+        public static bool IsRoot(MEPCurve mEPCurve, Element element)
+        {
+            if (!ConnectorUtils.ElementsConnected(mEPCurve, element))
+            {
+                var s = "Elements aren't connected";
+                throw new ArgumentException(s);
+            }
+            
+            var mEPCurveDir = GetDirection(mEPCurve);
+
+            var mEPCurveLP = ElementUtils.GetLocationPoint(mEPCurve);
+            var elemLP = ElementUtils.GetLocationPoint(element);
+
+            XYZ vector = (mEPCurveLP - elemLP).RoundVector().Normalize();
+
+            if (XYZUtils.Collinearity(mEPCurveDir, vector))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+
+        public static List<Element> GetOrderedConnected(MEPCurve mEPCurve)
+        {
+            List<Element> orderedElements = new List<Element>();
+
+            var connectedElems = ConnectorUtils.GetConnectedElements(mEPCurve);
+            if (connectedElems is null || !connectedElems.Any())
+            {
+                return connectedElems;
+            }
+
+            var rootElems = new List<Element>();
+            var roots = connectedElems.Where(x => IsRoot(mEPCurve, x));
+
+            //get base reference point
+            XYZ basePoint = null;
+            if (roots is not null && roots.Any())
+            {
+                rootElems.AddRange(roots);
+                orderedElements.Add(rootElems.First());
+                connectedElems.RemoveAll(x => rootElems.Contains(x));
+                basePoint = ElementUtils.GetLocationPoint(orderedElements.First());
+            }
+            else
+            {
+                var freeCons = ConnectorUtils.GetFreeConnector(mEPCurve);
+                basePoint = freeCons.First().Origin;
+            };
+
+            if (!connectedElems.Any())
+            {
+                return rootElems;
+            }
+
+            //get distenced dictionary
+            var distances = GetDistancesByPoint(basePoint, connectedElems);
+            orderedElements.AddRange(distances.Values);
+
+            if (rootElems.Count > 1)
+            {
+                orderedElements.Add(rootElems.Last());
+            }
+
+            return orderedElements;
+        }
+
+        public static Dictionary<double, Element> GetDistancesByPoint(XYZ basePoint, List<Element> elements)
+        {
+            Dictionary<double, Element> distances = new Dictionary<double, Element>();
+
+            foreach (var elem in elements)
+            {
+                XYZ point = ElementUtils.GetLocationPoint(elem);
+                double distance = basePoint.DistanceTo(point);
+                distances.Add(distance, elem);
+            }
+           
+            return distances.OrderByDescending(x => x.Key).Reverse().ToDictionary(x => x.Key, x => x.Value);
         }
     }
 }

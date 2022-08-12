@@ -5,6 +5,8 @@ using DS.RevitLib.Utils.MEP.Neighbours;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Xml.Linq;
 
 namespace DS.RevitLib.Utils.MEP
 {
@@ -420,6 +422,23 @@ namespace DS.RevitLib.Utils.MEP
                 {
                     transNew.Commit();
                 }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Check if elements are connected.
+        /// </summary>
+        /// <param name="element1"></param>
+        /// <param name="element2"></param>
+        /// <returns>Return true if elements are connected.</returns>
+        public static bool ElementsConnected(Element element1, Element element2)
+        {
+            var (elem1Con, elem2Con) = GetCommonConnectors(element1, element2);
+            if (elem1Con is null || elem2Con is null)
+            {
+                return false;
             }
 
             return true;

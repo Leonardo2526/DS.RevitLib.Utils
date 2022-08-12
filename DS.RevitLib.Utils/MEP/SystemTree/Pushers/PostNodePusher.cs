@@ -30,7 +30,7 @@ namespace DS.RevitLib.Utils.MEP.SystemTree.Relatives
                     else if(_node.SystemRelation == Relation.Parent)
                     {
                         _node.RelationElement = _element;
-                        _componentBuilder.Elements.Move(0, _componentBuilder.Elements.Count - 1);
+                        //_componentBuilder.Elements.Move(0, _componentBuilder.Elements.Count - 1);
                         PushedToParent = true;
                     }
                     break;
