@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using DS.ClassLib.VarUtils;
 using DS.RevitLib.Utils.Extensions;
+using DS.RevitLib.Utils.MEP.SystemTree.ConnectedBuilders;
 using DS.RevitLib.Utils.MEP.SystemTree.Relatives;
 using System;
 using System.Collections;
@@ -15,33 +16,19 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
 {
     public class ComponentBuilder
     {
-        private readonly Document _doc;
-        private Element _baseElement;
+        private readonly Element _baseElement;
         public XYZ _direction;
-        private List<Element> _spudsOnBase = new List<Element>();
         private List<Element> _connectedToBase = new List<Element>();
-        private NodeElement _node;
 
         public ComponentBuilder(Element baseElement)
         {
             _baseElement = baseElement;
-            _doc = baseElement.Document;
             _direction = ElementUtils.GetDirections(baseElement).First();
-        }
-
-        public ComponentBuilder(NodeElement node)
-        {
-            _node = node;
-            _baseElement = node.RelationElement;
-            _doc = node.RelationElement.Document;
-            _direction = ElementUtils.GetDirections(node.RelationElement).First();
         }
 
         public List<NodeElement> Nodes { get; set; } = new List<NodeElement>();
         public Stack<Element> Stack { get; set; } = new Stack<Element>();
         public List<Element> Elements { get; set; } = new List<Element>();
-
-
 
 
         public MEPSystemComponent Build()
@@ -86,8 +73,16 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
                     }
                 }
 
-                List<Element> connectedElements = currentElement.Id == _baseElement.Id ?
-                    GetConnectedToBase(currentElement) : GetConnected(currentElement);
+                Element exludedElement = GetExcluded(currentElement);
+
+                var builder = new ConnectedElementsBuilder(currentElement, exludedElement);
+                List<Element> connectedElements = builder.Build();
+
+                if (currentElement.Id == element.Id)
+                {
+                    _connectedToBase = connectedElements;
+                }
+
 
                 Elements.Add(currentElement);
 
@@ -106,67 +101,28 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
             return Elements;
         }
 
-
-
-        private List<Element> GetConnected(Element element)
+        private Element GetExcluded(Element element)
         {
-            List<Element> connectedElements =  ConnectorUtils.GetConnectedElements(element);           
+            if (!Elements.Any())
+            {
+                return null;
+            }
 
+
+            List<Element> connectedElements = ConnectorUtils.GetConnectedElements(element);
             var intersected = connectedElements.Select(x => x.Id).Intersect(Elements.Select(x => x.Id)).ToList();
 
-            if (intersected.Count != 1)
+            switch (intersected.Count)
             {
-                throw new ArgumentException("intersected.Count != 1");
+                case 0:
+                    return null;
+                case 1:
+                    return element.Document.GetElement(intersected.First());
+                default:
+                    break;
             }
 
-            var intersectedElem = element.Document.GetElement(intersected.First());
-
-            foreach (var inter in intersected)
-            {
-                connectedElements = connectedElements.Where(x => x.Id != inter).ToList();
-            }
-
-            var (elem1Con, elem2Con) = ConnectorUtils.GetCommonConnectors(element, intersectedElem);
-            if (connectedElements.Count > 1)
-            {
-                connectedElements = connectedElements.OrderByPoint(elem1Con.Origin);
-            }
-
-            return connectedElements;
-        }
-
-
-        private List<Element> GetConnectedToBase(Element element)
-        {
-            if (ElementUtils.IsElementMEPCurve(element))
-            {
-                XYZ basePoint = GetBasePoint(element);
-                _connectedToBase = MEPCurveUtils.GetOrderedConnected(element as MEPCurve, basePoint);
-                return _connectedToBase;
-            }
-
-            return ConnectorUtils.GetConnectedElements(element);
-        }
-
-
-        private XYZ GetBasePoint(Element element)
-        {
-            if (_node is null)
-            {
-                var notSpuds = MEPCurveUtils.GetNotSpudConnectors(element as MEPCurve);
-                return notSpuds.First().Origin;
-            }
-            else if (_node.SystemRelation == Relation.Child)
-            {
-                return ElementUtils.GetLocationPoint(_node.Element);
-            }
-            else if (_node.SystemRelation == Relation.Parent)
-            {
-                var notSpuds = MEPCurveUtils.GetNotSpudConnectors(element as MEPCurve);
-                return notSpuds.First().Origin;
-            }
-
-            return null;
+            throw new ArgumentException("intersected.Count != 1");
         }
 
         private void SortByRelation(List<Element> connectedElements, Stack<Element> stack, Element currentElement)

@@ -46,10 +46,13 @@ namespace DS.RevitLib.Utils.MEP.SystemTree.Relatives
 
             foreach (var node in nodes)
             {
-                var lp = ElementUtils.GetLocationPoint(node.Element);
-                var point = ElementUtils.GetLocationPoint(node.Element);
-                var builder = new ComponentBuilder(node);
+                var builder = new ComponentBuilder(node.RelationElement);
                 var component = builder.Build();
+
+                if (node.SystemRelation == Relation.Child && component.Elements.First().Id != node.Element.Id)
+                {
+                    component.Elements.Reverse();
+                }
                 components.Add(component);
             }
 

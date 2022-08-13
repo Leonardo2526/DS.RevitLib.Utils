@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace DS.RevitLib.Utils.Extensions
 {
@@ -67,21 +68,29 @@ namespace DS.RevitLib.Utils.Extensions
 
             foreach (var elem in elements)
             {
-                if (MEPElementUtils.IsNodeElement(elem))
-                {
-                    var pt = ElementUtils.GetPartType(elem as FamilyInstance);
-                    if (pt != PartType.SpudPerpendicular && pt != PartType.SpudAdjustable)
-                    {
-                        roots.Add(elem);
-                    }
-                }
-                else
+                if (!elem.IsSpud())
                 {
                     roots.Add(elem);
                 }
             }
 
             return roots.Any() ? roots : elements;
+        }
+
+        public static bool IsSpud(this Element element)
+        {
+            if (element is not FamilyInstance familyInstance)
+            {
+                return false;
+            }
+
+            var pt = ElementUtils.GetPartType(familyInstance);
+            if (pt == PartType.SpudPerpendicular || pt == PartType.SpudAdjustable)
+            {
+                return true;
+            }
+
+            return false;
         }
 
     }

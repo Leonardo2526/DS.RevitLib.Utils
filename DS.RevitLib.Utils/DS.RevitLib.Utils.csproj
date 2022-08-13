@@ -86,6 +86,11 @@
     <Compile Include="MEP\Models\MEPElement.cs" />
     <Compile Include="MEP\SystemTree\Composite.cs" />
     <Compile Include="MEP\SystemTree\CompositeBuilder.cs" />
+    <Compile Include="MEP\SystemTree\ConnectedBuilders\AbstractConnectedBuilder.cs" />
+    <Compile Include="MEP\SystemTree\ConnectedBuilders\ConnectedElementsBuilder.cs" />
+    <Compile Include="MEP\SystemTree\ConnectedBuilders\IConnectedBuilder.cs" />
+    <Compile Include="MEP\SystemTree\ConnectedBuilders\NotOrderedConnectedBuilder.cs" />
+    <Compile Include="MEP\SystemTree\ConnectedBuilders\OrderedConnectedBuilder.cs" />
     <Compile Include="MEP\SystemTree\NodeElement.cs" />
     <Compile Include="MEP\SystemTree\Pushers\NodePusher.cs" />
     <Compile Include="MEP\SystemTree\Pushers\PostNodePusher.cs" />
