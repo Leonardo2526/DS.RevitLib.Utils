@@ -18,19 +18,8 @@ namespace DS.RevitLib.Utils.MEP.SystemTree.Relatives
         public CompositeBuilder(Element element)
         {
             _element = element;
-
-            if (ElementUtils.IsElementMEPCurve(element))
-            {
-                var notSpuds = MEPCurveUtils.GetNotSpudConnectors(element as MEPCurve);
-                XYZ basePoint = notSpuds.First().Origin;
-                var builder = new ComponentBuilder(_element, basePoint);
-                _rootComponent = builder.Build();
-            }
-            else
-            {
-                throw new ArgumentException("CompositeBuilder - Element is not MEPCurve");
-            }
-
+            var builder = new ComponentBuilder(_element);
+            _rootComponent = builder.Build();
         }
 
         public Composite Build()
@@ -57,8 +46,9 @@ namespace DS.RevitLib.Utils.MEP.SystemTree.Relatives
 
             foreach (var node in nodes)
             {
+                var lp = ElementUtils.GetLocationPoint(node.Element);
                 var point = ElementUtils.GetLocationPoint(node.Element);
-                var builder = new ComponentBuilder(node.RelationElement, point);
+                var builder = new ComponentBuilder(node);
                 var component = builder.Build();
                 components.Add(component);
             }
