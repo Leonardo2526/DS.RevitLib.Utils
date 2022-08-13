@@ -63,18 +63,18 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
             while (Stack.Any())
             {
                 var currentElement = Stack.Pop();
-                if (!reversed && _connectedToBase.Any() && _connectedToBase.Where(x => x.Id == currentElement.Id).Any())
+
+                if (_connectedToBase.Any() && _connectedToBase.Select(x => x.Id).Contains(currentElement.Id))
                 {
                     i++;
-                    if (i == 2)
-                    {
-                        Elements.Reverse();
-                        reversed = true;
-                    }
+                }
+                if (!reversed && i == 2)
+                {
+                    Elements.Reverse();
+                    reversed = true;
                 }
 
                 Element exludedElement = GetExcluded(currentElement);
-
                 var builder = new ConnectedElementsBuilder(currentElement, exludedElement);
                 List<Element> connectedElements = builder.Build();
 
@@ -83,19 +83,12 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
                     _connectedToBase = connectedElements;
                 }
 
-
                 Elements.Add(currentElement);
 
                 if (connectedElements is not null && connectedElements.Any())
                 {
                     SortByRelation(connectedElements, Stack, currentElement);
                 }
-
-            }
-
-            if (_connectedToBase.Count == 1)
-            {
-                Elements.Reverse();
             }
 
             return Elements;
