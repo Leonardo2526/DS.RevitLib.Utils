@@ -42,13 +42,39 @@ namespace DS.RevitLib.Test
 
             var families = rootElements.Where(x => x.Category.Name.Contains("Accessories") || x.Category.Name.Contains("Арматура")).ToList();
 
-            HighlightElements(families);
+            var selectedFamilies = SelectFilter(rootElements);
+
+            HighlightElements(selectedFamilies);
             //HighlightElements(rootElements);
             //HighlightElements(system.ParentElements);
             //HighlightElements(system.AllElements);
 
             //TaskDialog.Show("Revit", "There are " + elemsCount.ToString() + " top level parent elements in model.");
         }
+
+
+        private List<Element> SelectFilter(List<Element> elements)
+        {
+            Reference reference1 = Uidoc.Selection.PickObject(ObjectType.Element, "Select first element.");
+            Element element1 = Doc.GetElement(reference1);
+
+            Reference reference2 = Uidoc.Selection.PickObject(ObjectType.Element, "Select second element.");
+            Element element2 = Doc.GetElement(reference2);
+
+            var elemsIds = elements.Select(obj => obj.Id).ToList();
+
+
+            int ind1 = elemsIds.IndexOf(element1.Id);
+            int ind2 = elemsIds.IndexOf(element2.Id);
+
+            int minInd = Math.Min(ind1, ind2);
+            int maxInd = Math.Max(ind1, ind2);
+
+            var range =  elements.FindAll(x => elements.IndexOf(x) > minInd && elements.IndexOf(x) < maxInd);  
+
+            return range.Where(x => x.Category.Name.Contains("Accessories") || x.Category.Name.Contains("Арматура")).ToList();
+        }
+
 
         private void HighlightElements(List<Element> elements)
         {
