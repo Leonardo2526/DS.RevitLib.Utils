@@ -1,11 +1,10 @@
 ﻿using Autodesk.Revit.DB;
 using DS.RevitLib.Utils.Extensions;
-using DS.RevitLib.Utils.Solids;
 using Ivanov.RevitLib.Utils;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 
 namespace DS.RevitLib.Utils.MEP
 {
@@ -393,6 +392,80 @@ namespace DS.RevitLib.Utils.MEP
             }
 
             return area;
+        }
+
+        /// <summary>
+        /// Check if connected element is root element.
+        /// </summary>
+        /// <param name="mEPCurve"></param>
+        /// <param name="element"></param>
+        /// <returns>Return true if element is not child spud.</returns>
+        public static bool IsRoot(MEPCurve mEPCurve, Element element)
+        {
+            if (!ConnectorUtils.ElementsConnected(mEPCurve, element))
+            {
+                var s = "Elements aren't connected";
+                throw new ArgumentException(s);
+            }
+            
+            var mEPCurveDir = GetDirection(mEPCurve);
+
+            var mEPCurveLP = ElementUtils.GetLocationPoint(mEPCurve);
+            var elemLP = ElementUtils.GetLocationPoint(element);
+
+            XYZ vector = (mEPCurveLP - elemLP).RoundVector().Normalize();
+
+            if (XYZUtils.Collinearity(mEPCurveDir, vector))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+
+        public static List<Element> GetOrderedConnected(MEPCurve mEPCurve, XYZ basePoint)
+        {
+            var connectedElems = ConnectorUtils.GetConnectedElements(mEPCurve);
+            if (connectedElems is null || !connectedElems.Any())
+            {
+                return connectedElems;
+            }           
+
+            return connectedElems.OrderByPoint(basePoint);
+        }
+
+
+        /// <summary>
+        /// Get not spud connectors of MEPCurve.
+        /// </summary>
+        /// <param name="mEPCurve"></param>
+        /// <returns></returns>
+        public static List<Connector> GetNotSpudConnectors(MEPCurve mEPCurve)
+        {
+            var connectedElems = ConnectorUtils.GetConnectedElements(mEPCurve);
+            if (connectedElems is null || !connectedElems.Any())
+            {
+                return null;
+            }
+
+            var notSpudElements = connectedElems.ExludeSpudes();            
+
+            if (notSpudElements is not null && notSpudElements.Any())
+            {
+                var cons = new List<Connector>();
+                foreach (var elem in notSpudElements)
+                {
+                    var (elem1Con, elem2Con) = ConnectorUtils.GetCommonConnectors(elem, mEPCurve);
+                    cons.Add(elem2Con);
+                }
+               return cons;
+            }
+            else
+            {
+                var freeCons = ConnectorUtils.GetFreeConnector(mEPCurve);
+                return freeCons;
+            };
         }
     }
 }

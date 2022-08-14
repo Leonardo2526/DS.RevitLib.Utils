@@ -15,7 +15,7 @@ namespace DS.RevitLib.Utils.MEP.Neighbours
 
             foreach (Element element in elements)
             {
-                if (MEPElementUtils.CheckMEPElement(element))
+                if (MEPElementUtils.IsValidType(element))
                 {
                     elementsForNewSearch.Add(element);
                 }

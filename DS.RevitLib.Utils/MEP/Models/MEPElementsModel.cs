@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DS.RevitLib.Utils.MEP.Creator
+namespace DS.RevitLib.Utils.MEP.SystemTree
 {
-    public class MEPSystemModel
+    public class MEPElementsModel
     {
 
         #region Properties
@@ -31,6 +31,8 @@ namespace DS.RevitLib.Utils.MEP.Creator
                 return cons1.FirstOrDefault();
             }
         }
+
+        public string ErrorMessages { get; set; }
 
         #endregion
     }

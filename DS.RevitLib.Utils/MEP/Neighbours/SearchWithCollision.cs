@@ -28,7 +28,7 @@ namespace DS.RevitLib.Utils.MEP.Neighbours
 
             foreach (Element element in elements)
             {
-                if (MEPElementUtils.CheckMEPElement(element))
+                if (MEPElementUtils.IsValidType(element))
                 {
                     List<Solid> solidIntersections = DSSolid.SolidUtils.GetIntersection(
                         _SourceColElements, new List<Element>() { element });

@@ -5,6 +5,8 @@ using DS.RevitLib.Utils.MEP.Neighbours;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Xml.Linq;
 
 namespace DS.RevitLib.Utils.MEP
 {
@@ -26,7 +28,7 @@ namespace DS.RevitLib.Utils.MEP
                 foreach (Connector con in connectorSet)
                 {
                     ElementId elementId = con.Owner.Id;
-                    if (elementId != element.Id && MEPElementUtils.CheckMEPElement(con.Owner))
+                    if (elementId != element.Id && MEPElementUtils.IsValidType(con.Owner))
                     {
                         connectedElements.Add(con.Owner);
                     }
@@ -83,13 +85,23 @@ namespace DS.RevitLib.Utils.MEP
 
             foreach (var one in elements)
             {
-                if (!excludedElements.Any(two => two.Id == one.Id))
+                if ((bool)!excludedElements?.Any(two => two.Id == one.Id))
                 {
                     NoIntersections.Add(one);
                 }
             }
 
             return NoIntersections;
+        }
+
+        /// <summary>
+        /// Get all sysytem elements connected to current element. 
+        /// </summary>
+        public static List<Element> GetConnectedElements(Element element, Document Doc)
+        {
+            INeighbourSearch neighbourSearch = new Search();
+            NeighbourElement neighbourElement = new NeighbourElement(neighbourSearch);
+            return neighbourElement.GetAllNeighbours(new List<Element>() { element }, new List<Element>(), Doc);
         }
 
         public static void GetNeighbourConnectors(out Connector con1, out Connector con2,
@@ -250,7 +262,7 @@ namespace DS.RevitLib.Utils.MEP
 
                 foreach (Connector con in connectorSet)
                 {
-                    if (con.Owner.Id == element2.Id && MEPElementUtils.CheckMEPElement(con.Owner))
+                    if (con.Owner.Id == element2.Id && MEPElementUtils.IsValidType(con.Owner))
                     {
                         return (elem1Con, con);
                     }
@@ -410,6 +422,23 @@ namespace DS.RevitLib.Utils.MEP
                 {
                     transNew.Commit();
                 }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Check if elements are connected.
+        /// </summary>
+        /// <param name="element1"></param>
+        /// <param name="element2"></param>
+        /// <returns>Return true if elements are connected.</returns>
+        public static bool ElementsConnected(Element element1, Element element2)
+        {
+            var (elem1Con, elem2Con) = GetCommonConnectors(element1, element2);
+            if (elem1Con is null || elem2Con is null)
+            {
+                return false;
             }
 
             return true;

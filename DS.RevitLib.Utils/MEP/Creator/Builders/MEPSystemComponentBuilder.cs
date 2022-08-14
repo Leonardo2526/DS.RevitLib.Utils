@@ -1,4 +1,6 @@
 ﻿using Autodesk.Revit.DB;
+using DS.RevitLib.Utils.MEP.Models;
+using DS.RevitLib.Utils.MEP.SystemTree;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,24 +9,24 @@ using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.MEP.Creator
 {
-    public abstract class MEPSystemBuilder
+    public abstract class MEPElementsModelBuilder
     {
         #region Constructor
-        protected MEPSystemModel MEPSystemModel { get; set; }
+        protected MEPElementsModel MEPElementsModel { get; set; }
 
-        public MEPSystemBuilder(MEPCurve baseMEPCurve, string transactionPrefix)
+        public MEPElementsModelBuilder(MEPCurve baseMEPCurve, string transactionPrefix)
         {
             Doc = baseMEPCurve.Document;
             BaseMEPCurve = baseMEPCurve;
-            MEPSystemModel = new MEPSystemModel();
+            MEPElementsModel = new MEPElementsModel();
             TransactionPrefix = transactionPrefix;
         }
 
         #endregion
 
-        public static implicit operator MEPSystemModel(MEPSystemBuilder mepBuider)
+        public static implicit operator MEPElementsModel(MEPElementsModelBuilder mepBuider)
         {
-            return mepBuider.MEPSystemModel;
+            return mepBuider.MEPElementsModel;
         }
 
         #region Fields
