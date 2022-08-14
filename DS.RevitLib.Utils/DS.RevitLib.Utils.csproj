@@ -78,7 +78,7 @@
     <Compile Include="MEP\Creator\Builders\BuilderByPoints.cs" />
     <Compile Include="MEP\Creator\Builders\MEPSystemComponentBuilder.cs" />
     <Compile Include="MEP\Creator\Builders\RotationBuilder.cs" />
-    <Compile Include="MEP\NewMEPSystemBuilder.cs" />
+    <Compile Include="MEP\SimpleMEPSystemBuilder.cs" />
     <Compile Include="MEP\Models\MEPElementsModel.cs" />
     <Compile Include="MEP\SystemTree\Component.cs" />
     <Compile Include="MEP\SystemTree\ComponentBuilder.cs" />

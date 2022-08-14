@@ -330,5 +330,22 @@ namespace DS.RevitLib.Utils
             return dirs;
         }
 
+        /// <summary>
+        /// Highlight elements in revit.
+        /// </summary>
+        /// <param name="elements"></param>
+        public static void Highlight(List<Element> elements)
+        {
+            ICollection<ElementId> ids = new List<ElementId>();
+            foreach (var elem in elements)
+            {
+                ids.Add(elem.Id);
+            }
+
+            UIDocument uiDoc = new UIDocument(elements.First().Document);
+            uiDoc.Selection.SetElementIds(ids);
+            uiDoc.ShowElements(ids);
+        }
+
     }
 }

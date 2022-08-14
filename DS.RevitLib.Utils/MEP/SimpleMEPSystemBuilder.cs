@@ -5,11 +5,11 @@ using System.Linq;
 
 namespace DS.RevitLib.Utils.MEP.SystemTree
 {
-    public class NewMEPSystemBuilder
+    public class SimpleMEPSystemBuilder
     {
         private readonly Element _element;
 
-        public NewMEPSystemBuilder(Element element)
+        public SimpleMEPSystemBuilder(Element element)
         {
             this._element = element;
         }

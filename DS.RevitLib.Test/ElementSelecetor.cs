@@ -30,7 +30,7 @@ namespace DS.RevitLib.Test
             Reference reference = Uidoc.Selection.PickObject(ObjectType.Element, "Select element that will be checked for intersection with all elements");
             Element element = Doc.GetElement(reference);
 
-            var mEPSystemBuilder = new NewMEPSystemBuilder(element);
+            var mEPSystemBuilder = new SimpleMEPSystemBuilder(element);
             //var mEPSystemBuilder = new MEPSystemBuilder(element);
             var system = mEPSystemBuilder.Build();
 
