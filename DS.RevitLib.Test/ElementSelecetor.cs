@@ -40,7 +40,9 @@ namespace DS.RevitLib.Test
             var rootElements = system.GetRootElements(system.Composite);
             var rootFamilies = rootElements.OfType<FamilyInstance>();
 
-            HighlightElements(elements);
+            var families = rootElements.Where(x => x.Category.Name.Contains("Accessories") || x.Category.Name.Contains("Арматура")).ToList();
+
+            HighlightElements(families);
             //HighlightElements(rootElements);
             //HighlightElements(system.ParentElements);
             //HighlightElements(system.AllElements);
