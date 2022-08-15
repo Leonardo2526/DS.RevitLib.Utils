@@ -183,7 +183,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
         }
 
         /// <summary>
-        /// Rotate MEPCurve by angle in rads.
+        /// Rotate MEPCurve around it's axe by angle in rads.
         /// </summary>
         /// <param name="mEPCurve"></param>
         /// <param name="angle"></param>

@@ -63,7 +63,7 @@ namespace DS.RevitLib.Utils.Extensions
         /// Order elements list.
         /// </summary>
         /// <param name="basePoint"></param>
-        /// <returns>Return ordered elements.</returns>
+        /// <returns>Return ordered elements by its locations.</returns>
         public static List<Element> Order(this List<Element> elements)
         {
             //get location points of elements
