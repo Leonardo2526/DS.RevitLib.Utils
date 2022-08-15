@@ -443,5 +443,31 @@ namespace DS.RevitLib.Utils.MEP
 
             return true;
         }
+
+        /// <summary>
+        /// Get main connectors of element.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <returns>Returns two connectors. Element location point is on line between this connectors.</returns>
+        public static (Connector con1, Connector con2) GetMainConnectors(Element element)
+        {
+            var connectors = GetConnectors(element);
+            XYZ lp = ElementUtils.GetLocationPoint(element);
+
+            for (int i = 0; i < connectors.Count - 1; i++)
+            {
+                for (int j = i + 1; j < connectors.Count; j++)
+                {
+                    XYZ dir1 = (connectors[i].Origin - lp).RoundVector();
+                    XYZ dir2 = (connectors[j].Origin - lp).RoundVector();
+                    if (XYZUtils.Collinearity(dir1, dir2))
+                    {
+                        return (connectors[i], connectors[j]);
+                    }
+                }
+            }
+
+            return (null, null);
+        }
     }
 }

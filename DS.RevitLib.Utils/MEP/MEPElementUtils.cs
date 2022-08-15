@@ -3,8 +3,10 @@ using Autodesk.Revit.UI;
 using DS.RevitLib.Utils.Extensions;
 using Ivanov.RevitLib.Utils;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -157,5 +159,31 @@ namespace DS.RevitLib.Utils.MEP
                     return false;
             }
         }
+
+
+        /// <summary>
+        /// Get element's size parameters.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <returns>Returns all not nullable connector size parameters.</returns>
+        public static Dictionary<Parameter, double> GetSizeParameters(Element element)
+        {
+            var dict = new Dictionary<Parameter, double>();
+
+            AddParameter(GetAssociatedParameter(element, BuiltInParameter.CONNECTOR_DIAMETER), dict);
+            AddParameter(GetAssociatedParameter(element, BuiltInParameter.CONNECTOR_RADIUS), dict);
+            AddParameter(GetAssociatedParameter(element, BuiltInParameter.CONNECTOR_HEIGHT), dict);
+            AddParameter(GetAssociatedParameter(element, BuiltInParameter.CONNECTOR_WIDTH), dict);
+
+            return dict;
+        }
+        private static void AddParameter(Parameter parameter, Dictionary<Parameter, double> dictionary)
+        {
+            if (parameter is not null)
+            {
+                dictionary.Add(parameter, parameter.AsDouble());
+            }
+        }
+
     }
 }

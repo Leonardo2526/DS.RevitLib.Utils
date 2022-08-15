@@ -80,6 +80,8 @@
     <Compile Include="MEP\Creator\Builders\RotationBuilder.cs" />
     <Compile Include="MEP\SimpleMEPSystemBuilder.cs" />
     <Compile Include="MEP\Models\MEPElementsModel.cs" />
+    <Compile Include="MEP\Symbols\SymbolModel.cs" />
+    <Compile Include="MEP\Symbols\SymbolPlacer.cs" />
     <Compile Include="MEP\SystemTree\Component.cs" />
     <Compile Include="MEP\SystemTree\ComponentBuilder.cs" />
     <Compile Include="MEP\Models\MEPCurvesModel.cs" />
@@ -107,7 +109,7 @@
     <Compile Include="MEP\SystemTree\Relatives\TeeRelation.cs" />
     <Compile Include="MEP\SystemTree\Relatives\Relation.cs" />
     <Compile Include="ModelCurveUtils\ModelCurveCreator.cs" />
-    <Compile Include="PointUtils.cs" />
+    <Compile Include="Points\PointUtils.cs" />
     <Compile Include="Extensions\CategoryExtension.cs" />
     <Compile Include="GPExtractor\GPCreator.cs" />
     <Compile Include="GPExtractor\GPExtractor.cs" />
