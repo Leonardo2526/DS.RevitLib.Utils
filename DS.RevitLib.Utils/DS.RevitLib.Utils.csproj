@@ -131,7 +131,10 @@
     <Compile Include="TransactionCommitter\Committer.cs" />
     <Compile Include="TransactionCommitter\BaseCommitter.cs" />
     <Compile Include="TransactionCommitter\RollBackCommitter.cs" />
-    <Compile Include="XYZUtils.cs" />
+    <Compile Include="Points\XYZAlgorithms\MaxDistance\MaxDistanceClient.cs" />
+    <Compile Include="Points\XYZAlgorithms\MaxDistance\Strategies\MaxDistnaceStrategy.cs" />
+    <Compile Include="Points\XYZAlgorithms\MaxDistance\Strategies\NaiveStrategy.cs" />
+    <Compile Include="Points\XYZUtils.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

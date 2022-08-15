@@ -1,6 +1,8 @@
 ﻿using Autodesk.Revit.DB;
 using DS.ClassLib.VarUtils;
 using DS.RevitLib.Utils.Extensions;
+using DS.RevitLib.Utils.Points.XYZAlgorithms.MaxDistance;
+using DS.RevitLib.Utils.Points.XYZAlgorithms.MaxDistance.Strategies;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -73,6 +75,20 @@ namespace DS.RevitLib.Utils
                 return true;
             }
             return false;
+        }
+
+        /// <summary>
+        /// Get points from the list with maximum distance between them.
+        /// </summary>
+        /// <param name="points"></param>
+        /// <param name="maxDist"></param>
+        /// <returns>Returns points pair and maximum distance.</returns>
+        public static (XYZ point1, XYZ point2) GetMaxDistancePoints(List<XYZ> points, out double maxDist)
+        {
+            var client = new MaxDistanceClient(points, new NaiveStrategy());
+            maxDist = client.GetMaxDistance();
+
+            return (client.Point1, client.Point2);
         }
 
         #endregion

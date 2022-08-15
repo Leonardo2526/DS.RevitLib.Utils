@@ -1,5 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using DS.RevitLib.Utils.MEP;
+using DS.RevitLib.Utils.Points.XYZAlgorithms.MaxDistance;
+using DS.RevitLib.Utils.Points.XYZAlgorithms.MaxDistance.Strategies;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -58,6 +60,39 @@ namespace DS.RevitLib.Utils.Extensions
         }
 
         /// <summary>
+        /// Order elements list.
+        /// </summary>
+        /// <param name="basePoint"></param>
+        /// <returns>Return ordered elements.</returns>
+        public static List<Element> Order(this List<Element> elements)
+        {
+            //get location points of elements
+            List<XYZ> pointsList = new List<XYZ>();
+
+            foreach (var elem in elements)
+            {
+                var lp =  ElementUtils.GetLocationPoint(elem);
+                pointsList.Add(lp);
+            }
+
+            //find edge location points
+             var (point1, point2) = XYZUtils.GetMaxDistancePoints(pointsList, out double maxDist);
+
+            var distances = new Dictionary<double, Element>();
+
+            foreach (var elem in elements)
+            {
+                XYZ point = ElementUtils.GetLocationPoint(elem);
+                double distance = point1.DistanceTo(point);
+                distances.Add(distance, elem);
+            }
+
+            distances = distances.OrderByDescending(x => x.Key).ToDictionary(x => x.Key, x => x.Value);
+
+            return distances.Values.ToList();
+        }
+
+        /// <summary>
         /// Get elements without spuds
         /// </summary>
         /// <param name="elements"></param>
@@ -91,6 +126,12 @@ namespace DS.RevitLib.Utils.Extensions
             }
 
             return false;
+        }
+
+        public static FamilySymbol GetFamilySymbol(this Element element)
+        {
+            ElementId id = element.GetTypeId();
+            return element.Document.GetElement(id) as FamilySymbol;
         }
 
     }
