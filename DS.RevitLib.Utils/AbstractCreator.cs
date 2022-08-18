@@ -1,25 +1,15 @@
-﻿using Autodesk.Revit.DB;
-using DS.RevitLib.Utils.TransactionCommitter;
+﻿using DS.RevitLib.Utils.TransactionCommitter;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace DS.RevitLib.Utils.MEP
+namespace DS.RevitLib.Utils
 {
     public abstract class AbstractCreator
     {
-        protected readonly Document Doc;
-        protected readonly Element _element;
-        protected readonly string _transactionPrefix;
         protected readonly Committer _committer;
+        protected readonly string _transactionPrefix;
 
-        public AbstractCreator(Element element, Committer committer = null, string transactionPrefix = "")
+        public AbstractCreator(Committer committer = null, string transactionPrefix = null)
         {
-            Doc = element.Document;
-            _element = element;
-
             if (committer is null)
             {
                 _committer = new BaseCommitter();
