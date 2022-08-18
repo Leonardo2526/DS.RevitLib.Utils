@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.MEP.Symbols
 {
-    internal class SymbolModel
+    public class SymbolModel
     {
         private FamilySymbol familySymbol;
         private Dictionary<Parameter, double> parameters;

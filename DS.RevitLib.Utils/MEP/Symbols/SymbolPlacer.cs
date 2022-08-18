@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace DS.RevitLib.Utils.MEP.Symbols
 {
-    internal class SymbolPlacer
+    public class SymbolPlacer
     {
         private readonly Document _doc;
         private readonly SymbolModel _symbolModel;
