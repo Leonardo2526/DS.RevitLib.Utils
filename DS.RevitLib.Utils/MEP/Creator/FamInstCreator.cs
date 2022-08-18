@@ -172,6 +172,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
                 _committer.Commit(transNew);
                 ErrorMessages += _committer?.ErrorMessages;
             }
+                    ElementsMover.MoveElement(familyInstance, point - new XYZ(point.X, point.Y, 0));
 
             return familyInstance;
         }

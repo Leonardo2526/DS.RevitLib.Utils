@@ -57,7 +57,7 @@ namespace DS.RevitLib.Test
             List<XYZ> points = new List<XYZ>()
             {
                 new XYZ(0,0,0),
-                new XYZ(20,0,0),
+                new XYZ(20, 0,0),
             };
 
             var comp = system.Composite.Root as MEPSystemComponent;
