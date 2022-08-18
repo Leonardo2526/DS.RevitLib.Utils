@@ -45,7 +45,12 @@ namespace DS.RevitLib.Utils.MEP.Symbols
 
             var creator = new MEPCurveCreator(_targerMEPCurve);
             MEPCurve splittedMEPCurve1 = creator.SplitElement(_placementPoint + _targetDirection.Multiply(cutWidth)) as MEPCurve;
-            MEPCurve splittedMEPCurve2 = creator.SplitElement(_placementPoint - _targetDirection.Multiply(cutWidth)) as MEPCurve;
+
+
+            XYZ pointToSplit = _placementPoint - _targetDirection.Multiply(cutWidth);
+            MEPCurve mEPCurveToSplit = GetMEPCurveToSplit(_targerMEPCurve, splittedMEPCurve1, pointToSplit);
+            var splitCreator = new MEPCurveCreator(mEPCurveToSplit);
+            MEPCurve splittedMEPCurve2 = splitCreator.SplitElement(pointToSplit) as MEPCurve;
 
             var mepCurves = new List<MEPCurve>()
             { _targerMEPCurve, splittedMEPCurve1, splittedMEPCurve2};
@@ -65,6 +70,23 @@ namespace DS.RevitLib.Utils.MEP.Symbols
             return famInst;
         }
 
+
+        private MEPCurve GetMEPCurveToSplit(MEPCurve mEPCurve1, MEPCurve mEPCurve2, XYZ pointToSplit)
+        {
+            var line1 = MEPCurveUtils.GetLine(mEPCurve1);
+            //var l1p0 = line1.GetEndPoint(0);
+            //var l1p2 = line1.GetEndPoint(1);
+            var line2 = MEPCurveUtils.GetLine(mEPCurve2);         
+            var p1 = line1.Project(pointToSplit);
+            var p2 = line2.Project(pointToSplit);
+
+            if (p1.Distance==0)
+            {
+                return mEPCurve1;
+            }
+
+            return mEPCurve2;
+        }
 
         private void SetConnectorParameters(FamilyInstance famInst, Dictionary<Parameter, double> parameters)
         {

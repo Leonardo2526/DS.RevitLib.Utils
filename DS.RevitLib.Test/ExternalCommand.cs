@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Security.Cryptography;
 
 namespace DS.RevitLib.Test
 {
@@ -22,9 +23,15 @@ namespace DS.RevitLib.Test
             UIDocument uidoc = uiapp.ActiveUIDocument;
             Document doc = uiapp.ActiveUIDocument.Document;
 
-            ElementSelecetor elementSelecetor = new ElementSelecetor(uidoc, doc, uiapp);
-            elementSelecetor.Select();
+            //ElementSelecetor elementSelecetor = new ElementSelecetor(uidoc, doc, uiapp);
+            //elementSelecetor.Select();
 
+
+            var testedClass = new FamiliesSelectorTest(uidoc, doc, uiapp);
+            testedClass.RunTest();
+
+            SymbolPlacerTest symbolPlacer = new SymbolPlacerTest(testedClass.Families, testedClass.MEPCurve);
+            symbolPlacer.Run();
 
             return Autodesk.Revit.UI.Result.Succeeded;
         }

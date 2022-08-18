@@ -50,6 +50,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FamiliesSelectorTest.cs" />
+    <Compile Include="SymbolPlacerTest.cs" />
     <Compile Include="ElementSelecetor.cs" />
     <Compile Include="ExternalCommand.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
