@@ -55,8 +55,9 @@ namespace DS.RevitLib.Utils.MEP.Creator.Builders
 
             int rotDir = GetRotationSide(AlignAxe, vectorToRotateNorm, rotationAxe);
 
-            MEPCurveCreator mEPCurveCreator = new MEPCurveCreator(_MEPCurve, null, TransactionPrefix);
-            return mEPCurveCreator.Rotate(angleRad * rotDir);
+            var rotationLine = MEPCurveUtils.GetLine(_MEPCurve);
+            var mEPCurveCreator = new MEPCurveCreator(_MEPCurve, null, TransactionPrefix);
+            return mEPCurveCreator.Rotate(rotationLine, angleRad * rotDir);
         }
 
         private XYZ GetAlignmentVector(MEPCurve baseMEPCurve)
