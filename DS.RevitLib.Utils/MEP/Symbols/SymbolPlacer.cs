@@ -1,5 +1,6 @@
 ﻿using Autodesk.Revit.DB;
 using DS.RevitLib.Utils.Extensions;
+using DS.RevitLib.Utils.MEP.AlignmentRotation;
 using DS.RevitLib.Utils.MEP.Creator;
 using DS.RevitLib.Utils.TransactionCommitter;
 using System.Collections.Generic;
@@ -41,7 +42,8 @@ namespace DS.RevitLib.Utils.MEP.Symbols
             double cutWidth = famInstCon1.Origin.DistanceTo(famInstCon2.Origin) / 2;
 
             //Set rotation
-            //....
+            var alignmentRotatorClient = new AlignmentRotatorClient(famInst, _targerMEPCurve);
+            alignmentRotatorClient.RotateAroundNormal();
 
             var creator = new MEPCurveCreator(_targerMEPCurve);
             MEPCurve splittedMEPCurve1 = creator.SplitElement(_placementPoint + _targetDirection.Multiply(cutWidth)) as MEPCurve;

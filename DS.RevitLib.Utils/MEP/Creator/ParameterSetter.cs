@@ -6,9 +6,12 @@ namespace DS.RevitLib.Utils.MEP.Creator
 {
     public class ParameterSetter : AbstractCreator
     {
+        private readonly Element _element;
+
         public ParameterSetter(Element element, Committer committer = null, string transactionPrefix = "") :
-            base(element, committer, transactionPrefix)
+            base(committer, transactionPrefix)
         {
+            _element = element;
         }
 
         /// <summary>
@@ -22,7 +25,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
             {
                 return _element;
             }
-            using (Transaction transNew = new Transaction(Doc, _transactionPrefix + "SetParameter"))
+            using (Transaction transNew = new Transaction(_element.Document, _transactionPrefix + "SetParameter"))
             {
                 try
                 {

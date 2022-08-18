@@ -49,6 +49,12 @@ namespace DS.RevitLib.Utils.MEP.AlignmentRotation.Strategies
             _rotationAxis = GetRotationAxis();
             _targetBaseVector = GetTargetBaseVector();
             _operationBaseVector = GetOperationBaseVector();
+
+            if (XYZUtils.Collinearity(_targetBaseVector, _operationBaseVector))
+            {
+                return _targetElement;
+            }
+
             _rotationAngle = GetRotationAngle(_targetBaseVector, _operationBaseVector);
 
             _creator.Rotate(_targetElement, _rotationAxis, _rotationAngle);

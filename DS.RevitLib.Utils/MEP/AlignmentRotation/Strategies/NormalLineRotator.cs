@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.DB;
+using DS.ClassLib.VarUtils;
 using DS.RevitLib.Utils.Elements.Creators;
 using System;
 using System.Collections.Generic;
@@ -20,22 +21,25 @@ namespace DS.RevitLib.Utils.MEP.AlignmentRotation.Strategies
 
         protected override XYZ GetOperationBaseVector()
         {
-            throw new NotImplementedException();
+            return _operationLine.Direction;
+        }
+        protected override XYZ GetTargetBaseVector()
+        {
+            return _targetLine.Direction;
         }
 
         protected override double GetRotationAngle(XYZ targetBaseVector, XYZ operationBaseVector)
         {
-            throw new NotImplementedException();
+            return _targetBaseVector.AngleTo(_operationBaseVector);
         }
 
         protected override Line GetRotationAxis()
         {
-            throw new NotImplementedException();
+            XYZ normal = _operationLine.Direction.CrossProduct(_targetLine.Direction);
+            XYZ rotationPoint = _targetLine.Origin;
+
+            return Line.CreateBound(rotationPoint, rotationPoint + normal);
         }
 
-        protected override XYZ GetTargetBaseVector()
-        {
-            throw new NotImplementedException();
-        }
     }
 }
