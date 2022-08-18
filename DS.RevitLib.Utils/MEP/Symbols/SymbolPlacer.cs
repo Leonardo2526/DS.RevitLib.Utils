@@ -62,6 +62,7 @@ namespace DS.RevitLib.Utils.MEP.Symbols
             foreach (var del in toDelete)
             {
                 ElementUtils.DeleteElement(_doc, del);
+                orderedElements.Remove(del);
             }
 
             //connect connectors
@@ -76,7 +77,9 @@ namespace DS.RevitLib.Utils.MEP.Symbols
             var line1 = MEPCurveUtils.GetLine(mEPCurve1);
             //var l1p0 = line1.GetEndPoint(0);
             //var l1p2 = line1.GetEndPoint(1);
-            var line2 = MEPCurveUtils.GetLine(mEPCurve2);         
+            var line2 = MEPCurveUtils.GetLine(mEPCurve2);
+            //var l2p0 = line2.GetEndPoint(0);
+            //var l2p2 = line2.GetEndPoint(1);
             var p1 = line1.Project(pointToSplit);
             var p2 = line2.Project(pointToSplit);
 
@@ -90,6 +93,19 @@ namespace DS.RevitLib.Utils.MEP.Symbols
 
         private void SetConnectorParameters(FamilyInstance famInst, Dictionary<Parameter, double> parameters)
         {
+            var famInstParameters = MEPElementUtils.GetSizeParameters(famInst);
+
+            var parameterSetter = new ParameterSetter(famInst, new RollBackCommitter(), _transactionPrefix);
+
+            foreach (var param in parameters)
+            {
+               var keyValuePair = famInstParameters.Where(obj => obj.Key.Id == param.Key.Id).FirstOrDefault();
+                parameterSetter.SetValue(keyValuePair.Key, param.Value);
+            }
+        }
+
+        private void SetConnectorParametersOld(FamilyInstance famInst, Dictionary<Parameter, double> parameters)
+        {
             var parameterSetter = new ParameterSetter(famInst, new RollBackCommitter(), _transactionPrefix);
 
             foreach (var param in parameters)
@@ -100,11 +116,13 @@ namespace DS.RevitLib.Utils.MEP.Symbols
 
         private void Connect(Connector famInstCon1, Connector famInstCon2, MEPCurve mEPCurve1, MEPCurve mEPCurve2)
         {
-            var cons = ConnectorUtils.GetConnectors(mEPCurve1);
+            List<Connector> cons = new List<Connector>();
+            cons.AddRange(ConnectorUtils.GetConnectors(mEPCurve1));
+            cons.AddRange(ConnectorUtils.GetConnectors(mEPCurve2));
+
             var selectedCon = ConnectorUtils.GetClosest(famInstCon1, cons);
             ConnectorUtils.ConnectConnectors(_doc, famInstCon1, selectedCon);
 
-            cons = ConnectorUtils.GetConnectors(mEPCurve2);
             selectedCon = ConnectorUtils.GetClosest(famInstCon2, cons);
             ConnectorUtils.ConnectConnectors(_doc, famInstCon2, selectedCon);
         }
