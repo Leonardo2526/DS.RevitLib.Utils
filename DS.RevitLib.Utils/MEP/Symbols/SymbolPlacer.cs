@@ -20,20 +20,22 @@ namespace DS.RevitLib.Utils.MEP.Symbols
         private readonly Committer _committer;
         private readonly string _transactionPrefix;
         private readonly XYZ _targetDirection;
-        private readonly double _minElemDist = 50.mmToFyt2();
 
-        public SymbolPlacer(SymbolModel symbolModel, MEPCurve targerMEPCurve, PlacementOption placementOption, double familyLength,
+        public SymbolPlacer(SymbolModel symbolModel, MEPCurve targerMEPCurve, XYZ placementPoint, double familyLength,
             Committer committer = null, string transactionPrefix = "")
         {
             _doc = targerMEPCurve.Document;
             _symbolModel = symbolModel;
             _targerMEPCurve = targerMEPCurve;
+            _placementPoint = placementPoint;
             _familyLength = familyLength;
             _targetDirection = MEPCurveUtils.GetDirection(targerMEPCurve);
-            _placementPoint = GetPlacementPoint(placementOption, targerMEPCurve);
             _committer = committer;
             _transactionPrefix = transactionPrefix;
         }
+
+        public MEPCurve SplittedMEPCurve { get; private set; }
+        public Connector BaseConnector { get; private set; }
 
         public FamilyInstance Place()
         {
@@ -49,11 +51,10 @@ namespace DS.RevitLib.Utils.MEP.Symbols
             SetConnectorParameters(famInst, _symbolModel.Parameters);
 
             var (famInstCon1, famInstCon2) = ConnectorUtils.GetMainConnectors(famInst);
-            double cutWidth = famInstCon1.Origin.DistanceTo(famInstCon2.Origin) / 2;
 
             var angleAlignment = new AngleAlignment(famInst, _targerMEPCurve);
             angleAlignment.Align();
-            List<MEPCurve> splittedMEPCurves = GetSplittedElements(_targerMEPCurve, _targetDirection, _placementPoint, cutWidth);
+            List<MEPCurve> splittedMEPCurves = GetSplittedElements(_targerMEPCurve, _targetDirection, _placementPoint, _familyLength);
 
             angleAlignment = new AngleAlignment(splittedMEPCurves.First(), _targerMEPCurve);
             angleAlignment.AlignNormOrths();
@@ -63,6 +64,9 @@ namespace DS.RevitLib.Utils.MEP.Symbols
 
             //connect connectors
             Connect(famInstCon1, famInstCon2, splittedMEPCurves.First(), splittedMEPCurves.Last());
+
+            SplittedMEPCurve = GetMaxLengthMEPCurve(splittedMEPCurves.First(), splittedMEPCurves.Last());
+            BaseConnector = ConnectorUtils.GetCommonConnectors(famInst, SplittedMEPCurve).elem2Con;
 
             return famInst;
         }
@@ -112,13 +116,13 @@ namespace DS.RevitLib.Utils.MEP.Symbols
             ConnectorUtils.ConnectConnectors(_doc, famInstCon2, selectedCon);
         }
 
-       private List<MEPCurve> GetSplittedElements(MEPCurve mEPCurve, XYZ mEPCurveDir, XYZ placementPoint, double cutWidth)
+       private List<MEPCurve> GetSplittedElements(MEPCurve mEPCurve, XYZ mEPCurveDir, XYZ placementPoint, double familyLength)
         {
             var creator = new MEPCurveCreator(mEPCurve);
-            MEPCurve splittedMEPCurve1 = creator.SplitElement(placementPoint + mEPCurveDir.Multiply(cutWidth)) as MEPCurve;
+            MEPCurve splittedMEPCurve1 = creator.SplitElement(placementPoint + mEPCurveDir.Multiply(familyLength/2)) as MEPCurve;
 
 
-            XYZ pointToSplit = placementPoint - mEPCurveDir.Multiply(cutWidth);
+            XYZ pointToSplit = placementPoint - mEPCurveDir.Multiply(familyLength/2);
             MEPCurve mEPCurveToSplit = GetMEPCurveToSplit(mEPCurve, splittedMEPCurve1, pointToSplit);
             var splitCreator = new MEPCurveCreator(mEPCurveToSplit);
             MEPCurve splittedMEPCurve2 = splitCreator.SplitElement(pointToSplit) as MEPCurve;
@@ -138,31 +142,17 @@ namespace DS.RevitLib.Utils.MEP.Symbols
             return orderedElements.Cast<MEPCurve>().ToList();
         }
 
-
-        private XYZ GetPlacementPoint(PlacementOption placementOption, MEPCurve mEPCurve)
+        private MEPCurve GetMaxLengthMEPCurve(MEPCurve mEPCurve1, MEPCurve mEPCurve2)
         {
-            XYZ placementPoint = null;
-            double targetLength = _targerMEPCurve.GetCenterLine().ApproximateLength;
+            double l1 = MEPCurveUtils.GetLength(mEPCurve1);
+            double l2 = MEPCurveUtils.GetLength(mEPCurve2);
 
-            if (targetLength < _familyLength + 2 * _minElemDist)
+            if (l1>l2)
             {
-                return placementPoint;
+                return mEPCurve1;
             }
 
-            switch (placementOption)
-            {
-                case PlacementOption.Center:
-                    placementPoint = ElementUtils.GetLocationPoint(mEPCurve);
-                    break;
-                case PlacementOption.Edge:
-                    (Connector con1, Connector con2) = ConnectorUtils.GetMainConnectors(mEPCurve);
-                    XYZ baseVector = (con2.Origin - con1.Origin).Normalize();
-                    placementPoint = con1.Origin + baseVector.Multiply(_minElemDist + _familyLength / 2);
-                    break;
-                default:
-                    break;
-            }
-            return placementPoint;
+            return mEPCurve2;
         }
     }
 }

@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.TransactionCommitter;
+using System.Security.Cryptography;
 
 namespace DS.RevitLib.Test
 {
@@ -28,6 +29,8 @@ namespace DS.RevitLib.Test
         public void Run()
         {
             XYZ dir = MEPCurveUtils.GetDirection(_targerMEPCurve);
+            MEPCurve mEPCurve = _targerMEPCurve;
+            XYZ point = null;
 
             foreach (var family in _familyInstances)
             {
@@ -39,11 +42,20 @@ namespace DS.RevitLib.Test
                 FamilySymbolUtils familySymbolUtils = new FamilySymbolUtils();
                 double familyLength = familySymbolUtils.GetLength(familySymbol, _doc, family);
 
-                SymbolPlacer symbolPlacer = new SymbolPlacer(symbolModel, _targerMEPCurve, PlacementOption.Edge, familyLength, new RollBackCommitter(), "autoMEP");
+                if (point is null)
+                {
+                    point = new PlacementPoint(mEPCurve, familyLength).GetStartPoint(PlacementOption.Edge);
+                }
+                SymbolPlacer symbolPlacer = new SymbolPlacer(symbolModel, mEPCurve, point, familyLength, 
+                    new RollBackCommitter(), "autoMEP");
                 symbolPlacer.Place();
 
-                //point += dir.Multiply(2);
+
+                mEPCurve = symbolPlacer.SplittedMEPCurve;
+                Connector baseConnector = symbolPlacer.BaseConnector;
+
+                point = new PlacementPoint(mEPCurve, familyLength).GetPoint(baseConnector);
             }
-        }
+        }     
     }
 }
