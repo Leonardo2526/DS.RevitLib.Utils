@@ -10,7 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DS.RevitLib.Utils.MEP.AlignmentRotation.Strategies
+namespace DS.RevitLib.Utils.Elements.Alignments.Strategies
 {
     internal abstract class AlignmentRotator
     {

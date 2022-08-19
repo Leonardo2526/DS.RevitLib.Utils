@@ -83,10 +83,6 @@ namespace DS.RevitLib.Utils.MEP
             return vector1.AngleTo(vector2);
         }
 
-       
-
-       
-
         /// <summary>
         /// Get plane by two MEPCurves
         /// </summary>
@@ -279,7 +275,7 @@ namespace DS.RevitLib.Utils.MEP
         /// </summary>
         /// <param name="mEPCurve"></param>
         /// <returns>Returns actual sized in recrangle case and diameter in round case.</returns>
-        public static (double, double) GetWidthHeight(MEPCurve mEPCurve)
+        public static (double width, double heigth) GetWidthHeight(MEPCurve mEPCurve)
         {
             double width = 0;
             double heigth = 0;

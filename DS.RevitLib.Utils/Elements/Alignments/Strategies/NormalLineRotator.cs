@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DS.RevitLib.Utils.MEP.AlignmentRotation.Strategies
+namespace DS.RevitLib.Utils.Elements.Alignments.Strategies
 {
     /// <summary>
     /// Around element's normal vector rotation strategy

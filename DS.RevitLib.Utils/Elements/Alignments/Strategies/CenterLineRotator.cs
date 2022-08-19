@@ -11,7 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-namespace DS.RevitLib.Utils.MEP.AlignmentRotation.Strategies
+namespace DS.RevitLib.Utils.Elements.Alignments.Strategies
 {
     /// <summary>
     /// Around element's center line rotation strategy

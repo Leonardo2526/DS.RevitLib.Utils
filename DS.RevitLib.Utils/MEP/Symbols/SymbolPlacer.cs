@@ -1,6 +1,6 @@
 ﻿using Autodesk.Revit.DB;
+using DS.RevitLib.Utils.Elements.Alignments;
 using DS.RevitLib.Utils.Extensions;
-using DS.RevitLib.Utils.MEP.AlignmentRotation;
 using DS.RevitLib.Utils.MEP.Creator;
 using DS.RevitLib.Utils.TransactionCommitter;
 using System.Collections.Generic;
@@ -44,17 +44,8 @@ namespace DS.RevitLib.Utils.MEP.Symbols
 
             //return famInst;
 
-            //Set rotation
-            var alignmentRotatorClient = new AlignmentRotatorClient(famInst, _targerMEPCurve);
-            alignmentRotatorClient.RotateAroundNormal();
-
-            var profType = MEPCurveUtils.GetProfileType(_targerMEPCurve);
-            if (profType == ConnectorProfileType.Rectangular)
-            {
-                alignmentRotatorClient.RotateAroundCenterLine();
-            }
-
-
+            var angleAlignment = new AngleAlignment(famInst, _targerMEPCurve);
+            angleAlignment.Align();
             //return famInst;
 
             var creator = new MEPCurveCreator(_targerMEPCurve);
@@ -82,43 +73,16 @@ namespace DS.RevitLib.Utils.MEP.Symbols
             List<XYZ> normOrths = ElementUtils.GetOrthoNormVectors(_targerMEPCurve);
             var targetMaxOrth =  ElementUtils.GetMaxSizeOrth(_targerMEPCurve, normOrths);
 
-            CheckRotation(orderedElements.First(), targetMaxOrth);
-            CheckRotation(orderedElements.Last(), targetMaxOrth);
+            angleAlignment = new AngleAlignment(orderedElements.First(), _targerMEPCurve);
+            angleAlignment.AlignNormOrths();
+
+            angleAlignment = new AngleAlignment(orderedElements.Last(), _targerMEPCurve);
+            angleAlignment.AlignNormOrths();
 
             //connect connectors
             Connect(famInstCon1, famInstCon2, orderedElements.First() as MEPCurve, orderedElements.Last() as MEPCurve);
 
             return famInst;
-        }
-
-        private void CheckRotation(Element element, XYZ targetMaxOrth)
-        {
-            if (element is MEPCurve)
-            {
-                var profileType = MEPCurveUtils.GetProfileType(element as MEPCurve);
-                if (profileType != ConnectorProfileType.Rectangular)
-                {
-                    return;
-                }
-                if (IsNeededToAlign(element, targetMaxOrth))
-                {
-                    var alignmentRotatorClient = new AlignmentRotatorClient(element, _targerMEPCurve);
-                    alignmentRotatorClient.RotateAroundCenterLine();
-                }
-            }
-        }
-
-        private bool IsNeededToAlign(Element element, XYZ targetMaxOrth)
-        {
-            List<XYZ> normOrths = ElementUtils.GetOrthoNormVectors(element);
-            var elemMaxNormOrth = ElementUtils.GetMaxSizeOrth(element, normOrths);
-
-            if (XYZUtils.Collinearity(elemMaxNormOrth, targetMaxOrth))
-            {
-                return false;
-            }
-
-            return true;
         }
 
         private MEPCurve GetMEPCurveToSplit(MEPCurve mEPCurve1, MEPCurve mEPCurve2, XYZ pointToSplit)
@@ -150,16 +114,6 @@ namespace DS.RevitLib.Utils.MEP.Symbols
             {
                var keyValuePair = famInstParameters.Where(obj => obj.Key.Id == param.Key.Id).FirstOrDefault();
                 parameterSetter.SetValue(keyValuePair.Key, param.Value);
-            }
-        }
-
-        private void SetConnectorParametersOld(FamilyInstance famInst, Dictionary<Parameter, double> parameters)
-        {
-            var parameterSetter = new ParameterSetter(famInst, new RollBackCommitter(), _transactionPrefix);
-
-            foreach (var param in parameters)
-            {
-                parameterSetter.SetValue(param.Key, param.Value);
             }
         }
 

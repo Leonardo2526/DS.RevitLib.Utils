@@ -68,6 +68,9 @@
     <Compile Include="BoundingBoxUtils.cs" />
     <Compile Include="Class1.cs" />
     <Compile Include="AbstractCreator.cs" />
+    <Compile Include="Elements\Alignments\AngleAlignment.cs" />
+    <Compile Include="Elements\Alignments\IAlignment.cs" />
+    <Compile Include="Elements\Alignments\LineAlignment.cs" />
     <Compile Include="Elements\Creators\ElementCreator.cs" />
     <Compile Include="Elements\ElementsMover.cs" />
     <Compile Include="Elements\PartTypesChecker.cs" />
@@ -79,10 +82,9 @@
     <Compile Include="MEP\Creator\Builders\BuilderByPoints.cs" />
     <Compile Include="MEP\Creator\Builders\MEPSystemComponentBuilder.cs" />
     <Compile Include="MEP\Creator\Builders\RotationBuilder.cs" />
-    <Compile Include="MEP\AlignmentRotation\AlignmentRotatorClient.cs" />
-    <Compile Include="MEP\AlignmentRotation\Strategies\CenterLineRotator.cs" />
-    <Compile Include="MEP\AlignmentRotation\Strategies\NormalLineRotator.cs" />
-    <Compile Include="MEP\AlignmentRotation\Strategies\AlignmentRotator.cs" />
+    <Compile Include="Elements\Alignments\Strategies\CenterLineRotator.cs" />
+    <Compile Include="Elements\Alignments\Strategies\NormalLineRotator.cs" />
+    <Compile Include="Elements\Alignments\Strategies\AlignmentRotator.cs" />
     <Compile Include="MEP\SimpleMEPSystemBuilder.cs" />
     <Compile Include="MEP\Models\MEPElementsModel.cs" />
     <Compile Include="MEP\Symbols\SymbolModel.cs" />
