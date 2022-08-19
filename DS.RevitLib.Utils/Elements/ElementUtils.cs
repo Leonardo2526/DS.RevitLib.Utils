@@ -368,7 +368,7 @@ namespace DS.RevitLib.Utils
         /// </summary>
         /// <param name="mEPCurve"></param>
         /// <returns>Returns norm vectors of element.</returns>
-        public static List<XYZ> GetNormVectors(Element element)
+        public static List<XYZ> GetOrhts(Element element)
         {
             var vectors = new List<XYZ>();
             var faces = GetFaces(element);
@@ -403,7 +403,7 @@ namespace DS.RevitLib.Utils
             }
 
             var orthoVectors = new List<XYZ>();
-            var vectors = GetNormVectors(element);
+            var vectors = GetOrhts(element);
 
             foreach (var vector in vectors)
             {
@@ -446,6 +446,31 @@ namespace DS.RevitLib.Utils
             }
 
             return centerLine.Distance(intersectionPoint);
+        }
+
+
+        /// <summary>
+        /// Get orth from orths vectors by which element has maximum size.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <param name="orths"></param>
+        /// <returns></returns>
+        public static XYZ GetMaxSizeOrth(Element element, List<XYZ> orths)
+        {
+            XYZ maxVector = null;
+            double maxSize = 0;
+            foreach (var vector in orths)
+            {
+                double size = GetSizeByVector(element, vector);
+                if (size > maxSize)
+                {
+                    maxSize = size;
+                    maxVector = vector;
+                }
+
+            }
+
+            return maxVector;
         }
 
     }

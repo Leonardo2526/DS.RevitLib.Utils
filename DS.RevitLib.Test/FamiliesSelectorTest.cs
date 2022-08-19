@@ -66,8 +66,8 @@ namespace DS.RevitLib.Test
             var model = builder.BuildMEPCurves();
             MEPCurve = model.MEPCurves.First() as MEPCurve;
 
-            var mEPCurveCreator = new MEPCurveCreator(MEPCurve);
-            mEPCurveCreator.SwapSize(MEPCurve);
+            //var mEPCurveCreator = new MEPCurveCreator(MEPCurve);
+            //mEPCurveCreator.SwapSize(MEPCurve);
 
         }
 

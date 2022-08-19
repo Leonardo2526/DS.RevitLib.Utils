@@ -5,6 +5,7 @@ using DS.RevitLib.Utils.MEP.Creator;
 using DS.RevitLib.Utils.TransactionCommitter;
 using System.Collections.Generic;
 using System.Linq;
+using System.Xml.Linq;
 
 namespace DS.RevitLib.Utils.MEP.Symbols
 {
@@ -78,12 +79,47 @@ namespace DS.RevitLib.Utils.MEP.Symbols
                 orderedElements.Remove(del);
             }
 
+            List<XYZ> normOrths = ElementUtils.GetOrthoNormVectors(_targerMEPCurve);
+            var targetMaxOrth =  ElementUtils.GetMaxSizeOrth(_targerMEPCurve, normOrths);
+
+            CheckRotation(orderedElements.First(), targetMaxOrth);
+            CheckRotation(orderedElements.Last(), targetMaxOrth);
+
             //connect connectors
             Connect(famInstCon1, famInstCon2, orderedElements.First() as MEPCurve, orderedElements.Last() as MEPCurve);
 
             return famInst;
         }
 
+        private void CheckRotation(Element element, XYZ targetMaxOrth)
+        {
+            if (element is MEPCurve)
+            {
+                var profileType = MEPCurveUtils.GetProfileType(element as MEPCurve);
+                if (profileType != ConnectorProfileType.Rectangular)
+                {
+                    return;
+                }
+                if (IsNeededToAlign(element, targetMaxOrth))
+                {
+                    var alignmentRotatorClient = new AlignmentRotatorClient(element, _targerMEPCurve);
+                    alignmentRotatorClient.RotateAroundCenterLine();
+                }
+            }
+        }
+
+        private bool IsNeededToAlign(Element element, XYZ targetMaxOrth)
+        {
+            List<XYZ> normOrths = ElementUtils.GetOrthoNormVectors(element);
+            var elemMaxNormOrth = ElementUtils.GetMaxSizeOrth(element, normOrths);
+
+            if (XYZUtils.Collinearity(elemMaxNormOrth, targetMaxOrth))
+            {
+                return false;
+            }
+
+            return true;
+        }
 
         private MEPCurve GetMEPCurveToSplit(MEPCurve mEPCurve1, MEPCurve mEPCurve2, XYZ pointToSplit)
         {
