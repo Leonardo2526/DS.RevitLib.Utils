@@ -134,5 +134,27 @@ namespace DS.RevitLib.Utils.Extensions
             return element.Document.GetElement(id) as FamilySymbol;
         }
 
+        /// <summary>
+        /// Get center line of element.
+        /// </summary>
+        /// <param name="famInst"></param>
+        /// <returns>Returns center line of MEPCurve or family instance created by it's main connecors. 
+        /// Returns null if element is not a MEPCuve or FamilyInstance type.</returns>
+        public static Line GetCenterLine(this Element element)
+        {
+            if (element is MEPCurve)
+            {
+                return MEPCurveUtils.GetLine(element as MEPCurve);
+            }
+            else if (element is FamilyInstance)
+            {
+                FamilyInstance familyInstance = element as FamilyInstance;
+                var (famInstCon1, famInstCon2) = ConnectorUtils.GetMainConnectors(familyInstance);
+                return Line.CreateBound(famInstCon1.Origin, famInstCon2.Origin);
+            }
+
+            return null;
+        }
+
     }
 }

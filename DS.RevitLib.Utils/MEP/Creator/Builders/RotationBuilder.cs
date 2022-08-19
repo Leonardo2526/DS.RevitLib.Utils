@@ -38,7 +38,7 @@ namespace DS.RevitLib.Utils.MEP.Creator.Builders
             //Rotation axe
             XYZ rotationAxe = MEPCurveUtils.GetDirection(_MEPCurve);
 
-            List<XYZ> normOrthoVectors = MEPCurveUtils.GetOrthoNormVectors(_MEPCurve);
+            List<XYZ> normOrthoVectors = ElementUtils.GetOrthoNormVectors(_MEPCurve);
 
             //Vector for alignment with rotation
             XYZ vectorToRotateNorm = normOrthoVectors.First();
@@ -55,8 +55,9 @@ namespace DS.RevitLib.Utils.MEP.Creator.Builders
 
             int rotDir = GetRotationSide(AlignAxe, vectorToRotateNorm, rotationAxe);
 
-            MEPCurveCreator mEPCurveCreator = new MEPCurveCreator(_MEPCurve, null, TransactionPrefix);
-            return mEPCurveCreator.Rotate(angleRad * rotDir);
+            var rotationLine = MEPCurveUtils.GetLine(_MEPCurve);
+            var mEPCurveCreator = new MEPCurveCreator(_MEPCurve, null, TransactionPrefix);
+            return mEPCurveCreator.Rotate(rotationLine, angleRad * rotDir);
         }
 
         private XYZ GetAlignmentVector(MEPCurve baseMEPCurve)
@@ -64,7 +65,7 @@ namespace DS.RevitLib.Utils.MEP.Creator.Builders
             XYZ baseCenterPoint = ElementUtils.GetLocationPoint(_MEPCurve);
             Plane plane = Plane.CreateByNormalAndOrigin(CurrentDir, baseCenterPoint);
 
-            List<XYZ> baseNormals = MEPCurveUtils.GetOrthoNormVectors(baseMEPCurve);
+            List<XYZ> baseNormals = ElementUtils.GetOrthoNormVectors(baseMEPCurve);
 
             if (XYZUtils.Collinearity(BaseDir, CurrentDir))
             {

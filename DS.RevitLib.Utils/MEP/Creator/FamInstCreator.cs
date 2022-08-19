@@ -173,6 +173,12 @@ namespace DS.RevitLib.Utils.MEP.Creator
                 ErrorMessages += _committer?.ErrorMessages;
             }
 
+            var lp = ElementUtils.GetLocationPoint(familyInstance);
+            if (Math.Round(lp.Z) != Math.Round(point.Z))
+            {
+                ElementsMover.MoveElement(familyInstance, point - lp);
+            }
+
             return familyInstance;
         }
 

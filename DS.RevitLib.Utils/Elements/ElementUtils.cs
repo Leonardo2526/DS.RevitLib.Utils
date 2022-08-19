@@ -299,6 +299,22 @@ namespace DS.RevitLib.Utils
                         facesArray.Add(solid.Faces);
                     }
                 }
+                else if (geomObj is GeometryInstance)
+                {
+                    GeometryInstance geomInst = (GeometryInstance)geomObj;
+                    GeometryElement instGeomElem = geomInst.GetInstanceGeometry();
+                    foreach (GeometryObject instGeomObj in instGeomElem)
+                    {
+                        if (instGeomObj is Solid)
+                        {
+                            Solid solid = (Solid)instGeomObj;
+                            if (solid.Faces.Size > 0 && solid.Volume > 0.0)
+                            {
+                                facesArray.Add(solid.Faces);
+                            }
+                        }
+                    }
+                }
             }
 
             return facesArray;
@@ -345,6 +361,116 @@ namespace DS.RevitLib.Utils
             UIDocument uiDoc = new UIDocument(elements.First().Document);
             uiDoc.Selection.SetElementIds(ids);
             uiDoc.ShowElements(ids);
+        }
+
+        /// <summary>
+        /// Get norm vectors of element from it's faces.
+        /// </summary>
+        /// <param name="mEPCurve"></param>
+        /// <returns>Returns norm vectors of element.</returns>
+        public static List<XYZ> GetOrhts(Element element)
+        {
+            var vectors = new List<XYZ>();
+            var faces = GetFaces(element);
+
+            foreach (var faceArray in faces)
+            {
+                foreach (Face face in faceArray)
+                {
+                    XYZ vector = face.ComputeNormal(UV.Zero);
+                    vectors.Add(vector);
+                }
+            }
+
+            return vectors;
+        }
+
+        /// <summary>
+        /// Get norm otho vectors of element from it's faces in perpendicular plane to element's direction.
+        /// </summary>
+        /// <param name="mEPCurve"></param>
+        /// <returns>Returns norm ortho vectors of element.</returns>
+        public static List<XYZ> GetOrthoNormVectors(Element element)
+        {
+            XYZ dir = null;
+            if (element is MEPCurve)
+            {
+                dir = MEPCurveUtils.GetDirection(element as MEPCurve);
+            }
+            else if (element is FamilyInstance)
+            {
+                dir = element.GetCenterLine().Direction;
+            }
+
+            var orthoVectors = new List<XYZ>();
+            var vectors = GetOrhts(element);
+
+            foreach (var vector in vectors)
+            {
+                if (!XYZUtils.Collinearity(vector, dir))
+                {
+                    orthoVectors.Add(vector);
+                }
+            }
+
+            return orthoVectors;
+        }
+
+        /// <summary>
+        /// Get element's size by vector of element's center point.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <param name="normVector"></param>
+        /// <returns>Return distance between element's center point and intersection point between vector and element's solid.</returns>
+        public static double GetSizeByVector(Element element, XYZ normVector)
+        {
+            List<Solid> elemSolids = GetSolids(element);
+            Solid elemSolid = elemSolids.First();
+
+            XYZ centerPoint = GetLocationPoint(element);
+            Line centerLine = element.GetCenterLine();
+
+            Line intersectLine = Line.CreateBound(centerPoint, centerPoint + normVector.Multiply(100));
+
+            var intersectOptions = new SolidCurveIntersectionOptions();
+            SolidCurveIntersection intersection = elemSolid.IntersectWithCurve(intersectLine, intersectOptions);
+
+            XYZ intersectionPoint = null;
+            if (intersection.SegmentCount != 0)
+            {
+                XYZ p1 = intersection.GetCurveSegment(0).GetEndPoint(0);
+                XYZ p2 = intersection.GetCurveSegment(0).GetEndPoint(1);
+
+                (XYZ minPoint, XYZ maxPoint) = PointUtils.GetMinMaxPoints(new List<XYZ> { p1, p2 }, centerLine);
+                intersectionPoint = maxPoint;
+            }
+
+            return centerLine.Distance(intersectionPoint);
+        }
+
+
+        /// <summary>
+        /// Get orth from orths vectors by which element has maximum size.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <param name="orths"></param>
+        /// <returns></returns>
+        public static XYZ GetMaxSizeOrth(Element element, List<XYZ> orths)
+        {
+            XYZ maxVector = null;
+            double maxSize = 0;
+            foreach (var vector in orths)
+            {
+                double size = GetSizeByVector(element, vector);
+                if (size > maxSize)
+                {
+                    maxSize = size;
+                    maxVector = vector;
+                }
+
+            }
+
+            return maxVector;
         }
 
     }

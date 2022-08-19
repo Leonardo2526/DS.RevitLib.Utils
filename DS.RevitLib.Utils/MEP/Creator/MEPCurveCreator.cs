@@ -188,18 +188,14 @@ namespace DS.RevitLib.Utils.MEP.Creator
         /// <param name="mEPCurve"></param>
         /// <param name="angle"></param>
         /// <returns>Return rotated MEPCurve.</returns>
-        public MEPCurve Rotate(double angle)
+        public MEPCurve Rotate(Line axis, double angle)
         {
             using (Transaction transNew = new Transaction(Doc, TransactionPrefix + "RotateMEPCurve"))
             {
                 try
                 {
                     transNew.Start();
-
-                    var locCurve = BaseMEPCurve.Location as LocationCurve;
-                    var line = locCurve.Curve as Line;
-
-                    BaseMEPCurve.Location.Rotate(line, angle);
+                    BaseMEPCurve.Location.Rotate(axis, angle);
                 }
                 catch (Exception e)
                 { ErrorMessages += e + "\n"; }

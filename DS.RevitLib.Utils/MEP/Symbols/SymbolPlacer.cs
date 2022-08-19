@@ -1,9 +1,12 @@
 ﻿using Autodesk.Revit.DB;
+using DS.RevitLib.Utils.Elements.Alignments;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.MEP.Creator;
 using DS.RevitLib.Utils.TransactionCommitter;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Xml.Linq;
 
 namespace DS.RevitLib.Utils.MEP.Symbols
 {
@@ -40,37 +43,22 @@ namespace DS.RevitLib.Utils.MEP.Symbols
             var (famInstCon1, famInstCon2) = ConnectorUtils.GetMainConnectors(famInst);
             double cutWidth = famInstCon1.Origin.DistanceTo(famInstCon2.Origin) / 2;
 
-            //Set rotation
-            //....
+            var angleAlignment = new AngleAlignment(famInst, _targerMEPCurve);
+            angleAlignment.Align();
 
-            var creator = new MEPCurveCreator(_targerMEPCurve);
-            MEPCurve splittedMEPCurve1 = creator.SplitElement(_placementPoint + _targetDirection.Multiply(cutWidth)) as MEPCurve;
+            List<MEPCurve> splittedMEPCurves = GetSplittedElements(_targerMEPCurve, _targetDirection, _placementPoint, cutWidth);
 
+            angleAlignment = new AngleAlignment(splittedMEPCurves.First(), _targerMEPCurve);
+            angleAlignment.AlignNormOrths();
 
-            XYZ pointToSplit = _placementPoint - _targetDirection.Multiply(cutWidth);
-            MEPCurve mEPCurveToSplit = GetMEPCurveToSplit(_targerMEPCurve, splittedMEPCurve1, pointToSplit);
-            var splitCreator = new MEPCurveCreator(mEPCurveToSplit);
-            MEPCurve splittedMEPCurve2 = splitCreator.SplitElement(pointToSplit) as MEPCurve;
-
-            var mepCurves = new List<MEPCurve>()
-            { _targerMEPCurve, splittedMEPCurve1, splittedMEPCurve2};
-            var orderedElements = mepCurves.Cast<Element>().ToList().Order();
-
-
-            //get elements to delete
-            var toDelete = orderedElements.Where(obj => obj.Id != orderedElements.First().Id && obj.Id != orderedElements.Last().Id).ToList();
-            foreach (var del in toDelete)
-            {
-                ElementUtils.DeleteElement(_doc, del);
-                orderedElements.Remove(del);
-            }
+            angleAlignment = new AngleAlignment(splittedMEPCurves.Last(), _targerMEPCurve);
+            angleAlignment.AlignNormOrths();
 
             //connect connectors
-            Connect(famInstCon1, famInstCon2, orderedElements.First() as MEPCurve, orderedElements.Last() as MEPCurve);
+            Connect(famInstCon1, famInstCon2, splittedMEPCurves.First(), splittedMEPCurves.Last());
 
             return famInst;
         }
-
 
         private MEPCurve GetMEPCurveToSplit(MEPCurve mEPCurve1, MEPCurve mEPCurve2, XYZ pointToSplit)
         {
@@ -104,16 +92,6 @@ namespace DS.RevitLib.Utils.MEP.Symbols
             }
         }
 
-        private void SetConnectorParametersOld(FamilyInstance famInst, Dictionary<Parameter, double> parameters)
-        {
-            var parameterSetter = new ParameterSetter(famInst, new RollBackCommitter(), _transactionPrefix);
-
-            foreach (var param in parameters)
-            {
-                parameterSetter.SetValue(param.Key, param.Value);
-            }
-        }
-
         private void Connect(Connector famInstCon1, Connector famInstCon2, MEPCurve mEPCurve1, MEPCurve mEPCurve2)
         {
             List<Connector> cons = new List<Connector>();
@@ -125,6 +103,32 @@ namespace DS.RevitLib.Utils.MEP.Symbols
 
             selectedCon = ConnectorUtils.GetClosest(famInstCon2, cons);
             ConnectorUtils.ConnectConnectors(_doc, famInstCon2, selectedCon);
+        }
+
+       private List<MEPCurve> GetSplittedElements(MEPCurve mEPCurve, XYZ mEPCurveDir, XYZ placementPoint, double cutWidth)
+        {
+            var creator = new MEPCurveCreator(mEPCurve);
+            MEPCurve splittedMEPCurve1 = creator.SplitElement(placementPoint + mEPCurveDir.Multiply(cutWidth)) as MEPCurve;
+
+
+            XYZ pointToSplit = placementPoint - mEPCurveDir.Multiply(cutWidth);
+            MEPCurve mEPCurveToSplit = GetMEPCurveToSplit(mEPCurve, splittedMEPCurve1, pointToSplit);
+            var splitCreator = new MEPCurveCreator(mEPCurveToSplit);
+            MEPCurve splittedMEPCurve2 = splitCreator.SplitElement(pointToSplit) as MEPCurve;
+
+            var mepCurves = new List<MEPCurve>()
+            { mEPCurve, splittedMEPCurve1, splittedMEPCurve2};
+            var orderedElements = mepCurves.Cast<Element>().ToList().Order();
+
+            //get elements to delete
+            var toDelete = orderedElements.Where(obj => obj.Id != orderedElements.First().Id && obj.Id != orderedElements.Last().Id).ToList();
+            foreach (var del in toDelete)
+            {
+                ElementUtils.DeleteElement(_doc, del);
+                orderedElements.Remove(del);
+            }
+
+            return orderedElements.Cast<MEPCurve>().ToList();
         }
 
     }

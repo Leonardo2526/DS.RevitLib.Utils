@@ -57,7 +57,8 @@ namespace DS.RevitLib.Test
             List<XYZ> points = new List<XYZ>()
             {
                 new XYZ(0,0,0),
-                new XYZ(20,0,0),
+                //new XYZ(20, 20, 0)
+                new XYZ(20, 20, -10)
             };
 
             var comp = system.Composite.Root as MEPSystemComponent;
@@ -65,6 +66,10 @@ namespace DS.RevitLib.Test
             var builder = new BuilderByPoints(baseMEPCurve, points);
             var model = builder.BuildMEPCurves();
             MEPCurve = model.MEPCurves.First() as MEPCurve;
+
+            //var mEPCurveCreator = new MEPCurveCreator(MEPCurve);
+            //mEPCurveCreator.SwapSize(MEPCurve);
+
         }
 
         private List<Element> SelectFilter(List<Element> elements)
