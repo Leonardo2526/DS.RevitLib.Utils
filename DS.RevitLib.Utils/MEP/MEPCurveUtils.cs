@@ -83,50 +83,9 @@ namespace DS.RevitLib.Utils.MEP
             return vector1.AngleTo(vector2);
         }
 
-        /// <summary>
-        /// Get norm vectors of MEPCurve from it's faces.
-        /// </summary>
-        /// <param name="mEPCurve"></param>
-        /// <returns>Returns norm vectors of MEPCurve.</returns>
-        public static List<XYZ> GetNormVectors(MEPCurve mEPCurve)
-        {
-            var vectors = new List<XYZ>();
-            var faces = ElementUtils.GetFaces(mEPCurve);
+       
 
-            foreach (var faceArray in faces)
-            {
-                foreach (Face face in faceArray)
-                {
-                    XYZ vector = face.ComputeNormal(UV.Zero);
-                    vectors.Add(vector);
-                }
-            }
-
-            return vectors;
-        }
-
-        /// <summary>
-        /// Get norm otho vectors of MEPCurve from it's faces in perpendicular plane to MEPCurve's direction.
-        /// </summary>
-        /// <param name="mEPCurve"></param>
-        /// <returns>Returns norm ortho vectors of MEPCurve.</returns>
-        public static List<XYZ> GetOrthoNormVectors(MEPCurve mEPCurve)
-        {
-            XYZ dir = GetDirection(mEPCurve);
-
-            var orthoVectors = new List<XYZ>();
-            var vectors = GetNormVectors(mEPCurve);
-
-            foreach (var vector in vectors)
-            {
-                if (!XYZUtils.Collinearity(vector, dir))
-                {
-                    orthoVectors.Add(vector);
-                }
-            }
-
-            return orthoVectors;
-        }
+       
 
         /// <summary>
         /// Get plane by two MEPCurves
@@ -258,7 +217,7 @@ namespace DS.RevitLib.Utils.MEP
             XYZ baseDir = GetDirection(baseMEPCurve);
             XYZ dir = GetDirection(mEPCurve);
 
-            List<XYZ> baseNorms = GetOrthoNormVectors(baseMEPCurve);
+            List<XYZ> baseNorms = ElementUtils.GetOrthoNormVectors(baseMEPCurve);
 
             XYZ measureVector = GetMesureVector(baseNorms, dir, baseDir);
 

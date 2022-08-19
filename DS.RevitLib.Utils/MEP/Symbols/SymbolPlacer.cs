@@ -47,6 +47,13 @@ namespace DS.RevitLib.Utils.MEP.Symbols
             var alignmentRotatorClient = new AlignmentRotatorClient(famInst, _targerMEPCurve);
             alignmentRotatorClient.RotateAroundNormal();
 
+            var profType = MEPCurveUtils.GetProfileType(_targerMEPCurve);
+            if (profType == ConnectorProfileType.Rectangular)
+            {
+                alignmentRotatorClient.RotateAroundCenterLine();
+            }
+
+
             //return famInst;
 
             var creator = new MEPCurveCreator(_targerMEPCurve);

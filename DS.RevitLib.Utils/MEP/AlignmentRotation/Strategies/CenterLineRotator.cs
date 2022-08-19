@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace DS.RevitLib.Utils.MEP.AlignmentRotation.Strategies
 {
@@ -17,7 +18,7 @@ namespace DS.RevitLib.Utils.MEP.AlignmentRotation.Strategies
     /// </summary>
     internal class CenterLineRotator : AlignmentRotator
     {
-        public CenterLineRotator(Element operationElement, Element targetElement, ElementCreator creator) : 
+        public CenterLineRotator(Element operationElement, Element targetElement, ElementCreator creator) :
             base(operationElement, targetElement, creator)
         {
 
@@ -30,48 +31,46 @@ namespace DS.RevitLib.Utils.MEP.AlignmentRotation.Strategies
 
         protected override double GetRotationAngle(XYZ targetBaseVector, XYZ operationBaseVector)
         {
-            double angleRad = _targetBaseVector.AngleTo(_operationBaseVector);
+            double angleRad = targetBaseVector.AngleTo(operationBaseVector);
             double angleDeg = angleRad.RadToDeg();
 
-            double prec = 3.0;
-            if (Math.Abs(angleDeg - 0) < prec || Math.Abs(angleDeg - 180) < prec ||
-                Math.Abs(angleDeg - 90) < prec || Math.Abs(angleDeg - 270) < prec)
-            {
-                return 0;
-            }
+            //double prec = 3.0;
+            //if (Math.Abs(angleDeg - 0) < prec || Math.Abs(angleDeg - 180) < prec ||
+            //    Math.Abs(angleDeg - 90) < prec || Math.Abs(angleDeg - 270) < prec)
+            //{
+            //    return 0;
+            //}
 
-            int rotDir = GetRotationSide(_targetBaseVector, _operationBaseVector, _rotationAxis.Direction);
+            //int rotDir = GetRotationSide(_targetBaseVector, _operationBaseVector, _rotationAxis.Direction);
 
-            return angleRad * rotDir;
+            //return angleRad * rotDir;
+            return angleRad;
         }
 
         protected override XYZ GetTargetBaseVector()
         {
-            if (_targetElement is MEPCurve)
-            {
-                return GetAlignmentVector(_targetElement as MEPCurve);
-            }
+            List<XYZ> normOrthoVectors = ElementUtils.GetOrthoNormVectors(_targetElement);
+            return GetMaxSizeVector(_targetElement, normOrthoVectors);
+            //if (_targetElement is MEPCurve)
+            //{
+            //    return GetAlignmentVector(_targetElement as MEPCurve);
+            //}
 
-            return null;
+            //return null;
         }
 
         protected override XYZ GetOperationBaseVector()
         {
-            if (_operationElement is MEPCurve)
-            {
-                List<XYZ> normOrthoVectors = MEPCurveUtils.GetOrthoNormVectors(_operationElement as MEPCurve);
-                return normOrthoVectors.First();
-            }
-
-            return null;
-        }       
+            List<XYZ> normOrthoVectors = ElementUtils.GetOrthoNormVectors(_operationElement);
+            return GetMaxSizeVector(_operationElement, normOrthoVectors);
+        }
 
         private XYZ GetAlignmentVector(MEPCurve baseMEPCurve)
         {
             XYZ baseCenterPoint = ElementUtils.GetLocationPoint(baseMEPCurve);
             Plane plane = Plane.CreateByNormalAndOrigin(_operationLine.Direction, baseCenterPoint);
 
-            List<XYZ> baseNormals = MEPCurveUtils.GetOrthoNormVectors(baseMEPCurve);
+            List<XYZ> baseNormals = ElementUtils.GetOrthoNormVectors(baseMEPCurve);
 
             if (XYZUtils.Collinearity(_targetLine.Direction, _operationLine.Direction))
             {
@@ -93,6 +92,30 @@ namespace DS.RevitLib.Utils.MEP.AlignmentRotation.Strategies
             }
 
             return 1;
+        }
+
+        /// <summary>
+        /// Get vector of max size of element.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <param name="vectors"></param>
+        /// <returns></returns>
+        private XYZ GetMaxSizeVector(Element element, List<XYZ> vectors)
+        {
+            XYZ maxVector = null;
+            double maxSize = 0;
+            foreach (var vector in vectors)
+            {
+                double size = ElementUtils.GetSizeByVector(element, vector);
+                if (size > maxSize)
+                {
+                    maxSize = size;
+                    maxVector = vector;
+                }
+                
+            }
+
+            return maxVector;
         }
     }
 }

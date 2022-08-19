@@ -46,7 +46,6 @@ namespace DS.RevitLib.Utils.MEP.AlignmentRotation.Strategies
 
         public Element Rotate()
         {
-            _rotationAxis = GetRotationAxis();
             _targetBaseVector = GetTargetBaseVector();
             _operationBaseVector = GetOperationBaseVector();
 
@@ -55,6 +54,7 @@ namespace DS.RevitLib.Utils.MEP.AlignmentRotation.Strategies
                 return _targetElement;
             }
 
+            _rotationAxis = GetRotationAxis();
             _rotationAngle = GetRotationAngle(_targetBaseVector, _operationBaseVector);
 
             _creator.Rotate(_operationElement, _rotationAxis, _rotationAngle);
