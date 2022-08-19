@@ -15,25 +15,33 @@ namespace DS.RevitLib.Utils.MEP.Symbols
         private readonly Document _doc;
         private readonly SymbolModel _symbolModel;
         private readonly MEPCurve _targerMEPCurve;
+        private readonly double _familyLength;
         private readonly XYZ _placementPoint;
         private readonly Committer _committer;
         private readonly string _transactionPrefix;
         private readonly XYZ _targetDirection;
+        private readonly double _minElemDist = 50.mmToFyt2();
 
-        public SymbolPlacer(SymbolModel symbolModel, MEPCurve targerMEPCurve, XYZ placementPoint,
+        public SymbolPlacer(SymbolModel symbolModel, MEPCurve targerMEPCurve, PlacementOption placementOption, double familyLength,
             Committer committer = null, string transactionPrefix = "")
         {
             _doc = targerMEPCurve.Document;
             _symbolModel = symbolModel;
             _targerMEPCurve = targerMEPCurve;
+            _familyLength = familyLength;
             _targetDirection = MEPCurveUtils.GetDirection(targerMEPCurve);
-            _placementPoint = placementPoint;
+            _placementPoint = GetPlacementPoint(placementOption, targerMEPCurve);
             _committer = committer;
             _transactionPrefix = transactionPrefix;
         }
 
         public FamilyInstance Place()
         {
+            if (_placementPoint is null)
+            {
+                return null;
+            }
+
             var famInstCreator = new FamInstCreator(_doc, _committer, _transactionPrefix);
             FamilyInstance famInst = famInstCreator.CreateFamilyInstane(_symbolModel.FamilySymbol, _placementPoint, _targerMEPCurve.ReferenceLevel);
 
@@ -45,7 +53,6 @@ namespace DS.RevitLib.Utils.MEP.Symbols
 
             var angleAlignment = new AngleAlignment(famInst, _targerMEPCurve);
             angleAlignment.Align();
-
             List<MEPCurve> splittedMEPCurves = GetSplittedElements(_targerMEPCurve, _targetDirection, _placementPoint, cutWidth);
 
             angleAlignment = new AngleAlignment(splittedMEPCurves.First(), _targerMEPCurve);
@@ -83,7 +90,7 @@ namespace DS.RevitLib.Utils.MEP.Symbols
         {
             var famInstParameters = MEPElementUtils.GetSizeParameters(famInst);
 
-            var parameterSetter = new ParameterSetter(famInst, new RollBackCommitter(), _transactionPrefix);
+            var parameterSetter = new ParameterSetter(famInst, _committer, _transactionPrefix);
 
             foreach (var param in parameters)
             {
@@ -131,5 +138,31 @@ namespace DS.RevitLib.Utils.MEP.Symbols
             return orderedElements.Cast<MEPCurve>().ToList();
         }
 
+
+        private XYZ GetPlacementPoint(PlacementOption placementOption, MEPCurve mEPCurve)
+        {
+            XYZ placementPoint = null;
+            double targetLength = _targerMEPCurve.GetCenterLine().ApproximateLength;
+
+            if (targetLength < _familyLength + 2 * _minElemDist)
+            {
+                return placementPoint;
+            }
+
+            switch (placementOption)
+            {
+                case PlacementOption.Center:
+                    placementPoint = ElementUtils.GetLocationPoint(mEPCurve);
+                    break;
+                case PlacementOption.Edge:
+                    (Connector con1, Connector con2) = ConnectorUtils.GetMainConnectors(mEPCurve);
+                    XYZ baseVector = (con2.Origin - con1.Origin).Normalize();
+                    placementPoint = con1.Origin + baseVector.Multiply(_minElemDist + _familyLength / 2);
+                    break;
+                default:
+                    break;
+            }
+            return placementPoint;
+        }
     }
 }

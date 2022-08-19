@@ -153,8 +153,9 @@ namespace DS.RevitLib.Utils.MEP.Creator
         /// <param name="point"></param>
         /// <param name="baseMEPCurve"></param>
         /// <returns>Returns created family instance.</returns>
-        public FamilyInstance CreateFamilyInstane(FamilySymbol familySymbol, XYZ point, Level level)
+        public FamilyInstance CreateFamilyInstane(FamilySymbol familySymbol, XYZ point, Level level = null)
         {
+            level ??= new FilteredElementCollector(_doc).OfClass(typeof(Level)).Cast<Level>().FirstOrDefault();
             FamilyInstance familyInstance = null;
             using (Transaction transNew = new Transaction(_doc, _transactionPrefix + "CreateFamilyInstane"))
             {
@@ -174,12 +175,25 @@ namespace DS.RevitLib.Utils.MEP.Creator
             }
 
             var lp = ElementUtils.GetLocationPoint(familyInstance);
-            if (Math.Round(lp.Z) != Math.Round(point.Z))
+            if (Math.Round(lp.Z, 3) != Math.Round(point.Z, 3))
             {
                 ElementsMover.MoveElement(familyInstance, point - lp);
             }
 
             return familyInstance;
+        }
+
+        public void SetSizeParameters(FamilyInstance famInst, Dictionary<Parameter, double> parameters)
+        {
+            var famInstParameters = MEPElementUtils.GetSizeParameters(famInst);
+
+            var parameterSetter = new ParameterSetter(famInst, _committer, _transactionPrefix);
+
+            foreach (var param in parameters)
+            {
+                var keyValuePair = famInstParameters.Where(obj => obj.Key.Id == param.Key.Id).FirstOrDefault();
+                parameterSetter.SetValue(keyValuePair.Key, param.Value);
+            }
         }
 
     }
