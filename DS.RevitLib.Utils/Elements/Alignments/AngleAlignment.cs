@@ -33,14 +33,14 @@ namespace DS.RevitLib.Utils.Elements.Alignments
                 return OperationElement;
             }
 
-            var centerLineRotator = new CenterLineRotator(OperationElement, TargetElement, _creator);
-            return centerLineRotator.Rotate();
+            var rotator = new NormOrthRotator(OperationElement, TargetElement, _creator);
+            return rotator.Rotate();
         }
 
         public Element AlignCenterLines()
         {
-            var normalLineRotator = new NormalLineRotator(OperationElement, TargetElement, _creator);
-            return normalLineRotator.Rotate();
+            var rotator = new CentralLineRotator(OperationElement, TargetElement, _creator);
+            return rotator.Rotate();
         }
 
         public Element Align()

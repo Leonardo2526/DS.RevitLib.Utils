@@ -14,11 +14,11 @@ using System.Xml.Linq;
 namespace DS.RevitLib.Utils.Elements.Alignments.Strategies
 {
     /// <summary>
-    /// Around element's center line rotation strategy
+    /// Around element's center line norm orth rotation strategy
     /// </summary>
-    internal class CenterLineRotator : AlignmentRotator
+    internal class NormOrthRotator : AlignmentRotator
     {
-        public CenterLineRotator(Element operationElement, Element targetElement, ElementCreator creator) :
+        public NormOrthRotator(Element operationElement, Element targetElement, ElementCreator creator) :
             base(operationElement, targetElement, creator)
         {
 
@@ -33,30 +33,15 @@ namespace DS.RevitLib.Utils.Elements.Alignments.Strategies
         {
             double angleRad = targetBaseVector.AngleTo(operationBaseVector);
             double angleDeg = angleRad.RadToDeg();
-
-            //double prec = 3.0;
-            //if (Math.Abs(angleDeg - 0) < prec || Math.Abs(angleDeg - 180) < prec ||
-            //    Math.Abs(angleDeg - 90) < prec || Math.Abs(angleDeg - 270) < prec)
-            //{
-            //    return 0;
-            //}
-
             int rotDir = GetRotationSide(_targetBaseVector, _operationBaseVector, _rotationAxis.Direction);
 
             return angleRad * rotDir;
-            //return angleRad;
         }
 
         protected override XYZ GetTargetBaseVector()
         {
             List<XYZ> normOrths = ElementUtils.GetOrthoNormVectors(_targetElement);
             return ElementUtils.GetMaxSizeOrth(_targetElement, normOrths);
-            //if (_targetElement is MEPCurve)
-            //{
-            //    return GetAlignmentVector(_targetElement as MEPCurve);
-            //}
-
-            //return null;
         }
 
         protected override XYZ GetOperationBaseVector()

@@ -10,11 +10,11 @@ using System.Threading.Tasks;
 namespace DS.RevitLib.Utils.Elements.Alignments.Strategies
 {
     /// <summary>
-    /// Around element's normal vector rotation strategy
+    /// Around element's normal orth vector central line rotation strategy
     /// </summary>
-    internal class NormalLineRotator : AlignmentRotator
+    internal class CentralLineRotator : AlignmentRotator
     {
-        public NormalLineRotator(Element operationElement, Element targetElement, ElementCreator creator) : 
+        public CentralLineRotator(Element operationElement, Element targetElement, ElementCreator creator) : 
             base(operationElement, targetElement, creator)
         {
         }
