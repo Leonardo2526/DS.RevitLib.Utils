@@ -46,7 +46,7 @@ namespace DS.RevitLib.Test
                 {
                     point = new PlacementPoint(mEPCurve, familyLength).GetStartPoint(PlacementOption.Edge);
                 }
-                SymbolPlacer symbolPlacer = new SymbolPlacer(symbolModel, mEPCurve, point, familyLength, 
+                SymbolPlacer symbolPlacer = new SymbolPlacer(symbolModel, mEPCurve, point, familyLength, family,
                     new RollBackCommitter(), "autoMEP");
                 symbolPlacer.Place();
 

@@ -1,9 +1,11 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
+using DS.RevitLib.Utils.Elements;
 using DS.RevitLib.Utils.TransactionCommitter;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 
 namespace DS.RevitLib.Utils.MEP.Creator
 {
@@ -153,7 +155,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
         /// <param name="point"></param>
         /// <param name="baseMEPCurve"></param>
         /// <returns>Returns created family instance.</returns>
-        public FamilyInstance CreateFamilyInstane(FamilySymbol familySymbol, XYZ point, Level level = null)
+        public FamilyInstance CreateFamilyInstane(FamilySymbol familySymbol, XYZ point, Level level = null, Element baseElement = null)
         {
             level ??= new FilteredElementCollector(_doc).OfClass(typeof(Level)).Cast<Level>().FirstOrDefault();
             FamilyInstance familyInstance = null;
@@ -165,6 +167,11 @@ namespace DS.RevitLib.Utils.MEP.Creator
 
                     familyInstance = _doc.Create.NewFamilyInstance(point, familySymbol, level, 
                         Autodesk.Revit.DB.Structure.StructuralType.NonStructural);
+                    if (baseElement is not null)
+                    {
+                        Insulation.Create(baseElement, familyInstance);
+                        ElementParameter.CopyAllParameters(baseElement, familyInstance);
+                    }
                 }
 
                 catch (Exception e)

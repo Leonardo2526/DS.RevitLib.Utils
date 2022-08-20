@@ -20,8 +20,9 @@ namespace DS.RevitLib.Utils.MEP.Symbols
         private readonly Committer _committer;
         private readonly string _transactionPrefix;
         private readonly XYZ _targetDirection;
+        private readonly FamilyInstance _sourceFamInst;
 
-        public SymbolPlacer(SymbolModel symbolModel, MEPCurve targerMEPCurve, XYZ placementPoint, double familyLength,
+        public SymbolPlacer(SymbolModel symbolModel, MEPCurve targerMEPCurve, XYZ placementPoint, double familyLength, FamilyInstance sourceFamInst,
             Committer committer = null, string transactionPrefix = "")
         {
             _doc = targerMEPCurve.Document;
@@ -29,6 +30,7 @@ namespace DS.RevitLib.Utils.MEP.Symbols
             _targerMEPCurve = targerMEPCurve;
             _placementPoint = placementPoint;
             _familyLength = familyLength;
+            _sourceFamInst = sourceFamInst;
             _targetDirection = MEPCurveUtils.GetDirection(targerMEPCurve);
             _committer = committer;
             _transactionPrefix = transactionPrefix;
@@ -45,10 +47,8 @@ namespace DS.RevitLib.Utils.MEP.Symbols
             }
 
             var famInstCreator = new FamInstCreator(_doc, _committer, _transactionPrefix);
-            FamilyInstance famInst = famInstCreator.CreateFamilyInstane(_symbolModel.FamilySymbol, _placementPoint, _targerMEPCurve.ReferenceLevel);
-
-            //here should set parameters to connectors!
-            SetConnectorParameters(famInst, _symbolModel.Parameters);
+            FamilyInstance famInst = famInstCreator.
+                CreateFamilyInstane(_symbolModel.FamilySymbol, _placementPoint, _targerMEPCurve.ReferenceLevel, _sourceFamInst);
 
             var (famInstCon1, famInstCon2) = ConnectorUtils.GetMainConnectors(famInst);
 
@@ -88,19 +88,6 @@ namespace DS.RevitLib.Utils.MEP.Symbols
             }
 
             return mEPCurve2;
-        }
-
-        private void SetConnectorParameters(FamilyInstance famInst, Dictionary<Parameter, double> parameters)
-        {
-            var famInstParameters = MEPElementUtils.GetSizeParameters(famInst);
-
-            var parameterSetter = new ParameterSetter(famInst, _committer, _transactionPrefix);
-
-            foreach (var param in parameters)
-            {
-               var keyValuePair = famInstParameters.Where(obj => obj.Key.Id == param.Key.Id).FirstOrDefault();
-                parameterSetter.SetValue(keyValuePair.Key, param.Value);
-            }
         }
 
         private void Connect(Connector famInstCon1, Connector famInstCon2, MEPCurve mEPCurve1, MEPCurve mEPCurve2)

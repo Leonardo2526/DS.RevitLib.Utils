@@ -472,6 +472,6 @@ namespace DS.RevitLib.Utils
 
             return maxVector;
         }
-
+       
     }
 }

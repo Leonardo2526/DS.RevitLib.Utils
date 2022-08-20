@@ -127,7 +127,7 @@
     <Compile Include="GPExtractor\VisiblePointsCreator.cs" />
     <Compile Include="MEP\Creator\MEPCurveCreator.cs" />
     <Compile Include="MEP\Creator\FamInstCreator.cs" />
-    <Compile Include="MEP\MEPCurveParameter.cs" />
+    <Compile Include="Elements\ElementParameter.cs" />
     <Compile Include="MEP\Insulation.cs" />
     <Compile Include="MEP\ConnectorUtils.cs" />
     <Compile Include="Elements\ElementEraser.cs" />

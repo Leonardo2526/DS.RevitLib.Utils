@@ -2,6 +2,7 @@
 using Autodesk.Revit.DB.Mechanical;
 using Autodesk.Revit.DB.Plumbing;
 using Autodesk.Revit.UI;
+using DS.RevitLib.Utils.Elements;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.TransactionCommitter;
 using System;
@@ -101,7 +102,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
                     }
                
                     Insulation.Create(baseMEPCurve, mEPCurve);
-                    MEPCurveParameter.Copy(baseMEPCurve, mEPCurve);
+                    ElementParameter.CopyAllParameters(baseMEPCurve, mEPCurve);
                 }
                 catch (Exception e)
                 { ErrorMessages += e + "\n"; }
@@ -136,7 +137,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
                     }
 
                     Insulation.Create(BaseMEPCurve, mEPCurve);
-                    MEPCurveParameter.Copy(BaseMEPCurve, mEPCurve);
+                    ElementParameter.CopyAllParameters(BaseMEPCurve, mEPCurve);
                 }
 
                 catch (Exception e)
