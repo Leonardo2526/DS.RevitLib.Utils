@@ -29,8 +29,10 @@ namespace DS.RevitLib.Test
 
             var testedClass = new FamiliesSelectorTest(uidoc, doc, uiapp);
             testedClass.RunTest();
+            List<MEPCurve> _targerMEPCurves = new List<MEPCurve>();
+            _targerMEPCurves.Add(testedClass.MEPCurve);
 
-            SymbolPlacerTest symbolPlacer = new SymbolPlacerTest(testedClass.Families, testedClass.MEPCurve);
+            SymbolPlacerClient symbolPlacer = new SymbolPlacerClient(testedClass.Families, _targerMEPCurves);
             symbolPlacer.Run();
 
             return Autodesk.Revit.UI.Result.Succeeded;

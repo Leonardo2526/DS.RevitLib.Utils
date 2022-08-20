@@ -10,38 +10,41 @@ using System.Threading.Tasks;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.TransactionCommitter;
 using System.Security.Cryptography;
+using System.Windows.Forms;
 
 namespace DS.RevitLib.Test
 {
-    internal class SymbolPlacerTest
+    public class SymbolPlacerClient
     {
         private readonly List<FamilyInstance> _familyInstances;
-        private readonly MEPCurve _targerMEPCurve;
+        private readonly List<MEPCurve> _targerMEPCurves;
         private readonly Document _doc;
 
-        public SymbolPlacerTest(List<FamilyInstance> familyInstances, MEPCurve targerMEPCurve)
+        public SymbolPlacerClient(List<FamilyInstance> familyInstances, List<MEPCurve> targerMEPCurves)
         {
             _familyInstances = familyInstances;
-            _targerMEPCurve = targerMEPCurve;
-            _doc = targerMEPCurve.Document;
+            _targerMEPCurves = targerMEPCurves;
+            _doc = targerMEPCurves.First().Document;
         }
 
         public void Run()
         {
-            XYZ dir = MEPCurveUtils.GetDirection(_targerMEPCurve);
-            MEPCurve mEPCurve = _targerMEPCurve;
+            int i = 0;
             XYZ point = null;
+            MEPCurve mEPCurve = _targerMEPCurves[i];
 
             foreach (var family in _familyInstances)
             {
+                if (i > _targerMEPCurves.Count)
+                {
+                    MessageBox.Show("No available MEPCurves exist for family insatance placement.");
+                    break;
+                }
                 FamilySymbol familySymbol = family.GetFamilySymbol();
-              
+
                 double familyLength = new FamilySymbolUtils().GetLength(familySymbol, _doc, family);
 
-                if (point is null)
-                {
-                    point = new PlacementPoint(mEPCurve, familyLength).GetStartPoint(PlacementOption.Edge);
-                }
+                point ??= new PlacementPoint(mEPCurve, familyLength).GetStartPoint(PlacementOption.Edge);
                 var symbolPlacer = new SymbolPlacer(familySymbol, mEPCurve, point, familyLength, family,
                     new RollBackCommitter(), "autoMEP");
                 symbolPlacer.Place();
@@ -51,7 +54,13 @@ namespace DS.RevitLib.Test
                 Connector baseConnector = symbolPlacer.BaseConnector;
 
                 point = new PlacementPoint(mEPCurve, familyLength).GetPoint(baseConnector);
+
+                if (point is null)
+                {
+                    i++;
+                    mEPCurve = _targerMEPCurves[i];
+                }
             }
-        }     
+        }
     }
 }

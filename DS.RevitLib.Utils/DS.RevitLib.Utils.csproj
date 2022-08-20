@@ -92,6 +92,7 @@
     <Compile Include="MEP\Symbols\PlacementOption.cs" />
     <Compile Include="MEP\Symbols\PlacementPoint.cs" />
     <Compile Include="MEP\Symbols\SymbolPlacer.cs" />
+    <Compile Include="MEP\Symbols\SymbolPlacerClient.cs" />
     <Compile Include="MEP\SystemTree\Component.cs" />
     <Compile Include="MEP\SystemTree\ComponentBuilder.cs" />
     <Compile Include="MEP\Models\MEPCurvesModel.cs" />
