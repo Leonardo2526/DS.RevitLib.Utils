@@ -34,19 +34,15 @@ namespace DS.RevitLib.Test
 
             foreach (var family in _familyInstances)
             {
-                var parameters = MEPElementUtils.GetSizeParameters(family);
-
                 FamilySymbol familySymbol = family.GetFamilySymbol();
-                SymbolModel symbolModel = new SymbolModel(familySymbol, parameters);
-
-                FamilySymbolUtils familySymbolUtils = new FamilySymbolUtils();
-                double familyLength = familySymbolUtils.GetLength(familySymbol, _doc, family);
+              
+                double familyLength = new FamilySymbolUtils().GetLength(familySymbol, _doc, family);
 
                 if (point is null)
                 {
                     point = new PlacementPoint(mEPCurve, familyLength).GetStartPoint(PlacementOption.Edge);
                 }
-                SymbolPlacer symbolPlacer = new SymbolPlacer(symbolModel, mEPCurve, point, familyLength, family,
+                var symbolPlacer = new SymbolPlacer(familySymbol, mEPCurve, point, familyLength, family,
                     new RollBackCommitter(), "autoMEP");
                 symbolPlacer.Place();
 

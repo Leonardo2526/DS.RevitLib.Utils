@@ -1,5 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using DS.RevitLib.Utils.Extensions;
+using DS.RevitLib.Utils.MEP;
+using DS.RevitLib.Utils.MEP.Creator;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -57,6 +59,23 @@ namespace DS.RevitLib.Utils.Elements
                 }
 
             }
+        }
+
+        /// <summary>
+        /// Copy baseElement size parameters to targetElement
+        /// </summary>
+        /// <param name="baseElement"></param>
+        /// <param name="targetElement"></param>
+        public static void CopySizeParameters(Element baseElement, Element targetElement)
+        {
+            var baseParameters = MEPElementUtils.GetSizeParameters(baseElement);
+            var targetParameters = MEPElementUtils.GetSizeParameters(targetElement);
+
+            foreach (var targetParam in targetParameters)
+            {
+                var keyValuePair = baseParameters.Where(obj => obj.Key.Id == targetParam.Key.Id).FirstOrDefault();
+                targetParam.Key.Set(keyValuePair.Value);
+            }           
         }
     }
 }

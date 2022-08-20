@@ -51,7 +51,7 @@ namespace DS.RevitLib.Test
             var selectedElemFamilies = SelectFilter(rootElements);
             Families = selectedElemFamilies.Cast<FamilyInstance>().ToList();
 
-            ElementUtils.Highlight(elemFamilies);
+            //ElementUtils.Highlight(elemFamilies);
 
             //trasfer
             List<XYZ> points = new List<XYZ>()

@@ -71,6 +71,7 @@
     <Compile Include="Elements\Alignments\AngleAlignment.cs" />
     <Compile Include="Elements\Alignments\IAlignment.cs" />
     <Compile Include="Elements\Alignments\LineAlignment.cs" />
+    <Compile Include="Elements\CopyParameterOption.cs" />
     <Compile Include="Elements\Creators\ElementCreator.cs" />
     <Compile Include="Elements\ElementsMover.cs" />
     <Compile Include="Elements\PartTypesChecker.cs" />
@@ -90,7 +91,6 @@
     <Compile Include="MEP\Models\MEPElementsModel.cs" />
     <Compile Include="MEP\Symbols\PlacementOption.cs" />
     <Compile Include="MEP\Symbols\PlacementPoint.cs" />
-    <Compile Include="MEP\Symbols\SymbolModel.cs" />
     <Compile Include="MEP\Symbols\SymbolPlacer.cs" />
     <Compile Include="MEP\SystemTree\Component.cs" />
     <Compile Include="MEP\SystemTree\ComponentBuilder.cs" />

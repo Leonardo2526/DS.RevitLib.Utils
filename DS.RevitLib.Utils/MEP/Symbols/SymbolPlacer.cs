@@ -13,7 +13,7 @@ namespace DS.RevitLib.Utils.MEP.Symbols
     public class SymbolPlacer
     {
         private readonly Document _doc;
-        private readonly SymbolModel _symbolModel;
+        private readonly FamilySymbol _familySymbol;
         private readonly MEPCurve _targerMEPCurve;
         private readonly double _familyLength;
         private readonly XYZ _placementPoint;
@@ -22,11 +22,11 @@ namespace DS.RevitLib.Utils.MEP.Symbols
         private readonly XYZ _targetDirection;
         private readonly FamilyInstance _sourceFamInst;
 
-        public SymbolPlacer(SymbolModel symbolModel, MEPCurve targerMEPCurve, XYZ placementPoint, double familyLength, FamilyInstance sourceFamInst,
+        public SymbolPlacer(FamilySymbol familySymbol, MEPCurve targerMEPCurve, XYZ placementPoint, double familyLength, FamilyInstance sourceFamInst,
             Committer committer = null, string transactionPrefix = "")
         {
             _doc = targerMEPCurve.Document;
-            _symbolModel = symbolModel;
+            _familySymbol = familySymbol;
             _targerMEPCurve = targerMEPCurve;
             _placementPoint = placementPoint;
             _familyLength = familyLength;
@@ -48,7 +48,7 @@ namespace DS.RevitLib.Utils.MEP.Symbols
 
             var famInstCreator = new FamInstCreator(_doc, _committer, _transactionPrefix);
             FamilyInstance famInst = famInstCreator.
-                CreateFamilyInstane(_symbolModel.FamilySymbol, _placementPoint, _targerMEPCurve.ReferenceLevel, _sourceFamInst);
+                CreateFamilyInstane(_familySymbol, _placementPoint, _targerMEPCurve.ReferenceLevel, _sourceFamInst);
 
             var (famInstCon1, famInstCon2) = ConnectorUtils.GetMainConnectors(famInst);
 

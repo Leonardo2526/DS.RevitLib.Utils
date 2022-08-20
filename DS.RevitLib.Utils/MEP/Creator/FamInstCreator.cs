@@ -155,7 +155,8 @@ namespace DS.RevitLib.Utils.MEP.Creator
         /// <param name="point"></param>
         /// <param name="baseMEPCurve"></param>
         /// <returns>Returns created family instance.</returns>
-        public FamilyInstance CreateFamilyInstane(FamilySymbol familySymbol, XYZ point, Level level = null, Element baseElement = null)
+        public FamilyInstance CreateFamilyInstane(FamilySymbol familySymbol, XYZ point, Level level = null, Element baseElement = null,
+            CopyParameterOption copyParameterOption = CopyParameterOption.All)
         {
             level ??= new FilteredElementCollector(_doc).OfClass(typeof(Level)).Cast<Level>().FirstOrDefault();
             FamilyInstance familyInstance = null;
@@ -165,12 +166,24 @@ namespace DS.RevitLib.Utils.MEP.Creator
                 {
                     transNew.Start();
 
-                    familyInstance = _doc.Create.NewFamilyInstance(point, familySymbol, level, 
+                    familyInstance = _doc.Create.NewFamilyInstance(point, familySymbol, level,
                         Autodesk.Revit.DB.Structure.StructuralType.NonStructural);
+
+                    //baseElement option
                     if (baseElement is not null)
                     {
                         Insulation.Create(baseElement, familyInstance);
-                        ElementParameter.CopyAllParameters(baseElement, familyInstance);
+                        switch (copyParameterOption)
+                        {
+                            case CopyParameterOption.All:
+                                ElementParameter.CopyAllParameters(baseElement, familyInstance);
+                                break;
+                            case CopyParameterOption.Sizes:
+                                ElementParameter.CopySizeParameters(baseElement, familyInstance);
+                                break;
+                            default:
+                                break;
+                        }
                     }
                 }
 
@@ -181,6 +194,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
                 ErrorMessages += _committer?.ErrorMessages;
             }
 
+            //elevation correction
             var lp = ElementUtils.GetLocationPoint(familyInstance);
             if (Math.Round(lp.Z, 3) != Math.Round(point.Z, 3))
             {

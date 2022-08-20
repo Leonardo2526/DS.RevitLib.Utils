@@ -1,13 +1,8 @@
 ﻿using Autodesk.Revit.DB;
+using DS.RevitLib.Utils.Elements;
 using DS.RevitLib.Utils.MEP;
 using DS.RevitLib.Utils.MEP.Creator;
-using DS.RevitLib.Utils.MEP.Symbols;
 using DS.RevitLib.Utils.TransactionCommitter;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils
 {
@@ -28,13 +23,8 @@ namespace DS.RevitLib.Utils
         public double GetLength(FamilySymbol familySymbol, Document document, Element baseElement = null)
         {
             var famInstCreator = new FamInstCreator(document, _committer, _transactionPrefix);
-            FamilyInstance famInst = famInstCreator.CreateFamilyInstane(familySymbol, new XYZ(0,0,0));
-
-            if (baseElement is not null)
-            {
-                var parameters = MEPElementUtils.GetSizeParameters(baseElement);
-                famInstCreator.SetSizeParameters(famInst, parameters);
-            }
+            FamilyInstance famInst = famInstCreator.
+                CreateFamilyInstane(familySymbol, new XYZ(0, 0, 0), null, baseElement, CopyParameterOption.Sizes);
 
             var (famInstCon1, famInstCon2) = ConnectorUtils.GetMainConnectors(famInst);
             double length = famInstCon1.Origin.DistanceTo(famInstCon2.Origin);
@@ -42,6 +32,6 @@ namespace DS.RevitLib.Utils
             ElementUtils.DeleteElement(document, famInst);
 
             return length;
-        }      
+        }
     }
 }
