@@ -27,13 +27,13 @@ namespace DS.RevitLib.Test
             //elementSelecetor.Select();
 
 
-            var testedClass = new FamiliesSelectorTest(uidoc, doc, uiapp);
-            testedClass.RunTest();
-            List<MEPCurve> _targerMEPCurves = new List<MEPCurve>();
-            _targerMEPCurves.Add(testedClass.MEPCurve);
+            //var testedClass = new FamiliesSelectorTest(uidoc, doc, uiapp);
+            //testedClass.RunTest();
+            //List<MEPCurve> _targerMEPCurves = new List<MEPCurve>();
+            //_targerMEPCurves.Add(testedClass.MEPCurve);
 
-            SymbolPlacerClient symbolPlacer = new SymbolPlacerClient(testedClass.Families, _targerMEPCurves);
-            symbolPlacer.Run();
+            //SymbolPlacerClient symbolPlacer = new SymbolPlacerClient(testedClass.Families, _targerMEPCurves);
+            //symbolPlacer.Run();
 
             return Autodesk.Revit.UI.Result.Succeeded;
         }

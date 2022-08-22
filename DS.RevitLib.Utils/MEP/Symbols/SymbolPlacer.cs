@@ -40,12 +40,7 @@ namespace DS.RevitLib.Utils.MEP.Symbols
         public Connector BaseConnector { get; private set; }
 
         public FamilyInstance Place()
-        {
-            if (_placementPoint is null)
-            {
-                return null;
-            }
-
+        {           
             var famInstCreator = new FamInstCreator(_doc, _committer, _transactionPrefix);
             FamilyInstance famInst = famInstCreator.
                 CreateFamilyInstane(_familySymbol, _placementPoint, _targerMEPCurve.ReferenceLevel, _sourceFamInst);
