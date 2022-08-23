@@ -8,7 +8,7 @@ using DS.ClassLib.VarUtils;
 
 namespace DS.RevitLib.Utils.Extensions
 {
-   
+
     public static class XYZExtension
 
     {
@@ -74,7 +74,7 @@ namespace DS.RevitLib.Utils.Extensions
             {
                 return -difVector.GetLength();
             }
-        } 
+        }
 
         /// <summary>
         /// Check if point is on plane.
@@ -103,6 +103,65 @@ namespace DS.RevitLib.Utils.Extensions
             return new XYZ(x, y, z);
         }
 
+        /// <summary>
+        /// Check if current point lies inside segment between point1 and point2.
+        /// </summary>
+        /// <param name="point1"></param>
+        /// <param name="point2"></param>
+        /// <returns></returns>
+        public static bool IsBetweenPoints(this XYZ point, XYZ point1, XYZ point2)
+        {
+            var v1 = (point - point1).RoundVector();
+            var v2 = (point2 - point).RoundVector();
+            var v21 = (point2 - point1).RoundVector();
+
+            if (v1.IsZeroLength() || v2.IsZeroLength() || v21.IsZeroLength())
+            {
+                throw new ArgumentException("Points overlap");
+            }
+
+
+            if (!XYZUtils.Collinearity(v1, v21))
+            {
+                return false;
+            }
+
+            if (v1.X != 0)
+            {
+                if (point1.X < point.X && point2.X > point.X)
+                {
+                    return true;
+                }
+                else if (point2.X < point.X && point1.X > point.X)
+                {
+                    return true;
+                }
+            }
+            else if (v1.Y != 0)
+            {
+                if (point1.Y < point.Y && point2.Y > point.Y)
+                {
+                    return true;
+                }
+                else if (point2.Y < point.Y && point1.Y > point.Y)
+                {
+                    return true;
+                }
+            }
+            else if (v1.Z != 0)
+            {
+                if (point1.Z < point.Z && point2.Z > point.Z)
+                {
+                    return true;
+                }
+                else if (point2.Z < point.Z && point1.Z > point.Z)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
 
     }
 }
