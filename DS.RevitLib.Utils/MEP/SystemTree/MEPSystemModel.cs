@@ -1,10 +1,6 @@
 ﻿using Autodesk.Revit.DB;
-using DS.RevitLib.Utils.MEP.Creator;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.MEP.SystemTree
 {
@@ -59,6 +55,8 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
         }
 
 
+        #region Methods
+
         private List<MEPSystemComponent> GetParents()
         {
             List<MEPSystemComponent> list = new List<MEPSystemComponent>();
@@ -85,7 +83,6 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
             return list;
         }
 
-
         private List<MEPSystemComponent> GetAllComponents()
         {
             var mEPSystemComponents = new List<MEPSystemComponent>();
@@ -96,35 +93,8 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
             return mEPSystemComponents;
         }
 
+        #endregion
 
-        //public List<Element> GetAllElements(Composite composite)
-        //{
-        //    List<Element> list = new List<Element>();
-
-        //    MEPSystemComponent rootMEPComp = composite.Root as MEPSystemComponent;
-        //    list.AddRange(rootMEPComp.Elements);
-
-        //    List<MEPSystemComponent> childrenMEPComp = composite.Children.Select(x => x as MEPSystemComponent).ToList();
-        //    List<Element> children = childrenMEPComp.SelectMany(x => x.Elements).ToList();
-        //    list.AddRange(children);
-
-
-        //    List<MEPSystemComponent> parentsMEPComp = composite.Parents.Select(x => x as MEPSystemComponent).ToList();
-        //    List<Element> parents = parentsMEPComp.SelectMany(x => x.Elements).ToList();
-        //    list.AddRange(parents);
-
-        //    return list;
-        //}
-
-        //public List<Element> GetRootElements(Composite composite)
-        //{
-        //    List<Element> list = new List<Element>();
-
-        //    MEPSystemComponent rootMEPComp = composite.Root as MEPSystemComponent;
-        //    list.AddRange(rootMEPComp.Elements);
-
-        //    return list;
-        //}
 
     }
 }
