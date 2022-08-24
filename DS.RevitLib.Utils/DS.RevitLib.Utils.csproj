@@ -101,6 +101,7 @@
     <Compile Include="MEP\SystemTree\ConnectedBuilders\IConnectedBuilder.cs" />
     <Compile Include="MEP\SystemTree\ConnectedBuilders\NotOrderedConnectedBuilder.cs" />
     <Compile Include="MEP\SystemTree\ConnectedBuilders\OrderedConnectedBuilder.cs" />
+    <Compile Include="MEP\SystemTree\TreeMEPSystemModel.cs" />
     <Compile Include="MEP\SystemTree\NodeElement.cs" />
     <Compile Include="MEP\SystemTree\Pushers\NodePusher.cs" />
     <Compile Include="MEP\SystemTree\Pushers\PostNodePusher.cs" />

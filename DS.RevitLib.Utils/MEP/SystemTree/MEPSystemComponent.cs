@@ -25,12 +25,32 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
                     Select(x => x as MEPCurve).ToList();
             }
         }
-
+       
         public List<FamilyInstance> FamilyInstances
         {
             get
             {
-                return (List<FamilyInstance>)Elements.OfType<FamilyInstance>();
+                return Elements.OfType<FamilyInstance>().ToList();
+            }
+        }      
+       
+        public List<FamilyInstance> Accessories
+        {
+            get
+            {
+                return Elements.Where(x => 
+                x.Category.Name.Contains("Accessories") || x.Category.Name.Contains("Арматура")).
+                    OfType<FamilyInstance>().ToList();
+            }
+        }
+
+        public List<FamilyInstance> Fittings
+        {
+            get
+            {
+                return Elements.Where(x =>
+                x.Category.Name.Contains("Fittings") || x.Category.Name.Contains("Соединительные")).
+                    OfType<FamilyInstance>().ToList();
             }
         }
 
@@ -39,6 +59,7 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
         public List<NodeElement> ChildrenNodes { get; set; }
 
         public List<NodeElement> ParentNodes { get; set; }
+       
 
 
         #endregion

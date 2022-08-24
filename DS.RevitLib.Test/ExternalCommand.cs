@@ -23,17 +23,8 @@ namespace DS.RevitLib.Test
             UIDocument uidoc = uiapp.ActiveUIDocument;
             Document doc = uiapp.ActiveUIDocument.Document;
 
-            //ElementSelecetor elementSelecetor = new ElementSelecetor(uidoc, doc, uiapp);
-            //elementSelecetor.Select();
-
-
-            //var testedClass = new FamiliesSelectorTest(uidoc, doc, uiapp);
-            //testedClass.RunTest();
-            //List<MEPCurve> _targerMEPCurves = new List<MEPCurve>();
-            //_targerMEPCurves.Add(testedClass.MEPCurve);
-
-            //SymbolPlacerClient symbolPlacer = new SymbolPlacerClient(testedClass.Families, _targerMEPCurves);
-            //symbolPlacer.Run();
+            var selector = new SystemModelTest(uidoc, doc, uiapp);
+            selector.RunTest();
 
             return Autodesk.Revit.UI.Result.Succeeded;
         }

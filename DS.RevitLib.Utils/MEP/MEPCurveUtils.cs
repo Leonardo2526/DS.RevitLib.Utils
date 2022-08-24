@@ -399,9 +399,11 @@ namespace DS.RevitLib.Utils.MEP
         public static List<Connector> GetNotSpudConnectors(MEPCurve mEPCurve)
         {
             var connectedElems = ConnectorUtils.GetConnectedElements(mEPCurve);
+
             if (connectedElems is null || !connectedElems.Any())
             {
-                return null;
+                var connectors = ConnectorUtils.GetConnectors( mEPCurve);
+                return connectors;
             }
 
             var notSpudElements = connectedElems.ExludeSpudes();            
