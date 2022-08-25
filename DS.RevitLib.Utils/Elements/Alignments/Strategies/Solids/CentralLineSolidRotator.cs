@@ -1,6 +1,9 @@
 ﻿using Autodesk.Revit.DB;
 using DS.ClassLib.VarUtils;
 using DS.RevitLib.Utils.Elements.Creators;
+using DS.RevitLib.Utils.Extensions;
+using DS.RevitLib.Utils.GPExtractor;
+using DS.RevitLib.Utils.Solids.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,11 +15,11 @@ namespace DS.RevitLib.Utils.Elements.Alignments.Strategies
     /// <summary>
     /// Around element's normal orth vector central line rotation strategy
     /// </summary>
-    internal class CentralLineRotator : AlignmentRotator
+    internal class CentralLineSolidRotator : AlignmentRotator<SolidModelExt>
     {
-        public CentralLineRotator(Element operationElement, Element targetElement, ElementCreator creator) : 
-            base(operationElement, targetElement, creator)
+        public CentralLineSolidRotator(SolidModelExt operationElement, Element targetElement) : base(operationElement, targetElement)
         {
+            _operationLine = operationElement.Line;
         }
 
         protected override XYZ GetOperationBaseVector()
@@ -36,9 +39,21 @@ namespace DS.RevitLib.Utils.Elements.Alignments.Strategies
         protected override Line GetRotationAxis()
         {
             XYZ normal = _operationLine.Direction.CrossProduct(_targetLine.Direction);
-            XYZ rotationPoint = ElementUtils.GetLocationPoint(_operationElement);
+            XYZ rotationPoint = _operationElement.Center;
 
             return Line.CreateBound(rotationPoint, rotationPoint + normal);
+        }
+
+        public override SolidModelExt Rotate()
+        {
+            if (XYZUtils.Collinearity(_targetBaseVector, _operationBaseVector))
+            {
+                return _operationElement;
+            }
+
+            Transform rotateTransform = Transform.CreateRotation(_rotationAxis.Direction, _rotationAngle);
+
+            return _operationElement.Transform(rotateTransform);
         }
 
     }

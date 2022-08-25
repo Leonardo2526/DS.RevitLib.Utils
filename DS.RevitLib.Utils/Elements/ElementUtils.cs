@@ -101,6 +101,12 @@ namespace DS.RevitLib.Utils
             return SolidExtractor.GetSolids(element);
         }
 
+        public static Solid GetSolid(Element element)
+        {
+            var solids = SolidExtractor.GetSolids(element);
+            return Solids.SolidUtils.UniteSolids(solids);
+        }
+
         public static List<Solid> GetSolidsOfElements(List<Element> elements)
         {
             List<Solid> solids = new List<Solid>();
@@ -114,9 +120,27 @@ namespace DS.RevitLib.Utils
             return solids;
         }
 
+        /// <summary>
+        /// Get the transformed solids from the coordinate space of the box to the model coordinate space.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <param name="moveVector"></param>
+        /// <returns></returns>
         public static List<Solid> GetTransformedSolids(Element element, XYZ moveVector)
         {
             return SolidExtractor.GetSolids(element, moveVector);
+        }
+
+        /// <summary>
+        /// Get the transformed united solid from the coordinate space of the box to the model coordinate space.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <param name="moveVector"></param>
+        /// <returns></returns>
+        public static Solid GetTransformedSolid(Element element, XYZ moveVector)
+        {
+            var solids = SolidExtractor.GetSolids(element, moveVector);
+            return Solids.SolidUtils.UniteSolids(solids);
         }
 
         public static List<Solid> GetTransformSolidsOfElements(List<Element> elements, XYZ moveVector)

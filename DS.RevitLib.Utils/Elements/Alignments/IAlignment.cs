@@ -7,16 +7,16 @@ using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.Elements.Alignments
 {
-    internal interface IAlignment
+    internal interface IAlignment<T>
     {
-        public Element OperationElement { get; }
+        public T OperationElement { get; }
         public Element TargetElement { get; }
 
         /// <summary>
         /// Align OperationElement and TargetElement.
         /// </summary>
         /// <returns>Returns aligned operation element.</returns>
-        public Element Align();
+        public T Align();
 
     }
 }

@@ -4,27 +4,27 @@ using DS.RevitLib.Utils.Extensions;
 
 namespace DS.RevitLib.Utils.Elements.Alignments.Strategies
 {
-    internal abstract class AlignmentRotator
+    internal abstract class AlignmentRotator<T>
     {
-        protected readonly Element _operationElement;
+        protected readonly T _operationElement;
         protected readonly Element _targetElement;
-        protected readonly Line _operationLine;
+        protected Line _operationLine;
         protected readonly Line _targetLine;
-        protected readonly ElementCreator _creator;
 
         protected Line _rotationAxis;
         protected double _rotationAngle;
         protected XYZ _targetBaseVector;
         protected XYZ _operationBaseVector;
 
-        protected AlignmentRotator(Element operationElement, Element targetElement,
-            ElementCreator creator)
+        protected AlignmentRotator(T operationElement, Element targetElement)
         {
             _operationElement = operationElement;
             _targetElement = targetElement;
-            _creator = creator;
-            _operationLine = operationElement.GetCenterLine();
             _targetLine = targetElement.GetCenterLine();
+            _targetBaseVector = GetTargetBaseVector();
+            _operationBaseVector = GetOperationBaseVector();
+            _rotationAxis = GetRotationAxis();
+            _rotationAngle = GetRotationAngle(_targetBaseVector, _operationBaseVector);
         }
 
 
@@ -36,23 +36,7 @@ namespace DS.RevitLib.Utils.Elements.Alignments.Strategies
 
         protected abstract double GetRotationAngle(XYZ targetBaseVector, XYZ operationBaseVector);
 
-        public Element Rotate()
-        {
-            _targetBaseVector = GetTargetBaseVector();
-            _operationBaseVector = GetOperationBaseVector();
-
-            if (XYZUtils.Collinearity(_targetBaseVector, _operationBaseVector))
-            {
-                return _targetElement;
-            }
-
-            _rotationAxis = GetRotationAxis();
-            _rotationAngle = GetRotationAngle(_targetBaseVector, _operationBaseVector);
-
-            _creator.Rotate(_operationElement, _rotationAxis, _rotationAngle);
-
-            return null;
-        }
+        public abstract T Rotate();       
 
     }
 }

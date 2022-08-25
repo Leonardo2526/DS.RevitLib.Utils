@@ -2,6 +2,7 @@
 using DS.RevitLib.Utils.Elements.Alignments.Strategies;
 using DS.RevitLib.Utils.Elements.Creators;
 using DS.RevitLib.Utils.MEP;
+using DS.RevitLib.Utils.Solids.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,38 +13,38 @@ using System.Xml.Linq;
 
 namespace DS.RevitLib.Utils.Elements.Alignments
 {
-    public class AngleAlignment :  AbstractCreator, IAlignment<Element>
+    public class SolidAngleAlignment :  AbstractCreator, IAlignment<SolidModelExt>
     {     
         private readonly ElementCreator _creator;
 
-        public AngleAlignment(Element operationElement, Element targetElement)
+        public SolidAngleAlignment(SolidModelExt operationSolid, Element targetElement)
         {
-            OperationElement = operationElement;
+            OperationElement = operationSolid;
             TargetElement = targetElement;
             _creator = new ElementCreator(_committer, _transactionPrefix);
         }
 
-        public Element OperationElement {get; private set;}
         public Element TargetElement { get; private set; }
+        public SolidModelExt OperationElement { get; private set; }
 
-        public Element AlignNormOrths()
+        public SolidModelExt AlignNormOrths()
         {
             if (!NeedToAlign(TargetElement))
             {
                 return OperationElement;
             }
 
-            var rotator = new NormOrthRotator(OperationElement, TargetElement, _creator);
+            var rotator = new NormOrthSolidRotator(OperationElement, TargetElement);
             return rotator.Rotate();
         }
 
-        public Element AlignCenterLines()
+        public SolidModelExt AlignCenterLines()
         {
-            var rotator = new CentralLineRotator(OperationElement, TargetElement, _creator);
+            var rotator = new CentralLineSolidRotator(OperationElement, TargetElement);
             return rotator.Rotate();
         }
 
-        public Element Align()
+        public SolidModelExt Align()
         {
             AlignCenterLines();
             AlignNormOrths();

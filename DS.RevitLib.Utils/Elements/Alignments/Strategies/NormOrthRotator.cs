@@ -16,12 +16,16 @@ namespace DS.RevitLib.Utils.Elements.Alignments.Strategies
     /// <summary>
     /// Around element's center line norm orth rotation strategy
     /// </summary>
-    internal class NormOrthRotator : AlignmentRotator
+    internal class NormOrthRotator : AlignmentRotator<Element>
     {
-        public NormOrthRotator(Element operationElement, Element targetElement, ElementCreator creator) :
-            base(operationElement, targetElement, creator)
-        {
+        private readonly ElementCreator _creator;
 
+
+        public NormOrthRotator(Element operationElement, Element targetElement, ElementCreator creator) :
+            base(operationElement, targetElement)
+        {
+            _operationLine = operationElement.GetCenterLine();
+            _creator = creator;
         }
 
         protected override Line GetRotationAxis()
@@ -78,6 +82,17 @@ namespace DS.RevitLib.Utils.Elements.Alignments.Strategies
 
             return 1;
         }
-       
+
+        public override Element Rotate()
+        {
+            if (XYZUtils.Collinearity(_targetBaseVector, _operationBaseVector))
+            {
+                return _targetElement;
+            }
+
+            _creator.Rotate(_operationElement, _rotationAxis, _rotationAngle);
+
+            return null;
+        }
     }
 }
