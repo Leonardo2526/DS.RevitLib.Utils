@@ -28,7 +28,7 @@ namespace DS.RevitLib.Utils.Solids
         public SolidModelExt Place()
         {
             //Move solidmodel to placement point position
-            XYZ moveVector = (_placementPoint - _solidCenter).RoundVector();
+            XYZ moveVector = (_placementPoint - _solidModel.CentralLine.Origin).RoundVector();
             Transform moveTransform = Transform.CreateTranslation(moveVector);
             _solidModel.Transform(moveTransform);
 

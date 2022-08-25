@@ -12,7 +12,8 @@ namespace DS.RevitLib.Utils.Solids.Models
         }
 
         public Solid Solid { get; protected set; }
-        public XYZ Center
+
+        public XYZ SolidCenter
         {
             get
             {

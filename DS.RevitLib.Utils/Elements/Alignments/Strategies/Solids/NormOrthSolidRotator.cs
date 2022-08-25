@@ -22,7 +22,7 @@ namespace DS.RevitLib.Utils.Elements.Alignments.Strategies
         protected override XYZ GetOperationBaseVector()
         {
             List<XYZ> normOrths = DS.RevitLib.Utils.Solids.SolidUtils.
-                GetOrthoNormVectors(_operationElement.Solid, _operationElement.Line);
+                GetOrthoNormVectors(_operationElement.Solid, _operationElement.CentralLine);
             return GetMaxSizeOrth(normOrths);
         }
 
@@ -70,7 +70,7 @@ namespace DS.RevitLib.Utils.Elements.Alignments.Strategies
                 return _operationElement;
             }
 
-            Transform rotateTransform = Transform.CreateRotationAtPoint(_rotationAxis.Direction, _rotationAngle, _operationElement.Center);
+            Transform rotateTransform = Transform.CreateRotationAtPoint(_rotationAxis.Direction, _rotationAngle, _operationElement.CentralLine.Origin);
             _operationElement.Transform(rotateTransform);
 
             return _operationElement;
@@ -88,7 +88,7 @@ namespace DS.RevitLib.Utils.Elements.Alignments.Strategies
 
         protected override Line GetOperationLine(SolidModelExt operationElement)
         {
-            return operationElement.Line;
+            return operationElement.CentralLine;
         }
     }
 }

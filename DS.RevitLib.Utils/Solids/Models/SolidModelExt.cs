@@ -16,7 +16,7 @@ namespace DS.RevitLib.Utils.Solids.Models
             Solid = ElementUtils.GetSolid(element);
             ConnectorsPoints = GetConnectorPoints();
             Length = ConnectorsPoints.First().DistanceTo(ConnectorsPoints.Last());
-            Line = Element.GetCenterLine();
+            CentralLine = Element.GetCenterLine();
         }
 
         public Element Element { get; private set; }
@@ -30,7 +30,7 @@ namespace DS.RevitLib.Utils.Solids.Models
         /// <summary>
         /// Line between main elements's connectors
         /// </summary>
-        public Line Line { get; private set; }
+        public Line CentralLine { get; private set; }
 
         private List<XYZ> GetConnectorPoints()
         {
@@ -43,8 +43,8 @@ namespace DS.RevitLib.Utils.Solids.Models
         {
             //get transformed objects
             Solid tSolid = Autodesk.Revit.DB.SolidUtils.CreateTransformed(Solid, transform);
-            Line tLine = Line.CreateTransformed(transform) as Line;
-            var c = tSolid.ComputeCentroid();
+            Line tLine = CentralLine.CreateTransformed(transform) as Line;
+
             List<XYZ> tConnectorsPoints = new List<XYZ>();
             foreach (var point in ConnectorsPoints)
             {
@@ -52,7 +52,7 @@ namespace DS.RevitLib.Utils.Solids.Models
             }
 
             Solid = tSolid;
-            Line = tLine;
+            CentralLine = tLine;
             ConnectorsPoints = tConnectorsPoints;          
         }
 

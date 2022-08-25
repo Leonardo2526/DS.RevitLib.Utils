@@ -26,7 +26,7 @@ namespace DS.RevitLib.Utils.Elements.Alignments.Strategies
 
         protected override XYZ GetOperationBaseVector()
         {
-            return _operationElement.Line.Direction;
+            return _operationElement.CentralLine.Direction;
         }
         protected override XYZ GetTargetBaseVector()
         {
@@ -41,7 +41,7 @@ namespace DS.RevitLib.Utils.Elements.Alignments.Strategies
         protected override Line GetRotationAxis()
         {
             XYZ normal = _operationLine.Direction.CrossProduct(_targetLine.Direction);
-            _rotationPoint = _operationElement.Center;
+            _rotationPoint = _operationElement.CentralLine.Origin;
 
             return Line.CreateBound(_rotationPoint, _rotationPoint + normal);
         }
@@ -61,7 +61,7 @@ namespace DS.RevitLib.Utils.Elements.Alignments.Strategies
 
         protected override Line GetOperationLine(SolidModelExt operationElement)
         {
-            return operationElement.Line;
+            return operationElement.CentralLine;
         }
     }
 }

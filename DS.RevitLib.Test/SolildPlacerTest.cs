@@ -3,6 +3,7 @@ using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Selection;
 using DS.RevitLib.Utils;
+using DS.RevitLib.Utils.ModelCurveUtils;
 using DS.RevitLib.Utils.Solids;
 using DS.RevitLib.Utils.Solids.Models;
 using DS.RevitLib.Utils.Visualisators;
@@ -52,6 +53,9 @@ namespace DS.RevitLib.Test
             BoundingBoxXYZ box = model.Solid.GetBoundingBox();
             IVisualisator vs = new BoundingBoxVisualisator(box, Doc);
             new Visualisator(vs);
+
+            var lineCreator = new ModelCurveCreator(Doc);
+            lineCreator.Create(model.CentralLine);
         }
     }
 }
