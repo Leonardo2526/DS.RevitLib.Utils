@@ -19,5 +19,6 @@ namespace DS.RevitLib.Utils.Extensions
             Transform transform = solid.GetBoundingBox().Transform;
             return SolidUtils.CreateTransformed(solid, transform);
         }
+
     }
 }

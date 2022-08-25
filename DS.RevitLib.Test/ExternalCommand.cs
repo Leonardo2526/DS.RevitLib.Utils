@@ -23,8 +23,11 @@ namespace DS.RevitLib.Test
             UIDocument uidoc = uiapp.ActiveUIDocument;
             Document doc = uiapp.ActiveUIDocument.Document;
 
-            var selector = new SystemModelTest(uidoc, doc, uiapp);
-            selector.RunTest();
+            //var selector = new SystemModelTest(uidoc, doc, uiapp);
+            //selector.RunTest();
+
+            var test = new SolildPlacerTest(uidoc, doc, uiapp);
+            test.Run();
 
             return Autodesk.Revit.UI.Result.Succeeded;
         }

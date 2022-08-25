@@ -39,7 +39,7 @@ namespace DS.RevitLib.Utils.Solids.Models
             return list.Select(c => c.Origin).ToList();
         }
 
-        public SolidModelExt Transform(Transform transform)
+        public void Transform(Transform transform)
         {
             //get transformed objects
             Solid tSolid = Autodesk.Revit.DB.SolidUtils.CreateTransformed(Solid, transform);
@@ -53,9 +53,7 @@ namespace DS.RevitLib.Utils.Solids.Models
 
             Solid = tSolid;
             Line = tLine;
-            ConnectorsPoints = tConnectorsPoints;
-          
-            return this;
+            ConnectorsPoints = tConnectorsPoints;          
         }
 
     }
