@@ -42,11 +42,14 @@ namespace DS.RevitLib.Test
 
             var model = new SolidModelExt(operationElement);
 
+            //BoundingBoxXYZ box = model.Solid.GetBoundingBox();
+            //IVisualisator vs = new BoundingBoxVisualisator(box, Doc);
+            //new Visualisator(vs);
+
             var solidPlacer = new SolidPlacer(model, targetElement, point);
             model = solidPlacer.Place();
 
             BoundingBoxXYZ box = model.Solid.GetBoundingBox();
-
             IVisualisator vs = new BoundingBoxVisualisator(box, Doc);
             new Visualisator(vs);
         }

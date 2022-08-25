@@ -24,7 +24,6 @@ namespace DS.RevitLib.Utils.Elements.Alignments.Strategies
         public NormOrthRotator(Element operationElement, Element targetElement, ElementCreator creator) :
             base(operationElement, targetElement)
         {
-            _operationLine = operationElement.GetCenterLine();
             _creator = creator;
         }
 
@@ -85,14 +84,19 @@ namespace DS.RevitLib.Utils.Elements.Alignments.Strategies
 
         public override Element Rotate()
         {
-            if (XYZUtils.Collinearity(_targetBaseVector, _operationBaseVector))
+            if (_rotationAngle == 0)
             {
-                return _targetElement;
+                return _operationElement;
             }
 
             _creator.Rotate(_operationElement, _rotationAxis, _rotationAngle);
 
             return null;
+        }
+
+        protected override Line GetOperationLine(Element operationElement)
+        {
+            return operationElement.GetCenterLine();
         }
     }
 }

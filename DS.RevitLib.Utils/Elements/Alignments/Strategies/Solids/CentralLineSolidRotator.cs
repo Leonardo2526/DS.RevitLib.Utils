@@ -16,15 +16,17 @@ namespace DS.RevitLib.Utils.Elements.Alignments.Strategies
     /// Around element's normal orth vector central line rotation strategy
     /// </summary>
     internal class CentralLineSolidRotator : AlignmentRotator<SolidModelExt>
-    {
-        public CentralLineSolidRotator(SolidModelExt operationElement, Element targetElement) : base(operationElement, targetElement)
+    {   
+        private XYZ _rotationPoint;
+
+        public CentralLineSolidRotator(SolidModelExt operationElement, Element targetElement) : 
+            base(operationElement, targetElement)
         {
-            _operationLine = operationElement.Line;
         }
 
         protected override XYZ GetOperationBaseVector()
         {
-            return _operationLine.Direction;
+            return _operationElement.Line.Direction;
         }
         protected override XYZ GetTargetBaseVector()
         {
@@ -39,23 +41,27 @@ namespace DS.RevitLib.Utils.Elements.Alignments.Strategies
         protected override Line GetRotationAxis()
         {
             XYZ normal = _operationLine.Direction.CrossProduct(_targetLine.Direction);
-            XYZ rotationPoint = _operationElement.Center;
+            _rotationPoint = _operationElement.Center;
 
-            return Line.CreateBound(rotationPoint, rotationPoint + normal);
+            return Line.CreateBound(_rotationPoint, _rotationPoint + normal);
         }
 
         public override SolidModelExt Rotate()
         {
-            if (XYZUtils.Collinearity(_targetBaseVector, _operationBaseVector))
+            if (_rotationAngle == 0)
             {
                 return _operationElement;
             }
 
-            Transform rotateTransform = Transform.CreateRotation(_rotationAxis.Direction, _rotationAngle);
+            Transform rotateTransform = Transform.CreateRotationAtPoint(_rotationAxis.Direction, _rotationAngle, _rotationPoint);
             _operationElement.Transform(rotateTransform);
 
             return _operationElement;
         }
 
+        protected override Line GetOperationLine(SolidModelExt operationElement)
+        {
+            return operationElement.Line;
+        }
     }
 }

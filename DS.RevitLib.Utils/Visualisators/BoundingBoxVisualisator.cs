@@ -44,7 +44,7 @@ namespace DS.RevitLib.Utils.Visualisators
         {
             List<Line> lines = new List<Line>();
 
-            Line line = Line.CreateUnbound(minPoint, maxPoint);
+            Line line = Line.CreateBound(minPoint, maxPoint);
             lines.Add(line);
 
             return lines;

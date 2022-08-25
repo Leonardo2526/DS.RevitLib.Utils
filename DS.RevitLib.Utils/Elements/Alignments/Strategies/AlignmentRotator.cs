@@ -20,13 +20,19 @@ namespace DS.RevitLib.Utils.Elements.Alignments.Strategies
         {
             _operationElement = operationElement;
             _targetElement = targetElement;
+            _operationLine = GetOperationLine(operationElement);
             _targetLine = targetElement.GetCenterLine();
             _targetBaseVector = GetTargetBaseVector();
             _operationBaseVector = GetOperationBaseVector();
-            _rotationAxis = GetRotationAxis();
-            _rotationAngle = GetRotationAngle(_targetBaseVector, _operationBaseVector);
+
+            if (!XYZUtils.Collinearity(_targetBaseVector, _operationBaseVector))
+            {
+                _rotationAxis = GetRotationAxis();
+                _rotationAngle = GetRotationAngle(_targetBaseVector, _operationBaseVector);               
+            }
         }
 
+        protected abstract Line GetOperationLine(T operationElement);
 
         protected abstract Line GetRotationAxis();
 

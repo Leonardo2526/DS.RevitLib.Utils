@@ -13,9 +13,9 @@ namespace DS.RevitLib.Utils.Elements.Alignments.Strategies
 {
     internal class NormOrthSolidRotator : AlignmentRotator<SolidModelExt>
     {
-        public NormOrthSolidRotator(SolidModelExt operationElement, Element targetElement) : base(operationElement, targetElement)
+        public NormOrthSolidRotator(SolidModelExt operationElement, Element targetElement) : 
+            base(operationElement, targetElement)
         {
-            _operationLine = operationElement.Line;           
         }
 
         protected override XYZ GetOperationBaseVector()
@@ -46,12 +46,12 @@ namespace DS.RevitLib.Utils.Elements.Alignments.Strategies
 
         public override SolidModelExt Rotate()
         {
-            if (XYZUtils.Collinearity(_targetBaseVector, _operationBaseVector))
+            if (_rotationAngle == 0)
             {
                 return _operationElement;
             }
 
-            Transform rotateTransform = Transform.CreateRotation(_rotationAxis.Direction, _rotationAngle);
+            Transform rotateTransform = Transform.CreateRotationAtPoint(_rotationAxis.Direction, _rotationAngle, _operationElement.Center);
             _operationElement.Transform(rotateTransform);
 
             return _operationElement;
@@ -65,6 +65,11 @@ namespace DS.RevitLib.Utils.Elements.Alignments.Strategies
             }
 
             return 1;
+        }
+
+        protected override Line GetOperationLine(SolidModelExt operationElement)
+        {
+            return operationElement.Line;
         }
     }
 }

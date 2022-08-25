@@ -44,7 +44,7 @@ namespace DS.RevitLib.Utils.Solids.Models
             //get transformed objects
             Solid tSolid = Autodesk.Revit.DB.SolidUtils.CreateTransformed(Solid, transform);
             Line tLine = Line.CreateTransformed(transform) as Line;
-
+            var c = tSolid.ComputeCentroid();
             List<XYZ> tConnectorsPoints = new List<XYZ>();
             foreach (var point in ConnectorsPoints)
             {
