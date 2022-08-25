@@ -45,7 +45,7 @@ namespace DS.RevitLib.Utils.Elements.Alignments
         public SolidModelExt Align()
         {
             AlignCenterLines();
-            //AlignNormOrths();
+            AlignNormOrths();
             return OperationElement;
         }
 

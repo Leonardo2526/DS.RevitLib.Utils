@@ -5,6 +5,7 @@ using DS.RevitLib.Utils.GPExtractor;
 using DS.RevitLib.Utils.Solids.Models;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,8 +21,26 @@ namespace DS.RevitLib.Utils.Elements.Alignments.Strategies
 
         protected override XYZ GetOperationBaseVector()
         {
-            List<XYZ> normOrths = ElementUtils.GetOrthoNormVectors(_operationElement.Element);
-            return ElementUtils.GetMaxSizeOrth(_operationElement.Element, normOrths);
+            List<XYZ> normOrths = DS.RevitLib.Utils.Solids.SolidUtils.
+                GetOrthoNormVectors(_operationElement.Solid, _operationElement.Line);
+            return GetMaxSizeOrth(normOrths);
+        }
+
+        private XYZ GetMaxSizeOrth(List<XYZ> orths)
+        {
+            XYZ maxVector = null;
+            double maxSize = 0;
+            foreach (var orth in orths)
+            {
+                double size = _operationElement.GetSizeByVector(orth);
+                if (size > maxSize)
+                {
+                    maxSize = size;
+                    maxVector = orth;
+                }
+            }
+
+            return maxVector;
         }
 
         protected override double GetRotationAngle(XYZ targetBaseVector, XYZ operationBaseVector)
