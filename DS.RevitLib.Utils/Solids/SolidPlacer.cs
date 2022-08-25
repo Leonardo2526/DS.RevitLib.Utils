@@ -16,7 +16,6 @@ namespace DS.RevitLib.Utils.Solids
         private readonly XYZ _solidCenter;
         private readonly MEPCurve _targerMEPCurve;
         private readonly XYZ _placementPoint;
-        private Solid _tSolid;
 
         public SolidPlacer(SolidModelExt solidModel, MEPCurve targerMEPCurve, XYZ placementPoint)
         {
@@ -26,7 +25,7 @@ namespace DS.RevitLib.Utils.Solids
             _placementPoint = placementPoint;
         }
 
-        public Solid Place()
+        public SolidModelExt Place()
         {
             //Move solidmodel to placement point position
             XYZ moveVector = (_placementPoint - _solidCenter).RoundVector();
@@ -35,12 +34,7 @@ namespace DS.RevitLib.Utils.Solids
 
             //Align solid
             var solidAngleAlignment = new SolidAngleAlignment(_solidModel, _targerMEPCurve);
-            solidAngleAlignment.Align();
-
-
-
-
-            return _tSolid;
+            return solidAngleAlignment.Align(); 
         }
 
     }

@@ -19,7 +19,7 @@ namespace DS.RevitLib.Utils
             if (show)
             {
                 ModelCurveCreator modelCurveCreator = new ModelCurveCreator(element.Document);
-                modelCurveCreator.CreateByPoints(startPoint + offset, endPoint + offset);
+                modelCurveCreator.Create(startPoint + offset, endPoint + offset);
             }
 
             return Line.CreateBound(startPoint + offset, endPoint + offset);

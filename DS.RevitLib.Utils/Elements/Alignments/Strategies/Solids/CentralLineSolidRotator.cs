@@ -52,8 +52,9 @@ namespace DS.RevitLib.Utils.Elements.Alignments.Strategies
             }
 
             Transform rotateTransform = Transform.CreateRotation(_rotationAxis.Direction, _rotationAngle);
+            _operationElement.Transform(rotateTransform);
 
-            return _operationElement.Transform(rotateTransform);
+            return _operationElement;
         }
 
     }
