@@ -45,26 +45,35 @@ namespace DS.RevitLib.Test
 
             XYZ point = ElementUtils.GetLocationPoint(targetElement);
 
+            //Solid place
             var model = new SolidModelExt(operationElement);
             var solidPlacer = new SolidPlacer(model, targetElement, point);
             model = solidPlacer.Place();
+            //Show(model);
 
-            Show(model);
-
+            //Collisions search
             var checkedObjects1 = new List<Solid>() { model.Solid };
             var checkedObjects2 = GetGeometryElements(Doc);
             var excludedObjects = new List<Element> { targetElement };
             var colSearch = new CollisionSearchClient<Solid, Element>
                 (new SolidCollisionSearch(checkedObjects1, checkedObjects2, excludedObjects));
             var collisions = colSearch.GetCollisions();
+            CollisionsSearchOutput(collisions);
 
-            string collisionsAccount = "Collisions count: " + collisions.Count.ToString();
-            foreach (var item in collisions)
+            //Get intersecion solids
+            var elementsIntersections = new Dictionary<Element, Solid>();
+            if (collisions.Any())
             {
-                collisionsAccount += "\n" + item.Id;
+                elementsIntersections = GetIntersectionSolids(collisions, model.Solid);
             }
 
-            TaskDialog.Show("Collisions", collisionsAccount);
+            Solid intersectionSolid = DS.RevitLib.Utils.Solids.SolidUtils.UniteSolids(elementsIntersections.Values.ToList());
+            BoundingBoxXYZ box = intersectionSolid.GetBoundingBox();
+            IVisualisator vs = new BoundingBoxVisualisator(box, Doc);
+            new Visualisator(vs);
+
+            //Get new point
+
         }
 
 
@@ -103,7 +112,7 @@ namespace DS.RevitLib.Test
             var g = x.get_Geometry(new Options() { ComputeReferences = false, DetailLevel = ViewDetailLevel.Fine, IncludeNonVisibleObjects = false })
                 ?.Cast<GeometryObject>().ToList();
 
-            return CheckGeometry(g);           
+            return CheckGeometry(g);
         }
 
         private bool CheckGeometry(List<GeometryObject> g)
@@ -121,6 +130,32 @@ namespace DS.RevitLib.Test
                 }
             }
             return false;
+        }
+
+
+        private void CollisionsSearchOutput(List<Element> collisions)
+        {
+            string collisionsAccount = "Collisions count: " + collisions.Count.ToString();
+            foreach (var item in collisions)
+            {
+                collisionsAccount += "\n" + item.Id;
+            }
+
+            TaskDialog.Show("Collisions", collisionsAccount);
+        }
+
+        private Dictionary<Element, Solid> GetIntersectionSolids(List<Element> elements, Solid solid)
+        {
+            var elementsIntersections = new Dictionary<Element, Solid>();
+
+            foreach (var element in elements)
+            {
+                Solid elemSolid = ElementUtils.GetSolid(element);
+                Solid intersectionSolid = DS.RevitLib.Utils.Solids.SolidUtils.GetIntersection(solid, elemSolid);
+                elementsIntersections.Add(element, intersectionSolid);
+            }
+
+            return elementsIntersections;
         }
     }
 }
