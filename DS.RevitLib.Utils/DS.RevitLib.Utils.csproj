@@ -67,6 +67,9 @@
   <ItemGroup>
     <Compile Include="BoundingBoxUtils.cs" />
     <Compile Include="AbstractCreator.cs" />
+    <Compile Include="Collisions\CollisionSearch.cs" />
+    <Compile Include="Collisions\CollisionSearchClient.cs" />
+    <Compile Include="Collisions\SolidCollisionSearch.cs" />
     <Compile Include="Elements\Alignments\SolidAngleAlignment.cs" />
     <Compile Include="Elements\Alignments\AngleAlignment.cs" />
     <Compile Include="Elements\Alignments\IAlignment.cs" />
@@ -81,6 +84,7 @@
     <Compile Include="Extensions\ElementExtension.cs" />
     <Compile Include="Extensions\MEPCurveExtension.cs" />
     <Compile Include="Lines\LineExtensions.cs" />
+    <Compile Include="ObjectExtension.cs" />
     <Compile Include="Planes\PlaneExtensions.cs" />
     <Compile Include="Planes\PlaneUtils.cs" />
     <Compile Include="Solids\SolidExtension.cs" />
