@@ -41,7 +41,7 @@ namespace DS.RevitLib.Utils.Elements.Alignments.Strategies
         protected override Line GetRotationAxis()
         {
             XYZ normal = _operationLine.Direction.CrossProduct(_targetLine.Direction);
-            _rotationPoint = _operationElement.CentralLine.Origin;
+            _rotationPoint = _operationElement.CentralPoint;
 
             return Line.CreateBound(_rotationPoint, _rotationPoint + normal);
         }

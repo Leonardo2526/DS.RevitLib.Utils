@@ -70,7 +70,8 @@ namespace DS.RevitLib.Utils.Elements.Alignments.Strategies
                 return _operationElement;
             }
 
-            Transform rotateTransform = Transform.CreateRotationAtPoint(_rotationAxis.Direction, _rotationAngle, _operationElement.CentralLine.Origin);
+            Transform rotateTransform = Transform.
+                CreateRotationAtPoint(_rotationAxis.Direction, _rotationAngle, _operationElement.CentralPoint);
             _operationElement.Transform(rotateTransform);
 
             return _operationElement;

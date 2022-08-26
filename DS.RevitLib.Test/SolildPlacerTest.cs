@@ -56,6 +56,10 @@ namespace DS.RevitLib.Test
 
             var lineCreator = new ModelCurveCreator(Doc);
             lineCreator.Create(model.CentralLine);
+
+            var normLine = Line.CreateBound(model.CentralPoint, model.CentralPoint + model.MaxOrth);
+            lineCreator.Create(normLine);
+
         }
     }
 }

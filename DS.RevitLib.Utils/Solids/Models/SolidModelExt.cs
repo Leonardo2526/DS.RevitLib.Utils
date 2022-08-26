@@ -1,5 +1,4 @@
 ﻿using Autodesk.Revit.DB;
-using DS.RevitLib.Utils;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.MEP;
 using System.Collections.Generic;
@@ -32,6 +31,28 @@ namespace DS.RevitLib.Utils.Solids.Models
         /// </summary>
         public Line CentralLine { get; private set; }
 
+        public XYZ CentralPoint
+        {
+            get
+            {
+                return (CentralLine.GetEndPoint(0) + CentralLine.GetEndPoint(1)) / 2;
+            }
+        }
+
+
+        /// <summary>
+        ///Orth vector with max solid's size.
+        /// </summary>
+        public XYZ MaxOrth
+        {
+            get
+            {
+                List<XYZ> normOrths = DS.RevitLib.Utils.Solids.SolidUtils.
+                GetOrthoNormVectors(Solid, CentralLine);
+                return GetMaxSizeOrth(normOrths);
+            }
+        }
+
         private List<XYZ> GetConnectorPoints()
         {
             (Connector con1, Connector con2) = ConnectorUtils.GetMainConnectors(Element);
@@ -54,6 +75,23 @@ namespace DS.RevitLib.Utils.Solids.Models
             Solid = tSolid;
             CentralLine = tLine;
             ConnectorsPoints = tConnectorsPoints;          
+        }      
+
+        private XYZ GetMaxSizeOrth(List<XYZ> orths)
+        {
+            XYZ maxVector = null;
+            double maxSize = 0;
+            foreach (var orth in orths)
+            {
+                double size = GetSizeByVector(orth);
+                if (size > maxSize)
+                {
+                    maxSize = size;
+                    maxVector = orth;
+                }
+            }
+
+            return maxVector;
         }
 
     }
