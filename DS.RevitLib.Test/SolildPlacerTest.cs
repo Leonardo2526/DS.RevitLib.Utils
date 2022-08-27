@@ -5,7 +5,9 @@ using Autodesk.Revit.UI.Selection;
 using DS.RevitLib.Utils;
 using DS.RevitLib.Utils.Collisions;
 using DS.RevitLib.Utils.Extensions;
+using DS.RevitLib.Utils.MEP;
 using DS.RevitLib.Utils.ModelCurveUtils;
+using DS.RevitLib.Utils.Models;
 using DS.RevitLib.Utils.Solids;
 using DS.RevitLib.Utils.Solids.Models;
 using DS.RevitLib.Utils.Visualisators;
@@ -49,7 +51,7 @@ namespace DS.RevitLib.Test
             var model = new SolidModelExt(operationElement);
             var solidPlacer = new SolidPlacer(model, targetElement, point);
             model = solidPlacer.Place();
-            //Show(model);
+            Show(model);
 
             //Collisions search
             var checkedObjects1 = new List<Solid>() { model.Solid };
@@ -58,19 +60,22 @@ namespace DS.RevitLib.Test
             var colSearch = new CollisionSearchClient<Solid, Element>
                 (new SolidCollisionSearch(checkedObjects1, checkedObjects2, excludedObjects));
             var collisions = colSearch.GetCollisions();
-            CollisionsSearchOutput(collisions);
+            //CollisionsSearchOutput(collisions);
+
+            Disconnect(operationElement);
+            TransformElement(operationElement, solidPlacer.TransformModel);
 
             //Get intersecion solids
             var elementsIntersections = new Dictionary<Element, Solid>();
             if (collisions.Any())
             {
                 elementsIntersections = GetIntersectionSolids(collisions, model.Solid);
+                Solid intersectionSolid = DS.RevitLib.Utils.Solids.SolidUtils.UniteSolids(elementsIntersections.Values.ToList());
+                BoundingBoxXYZ box = intersectionSolid.GetBoundingBox();
+                IVisualisator vs = new BoundingBoxVisualisator(box, Doc);
+                new Visualisator(vs);
             }
 
-            Solid intersectionSolid = DS.RevitLib.Utils.Solids.SolidUtils.UniteSolids(elementsIntersections.Values.ToList());
-            BoundingBoxXYZ box = intersectionSolid.GetBoundingBox();
-            IVisualisator vs = new BoundingBoxVisualisator(box, Doc);
-            new Visualisator(vs);
 
             //Get new point
 
@@ -156,6 +161,60 @@ namespace DS.RevitLib.Test
             }
 
             return elementsIntersections;
+        }
+
+        private void Disconnect(Element element)
+        {
+            var cons = ConnectorUtils.GetConnectors(element);
+            foreach (var con in cons)
+            {
+                var connectors = con.AllRefs;
+                foreach (Connector c in connectors)
+                {
+                    if (con.IsConnectedTo(c))
+                    {
+                        ConnectorUtils.DisconnectConnectors(con, c);
+                    }
+                }
+            }
+        }
+
+
+        private Element TransformElement(Element element, TransformModel transformModel)
+        {
+            Document Doc = element.Document;
+
+            using (Transaction transNew = new Transaction(Doc, "MoveElement"))
+            {
+                try
+                {
+                    transNew.Start();
+                    if (transformModel.MoveVector is not null)
+                    {
+                        ElementTransformUtils.MoveElement(Doc, element.Id, transformModel.MoveVector);
+                    }
+                    if (transformModel.CenterLineRotation.RotationAngle != 0)
+                    {
+                        ElementTransformUtils.RotateElement(Doc, element.Id,
+                                transformModel.CenterLineRotation.RotationAxis, transformModel.CenterLineRotation.RotationAngle);
+                    }
+                    if (transformModel.AroundCenterLineRotation.RotationAngle != 0)
+                    {
+                            ElementTransformUtils.RotateElement(Doc, element.Id,
+                       transformModel.AroundCenterLineRotation.RotationAxis, transformModel.AroundCenterLineRotation.RotationAngle);
+                    }
+                }
+
+                catch (Exception e)
+                { return null; }
+
+                if (transNew.HasStarted())
+                {
+                    transNew.Commit();
+                }
+            }
+
+            return element;
         }
     }
 }

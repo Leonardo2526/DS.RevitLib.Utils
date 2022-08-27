@@ -2,6 +2,7 @@
 using DS.ClassLib.VarUtils;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.GPExtractor;
+using DS.RevitLib.Utils.Models;
 using DS.RevitLib.Utils.Solids.Models;
 using System;
 using System.Collections.Generic;
@@ -14,10 +15,14 @@ namespace DS.RevitLib.Utils.Elements.Alignments.Strategies
 {
     internal class NormOrthSolidRotator : AlignmentRotator<SolidModelExt>
     {
-        public NormOrthSolidRotator(SolidModelExt operationElement, Element targetElement) : 
+        public NormOrthSolidRotator(SolidModelExt operationElement, Element targetElement, TransformModel transformModel) :
             base(operationElement, targetElement)
         {
+            TransformModel = transformModel;
         }
+
+        public TransformModel TransformModel { get; }
+
 
         protected override XYZ GetOperationBaseVector()
         {
@@ -73,6 +78,7 @@ namespace DS.RevitLib.Utils.Elements.Alignments.Strategies
             Transform rotateTransform = Transform.
                 CreateRotationAtPoint(_rotationAxis.Direction, _rotationAngle, _operationElement.CentralPoint);
             _operationElement.Transform(rotateTransform);
+            TransformModel.AroundCenterLineRotation = new RotationModel(_rotationAxis, _rotationAngle);
 
             return _operationElement;
         }
