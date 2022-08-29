@@ -21,13 +21,13 @@ using DS.RevitLib.Utils.Collisions.Resolvers;
 
 namespace DS.RevitLib.Test
 {
-    internal class NewsSolidPlacerTest
+    internal class SolidPlacerTest
     {
         readonly UIDocument Uidoc;
         readonly Document Doc;
         readonly UIApplication Uiapp;
 
-        public NewsSolidPlacerTest(UIDocument uidoc, Document doc, UIApplication uiapp)
+        public SolidPlacerTest(UIDocument uidoc, Document doc, UIApplication uiapp)
         {
             Uidoc = uidoc;
             Doc = doc;
@@ -140,7 +140,6 @@ namespace DS.RevitLib.Test
             return false;
         }
 
-
         private void CollisionsSearchOutput(List<Element> collisions)
         {
             string collisionsAccount = "Collisions count: " + collisions.Count.ToString();
@@ -150,20 +149,6 @@ namespace DS.RevitLib.Test
             }
 
             TaskDialog.Show("Collisions", collisionsAccount);
-        }
-
-        private Dictionary<Element, Solid> GetIntersectionSolids(List<Element> elements, Solid solid)
-        {
-            var elementsIntersections = new Dictionary<Element, Solid>();
-
-            foreach (var element in elements)
-            {
-                Solid elemSolid = ElementUtils.GetSolid(element);
-                Solid intersectionSolid = DS.RevitLib.Utils.Solids.SolidUtils.GetIntersection(solid, elemSolid);
-                elementsIntersections.Add(element, intersectionSolid);
-            }
-
-            return elementsIntersections;
         }
 
         private void Disconnect(Element element)

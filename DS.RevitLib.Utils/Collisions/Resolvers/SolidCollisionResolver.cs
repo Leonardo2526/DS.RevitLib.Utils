@@ -1,7 +1,6 @@
 ﻿using Autodesk.Revit.DB;
 using DS.RevitLib.Utils.Collisions.Checkers;
 using DS.RevitLib.Utils.Collisions.Models;
-using DS.RevitLib.Utils.Collisions.Search;
 using DS.RevitLib.Utils.Models;
 using DS.RevitLib.Utils.Solids.Models;
 using System;

@@ -78,10 +78,6 @@
     <Compile Include="Collisions\Resolvers\AroundCenterLineRotateResolver.cs" />
     <Compile Include="Collisions\Resolvers\MoveResolver.cs" />
     <Compile Include="Collisions\Resolvers\RotateCenterLineResolver.cs" />
-    <Compile Include="Collisions\Old\Search\CollisionSearch.cs" />
-    <Compile Include="Collisions\Old\Search\CollisionSearchClient.cs" />
-    <Compile Include="Collisions\Old\Search\ICollisionSearch.cs" />
-    <Compile Include="Collisions\Old\Search\SolidCollisionSearch.cs" />
     <Compile Include="Elements\Alignments\SolidAngleAlignment.cs" />
     <Compile Include="Elements\Alignments\AngleAlignment.cs" />
     <Compile Include="Elements\Alignments\IAlignment.cs" />

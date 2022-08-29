@@ -54,7 +54,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="NewsSolidPlacerTest.cs" />
+    <Compile Include="SolidPlacerTest.cs" />
     <Compile Include="ExternalCommand.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SystemModelTest.cs" />
