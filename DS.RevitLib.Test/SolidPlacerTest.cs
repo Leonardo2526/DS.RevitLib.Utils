@@ -52,7 +52,7 @@ namespace DS.RevitLib.Test
             Show(model);
 
             //Collisions search
-            var checkedObjects1 = new List<SolidModelExt>() { model };
+            var checkedObjects1 = new List<SolidModelExt>() { model }; 
             var checkedObjects2 = GetGeometryElements(Doc);
             var excludedObjects = new List<Element> { targetElement };
             var colChecker = new SolidCollisionChecker(checkedObjects1, checkedObjects2, excludedObjects);
