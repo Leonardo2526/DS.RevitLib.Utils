@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.DB;
+using DS.RevitLib.Utils.Collisions.Search;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +10,12 @@ namespace DS.RevitLib.Utils.Collisions.Resolve
 {
     public abstract class CollisionResolver
     {
+        protected ICollisionSearch _collisionSearch;
+
+        protected CollisionResolver(ICollisionSearch collisionSearch)
+        {
+            _collisionSearch = collisionSearch;
+        }
 
         protected CollisionResolver _successor;
 
@@ -20,6 +27,5 @@ namespace DS.RevitLib.Utils.Collisions.Resolve
         public bool IsResolved { get; protected set; }
 
         public abstract void Resolve();
-        public abstract bool CheckCollisions();
     }
 }

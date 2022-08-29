@@ -1,43 +1,38 @@
-﻿using Autodesk.Revit.Creation;
-using Autodesk.Revit.DB;
-using Autodesk.Revit.UI;
+﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI.Selection;
-using DS.RevitLib.Utils;
-using DS.RevitLib.Utils.Collisions;
-using DS.RevitLib.Utils.Collisions.Resolve;
-using DS.RevitLib.Utils.Collisions.Search;
+using Autodesk.Revit.UI;
+using DS.RevitLib.Utils.Solids.Models;
+using DS.RevitLib.Utils.Solids;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.MEP;
 using DS.RevitLib.Utils.ModelCurveUtils;
 using DS.RevitLib.Utils.Models;
-using DS.RevitLib.Utils.Solids;
-using DS.RevitLib.Utils.Solids.Models;
 using DS.RevitLib.Utils.Visualisators;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.ProgressBar;
-using Document = Autodesk.Revit.DB.Document;
+using DS.RevitLib.Utils.Collisions.Resolve;
+using DS.RevitLib.Utils.Collisions;
+using DS.RevitLib.Utils;
+using DS.RevitLib.Utils.Collisions.Checkers;
+using DS.RevitLib.Utils.Collisions.Models;
+using DS.RevitLib.Utils.Collisions.Resolvers;
 
 namespace DS.RevitLib.Test
 {
-    internal class SolildPlacerTest
+    internal class NewsSolidPlacerTest
     {
         readonly UIDocument Uidoc;
         readonly Document Doc;
         readonly UIApplication Uiapp;
-        private readonly CollisionSearch<Solid, Element> _collisionSearch;
 
-        public SolildPlacerTest(UIDocument uidoc, Document doc, UIApplication uiapp, CollisionSearch<Solid, Element> collisionSearch)
+        public NewsSolidPlacerTest(UIDocument uidoc, Document doc, UIApplication uiapp)
         {
             Uidoc = uidoc;
             Doc = doc;
             Uiapp = uiapp;
-            _collisionSearch = collisionSearch;
         }
 
         public void Run()
@@ -61,22 +56,22 @@ namespace DS.RevitLib.Test
             var checkedObjects1 = new List<Solid>() { model.Solid };
             var checkedObjects2 = GetGeometryElements(Doc);
             var excludedObjects = new List<Element> { targetElement };
-            var colSearch = new SolidCollisionSearch(checkedObjects1, checkedObjects2, excludedObjects);
-            var collisions = colSearch.GetCollisions();
-            //CollisionsSearchOutput(collisions);          
-         
+            var colChecker = new SolidCollisionChecker(checkedObjects1, checkedObjects2, excludedObjects);
+            var collisions = colChecker.GetCollisions();
 
             if (collisions.Any())
             {
-                //Get intersecion solids
-                Dictionary<Element, Solid> elementsIntersections = GetIntersectionSolids(collisions, model.Solid);
-                Solid intersectionSolid = DS.RevitLib.Utils.Solids.SolidUtils.UniteSolids(elementsIntersections.Values.ToList());
+                List<SolidElemCollision> solidElemCollisions = collisions.Cast<SolidElemCollision>().ToList();
+                SolidElemCollision currentCollision = solidElemCollisions.First();
+                Solid intersectionSolid = currentCollision.GetIntersection() as Solid;
+
                 BoundingBoxXYZ box = intersectionSolid.GetBoundingBox();
                 IVisualisator vs = new BoundingBoxVisualisator(box, Doc);
                 new Visualisator(vs);
 
                 //resolve collision
-                var resolver = new SolidCollisionResolverClient();
+                colChecker = new SolidCollisionChecker(new List<Solid>() { currentCollision.BaseObject }, currentCollision.CollisionObjects, excludedObjects);
+                var resolver = new SolidCollisionResolver(colChecker, solidElemCollisions, solidPlacer.TransformModel, model, targetElement);
                 resolver.Resolve();
 
             }
@@ -87,11 +82,10 @@ namespace DS.RevitLib.Test
             }
 
 
-            //Get new point
+
+
 
         }
-
-
         private void Show(SolidModelExt model)
         {
             BoundingBoxXYZ box = model.Solid.GetBoundingBox();
@@ -210,8 +204,8 @@ namespace DS.RevitLib.Test
                     }
                     if (transformModel.AroundCenterLineRotation.Angle != 0)
                     {
-                            ElementTransformUtils.RotateElement(Doc, element.Id,
-                       transformModel.AroundCenterLineRotation.Axis, transformModel.AroundCenterLineRotation.Angle);
+                        ElementTransformUtils.RotateElement(Doc, element.Id,
+                   transformModel.AroundCenterLineRotation.Axis, transformModel.AroundCenterLineRotation.Angle);
                     }
                 }
 

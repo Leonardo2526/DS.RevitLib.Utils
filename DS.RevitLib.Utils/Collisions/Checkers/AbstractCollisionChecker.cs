@@ -1,17 +1,20 @@
 ﻿using Autodesk.Revit.DB;
+using DS.RevitLib.Utils.Collisions.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace DS.RevitLib.Utils.Collisions
+namespace DS.RevitLib.Utils.Collisions.Checkers
 {
-    public abstract class CollisionSearch<T, P>
+    public abstract class AbstractCollisionChecker<T, P> : ICollisionChecker
     {
         protected readonly List<T> _checkedObjects1;
         protected readonly List<P> _checkedObjects2;
         protected readonly List<P> _exludedObjects;
 
-        protected CollisionSearch(List<T> checkedObjects1, List<P> checkedObjects2, List<P> exludedObjects=null)
+        protected AbstractCollisionChecker(List<T> checkedObjects1, List<P> checkedObjects2, List<P> exludedObjects = null)
         {
             _checkedObjects1 = checkedObjects1;
             _checkedObjects2 = checkedObjects2;
@@ -28,9 +31,9 @@ namespace DS.RevitLib.Utils.Collisions
         protected abstract FilteredElementCollector Collector { get; set; }
         protected abstract ExclusionFilter ExclusionFilter { get; }
 
+        protected abstract List<ICollision> GetCollisions(T object1);
+        public abstract List<ICollision> GetCollisions();
 
-        public abstract List<P> GetCollisions();
-
-        protected abstract List<P> GetObjectCollisions(T checkedObject);
+        protected abstract List<ICollision> BuildCollisions(T object1, List<P> objects2);
     }
 }

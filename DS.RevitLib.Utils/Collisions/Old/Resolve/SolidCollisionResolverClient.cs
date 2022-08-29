@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.DB;
+using DS.RevitLib.Utils.Collisions.Search;
 using DS.RevitLib.Utils.Models;
 using DS.RevitLib.Utils.Solids.Models;
 using System;
@@ -10,20 +11,31 @@ using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.Collisions.Resolve
 {
-    internal class SolidCollisionResolverClient
+    public class SolidCollisionResolverClient
     {
-        private readonly XYZ _placementPoint;
         private readonly Solid _intersectionSolid;
         private readonly SolidModelExt _solidModel;
         private readonly List<Element> _checkedObjects;
         private readonly MEPCurve _targetElement;
+        private readonly ICollisionSearch _collisionSearch;
+        private readonly List<Element> _exludedObjects;
 
+        public SolidCollisionResolverClient(Solid intersectionSolid, SolidModelExt solidModel, 
+             MEPCurve targetElement, TransformModel transformModel, ICollisionSearch collisionSearch)
+        {
+            _intersectionSolid = intersectionSolid;
+            _solidModel = solidModel;
+            _targetElement = targetElement;
+            TransformModel = transformModel;
+            _collisionSearch = collisionSearch;
+        }
+
+        public bool IsResolved { get; private set; }
         public TransformModel TransformModel { get; private set; }
-        public bool _isResolved;
 
         public void Resolve()
         {
-            CollisionResolver aclr = new AroundCenterLineRotateResolver();
+            CollisionResolver aclr = new AroundCenterLineRotateResolver(_solidModel, TransformModel, _checkedObjects, _exludedObjects);
             CollisionResolver clr = new RotateCenterLineResolver();
 
             //try resolve by rotation around center line
@@ -36,11 +48,12 @@ namespace DS.RevitLib.Utils.Collisions.Resolve
             }
 
             //try resolve in next available point
-            while (!_isResolved)
+            while (!IsResolved)
             {
-                _isResolved = ResolveInPoint(_placementPoint);
+                IsResolved = ResolveInPoint(_placementPoint);
             }
         }
+
 
         private bool ResolveInPoint(XYZ point)
         {

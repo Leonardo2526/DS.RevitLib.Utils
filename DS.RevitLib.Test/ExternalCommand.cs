@@ -26,7 +26,7 @@ namespace DS.RevitLib.Test
             //var selector = new SystemModelTest(uidoc, doc, uiapp);
             //selector.RunTest();
 
-            var test = new SolildPlacerTest(uidoc, doc, uiapp);
+            var test = new NewsSolidPlacerTest(uidoc, doc, uiapp);
             test.Run();
 
             return Autodesk.Revit.UI.Result.Succeeded;

@@ -9,13 +9,13 @@ namespace DS.RevitLib.Utils.Models
 {
     public struct RotationModel
     {
-        public RotationModel(Line rotationAxis, double rotationAngle)
+        public RotationModel(Line axis, double angle)
         {
-            RotationAxis = rotationAxis;
-            RotationAngle = rotationAngle;
+            Axis = axis;
+            Angle = angle;
         }
 
-        public Line RotationAxis { get; set; }
-        public double RotationAngle { get; set; }
+        public Line Axis { get; set; }
+        public double Angle { get; set; }
     }
 }
