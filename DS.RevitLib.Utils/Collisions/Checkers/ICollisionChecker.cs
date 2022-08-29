@@ -12,13 +12,4 @@ namespace DS.RevitLib.Utils.Collisions.Checkers
     {
         public List<ICollision> GetCollisions();
     }
-
-    //public interface ICollisionChecker<T, P>
-    //{
-    //    public FilteredElementCollector Collector { get; set; }
-    //    public ExclusionFilter ExclusionFilter { get; }
-
-    //    public ICollision GetCollision(T object1, P object2);
-    //    public List<ICollision> GetCollisions();
-    //}
 }

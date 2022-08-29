@@ -13,7 +13,6 @@ using DS.RevitLib.Utils.MEP;
 using DS.RevitLib.Utils.ModelCurveUtils;
 using DS.RevitLib.Utils.Models;
 using DS.RevitLib.Utils.Visualisators;
-using DS.RevitLib.Utils.Collisions.Resolve;
 using DS.RevitLib.Utils.Collisions;
 using DS.RevitLib.Utils;
 using DS.RevitLib.Utils.Collisions.Checkers;
@@ -53,33 +52,33 @@ namespace DS.RevitLib.Test
             Show(model);
 
             //Collisions search
-            var checkedObjects1 = new List<Solid>() { model.Solid };
+            var checkedObjects1 = new List<SolidModelExt>() { model };
             var checkedObjects2 = GetGeometryElements(Doc);
             var excludedObjects = new List<Element> { targetElement };
             var colChecker = new SolidCollisionChecker(checkedObjects1, checkedObjects2, excludedObjects);
             var collisions = colChecker.GetCollisions();
 
+            TransformModel transformModel = solidPlacer.TransformModel;
+
             if (collisions.Any())
             {
-                List<SolidElemCollision> solidElemCollisions = collisions.Cast<SolidElemCollision>().ToList();
+                var solidElemCollisions = collisions.Cast<SolidElemCollision>().ToList();
                 SolidElemCollision currentCollision = solidElemCollisions.First();
-                Solid intersectionSolid = currentCollision.GetIntersection() as Solid;
+                Solid intersectionSolid = currentCollision.GetIntersection();
 
-                BoundingBoxXYZ box = intersectionSolid.GetBoundingBox();
-                IVisualisator vs = new BoundingBoxVisualisator(box, Doc);
-                new Visualisator(vs);
+                //BoundingBoxXYZ box = intersectionSolid.GetBoundingBox();
+                //IVisualisator vs = new BoundingBoxVisualisator(box, Doc);
+                //new Visualisator(vs);
 
                 //resolve collision
-                colChecker = new SolidCollisionChecker(new List<Solid>() { currentCollision.BaseObject }, currentCollision.CollisionObjects, excludedObjects);
-                var resolver = new SolidCollisionResolver(colChecker, solidElemCollisions, solidPlacer.TransformModel, model, targetElement);
-                resolver.Resolve();
+                var resolver = new SolidCollisionResolver(currentCollision, colChecker, transformModel);
+                transformModel = resolver.Resolve();
 
             }
-            else
-            {
-                Disconnect(operationElement);
-                TransformElement(operationElement, solidPlacer.TransformModel);
-            }
+
+            Disconnect(operationElement);
+            TransformElement(operationElement, transformModel);
+
 
 
 

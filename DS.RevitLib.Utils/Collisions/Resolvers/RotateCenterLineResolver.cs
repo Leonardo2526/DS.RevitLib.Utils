@@ -1,4 +1,6 @@
 ﻿using DS.RevitLib.Utils.Collisions.Checkers;
+using DS.RevitLib.Utils.Collisions.Models;
+using DS.RevitLib.Utils.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,13 +9,16 @@ using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.Collisions.Resolvers
 {
-    internal class RotateCenterLineResolver : AbstractCollisionResolver
+    internal class RotateCenterLineResolver : CollisionResolver<TransformModel>
     {
-        public RotateCenterLineResolver(ICollisionChecker collisionChecker) : base(collisionChecker)
+        private readonly TransformModel _transformModel;
+
+        public RotateCenterLineResolver(ICollision collision, ICollisionChecker collisionChecker, TransformModel transformModel) : base(collision, collisionChecker)
         {
+            _transformModel = transformModel;
         }
 
-        public override void Resolve()
+        public override TransformModel Resolve()
         {
             throw new NotImplementedException();
         }

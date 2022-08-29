@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using DS.ClassLib.VarUtils;
 using DS.RevitLib.Utils.Collisions.Checkers;
+using DS.RevitLib.Utils.Collisions.Models;
 using DS.RevitLib.Utils.Models;
 using DS.RevitLib.Utils.Solids.Models;
 using System;
@@ -11,37 +12,41 @@ using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.Collisions.Resolvers
 {
-    internal class AroundCenterLineRotateResolver : AbstractCollisionResolver
+    internal class AroundCenterLineRotateResolver : CollisionResolver<TransformModel>
     {
         private readonly SolidModelExt _operationElement;
         private readonly RotationModel _rotationModel;
 
-        public AroundCenterLineRotateResolver(ICollisionChecker collisionChecker,
-            SolidModelExt operationElement, TransformModel transformModel) : base(collisionChecker)
+        public AroundCenterLineRotateResolver(Collision<SolidModelExt, Element> collision, 
+            ICollisionChecker collisionChecker, TransformModel transformModel) :
+            base(collision, collisionChecker)
         {
-            _operationElement = operationElement;
             TransformModel = transformModel;
+            _rotationModel = transformModel.AroundCenterLineRotation;
+            _operationElement = collision.Object1;
         }
 
         public TransformModel TransformModel { get; private set; }
 
 
 
-        public override void Resolve()
+        public override TransformModel Resolve()
         {
             XYZ axis = _rotationModel.Axis is null ?
                 _operationElement.CentralLine.Direction : _rotationModel.Axis.Direction;
 
             double angle = ResolvePosition(axis, _operationElement.CentralPoint);
-            if (IsResolved)
+            if (angle != 0)
             {
-                TransformModel.AroundCenterLineRotation = new RotationModel(
-                    Line.CreateUnbound(_operationElement.CentralPoint, _operationElement.CentralPoint + axis), angle);
+                TransformModel.AroundCenterLineRotation = new RotationModel(_operationElement.CentralLine, angle);
             }
             else
             {
                 _successor.Resolve();
             }
+
+            Solution = TransformModel;
+            return TransformModel;
         }
 
         public double ResolvePosition(XYZ axis, XYZ point)
@@ -54,7 +59,6 @@ namespace DS.RevitLib.Utils.Collisions.Resolvers
 
                 if (!_collisionChecker.GetCollisions().Any())
                 {
-                    IsResolved = true;
                     return angle;
                 }
             }

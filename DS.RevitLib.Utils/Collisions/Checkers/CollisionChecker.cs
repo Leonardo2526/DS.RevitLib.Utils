@@ -8,13 +8,13 @@ using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.Collisions.Checkers
 {
-    public abstract class AbstractCollisionChecker<T, P> : ICollisionChecker
+    public abstract class CollisionChecker<T, P> : ICollisionChecker
     {
         protected readonly List<T> _checkedObjects1;
         protected readonly List<P> _checkedObjects2;
         protected readonly List<P> _exludedObjects;
 
-        protected AbstractCollisionChecker(List<T> checkedObjects1, List<P> checkedObjects2, List<P> exludedObjects = null)
+        protected CollisionChecker(List<T> checkedObjects1, List<P> checkedObjects2, List<P> exludedObjects = null)
         {
             _checkedObjects1 = checkedObjects1;
             _checkedObjects2 = checkedObjects2;
@@ -31,9 +31,8 @@ namespace DS.RevitLib.Utils.Collisions.Checkers
         protected abstract FilteredElementCollector Collector { get; set; }
         protected abstract ExclusionFilter ExclusionFilter { get; }
 
-        protected abstract List<ICollision> GetCollisions(T object1);
         public abstract List<ICollision> GetCollisions();
 
-        protected abstract List<ICollision> BuildCollisions(T object1, List<P> objects2);
+        protected abstract ICollision BuildCollision(T object1, P object2);
     }
 }

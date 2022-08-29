@@ -1,7 +1,6 @@
 ﻿using Autodesk.Revit.DB;
 using DS.RevitLib.Utils.Collisions.Checkers;
 using DS.RevitLib.Utils.Collisions.Models;
-using DS.RevitLib.Utils.Collisions.Resolve;
 using DS.RevitLib.Utils.Collisions.Search;
 using DS.RevitLib.Utils.Models;
 using DS.RevitLib.Utils.Solids.Models;
@@ -13,43 +12,51 @@ using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.Collisions.Resolvers
 {
-    public class SolidCollisionResolver : AbstractCollisionResolver
+    public class SolidCollisionResolver : CollisionResolver<TransformModel>
     {
+        private readonly TransformModel _transformModel;
 
-        private readonly Solid _intersectionSolid;
-        private readonly SolidModelExt _solidModel;
-        private readonly MEPCurve _targetElement;
-        private readonly List<SolidElemCollision> _collisions;
-
-        public SolidCollisionResolver(SolidCollisionChecker collisionChecker, List<SolidElemCollision> collisions, 
-            TransformModel transformModel, SolidModelExt solidModel, MEPCurve targetElement) :
-            base(collisionChecker)
+        public SolidCollisionResolver(Collision<SolidModelExt, Element> collision, ICollisionChecker collisionChecker, TransformModel transformModel) : 
+            base(collision, collisionChecker)
         {
-            _collisions = collisions;
-            TransformModel = transformModel;
-            _solidModel = solidModel;
-            _targetElement = targetElement;
+            _transformModel = transformModel;
         }
 
-        public TransformModel TransformModel { get; private set; }
 
-
-        public override void Resolve()
+        public override TransformModel Resolve()
         {
-            var aclr = new AroundCenterLineRotateResolver(_collisionChecker, _solidModel, TransformModel);
-            var clr = new RotateCenterLineResolver(_collisionChecker);
+            //resolve by rotation
+            var collision = Collision as Collision<SolidModelExt, Element>;
+            var aclr = new AroundCenterLineRotateResolver(collision, _collisionChecker, _transformModel);
+            var clr = new RotateCenterLineResolver(collision, _collisionChecker, _transformModel);
 
             //try resolve by rotation around center line
             aclr.SetSuccessor(clr); // if not resolved, rotate center line at 180 degeres.
             clr.SetSuccessor(aclr); // if not resolved, rotate around center line.
             aclr.Resolve();
-            IsResolved = aclr.IsResolved;
+            Solution = aclr.Solution;
 
             //try resolve in next available point
             //while (!IsResolved)
             //{
             //    IsResolved = ResolveInPoint(_placementPoint);
             //}
+
+            return Solution;
         }
+
+        //private bool ResolveInPoint(XYZ point)
+        //{
+        //    CollisionResolver mr = new MoveResolver();
+        //    CollisionResolver aclr = new AroundCenterLineRotateResolver();
+        //    CollisionResolver clr = new RotateCenterLineResolver();
+
+        //    mr.SetSuccessor(aclr);
+        //    aclr.SetSuccessor(clr);
+        //    clr.SetSuccessor(aclr);
+        //    mr.Resolve();
+
+        //    return mr.IsResolved;
+        //}
     }
 }

@@ -1,6 +1,6 @@
 ﻿using Autodesk.Revit.DB;
 using DS.RevitLib.Utils.Collisions.Checkers;
-using DS.RevitLib.Utils.Collisions.Resolve;
+using DS.RevitLib.Utils.Collisions.Models;
 using DS.RevitLib.Utils.Collisions.Search;
 using System;
 using System.Collections.Generic;
@@ -10,25 +10,28 @@ using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.Collisions.Resolvers
 {
-    public abstract class AbstractCollisionResolver
+    public abstract class CollisionResolver<T>
     {
-        protected AbstractCollisionResolver _successor;
+        protected CollisionResolver<T> _successor;
 
         protected readonly ICollisionChecker _collisionChecker;
 
-        protected AbstractCollisionResolver(ICollisionChecker collisionChecker)
+        protected CollisionResolver(ICollision collision, ICollisionChecker collisionChecker)
         {
+            Collision = collision;
             _collisionChecker = collisionChecker;
         }
 
-        public void SetSuccessor(AbstractCollisionResolver successor)
+        public ICollision Collision { get; }
+
+        public T Solution { get; protected set; }
+
+
+        public abstract T Resolve();
+        public void SetSuccessor(CollisionResolver<T> successor)
         {
             _successor = successor;
         }
-
-        public bool IsResolved { get; protected set; }
-
-        public abstract void Resolve();
 
     }
 }

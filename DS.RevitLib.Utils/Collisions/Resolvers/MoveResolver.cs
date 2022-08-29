@@ -7,15 +7,15 @@ using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.Collisions.Resolvers
 {
-    internal class MoveResolver : AbstractCollisionResolver
-    {
-        public MoveResolver(ICollisionChecker collisionChecker) : base(collisionChecker)
-        {
-        }
+    //internal class MoveResolver : CollisionResolver
+    //{
+    //    public MoveResolver(ICollisionChecker collisionChecker) : base(collisionChecker)
+    //    {
+    //    }
 
-        public override void Resolve()
-        {
-            throw new NotImplementedException();
-        }
-    }
+    //    public override void Resolve()
+    //    {
+    //        throw new NotImplementedException();
+    //    }
+    //}
 }
