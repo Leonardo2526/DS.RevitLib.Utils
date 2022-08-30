@@ -22,6 +22,9 @@ namespace DS.RevitLib.Utils.Collisions.Resolvers
         }
 
         public ICollision Collision { get; }
+        public bool IsResolved { get; protected set; }
+
+
 
         public abstract T Resolve();
         public void SetSuccessor(CollisionResolver<T> successor)

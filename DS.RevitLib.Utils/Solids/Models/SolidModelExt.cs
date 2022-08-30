@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.MEP;
+using DS.RevitLib.Utils.Models;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -39,7 +40,6 @@ namespace DS.RevitLib.Utils.Solids.Models
             }
         }
 
-
         /// <summary>
         ///Orth vector with max solid's size.
         /// </summary>
@@ -52,6 +52,8 @@ namespace DS.RevitLib.Utils.Solids.Models
                 return GetMaxSizeOrth(normOrths);
             }
         }
+
+        public TransformModel TransformModel { get; set; } = new TransformModel();
 
         private List<XYZ> GetConnectorPoints()
         {
@@ -74,7 +76,8 @@ namespace DS.RevitLib.Utils.Solids.Models
 
             Solid = tSolid;
             CentralLine = tLine;
-            ConnectorsPoints = tConnectorsPoints;          
+            ConnectorsPoints = tConnectorsPoints;
+
         }      
 
         private XYZ GetMaxSizeOrth(List<XYZ> orths)

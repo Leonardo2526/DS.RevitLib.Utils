@@ -13,35 +13,33 @@ namespace DS.RevitLib.Utils.Solids
 {
     public class SolidPlacer
     {
-        private readonly SolidModelExt _solidModel;
+        private readonly SolidModelExt _operationModel;
         private readonly XYZ _solidCenter;
         private readonly MEPCurve _targerMEPCurve;
         private readonly XYZ _placementPoint;
 
-        public SolidPlacer(SolidModelExt solidModel, MEPCurve targerMEPCurve, XYZ placementPoint)
+        public SolidPlacer(SolidModelExt operationModel, MEPCurve targerMEPCurve, XYZ placementPoint)
         {
-            _solidModel = solidModel;
-            _solidCenter = solidModel.Solid.ComputeCentroid();
+            _operationModel = operationModel;
+            _solidCenter = operationModel.Solid.ComputeCentroid();
             _targerMEPCurve = targerMEPCurve;
             _placementPoint = placementPoint;
         }
 
-        public TransformModel TransformModel { get; private set; } = new TransformModel();
-
         public SolidModelExt Place()
         {
             //Move solidmodel to placement point position
-            XYZ moveVector = (_placementPoint - _solidModel.CentralPoint).RoundVector();
-            TransformModel.MoveVector = moveVector;
+            XYZ moveVector = (_placementPoint - _operationModel.CentralPoint).RoundVector();
+            _operationModel.TransformModel.MoveVector = moveVector;
 
             Transform moveTransform = Transform.CreateTranslation(moveVector);
-            _solidModel.Transform(moveTransform);
+            _operationModel.Transform(moveTransform);
 
             //Align solid
-            var solidAngleAlignment = new SolidAngleAlignment(_solidModel, _targerMEPCurve, TransformModel);
+            var solidAngleAlignment = new SolidAngleAlignment(_operationModel, _targerMEPCurve, _operationModel.TransformModel);
             var model =  solidAngleAlignment.Align();
 
-            TransformModel = solidAngleAlignment.TransformModel;
+            _operationModel.TransformModel = solidAngleAlignment.TransformModel;
 
             return model;
 

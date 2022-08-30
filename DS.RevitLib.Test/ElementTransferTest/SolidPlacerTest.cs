@@ -2,6 +2,7 @@
 using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Selection;
 using DS.RevitLib.Test.Collisions.Resolvers;
+using DS.RevitLib.Test.ElementTransferTest;
 using DS.RevitLib.Utils;
 using DS.RevitLib.Utils.Collisions.Checkers;
 using DS.RevitLib.Utils.Collisions.Models;
@@ -15,6 +16,7 @@ using DS.RevitLib.Utils.Visualisators;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 
 namespace DS.RevitLib.Test
 {
@@ -23,6 +25,10 @@ namespace DS.RevitLib.Test
         readonly UIDocument Uidoc;
         readonly Document Doc;
         readonly UIApplication Uiapp;
+        private readonly double _minFamInstLength = 50.mmToFyt2();
+        private readonly double _minMEPCurveLength = 50.mmToFyt2();
+        private double _minPlacementLength;
+
 
         public SolidPlacerTest(UIDocument uidoc, Document doc, UIApplication uiapp)
         {
@@ -36,52 +42,36 @@ namespace DS.RevitLib.Test
             // Find collisions between elements and a selected element
             Reference reference = Uidoc.Selection.PickObject(ObjectType.Element, "Select operation element");
             Element operationElement = Doc.GetElement(reference);
+            var operationModel = new SolidModelExt(operationElement);
 
             reference = Uidoc.Selection.PickObject(ObjectType.Element, "Select target MEPCurve");
             MEPCurve targetElement = (MEPCurve)Doc.GetElement(reference);
 
-            XYZ point = ElementUtils.GetLocationPoint(targetElement);
+            var (con1, con2) = ConnectorUtils.GetMainConnectors(targetElement);
+            Connector baseConnector = con1;
+            XYZ startPoint = baseConnector is null
+                  ? new PlacementPoint(targetElement, operationModel.Length).GetPoint(PlacementOption.Edge)
+                  : new PlacementPoint(targetElement, operationModel.Length).GetPoint(baseConnector);
 
-            //Solid place
-            var model = new SolidModelExt(operationElement);
-            var solidPlacer = new SolidPlacer(model, targetElement, point);
-            model = solidPlacer.Place();
-            Show(model);
+            double placementLength = operationModel.Length + 2 * _minMEPCurveLength;
+
+            XYZ vector = (con2.Origin - con1.Origin).RoundVector().Normalize();
+            XYZ endPoint = con2.Origin - vector.Multiply(placementLength / 2);
+            TargetMEPCuve targetMEPCuve = new TargetMEPCuve(targetElement, startPoint, endPoint, con1, con2);
+
 
             //Collisions search
-            var checkedObjects1 = new List<SolidModelExt>() { model };
             var checkedObjects2 = GetGeometryElements(Doc);
             var excludedObjects = new List<Element> { targetElement };
-            var colChecker = new SolidCollisionChecker(checkedObjects1, checkedObjects2, excludedObjects);
-            var collisions = colChecker.GetCollisions();
+            var colChecker = new SolidCollisionChecker(checkedObjects2, excludedObjects);
 
-            TransformModel transformModel = solidPlacer.TransformModel;
-
-            if (collisions.Any())
-            {
-                var solidElemCollisions = collisions.Cast<SolidElemCollision>().ToList();
-                SolidElemCollision currentCollision = solidElemCollisions.First();
-                Solid intersectionSolid = currentCollision.GetIntersection();
-
-                //BoundingBoxXYZ box = intersectionSolid.GetBoundingBox();
-                //IVisualisator vs = new BoundingBoxVisualisator(box, Doc);
-                //new Visualisator(vs);
-
-                //resolve collision
-                var resolver = new SolidCollisionResolver(currentCollision, colChecker, transformModel);
-                transformModel = resolver.Resolve();
-
-            }
+            TransformBuilder transformBuilder = new TransformBuilder(targetMEPCuve, operationModel, colChecker);
+            TransformModel transformModel = transformBuilder.Build();
 
             Disconnect(operationElement);
             TransformElement(operationElement, transformModel);
-
-
-
-
-
-
         }
+
         private void Show(SolidModelExt model)
         {
             BoundingBoxXYZ box = model.Solid.GetBoundingBox();

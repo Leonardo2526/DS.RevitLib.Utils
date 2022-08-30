@@ -19,16 +19,12 @@ namespace DS.RevitLib.Test.Collisions.Resolvers
         private readonly RotationModel _rotationModel;
 
         public AroundCenterLineRotateResolver(Collision<SolidModelExt, Element> collision, 
-            ICollisionChecker collisionChecker, TransformModel transformModel) :
+            ICollisionChecker collisionChecker) :
             base(collision, collisionChecker)
         {
-            TransformModel = transformModel;
-            _rotationModel = transformModel.AroundCenterLineRotation;
+            _rotationModel = collision.Object1.TransformModel.AroundCenterLineRotation;
             _operationElement = collision.Object1;
         }
-
-        public TransformModel TransformModel { get; private set; }
-
 
 
         public override TransformModel Resolve()
@@ -37,16 +33,16 @@ namespace DS.RevitLib.Test.Collisions.Resolvers
                 _operationElement.CentralLine.Direction : _rotationModel.Axis.Direction;
 
             double angle = ResolvePosition(axis, _operationElement.CentralPoint);
-            if (angle != 0)
+            if (IsResolved)
             {
-                TransformModel.AroundCenterLineRotation = new RotationModel(_operationElement.CentralLine, angle);
+                _operationElement.TransformModel.AroundCenterLineRotation = new RotationModel(_operationElement.CentralLine, angle);
             }
             else
             {
                 _successor.Resolve();
             }
 
-            return TransformModel;
+            return _operationElement.TransformModel;
         }
 
         public double ResolvePosition(XYZ axis, XYZ point)
@@ -59,6 +55,7 @@ namespace DS.RevitLib.Test.Collisions.Resolvers
 
                 if (!_collisionChecker.GetCollisions().Any())
                 {
+                    IsResolved = true;
                     return angle;
                 }
             }

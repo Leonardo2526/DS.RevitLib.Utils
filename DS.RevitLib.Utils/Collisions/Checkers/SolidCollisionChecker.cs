@@ -11,8 +11,8 @@ namespace DS.RevitLib.Utils.Collisions.Checkers
 {
     public class SolidCollisionChecker : CollisionChecker<SolidModelExt, Element>, ICollisionChecker
     {
-        public SolidCollisionChecker(List<SolidModelExt> checkedObjects1, List<Element> checkedObjects2, List<Element> exludedObjects = null) :
-            base(checkedObjects1, checkedObjects2, exludedObjects)
+        public SolidCollisionChecker(List<Element> checkedObjects2, List<Element> exludedObjects = null) :
+            base(checkedObjects2, exludedObjects)
         {
         }
 
@@ -89,6 +89,13 @@ namespace DS.RevitLib.Utils.Collisions.Checkers
         protected override ICollision BuildCollision(SolidModelExt object1, Element object2)
         {
             return new SolidElemCollision(object1, object2);
+        }
+
+        public override List<ICollision> GetCollisions(List<SolidModelExt> checkedObjects1)
+        {
+            _checkedObjects1 = checkedObjects1;
+            return GetCollisions();
+
         }
     }
 }

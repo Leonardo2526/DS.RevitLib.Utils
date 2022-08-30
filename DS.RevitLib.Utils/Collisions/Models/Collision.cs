@@ -16,5 +16,7 @@ namespace DS.RevitLib.Utils.Collisions.Models
             Object1 = object1;
             Object2 = object2;
         }
+
+        public CollisionStatus Status { get; set; } = CollisionStatus.ToResolve;
     }
 }
