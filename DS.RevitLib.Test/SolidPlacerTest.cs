@@ -1,23 +1,20 @@
 ﻿using Autodesk.Revit.DB;
-using Autodesk.Revit.UI.Selection;
 using Autodesk.Revit.UI;
-using DS.RevitLib.Utils.Solids.Models;
-using DS.RevitLib.Utils.Solids;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Autodesk.Revit.UI.Selection;
+using DS.RevitLib.Test.Collisions.Resolvers;
+using DS.RevitLib.Utils;
+using DS.RevitLib.Utils.Collisions.Checkers;
+using DS.RevitLib.Utils.Collisions.Models;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.MEP;
 using DS.RevitLib.Utils.ModelCurveUtils;
 using DS.RevitLib.Utils.Models;
+using DS.RevitLib.Utils.Solids;
+using DS.RevitLib.Utils.Solids.Models;
 using DS.RevitLib.Utils.Visualisators;
-using DS.RevitLib.Utils.Collisions;
-using DS.RevitLib.Utils;
-using DS.RevitLib.Utils.Collisions.Checkers;
-using DS.RevitLib.Utils.Collisions.Models;
-using DS.RevitLib.Utils.Collisions.Resolvers;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace DS.RevitLib.Test
 {
@@ -52,7 +49,7 @@ namespace DS.RevitLib.Test
             Show(model);
 
             //Collisions search
-            var checkedObjects1 = new List<SolidModelExt>() { model }; 
+            var checkedObjects1 = new List<SolidModelExt>() { model };
             var checkedObjects2 = GetGeometryElements(Doc);
             var excludedObjects = new List<Element> { targetElement };
             var colChecker = new SolidCollisionChecker(checkedObjects1, checkedObjects2, excludedObjects);

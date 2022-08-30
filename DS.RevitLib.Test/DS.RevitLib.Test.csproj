@@ -35,6 +35,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="DS.ClassLib.VarUtils, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\DS.CommonLib.Utils\DS.ClassLib.VarUtils\bin\Debug\DS.ClassLib.VarUtils.dll</HintPath>
+    </Reference>
     <Reference Include="RevitAPI">
       <HintPath>C:\Program Files\Autodesk\Revit 2020\RevitAPI.dll</HintPath>
       <Private>False</Private>
@@ -54,6 +58,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Resolvers\AroundCenterLineRotateResolver.cs" />
+    <Compile Include="Resolvers\MoveResolver.cs" />
+    <Compile Include="Resolvers\RotateCenterLineResolver.cs" />
+    <Compile Include="Resolvers\SolidCollisionResolver.cs" />
     <Compile Include="SolidPlacerTest.cs" />
     <Compile Include="ExternalCommand.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -1,5 +1,6 @@
 ﻿using DS.RevitLib.Utils.Collisions.Checkers;
 using DS.RevitLib.Utils.Collisions.Models;
+using DS.RevitLib.Utils.Collisions.Resolvers;
 using DS.RevitLib.Utils.Models;
 using System;
 using System.Collections.Generic;
@@ -7,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DS.RevitLib.Utils.Collisions.Resolvers
+namespace DS.RevitLib.Test.Collisions.Resolvers
 {
     internal class RotateCenterLineResolver : CollisionResolver<TransformModel>
     {

@@ -74,10 +74,6 @@
     <Compile Include="Collisions\Checkers\CollisionChecker.cs" />
     <Compile Include="Collisions\Checkers\ICollisionChecker.cs" />
     <Compile Include="Collisions\Checkers\SolidCollisionChecker.cs" />
-    <Compile Include="Collisions\Resolvers\SolidCollisionResolver.cs" />
-    <Compile Include="Collisions\Resolvers\AroundCenterLineRotateResolver.cs" />
-    <Compile Include="Collisions\Resolvers\MoveResolver.cs" />
-    <Compile Include="Collisions\Resolvers\RotateCenterLineResolver.cs" />
     <Compile Include="Elements\Alignments\SolidAngleAlignment.cs" />
     <Compile Include="Elements\Alignments\AngleAlignment.cs" />
     <Compile Include="Elements\Alignments\IAlignment.cs" />

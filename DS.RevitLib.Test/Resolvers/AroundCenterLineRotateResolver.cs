@@ -2,6 +2,7 @@
 using DS.ClassLib.VarUtils;
 using DS.RevitLib.Utils.Collisions.Checkers;
 using DS.RevitLib.Utils.Collisions.Models;
+using DS.RevitLib.Utils.Collisions.Resolvers;
 using DS.RevitLib.Utils.Models;
 using DS.RevitLib.Utils.Solids.Models;
 using System;
@@ -10,7 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DS.RevitLib.Utils.Collisions.Resolvers
+namespace DS.RevitLib.Test.Collisions.Resolvers
 {
     internal class AroundCenterLineRotateResolver : CollisionResolver<TransformModel>
     {
@@ -45,7 +46,6 @@ namespace DS.RevitLib.Utils.Collisions.Resolvers
                 _successor.Resolve();
             }
 
-            Solution = TransformModel;
             return TransformModel;
         }
 
