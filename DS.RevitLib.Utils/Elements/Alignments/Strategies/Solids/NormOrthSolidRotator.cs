@@ -78,7 +78,7 @@ namespace DS.RevitLib.Utils.Elements.Alignments.Strategies
             Transform rotateTransform = Transform.
                 CreateRotationAtPoint(_rotationAxis.Direction, _rotationAngle, _operationElement.CentralPoint);
             _operationElement.Transform(rotateTransform);
-            TransformModel.AroundCenterLineRotation = new RotationModel(_rotationAxis, _rotationAngle);
+            TransformModel.MaxOrthLineRotation = new RotationModel(_rotationAxis, _rotationAngle);
 
             return _operationElement;
         }

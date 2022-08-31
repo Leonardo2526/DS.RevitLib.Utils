@@ -15,7 +15,7 @@ using System.Windows.Forms;
 
 namespace DS.RevitLib.Utils.Collisions.Resolvers
 {
-    internal class MoveResolver : CollisionResolver<TransformModel>
+    internal class MoveResolver : CollisionResolver
     {
         private readonly SolidModelExt _operationElement;
         private readonly XYZ _basePoint;
@@ -31,38 +31,32 @@ namespace DS.RevitLib.Utils.Collisions.Resolvers
             _targetMEPCurve = targetMEPCurve;
             CurrnetPoint = _basePoint;
             Solid intersectionSolid = collision.GetIntersection();
-            _collisionLength = 0;
+            _collisionLength = 3;
         }
 
         public XYZ CurrnetPoint { get; private set; }
 
-        public override TransformModel Resolve()
+        public override void Resolve()
         {
-            XYZ point = GetPoint();
-            if (point is null)
+            CurrnetPoint = GetPoint();
+            if (CurrnetPoint is null)
             {
-                return null;
+                return;
             }
 
-            XYZ moveVector = point - _operationElement.CentralPoint;
+            XYZ moveVector = CurrnetPoint - _operationElement.CentralPoint;
             Transform rotateTransform = Transform.CreateTranslation(moveVector);
             _operationElement.Transform(rotateTransform);
+                _operationElement.TransformModel.MoveVector += moveVector;
 
             if (!_collisionChecker.GetCollisions().Any())
             {
                 IsResolved = true;
             }
-
-            if (IsResolved)
-            {
-                _operationElement.TransformModel.MoveVector = moveVector;
-            }
             else
             {
                 _successor.Resolve();
             }
-
-            return _operationElement.TransformModel;
         }
 
         private XYZ GetPoint()

@@ -17,6 +17,10 @@ namespace DS.RevitLib.Utils.Solids.Models
             ConnectorsPoints = GetConnectorPoints();
             Length = ConnectorsPoints.First().DistanceTo(ConnectorsPoints.Last());
             CentralLine = Element.GetCenterLine();
+
+            List<XYZ> normOrths = DS.RevitLib.Utils.Solids.SolidUtils.GetOrthoNormVectors(Solid, CentralLine);
+            var MaxOrth = GetMaxSizeOrth(normOrths);
+            MaxOrthLine = Line.CreateBound(CentralPoint, CentralPoint + MaxOrth);
         }
 
         public Element Element { get; private set; }
@@ -43,15 +47,11 @@ namespace DS.RevitLib.Utils.Solids.Models
         /// <summary>
         ///Orth vector with max solid's size.
         /// </summary>
-        public XYZ MaxOrth
-        {
-            get
-            {
-                List<XYZ> normOrths = DS.RevitLib.Utils.Solids.SolidUtils.
-                GetOrthoNormVectors(Solid, CentralLine);
-                return GetMaxSizeOrth(normOrths);
-            }
-        }
+        //public XYZ MaxOrth { get; private set; }
+
+        public Line MaxOrthLine { get; private set; }
+
+
 
         public TransformModel TransformModel { get; set; } = new TransformModel();
 
@@ -67,6 +67,7 @@ namespace DS.RevitLib.Utils.Solids.Models
             //get transformed objects
             Solid tSolid = Autodesk.Revit.DB.SolidUtils.CreateTransformed(Solid, transform);
             Line tLine = CentralLine.CreateTransformed(transform) as Line;
+            Line tMaxOrthLine = MaxOrthLine.CreateTransformed(transform) as Line;
 
             List<XYZ> tConnectorsPoints = new List<XYZ>();
             foreach (var point in ConnectorsPoints)
@@ -77,8 +78,8 @@ namespace DS.RevitLib.Utils.Solids.Models
             Solid = tSolid;
             CentralLine = tLine;
             ConnectorsPoints = tConnectorsPoints;
-
-        }      
+            MaxOrthLine = tMaxOrthLine;
+        }
 
         private XYZ GetMaxSizeOrth(List<XYZ> orths)
         {

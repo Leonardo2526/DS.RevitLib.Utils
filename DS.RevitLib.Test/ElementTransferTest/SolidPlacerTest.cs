@@ -1,22 +1,19 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Selection;
-using DS.RevitLib.Test.Collisions.Resolvers;
 using DS.RevitLib.Test.ElementTransferTest;
 using DS.RevitLib.Utils;
 using DS.RevitLib.Utils.Collisions.Checkers;
-using DS.RevitLib.Utils.Collisions.Models;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.MEP;
 using DS.RevitLib.Utils.ModelCurveUtils;
 using DS.RevitLib.Utils.Models;
-using DS.RevitLib.Utils.Solids;
 using DS.RevitLib.Utils.Solids.Models;
 using DS.RevitLib.Utils.Visualisators;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography;
+using System.Reflection;
 
 namespace DS.RevitLib.Test
 {
@@ -42,18 +39,19 @@ namespace DS.RevitLib.Test
             // Find collisions between elements and a selected element
             Reference reference = Uidoc.Selection.PickObject(ObjectType.Element, "Select operation element");
             Element operationElement = Doc.GetElement(reference);
+            var sorceModel = new SolidModelExt(operationElement);
             var operationModel = new SolidModelExt(operationElement);
 
             reference = Uidoc.Selection.PickObject(ObjectType.Element, "Select target MEPCurve");
             MEPCurve targetElement = (MEPCurve)Doc.GetElement(reference);
 
+            double placementLength = operationModel.Length + 2 * _minMEPCurveLength;
             var (con1, con2) = ConnectorUtils.GetMainConnectors(targetElement);
             Connector baseConnector = con1;
             XYZ startPoint = baseConnector is null
-                  ? new PlacementPoint(targetElement, operationModel.Length).GetPoint(PlacementOption.Edge)
-                  : new PlacementPoint(targetElement, operationModel.Length).GetPoint(baseConnector);
+                  ? new PlacementPoint(targetElement, placementLength).GetPoint(PlacementOption.Edge)
+                  : new PlacementPoint(targetElement, placementLength).GetPoint(baseConnector);
 
-            double placementLength = operationModel.Length + 2 * _minMEPCurveLength;
 
             XYZ vector = (con2.Origin - con1.Origin).RoundVector().Normalize();
             XYZ endPoint = con2.Origin - vector.Multiply(placementLength / 2);
@@ -66,7 +64,9 @@ namespace DS.RevitLib.Test
             var colChecker = new SolidCollisionChecker(checkedObjects2, excludedObjects);
 
             TransformBuilder transformBuilder = new TransformBuilder(targetMEPCuve, operationModel, colChecker);
-            TransformModel transformModel = transformBuilder.Build();
+            transformBuilder.Build();
+
+            var transformModel = GetTransform(sorceModel, operationModel);
 
             Disconnect(operationElement);
             TransformElement(operationElement, transformModel);
@@ -81,7 +81,7 @@ namespace DS.RevitLib.Test
             var lineCreator = new ModelCurveCreator(Doc);
             lineCreator.Create(model.CentralLine);
 
-            var normLine = Line.CreateBound(model.CentralPoint, model.CentralPoint + model.MaxOrth);
+            var normLine = Line.CreateBound(model.CentralPoint, model.CentralPoint + model.MaxOrthLine.Direction);
             lineCreator.Create(normLine);
         }
 
@@ -173,10 +173,10 @@ namespace DS.RevitLib.Test
                         ElementTransformUtils.RotateElement(Doc, element.Id,
                                 transformModel.CenterLineRotation.Axis, transformModel.CenterLineRotation.Angle);
                     }
-                    if (transformModel.AroundCenterLineRotation.Angle != 0)
+                    if (transformModel.MaxOrthLineRotation.Angle != 0)
                     {
                         ElementTransformUtils.RotateElement(Doc, element.Id,
-                   transformModel.AroundCenterLineRotation.Axis, transformModel.AroundCenterLineRotation.Angle);
+                   transformModel.MaxOrthLineRotation.Axis, transformModel.MaxOrthLineRotation.Angle);
                     }
                 }
 
@@ -190,6 +190,71 @@ namespace DS.RevitLib.Test
             }
 
             return element;
+        }
+
+        private TransformModel GetTransform(SolidModelExt sorceModel, SolidModelExt operationModel)
+        {
+            var transformModel = new TransformModel();
+
+            XYZ moveVector = operationModel.CentralPoint - sorceModel.CentralPoint;
+            if (!moveVector.IsZeroLength())
+            {
+                transformModel.MoveVector = moveVector;
+            }
+
+            //get centerline rotation model
+            XYZ sourceDir = sorceModel.CentralLine.Direction;
+            XYZ opDir = operationModel.CentralLine.Direction;
+            if (!XYZUtils.Collinearity(sourceDir, opDir))
+            {
+                double angle = Math.Round(sourceDir.AngleTo(opDir), 3);
+
+                XYZ axisDir = sourceDir.CrossProduct(opDir).RoundVector().Normalize();
+                Line axis = Line.CreateBound(operationModel.CentralPoint, operationModel.CentralPoint + axisDir);
+
+                if (!XYZUtils.BasisEqualToOrigin(sourceDir, opDir, axis.Direction))
+                {
+                    angle = -angle;
+                }
+                transformModel.CenterLineRotation = new RotationModel(axis, angle);
+            }
+
+            //get maxOrth rotation model
+            sourceDir = sorceModel.MaxOrthLine.Direction;
+            opDir = operationModel.MaxOrthLine.Direction;
+            if (!XYZUtils.Collinearity(sourceDir, opDir))
+            {
+                double angle = Math.Round(opDir.AngleTo(sourceDir), 3);
+
+                Line axis = operationModel.CentralLine;
+                if (!XYZUtils.BasisEqualToOrigin(sourceDir, opDir, axis.Direction))
+                {
+                    angle = -angle;
+                }
+                transformModel.MaxOrthLineRotation = new RotationModel(axis, angle);
+            }
+
+
+
+            return transformModel;
+        }
+
+
+        private RotationModel GetModel(XYZ sourceDir, XYZ opDir, Line axis, SolidModelExt operationModel)
+        {
+            RotationModel? model = null;
+            if (XYZUtils.Collinearity(sourceDir, opDir))
+            {
+                return (RotationModel)model;
+            }
+
+            double angle = Math.Round(sourceDir.AngleTo(opDir), 3);
+            if (!XYZUtils.BasisEqualToOrigin(sourceDir, opDir, axis.Direction))
+            {
+                angle = -angle;
+            }
+            return new RotationModel(axis, angle);
+
         }
     }
 }

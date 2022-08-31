@@ -29,7 +29,7 @@ namespace DS.RevitLib.Test.ElementTransferTest
         {
             //Solid place
             var solidPlacer = new SolidPlacer(_operationModel, _targetMEPCurve._mEPCurve, _targetMEPCurve.StartPlacementPoint);
-            _operationModel = solidPlacer.Place();
+            solidPlacer.Place();
 
             var checkedObjects1 = new List<SolidModelExt>() { _operationModel };
             var collisions = _collisionChecker.GetCollisions(checkedObjects1);

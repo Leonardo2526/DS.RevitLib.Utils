@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace DS.RevitLib.Test.Collisions.Resolvers
 {
-    internal class RotateCenterLineResolver : CollisionResolver<TransformModel>
+    internal class RotateCenterLineResolver : CollisionResolver
     {
         private readonly SolidModelExt _operationElement;
         private readonly RotationModel _rotationModel;
@@ -25,25 +25,26 @@ namespace DS.RevitLib.Test.Collisions.Resolvers
             _operationElement = collision.Object1;
         }
 
-        public override TransformModel Resolve()
+        public override void Resolve()
         {
             XYZ axis = _rotationModel.Axis is null ?
-             _operationElement.MaxOrth : _rotationModel.Axis.Direction;
+             _operationElement.MaxOrthLine.Direction : _rotationModel.Axis.Direction;
 
             Line axisLine = Line.CreateBound(_operationElement.CentralPoint, _operationElement.CentralPoint + axis);
             double angle = 180.DegToRad();
-            _operationElement.TransformModel.CenterLineRotation = new RotationModel(axisLine, angle);
+
+            Transform rotateTransform = Transform.CreateRotationAtPoint(axis, angle, _operationElement.CentralPoint);
+            _operationElement.Transform(rotateTransform);
+                _operationElement.TransformModel.CenterLineRotation = new RotationModel(axisLine, angle);
+
             if (!_collisionChecker.GetCollisions().Any())
             {
                 IsResolved = true;
-                return _operationElement.TransformModel;
             }
             else
             {
                 _successor.Resolve();
             }
-
-            return _operationElement.TransformModel;
         }
     }
 }

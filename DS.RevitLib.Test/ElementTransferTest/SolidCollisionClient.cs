@@ -31,38 +31,33 @@ namespace DS.RevitLib.Test.Collisions.Resolvers
         }
 
 
-        public TransformModel Resolve()
+        public void Resolve()
         {
-            if (_currentPoint is null)
-            {
-                return null;
-            }
-
             var collision = _collisions.First();
-            var transformModel = collision.Object1.TransformModel;
 
-
-            CollisionResolver<TransformModel> resolver = null;
-
-
-            
             var aclr = new AroundCenterLineRotateResolver(collision, _collisionChecker);
             var clr = new RotateCenterLineResolver(collision, _collisionChecker);
 
-
             aclr.SetSuccessor(clr); // if not resolved, rotate center line at 180 degeres.
             clr.SetSuccessor(aclr); // if not resolved, rotate around center line.
-            var model = aclr.Resolve();
+            aclr.Resolve();
 
             if (!aclr.IsResolved)
             {
                 var mr = new MoveResolver(collision, _collisionChecker, _currentPoint, _targetMEPCuve);
+                aclr = new AroundCenterLineRotateResolver(collision, _collisionChecker);
+                clr = new RotateCenterLineResolver(collision, _collisionChecker);
+
+                mr.SetSuccessor(aclr);     
+                aclr.SetSuccessor(clr); // if not resolved, rotate center line at 180 degeres.
+                clr.SetSuccessor(aclr); // if not resolved, rotate around center line.
+                mr.Resolve();
                 _currentPoint = mr.CurrnetPoint;
-                Resolve();
+                if (_currentPoint is null)
+                {
+                    return;
+                }
             }
-
-
-            return model;
         }
     }
 }

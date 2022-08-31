@@ -13,36 +13,41 @@ using System.Threading.Tasks;
 
 namespace DS.RevitLib.Test.Collisions.Resolvers
 {
-    internal class AroundCenterLineRotateResolver : CollisionResolver<TransformModel>
+    internal class AroundCenterLineRotateResolver : CollisionResolver
     {
         private readonly SolidModelExt _operationElement;
         private readonly RotationModel _rotationModel;
+        private int _successorUsageCount = 0;
 
         public AroundCenterLineRotateResolver(Collision<SolidModelExt, Element> collision, 
             ICollisionChecker collisionChecker) :
             base(collision, collisionChecker)
         {
-            _rotationModel = collision.Object1.TransformModel.AroundCenterLineRotation;
+            _rotationModel = collision.Object1.TransformModel.MaxOrthLineRotation;
             _operationElement = collision.Object1;
         }
 
 
-        public override TransformModel Resolve()
+        public override void Resolve()
         {
             XYZ axis = _rotationModel.Axis is null ?
                 _operationElement.CentralLine.Direction : _rotationModel.Axis.Direction;
 
             double angle = ResolvePosition(axis, _operationElement.CentralPoint);
+                _operationElement.TransformModel.MaxOrthLineRotation = new RotationModel(_operationElement.CentralLine, angle);
             if (IsResolved)
             {
-                _operationElement.TransformModel.AroundCenterLineRotation = new RotationModel(_operationElement.CentralLine, angle);
+                return;
             }
             else
             {
+                if (_successorUsageCount >0)
+                {
+                    return;
+                }
+                _successorUsageCount++;
                 _successor.Resolve();
             }
-
-            return _operationElement.TransformModel;
         }
 
         public double ResolvePosition(XYZ axis, XYZ point)

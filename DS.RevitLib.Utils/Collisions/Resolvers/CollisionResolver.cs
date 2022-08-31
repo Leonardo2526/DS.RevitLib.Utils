@@ -9,9 +9,9 @@ using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.Collisions.Resolvers
 {
-    public abstract class CollisionResolver<T>
+    public abstract class CollisionResolver
     {
-        protected CollisionResolver<T> _successor;
+        protected CollisionResolver _successor;
 
         protected readonly ICollisionChecker _collisionChecker;
 
@@ -26,8 +26,8 @@ namespace DS.RevitLib.Utils.Collisions.Resolvers
 
 
 
-        public abstract T Resolve();
-        public void SetSuccessor(CollisionResolver<T> successor)
+        public abstract void Resolve();
+        public void SetSuccessor(CollisionResolver successor)
         {
             _successor = successor;
         }
