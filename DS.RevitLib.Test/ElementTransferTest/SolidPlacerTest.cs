@@ -40,7 +40,7 @@ namespace DS.RevitLib.Test
             Reference reference = Uidoc.Selection.PickObject(ObjectType.Element, "Select operation element");
             Element operationElement = Doc.GetElement(reference);
             var sorceModel = new SolidModelExt(operationElement);
-            var operationModel = new SolidModelExt(operationElement);
+            SolidModelExt operationModel = (SolidModelExt)sorceModel.Clone();
 
             reference = Uidoc.Selection.PickObject(ObjectType.Element, "Select target MEPCurve");
             MEPCurve targetElement = (MEPCurve)Doc.GetElement(reference);

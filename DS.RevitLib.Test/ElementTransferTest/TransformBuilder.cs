@@ -37,7 +37,16 @@ namespace DS.RevitLib.Test.ElementTransferTest
             XYZ opDir = _operationModel.CentralLine.Direction;
             XYZ axisDir = sourceDir.CrossProduct(opDir).RoundVector().Normalize();
             Line axis;
-            if (!axisDir.IsZeroLength())
+            if (axisDir.IsZeroLength())
+            {
+                if (sourceDir.IsAlmostEqualTo(opDir.Negate(),3))
+                {
+                    double angle = Math.Round(sourceDir.AngleTo(opDir), 3);
+                    axis = Line.CreateBound(_operationModel.CentralPoint, _operationModel.CentralPoint + XYZ.BasisZ);
+                    transformModel.CenterLineRotation = new RotationModel(axis, angle);
+                }
+            }
+            else
             {
                 axis = Line.CreateBound(_operationModel.CentralPoint, _operationModel.CentralPoint + axisDir);
                 transformModel.CenterLineRotation = GetRotationModel(sourceDir, opDir, axis);

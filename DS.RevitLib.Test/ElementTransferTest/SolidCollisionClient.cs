@@ -44,7 +44,8 @@ namespace DS.RevitLib.Test.Collisions.Resolvers
 
             if (!aclr.IsResolved)
             {
-                var mr = new MoveResolver(collision, _collisionChecker, _currentPoint, _targetMEPCuve);
+                Solid totalIntersectionSolid = GetIntersectionSolid(_collisions);
+                var mr = new MoveResolver(collision, _collisionChecker, _currentPoint, _targetMEPCuve, totalIntersectionSolid);
                 aclr = new AroundCenterLineRotateResolver(collision, _collisionChecker);
                 clr = new RotateCenterLineResolver(collision, _collisionChecker);
 
@@ -52,12 +53,18 @@ namespace DS.RevitLib.Test.Collisions.Resolvers
                 aclr.SetSuccessor(clr); // if not resolved, rotate center line at 180 degeres.
                 clr.SetSuccessor(aclr); // if not resolved, rotate around center line.
                 mr.Resolve();
-                _currentPoint = mr.CurrnetPoint;
+                _currentPoint = mr.MovePoint;
                 if (_currentPoint is null)
                 {
                     return;
                 }
             }
+        }
+
+        private Solid GetIntersectionSolid(List<SolidElemCollision> collisions)
+        {
+            var solid = collisions.Select(obj => obj.GetIntersection()).ToList();
+            return DS.RevitLib.Utils.Solids.SolidUtils.UniteSolids(solid);
         }
     }
 }

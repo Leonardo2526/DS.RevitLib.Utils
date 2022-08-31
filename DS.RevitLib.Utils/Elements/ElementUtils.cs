@@ -465,7 +465,7 @@ namespace DS.RevitLib.Utils
                 XYZ p1 = intersection.GetCurveSegment(0).GetEndPoint(0);
                 XYZ p2 = intersection.GetCurveSegment(0).GetEndPoint(1);
 
-                (XYZ minPoint, XYZ maxPoint) = PointUtils.GetMinMaxPoints(new List<XYZ> { p1, p2 }, centerLine);
+                (XYZ minPoint, XYZ maxPoint) = XYZUtils.GetMinMaxPoints(new List<XYZ> { p1, p2 }, centerLine);
                 intersectionPoint = maxPoint;
             }
 

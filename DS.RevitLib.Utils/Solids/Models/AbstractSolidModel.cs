@@ -3,7 +3,7 @@
 namespace DS.RevitLib.Utils.Solids.Models
 {
 
-    public class AbstractSolidModel
+    public abstract class AbstractSolidModel
     {
 
         public AbstractSolidModel(Solid solid = null)
@@ -25,6 +25,8 @@ namespace DS.RevitLib.Utils.Solids.Models
         {
             return DS.RevitLib.Utils.Solids.SolidUtils.GetSizeByVector(Solid, orth);
         }
+
+        public abstract AbstractSolidModel Clone();
 
     }
 }

@@ -94,7 +94,7 @@
     <Compile Include="Planes\PlaneUtils.cs" />
     <Compile Include="Models\RotationModel.cs" />
     <Compile Include="Solids\SolidExtension.cs" />
-    <Compile Include="Extensions\XYZExtension.cs" />
+    <Compile Include="Points\XYZExtension.cs" />
     <Compile Include="FamilySymbolUtils.cs" />
     <Compile Include="MEP\Creator\Builders\BuilderByPoints.cs" />
     <Compile Include="MEP\Creator\Builders\MEPSystemComponentBuilder.cs" />
@@ -133,7 +133,6 @@
     <Compile Include="MEP\SystemTree\Relatives\TeeRelation.cs" />
     <Compile Include="MEP\SystemTree\Relatives\Relation.cs" />
     <Compile Include="ModelCurveUtils\ModelCurveCreator.cs" />
-    <Compile Include="Points\PointUtils.cs" />
     <Compile Include="Extensions\CategoryExtension.cs" />
     <Compile Include="GPExtractor\GPCreator.cs" />
     <Compile Include="GPExtractor\GPExtractor.cs" />

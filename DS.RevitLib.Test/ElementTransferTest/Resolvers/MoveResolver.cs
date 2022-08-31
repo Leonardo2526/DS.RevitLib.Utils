@@ -12,6 +12,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using DS.RevitLib.Utils.Lines;
+using DS.RevitLib.Utils.Visualisators;
+using System.Reflection;
+using DS.RevitLib.Utils.ModelCurveUtils;
 
 namespace DS.RevitLib.Utils.Collisions.Resolvers
 {
@@ -20,33 +24,34 @@ namespace DS.RevitLib.Utils.Collisions.Resolvers
         private readonly SolidModelExt _operationElement;
         private readonly XYZ _basePoint;
         private readonly TargetMEPCuve _targetMEPCurve;
-        private readonly double _collisionLength;
+        private readonly Solid _totalIntersectionSolid;
+        private readonly double _minDistBetweenElems = 50.mmToFyt2();
 
-        public MoveResolver(SolidElemCollision collision, ICollisionChecker collisionChecker, 
-            XYZ basePoint, TargetMEPCuve targetMEPCurve) : 
+        public MoveResolver(SolidElemCollision collision, ICollisionChecker collisionChecker,
+            XYZ basePoint, TargetMEPCuve targetMEPCurve, Solid totalIntersectionSolid) :
             base(collision, collisionChecker)
         {
             _operationElement = collision.Object1;
             _basePoint = basePoint;
             _targetMEPCurve = targetMEPCurve;
-            CurrnetPoint = _basePoint;
-            Solid intersectionSolid = collision.GetIntersection();
-            _collisionLength = 3;
+            _totalIntersectionSolid = totalIntersectionSolid;
+            MovePoint = _basePoint;
         }
 
-        public XYZ CurrnetPoint { get; private set; }
+        public XYZ MovePoint { get; private set; }
 
         public override void Resolve()
         {
-            CurrnetPoint = GetPoint();
-            if (CurrnetPoint is null)
+            MovePoint = GetPoint();
+            if (MovePoint is null)
             {
                 return;
             }
 
-            XYZ moveVector = CurrnetPoint - _operationElement.CentralPoint;
+            XYZ moveVector = MovePoint - _operationElement.CentralPoint;
             Transform rotateTransform = Transform.CreateTranslation(moveVector);
             _operationElement.Transform(rotateTransform);
+            IsResolved = true;
 
             if (!_collisionChecker.GetCollisions().Any())
             {
@@ -60,13 +65,68 @@ namespace DS.RevitLib.Utils.Collisions.Resolvers
 
         private XYZ GetPoint()
         {
-            XYZ point = _basePoint + _targetMEPCurve.Direction.Multiply(_collisionLength);
+            Line line = _operationElement.CentralLine.IncreaseLength(10);
+            double moveLength = GetMoveLength(_totalIntersectionSolid, line);
+            XYZ point = _basePoint + _targetMEPCurve.Direction.Multiply(moveLength);
             if (point.IsBetweenPoints(_targetMEPCurve.StartPlacementPoint, _targetMEPCurve.EntPlacementPoint))
             {
                 return point;
             }
 
-                return null;
+            return null;
+        }
+
+
+        private (XYZ point1, XYZ point2) GetEdgeProjectPoints(Solid solid, Line line)
+        {
+            List<XYZ> solidPoints = solid.ExtractPoints();
+            List<XYZ> projSolidPoints = solidPoints.Select(obj => line.Project(obj).XYZPoint).ToList();
+            (XYZ point1, XYZ point2) = XYZUtils.GetMaxDistancePoints(projSolidPoints, out double dist);
+            return (point1, point2);
+        }
+
+        private double GetMoveLength(Solid solid, Line line)
+        {
+            (XYZ point1, XYZ point2) = GetEdgeProjectPoints(solid, line);
+            var totalSolidPoints = new List<XYZ>()
+            {
+                point1, point2
+            };
+            double totalSolidLength = point1.DistanceTo(point2);
+            //Show(solid);
+            //ShowPoints(point1, point2);
+
+            (XYZ opPoint1, XYZ opPoint2) = GetEdgeProjectPoints(_operationElement.Solid, line);
+            XYZ vector = (opPoint2 - opPoint1).RoundVector().Normalize();
+            var opPoints = new List<XYZ>()
+            {
+                opPoint1, opPoint2
+            };
+            if (!vector.IsAlmostEqualTo(_targetMEPCurve.Direction))
+            {
+                opPoints.Reverse();
+            }
+            //ShowPoints(opPoint1, opPoint2);
+
+            XYZ edgePoint = XYZUtils.GetClosestToPoint(opPoints.Last(), totalSolidPoints);
+            double edgeDist = edgePoint.DistanceTo(opPoints.First());
+            //ShowPoints(edgePoint, opPoints.First());
+
+            return edgeDist + _minDistBetweenElems;
+        }
+
+
+        private void Show(Solid solid)
+        {
+            BoundingBoxXYZ box = solid.GetBoundingBox();
+            IVisualisator vs = new BoundingBoxVisualisator(box, _operationElement.Element.Document);
+            new Visualisator(vs);
+        }
+
+        private void ShowPoints(XYZ point1, XYZ point2)
+        {
+            ModelCurveCreator modelCurveCreator = new ModelCurveCreator(_operationElement.Element.Document);
+            modelCurveCreator.Create(point1, point2);
         }
     }
 }

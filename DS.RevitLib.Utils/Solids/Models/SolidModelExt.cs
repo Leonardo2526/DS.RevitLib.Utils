@@ -51,10 +51,6 @@ namespace DS.RevitLib.Utils.Solids.Models
 
         public Line MaxOrthLine { get; private set; }
 
-
-
-        public TransformModel TransformModel { get; set; } = new TransformModel();
-
         private List<XYZ> GetConnectorPoints()
         {
             (Connector con1, Connector con2) = ConnectorUtils.GetMainConnectors(Element);
@@ -98,5 +94,9 @@ namespace DS.RevitLib.Utils.Solids.Models
             return maxVector;
         }
 
+        public override AbstractSolidModel Clone()
+        {
+            return (AbstractSolidModel)this.MemberwiseClone();
+        }
     }
 }
