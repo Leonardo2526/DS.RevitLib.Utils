@@ -42,7 +42,9 @@ namespace DS.RevitLib.Test.ElementTransferTest
                 if (sourceDir.IsAlmostEqualTo(opDir.Negate(),3))
                 {
                     double angle = Math.Round(sourceDir.AngleTo(opDir), 3);
-                    axis = Line.CreateBound(_operationModel.CentralPoint, _operationModel.CentralPoint + XYZ.BasisZ);
+                    axisDir = sourceDir.CrossProduct(_operationModel.CentralPoint - _sorceModel.CentralPoint).RoundVector().Normalize();
+                    axis = Line.CreateBound(_operationModel.CentralPoint, _operationModel.CentralPoint + axisDir);
+                  
                     transformModel.CenterLineRotation = new RotationModel(axis, angle);
                 }
             }
