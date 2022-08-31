@@ -26,23 +26,17 @@ namespace DS.RevitLib.Utils.Solids
             _placementPoint = placementPoint;
         }
 
-        public SolidModelExt Place()
+        public void Place()
         {
             //Move solidmodel to placement point position
             XYZ moveVector = (_placementPoint - _operationModel.CentralPoint).RoundVector();
-            _operationModel.TransformModel.MoveVector = moveVector;
 
             Transform moveTransform = Transform.CreateTranslation(moveVector);
             _operationModel.Transform(moveTransform);
 
             //Align solid
-            var solidAngleAlignment = new SolidAngleAlignment(_operationModel, _targerMEPCurve, _operationModel.TransformModel);
-            var model =  solidAngleAlignment.Align();
-
-            _operationModel.TransformModel = solidAngleAlignment.TransformModel;
-
-            return model;
-
+            var solidAngleAlignment = new SolidAngleAlignment(_operationModel, _targerMEPCurve);
+            solidAngleAlignment.Align();
         }
 
     }

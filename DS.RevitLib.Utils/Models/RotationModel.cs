@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.Models
 {
-    public struct RotationModel
+    public class RotationModel
     {
         public RotationModel(Line axis, double angle)
         {

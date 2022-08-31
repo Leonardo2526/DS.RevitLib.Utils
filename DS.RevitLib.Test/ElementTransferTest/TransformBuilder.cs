@@ -1,8 +1,7 @@
-﻿using DS.RevitLib.Test.Collisions.Resolvers;
-using DS.RevitLib.Utils.Collisions.Checkers;
-using DS.RevitLib.Utils.Collisions.Models;
+﻿using Autodesk.Revit.DB;
+using DS.RevitLib.Utils;
+using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.Models;
-using DS.RevitLib.Utils.Solids;
 using DS.RevitLib.Utils.Solids.Models;
 using System;
 using System.Collections.Generic;
@@ -12,40 +11,71 @@ using System.Threading.Tasks;
 
 namespace DS.RevitLib.Test.ElementTransferTest
 {
-    public class TransformBuilder
+    internal class TransformBuilder
     {
-        private readonly TargetMEPCuve _targetMEPCurve;
-        private SolidModelExt _operationModel;
-        private readonly SolidCollisionChecker _collisionChecker;
+        private readonly SolidModelExt _sorceModel;
+        private readonly SolidModelExt _operationModel;
 
-        public TransformBuilder(TargetMEPCuve targetMEPCuve, SolidModelExt opertationModel, SolidCollisionChecker collisionChecker)
+        public TransformBuilder(SolidModelExt sorceModel, SolidModelExt operationModel)
         {
-            _targetMEPCurve = targetMEPCuve;
-            _operationModel = opertationModel;
-            _collisionChecker = collisionChecker;
+            _sorceModel = sorceModel;
+            _operationModel = operationModel;
         }
 
         public TransformModel Build()
         {
-            //Solid place
-            var solidPlacer = new SolidPlacer(_operationModel, _targetMEPCurve._mEPCurve, _targetMEPCurve.StartPlacementPoint);
-            solidPlacer.Place();
+            var transformModel = new TransformModel();
 
-            var checkedObjects1 = new List<SolidModelExt>() { _operationModel };
-            var collisions = _collisionChecker.GetCollisions(checkedObjects1);
-            if (!collisions.Any())
+            XYZ moveVector = _operationModel.CentralPoint - _sorceModel.CentralPoint;
+            if (!moveVector.IsZeroLength())
             {
-                return _operationModel.TransformModel;
+                transformModel.MoveVector = moveVector;
             }
 
-            var solidElemCollisions = collisions.Cast<SolidElemCollision>().ToList();
-            SolidElemCollision currentCollision = solidElemCollisions.First();
+            //get centerline rotation model
+            XYZ sourceDir = _sorceModel.CentralLine.Direction;
+            XYZ opDir = _operationModel.CentralLine.Direction;
+            XYZ axisDir = sourceDir.CrossProduct(opDir).RoundVector().Normalize();
+            Line axis;
+            if (!axisDir.IsZeroLength())
+            {
+                axis = Line.CreateBound(_operationModel.CentralPoint, _operationModel.CentralPoint + axisDir);
+                transformModel.CenterLineRotation = GetRotationModel(sourceDir, opDir, axis);
+            }
+
+            //get maxOrth rotation model
+            sourceDir = transformModel.CenterLineRotation is null ? _sorceModel.MaxOrthLine.Direction :
+                GetRotated(_sorceModel.MaxOrthLine, transformModel.CenterLineRotation.Axis.Direction, transformModel.CenterLineRotation.Angle).
+                Direction.RoundVector().Normalize();
+            opDir = _operationModel.MaxOrthLine.Direction;
+            axis = _operationModel.CentralLine;
+            transformModel.MaxOrthLineRotation = GetRotationModel(sourceDir, opDir, axis);
 
 
-            var solidCollisionClient = new SolidCollisionClient(solidElemCollisions, _collisionChecker, _targetMEPCurve);
-            solidCollisionClient.Resolve();
+            return transformModel;
+        }
 
-            return _operationModel.TransformModel;
+        private RotationModel GetRotationModel(XYZ sourceDir, XYZ opDir, Line axis)
+        {
+            if (XYZUtils.Collinearity(sourceDir, opDir))
+            {
+                return null;
+            }
+
+            double angle = Math.Round(sourceDir.AngleTo(opDir), 3);
+            if (!XYZUtils.BasisEqualToOrigin(sourceDir, opDir, axis.Direction))
+            {
+                angle = -angle;
+            }
+            return new RotationModel(axis, angle);
+
+        }
+
+
+        private Line GetRotated(Line line, XYZ axis, double angle)
+        {
+            Transform rotateTransform = Transform.CreateRotation(axis, angle);
+            return line.CreateTransformed(rotateTransform) as Line;
         }
     }
 }

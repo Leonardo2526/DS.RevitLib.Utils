@@ -17,16 +17,14 @@ namespace DS.RevitLib.Utils.Elements.Alignments
     public class SolidAngleAlignment :  AbstractCreator, IAlignment<SolidModelExt>
     {
 
-        public SolidAngleAlignment(SolidModelExt operationSolid, Element targetElement, TransformModel transformModel)
+        public SolidAngleAlignment(SolidModelExt operationSolid, Element targetElement)
         {
             OperationElement = operationSolid;
             TargetElement = targetElement;
-            TransformModel = transformModel;
         }
 
         public Element TargetElement { get; private set; }
         public SolidModelExt OperationElement { get; private set; }
-        public TransformModel TransformModel { get; }
 
 
         public SolidModelExt AlignNormOrths()
@@ -36,13 +34,13 @@ namespace DS.RevitLib.Utils.Elements.Alignments
                 return OperationElement;
             }
 
-            var rotator = new NormOrthSolidRotator(OperationElement, TargetElement, TransformModel);
+            var rotator = new NormOrthSolidRotator(OperationElement, TargetElement);
             return rotator.Rotate();
         }
 
         public SolidModelExt AlignCenterLines()
         {
-            var rotator = new CentralLineSolidRotator(OperationElement, TargetElement,TransformModel);
+            var rotator = new CentralLineSolidRotator(OperationElement, TargetElement);
             return rotator.Rotate();
         }
 

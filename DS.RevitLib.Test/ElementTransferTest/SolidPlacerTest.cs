@@ -63,10 +63,10 @@ namespace DS.RevitLib.Test
             var excludedObjects = new List<Element> { targetElement };
             var colChecker = new SolidCollisionChecker(checkedObjects2, excludedObjects);
 
-            TransformBuilder transformBuilder = new TransformBuilder(targetMEPCuve, operationModel, colChecker);
-            transformBuilder.Build();
+            var transformBuilder = new OperationTransformer(targetMEPCuve, operationModel, colChecker);
+            transformBuilder.Create();
 
-            var transformModel = GetTransform(sorceModel, operationModel);
+            var transformModel = new TransformBuilder(sorceModel, operationModel).Build();
 
             Disconnect(operationElement);
             TransformElement(operationElement, transformModel);
@@ -168,12 +168,12 @@ namespace DS.RevitLib.Test
                     {
                         ElementTransformUtils.MoveElement(Doc, element.Id, transformModel.MoveVector);
                     }
-                    if (transformModel.CenterLineRotation.Angle != 0)
+                    if (transformModel.CenterLineRotation is not null && transformModel.CenterLineRotation.Angle != 0)
                     {
                         ElementTransformUtils.RotateElement(Doc, element.Id,
                                 transformModel.CenterLineRotation.Axis, transformModel.CenterLineRotation.Angle);
                     }
-                    if (transformModel.MaxOrthLineRotation.Angle != 0)
+                    if (transformModel.MaxOrthLineRotation is not null && transformModel.MaxOrthLineRotation.Angle != 0)
                     {
                         ElementTransformUtils.RotateElement(Doc, element.Id,
                    transformModel.MaxOrthLineRotation.Axis, transformModel.MaxOrthLineRotation.Angle);
@@ -190,71 +190,6 @@ namespace DS.RevitLib.Test
             }
 
             return element;
-        }
-
-        private TransformModel GetTransform(SolidModelExt sorceModel, SolidModelExt operationModel)
-        {
-            var transformModel = new TransformModel();
-
-            XYZ moveVector = operationModel.CentralPoint - sorceModel.CentralPoint;
-            if (!moveVector.IsZeroLength())
-            {
-                transformModel.MoveVector = moveVector;
-            }
-
-            //get centerline rotation model
-            XYZ sourceDir = sorceModel.CentralLine.Direction;
-            XYZ opDir = operationModel.CentralLine.Direction;
-            if (!XYZUtils.Collinearity(sourceDir, opDir))
-            {
-                double angle = Math.Round(sourceDir.AngleTo(opDir), 3);
-
-                XYZ axisDir = sourceDir.CrossProduct(opDir).RoundVector().Normalize();
-                Line axis = Line.CreateBound(operationModel.CentralPoint, operationModel.CentralPoint + axisDir);
-
-                if (!XYZUtils.BasisEqualToOrigin(sourceDir, opDir, axis.Direction))
-                {
-                    angle = -angle;
-                }
-                transformModel.CenterLineRotation = new RotationModel(axis, angle);
-            }
-
-            //get maxOrth rotation model
-            sourceDir = sorceModel.MaxOrthLine.Direction;
-            opDir = operationModel.MaxOrthLine.Direction;
-            if (!XYZUtils.Collinearity(sourceDir, opDir))
-            {
-                double angle = Math.Round(opDir.AngleTo(sourceDir), 3);
-
-                Line axis = operationModel.CentralLine;
-                if (!XYZUtils.BasisEqualToOrigin(sourceDir, opDir, axis.Direction))
-                {
-                    angle = -angle;
-                }
-                transformModel.MaxOrthLineRotation = new RotationModel(axis, angle);
-            }
-
-
-
-            return transformModel;
-        }
-
-
-        private RotationModel GetModel(XYZ sourceDir, XYZ opDir, Line axis, SolidModelExt operationModel)
-        {
-            RotationModel? model = null;
-            if (XYZUtils.Collinearity(sourceDir, opDir))
-            {
-                return (RotationModel)model;
-            }
-
-            double angle = Math.Round(sourceDir.AngleTo(opDir), 3);
-            if (!XYZUtils.BasisEqualToOrigin(sourceDir, opDir, axis.Direction))
-            {
-                angle = -angle;
-            }
-            return new RotationModel(axis, angle);
-
         }
     }
 }

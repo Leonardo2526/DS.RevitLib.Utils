@@ -74,6 +74,7 @@
     <Compile Include="ElementTransferTest\SolidCollisionClient.cs" />
     <Compile Include="ElementTransferTest\SolidPlacerTest.cs" />
     <Compile Include="ElementTransferTest\TargetMEPCuve.cs" />
+    <Compile Include="ElementTransferTest\OperationTransformer.cs" />
     <Compile Include="ElementTransferTest\TransformBuilder.cs" />
     <Compile Include="ExternalCommand.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

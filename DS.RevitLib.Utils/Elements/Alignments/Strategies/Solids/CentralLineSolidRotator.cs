@@ -20,14 +20,9 @@ namespace DS.RevitLib.Utils.Elements.Alignments.Strategies
     {   
         private XYZ _rotationPoint;
 
-        public CentralLineSolidRotator(SolidModelExt operationElement, Element targetElement, TransformModel transformModel) :
+        public CentralLineSolidRotator(SolidModelExt operationElement, Element targetElement) :
             base(operationElement, targetElement)
-        {
-            TransformModel = transformModel;
-        }
-
-        public TransformModel TransformModel { get; }
-
+        { }
 
         protected override XYZ GetOperationBaseVector()
         {
@@ -60,7 +55,6 @@ namespace DS.RevitLib.Utils.Elements.Alignments.Strategies
 
             Transform rotateTransform = Transform.CreateRotationAtPoint(_rotationAxis.Direction, _rotationAngle, _rotationPoint);
             _operationElement.Transform(rotateTransform);
-            TransformModel.CenterLineRotation = new RotationModel(_rotationAxis, _rotationAngle);
 
             return _operationElement;
         }

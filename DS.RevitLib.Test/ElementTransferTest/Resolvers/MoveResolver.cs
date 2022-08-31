@@ -47,7 +47,6 @@ namespace DS.RevitLib.Utils.Collisions.Resolvers
             XYZ moveVector = CurrnetPoint - _operationElement.CentralPoint;
             Transform rotateTransform = Transform.CreateTranslation(moveVector);
             _operationElement.Transform(rotateTransform);
-                _operationElement.TransformModel.MoveVector += moveVector;
 
             if (!_collisionChecker.GetCollisions().Any())
             {

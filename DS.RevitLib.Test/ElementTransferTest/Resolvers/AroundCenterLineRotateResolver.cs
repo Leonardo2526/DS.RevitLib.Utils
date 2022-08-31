@@ -16,25 +16,21 @@ namespace DS.RevitLib.Test.Collisions.Resolvers
     internal class AroundCenterLineRotateResolver : CollisionResolver
     {
         private readonly SolidModelExt _operationElement;
-        private readonly RotationModel _rotationModel;
         private int _successorUsageCount = 0;
 
         public AroundCenterLineRotateResolver(Collision<SolidModelExt, Element> collision, 
             ICollisionChecker collisionChecker) :
             base(collision, collisionChecker)
         {
-            _rotationModel = collision.Object1.TransformModel.MaxOrthLineRotation;
             _operationElement = collision.Object1;
         }
 
 
         public override void Resolve()
         {
-            XYZ axis = _rotationModel.Axis is null ?
-                _operationElement.CentralLine.Direction : _rotationModel.Axis.Direction;
+            XYZ axis = _operationElement.CentralLine.Direction;
+            ResolvePosition(axis, _operationElement.CentralPoint);
 
-            double angle = ResolvePosition(axis, _operationElement.CentralPoint);
-                _operationElement.TransformModel.MaxOrthLineRotation = new RotationModel(_operationElement.CentralLine, angle);
             if (IsResolved)
             {
                 return;
@@ -50,7 +46,7 @@ namespace DS.RevitLib.Test.Collisions.Resolvers
             }
         }
 
-        public double ResolvePosition(XYZ axis, XYZ point)
+        public void ResolvePosition(XYZ axis, XYZ point)
         {
             for (int i = 0; i < 3; i++)
             {
@@ -61,11 +57,9 @@ namespace DS.RevitLib.Test.Collisions.Resolvers
                 if (!_collisionChecker.GetCollisions().Any())
                 {
                     IsResolved = true;
-                    return angle;
+                    break;
                 }
             }
-
-            return 0;
         }
     }
 }
