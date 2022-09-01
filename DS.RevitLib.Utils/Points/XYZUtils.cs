@@ -78,6 +78,22 @@ namespace DS.RevitLib.Utils
         }
 
         /// <summary>
+        /// Check if two vectors are perpendicular.
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns>Returns true if two vectors are perpendicular.</returns>
+        public static bool Perpendicular(XYZ a, XYZ b)
+        {
+            if (Math.Round(a.DotProduct(b) , 3) ==0)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// Get points from the list with maximum distance between them.
         /// </summary>
         /// <param name="points"></param>
@@ -163,6 +179,26 @@ namespace DS.RevitLib.Utils
             }
 
             return (minPoint, maxPoint);
+        }
+
+        /// <summary>
+        /// Get vectors from list perpendicular to baseVector.
+        /// </summary>
+        /// <param name="baseVector"></param>
+        /// <param name="vectors"></param>
+        /// <returns></returns>
+        public static List<XYZ> GetPerpendicular(XYZ baseVector, List<XYZ> vectors)
+        {
+            var perpend = new List<XYZ>();
+            foreach (var vector in vectors)
+            {
+                if (Perpendicular(vector, baseVector))
+                {
+                    perpend.Add(vector);
+                }
+            }
+
+            return perpend;
         }
 
         #endregion

@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.DB;
+using DS.ClassLib.VarUtils;
 using DS.RevitLib.Utils;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.Models;
@@ -13,80 +14,74 @@ namespace DS.RevitLib.Test.ElementTransferTest
 {
     internal class TransformBuilder
     {
-        private readonly SolidModelExt _sorceModel;
-        private readonly SolidModelExt _operationModel;
+        private readonly Basis _sourceBasis;
+        private readonly Basis _operationBasis;
 
-        public TransformBuilder(SolidModelExt sorceModel, SolidModelExt operationModel)
+        public TransformBuilder(Basis sourceBasis, Basis operationBasis)
         {
-            _sorceModel = sorceModel;
-            _operationModel = operationModel;
+            _sourceBasis = sourceBasis;
+            _operationBasis = operationBasis;
         }
 
         public TransformModel Build()
         {
             var transformModel = new TransformModel();
 
-            XYZ moveVector = _operationModel.CentralPoint - _sorceModel.CentralPoint;
-            if (!moveVector.IsZeroLength())
-            {
-                transformModel.MoveVector = moveVector;
-            }
+            transformModel.MoveVector = _operationBasis.Point - _sourceBasis.Point;
+            Transform transform = Transform.CreateTranslation(transformModel.MoveVector);
 
-            //get centerline rotation model
-            XYZ sourceDir = _sorceModel.CentralLine.Direction;
-            XYZ opDir = _operationModel.CentralLine.Direction;
-            XYZ axisDir = sourceDir.CrossProduct(opDir).RoundVector().Normalize();
-            Line axis;
-            if (axisDir.IsZeroLength())
+            _sourceBasis.Transform(transform);
+
+
+
+            (XYZ basis1, XYZ basis2) = GetNotEqualBasises(_sourceBasis, _operationBasis);
+            while(basis1 is not null)
             {
-                if (sourceDir.IsAlmostEqualTo(opDir.Negate(),3))
+                double angle;
+                XYZ axis = basis1.CrossProduct(basis2);
+                if (axis.IsZeroLength())
                 {
-                    double angle = Math.Round(sourceDir.AngleTo(opDir), 3);
-                    axisDir = sourceDir.CrossProduct(_operationModel.CentralPoint - _sorceModel.CentralPoint).RoundVector().Normalize();
-                    axis = Line.CreateBound(_operationModel.CentralPoint, _operationModel.CentralPoint + axisDir);
-                  
-                    transformModel.CenterLineRotation = new RotationModel(axis, angle);
+                    angle = 180.DegToRad();
+                    axis = XYZUtils.GetPerpendicular(basis1, 
+                        new List<XYZ>() { _sourceBasis.X, _sourceBasis.Y, _sourceBasis.Z }).First();
                 }
-            }
-            else
-            {
-                axis = Line.CreateBound(_operationModel.CentralPoint, _operationModel.CentralPoint + axisDir);
-                transformModel.CenterLineRotation = GetRotationModel(sourceDir, opDir, axis);
-            }
+                else
+                {
+                    angle = basis1.AngleTo(basis2);
+                }
+                transform = Transform.CreateRotation(axis, angle);
+                _sourceBasis.Transform(transform);
 
-            //get maxOrth rotation model
-            sourceDir = transformModel.CenterLineRotation is null ? _sorceModel.MaxOrthLine.Direction :
-                GetRotated(_sorceModel.MaxOrthLine, transformModel.CenterLineRotation.Axis.Direction, transformModel.CenterLineRotation.Angle).
-                Direction.RoundVector().Normalize();
-            opDir = _operationModel.MaxOrthLine.Direction;
-            axis = _operationModel.CentralLine;
-            transformModel.MaxOrthLineRotation = GetRotationModel(sourceDir, opDir, axis);
+                Line axisLine = Line.CreateBound(_sourceBasis.Point, _sourceBasis.Point + axis);
+                transformModel.Rotations.Add(new RotationModel(axisLine, angle));
+                (basis1, basis2) = GetNotEqualBasises(_sourceBasis, _operationBasis);
+            }
 
 
             return transformModel;
         }
 
-        private RotationModel GetRotationModel(XYZ sourceDir, XYZ opDir, Line axis)
+        private (XYZ basis1, XYZ basis2) GetNotEqualBasises(Basis basis1, Basis basis2)
         {
-            if (XYZUtils.Collinearity(sourceDir, opDir))
+            List<XYZ> basises1 = new List<XYZ>()
             {
-                return null;
+                basis1.X, basis1.Y, basis1.Z
+            };
+            List<XYZ> basises2 = new List<XYZ>()
+            {
+                basis2.X, basis2.Y, basis2.Z
+            };
+
+            for (int i = 0; i < 3; i++)
+            {
+                if (!basises1[i].IsAlmostEqualTo(basises2[i]))
+                {
+                    return (basises1[i], basises2[i]);
+                }
             }
 
-            double angle = Math.Round(sourceDir.AngleTo(opDir), 3);
-            if (!XYZUtils.BasisEqualToOrigin(sourceDir, opDir, axis.Direction))
-            {
-                angle = -angle;
-            }
-            return new RotationModel(axis, angle);
+            return (null, null);
+        }     
 
-        }
-
-
-        private Line GetRotated(Line line, XYZ axis, double angle)
-        {
-            Transform rotateTransform = Transform.CreateRotation(axis, angle);
-            return line.CreateTransformed(rotateTransform) as Line;
-        }
     }
 }

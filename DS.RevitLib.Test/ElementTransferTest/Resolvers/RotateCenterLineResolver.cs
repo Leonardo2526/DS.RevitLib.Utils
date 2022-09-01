@@ -25,7 +25,7 @@ namespace DS.RevitLib.Test.Collisions.Resolvers
 
         public override void Resolve()
         {
-            XYZ axis = _operationElement.MaxOrthLine.Direction;
+            XYZ axis = _operationElement.Basis.Y;
             double angle = 180.DegToRad();
 
             Transform rotateTransform = Transform.CreateRotationAtPoint(axis, angle, _operationElement.CentralPoint);

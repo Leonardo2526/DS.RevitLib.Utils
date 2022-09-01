@@ -9,10 +9,5 @@ namespace DS.RevitLib.Utils.Solids.Models
         {
             Solid = solid;
         }
-
-        public override AbstractSolidModel Clone()
-        {
-            throw new System.NotImplementedException();
-        }
     }
 }

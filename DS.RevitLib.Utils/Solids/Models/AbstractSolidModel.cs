@@ -1,8 +1,8 @@
 ﻿using Autodesk.Revit.DB;
+using System;
 
 namespace DS.RevitLib.Utils.Solids.Models
 {
-
     public abstract class AbstractSolidModel
     {
 
@@ -25,8 +25,5 @@ namespace DS.RevitLib.Utils.Solids.Models
         {
             return DS.RevitLib.Utils.Solids.SolidUtils.GetSizeByVector(Solid, orth);
         }
-
-        public abstract AbstractSolidModel Clone();
-
     }
 }

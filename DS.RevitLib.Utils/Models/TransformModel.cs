@@ -12,6 +12,9 @@ namespace DS.RevitLib.Utils.Models
         public XYZ MoveVector { get; set; }
         public RotationModel CenterLineRotation { get; set; }
         public RotationModel MaxOrthLineRotation { get; set; }
+
+        public List<RotationModel> Rotations { get; set; } = new List<RotationModel>();
+
         public XYZ ReferencePointMoveVector { get; set; }
     }
 }

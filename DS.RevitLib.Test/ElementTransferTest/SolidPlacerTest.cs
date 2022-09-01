@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Selection;
+using DS.ClassLib.VarUtils;
 using DS.RevitLib.Test.ElementTransferTest;
 using DS.RevitLib.Utils;
 using DS.RevitLib.Utils.Collisions.Checkers;
@@ -40,7 +41,7 @@ namespace DS.RevitLib.Test
             Reference reference = Uidoc.Selection.PickObject(ObjectType.Element, "Select operation element");
             Element operationElement = Doc.GetElement(reference);
             var sorceModel = new SolidModelExt(operationElement);
-            SolidModelExt operationModel = (SolidModelExt)sorceModel.Clone();
+            SolidModelExt operationModel = sorceModel.Clone();
 
             reference = Uidoc.Selection.PickObject(ObjectType.Element, "Select target MEPCurve");
             MEPCurve targetElement = (MEPCurve)Doc.GetElement(reference);
@@ -66,7 +67,8 @@ namespace DS.RevitLib.Test
             var transformBuilder = new OperationTransformer(targetMEPCuve, operationModel, colChecker);
             transformBuilder.Create();
 
-            var transformModel = new TransformBuilder(sorceModel, operationModel).Build();
+            var transformModel = new TransformBuilder(sorceModel.Basis.Clone(), operationModel.Basis).Build();
+            //var transformModel = new TransformBuilder(sorceModel, operationModel).Build();
 
             Disconnect(operationElement);
             TransformElement(operationElement, transformModel);
@@ -81,7 +83,7 @@ namespace DS.RevitLib.Test
             var lineCreator = new ModelCurveCreator(Doc);
             lineCreator.Create(model.CentralLine);
 
-            var normLine = Line.CreateBound(model.CentralPoint, model.CentralPoint + model.MaxOrthLine.Direction);
+            var normLine = Line.CreateBound(model.CentralPoint, model.CentralPoint + model.Basis.Y);
             lineCreator.Create(normLine);
         }
 
@@ -168,16 +170,21 @@ namespace DS.RevitLib.Test
                     {
                         ElementTransformUtils.MoveElement(Doc, element.Id, transformModel.MoveVector);
                     }
-                    if (transformModel.CenterLineRotation is not null && transformModel.CenterLineRotation.Angle != 0)
+                    foreach (var rot in transformModel.Rotations)
                     {
-                        ElementTransformUtils.RotateElement(Doc, element.Id,
-                                transformModel.CenterLineRotation.Axis, transformModel.CenterLineRotation.Angle);
+                        ElementTransformUtils.RotateElement(Doc, element.Id, rot.Axis, rot.Angle);
                     }
-                    if (transformModel.MaxOrthLineRotation is not null && transformModel.MaxOrthLineRotation.Angle != 0)
-                    {
-                        ElementTransformUtils.RotateElement(Doc, element.Id,
-                   transformModel.MaxOrthLineRotation.Axis, transformModel.MaxOrthLineRotation.Angle);
-                    }
+
+                   // if (transformModel.CenterLineRotation is not null && transformModel.CenterLineRotation.Angle != 0)
+                   // {
+                   //     ElementTransformUtils.RotateElement(Doc, element.Id,
+                   //             transformModel.CenterLineRotation.Axis, transformModel.CenterLineRotation.Angle);
+                   // }
+                   // if (transformModel.MaxOrthLineRotation is not null && transformModel.MaxOrthLineRotation.Angle != 0)
+                   // {
+                   //     ElementTransformUtils.RotateElement(Doc, element.Id,
+                   //transformModel.MaxOrthLineRotation.Axis, transformModel.MaxOrthLineRotation.Angle);
+                   // }
                 }
 
                 catch (Exception e)
