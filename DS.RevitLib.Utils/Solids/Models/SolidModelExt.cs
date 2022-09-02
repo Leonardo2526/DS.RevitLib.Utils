@@ -25,6 +25,7 @@ namespace DS.RevitLib.Utils.Solids.Models
             var basisY = GetMaxSizeOrth(normOrths);
             var basisZ = basisX.CrossProduct(basisY);
             Basis = new Basis(basisX, basisY, basisZ, CentralPoint);
+            Basis.Round();
         }
 
         public Element Element { get; private set; }

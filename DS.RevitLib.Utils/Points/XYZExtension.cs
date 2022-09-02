@@ -111,9 +111,9 @@ namespace DS.RevitLib.Utils.Extensions
         /// <returns></returns>
         public static bool IsBetweenPoints(this XYZ point, XYZ point1, XYZ point2)
         {
-            var v1 = (point - point1).RoundVector();
-            var v2 = (point2 - point).RoundVector();
-            var v21 = (point2 - point1).RoundVector();
+            var v1 = (point - point1).RoundVector().Normalize();
+            var v2 = (point2 - point).RoundVector().Normalize();
+            var v21 = (point2 - point1).RoundVector().Normalize();
 
             if (v1.IsZeroLength() || v2.IsZeroLength() || v21.IsZeroLength())
             {

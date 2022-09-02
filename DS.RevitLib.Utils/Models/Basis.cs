@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.DB;
+using DS.RevitLib.Utils.Extensions;
 
 namespace DS.RevitLib.Utils.Models
 {
@@ -41,6 +42,14 @@ namespace DS.RevitLib.Utils.Models
             return (Basis)this.MemberwiseClone();
         }
 
+
+        public void Round(int i = 3)
+        {
+            X = X.RoundVector(i);
+            Y = Y.RoundVector(i);
+            Z = Z.RoundVector(i);
+            Point = Point.RoundVector(i);
+        }
     }
 
 }

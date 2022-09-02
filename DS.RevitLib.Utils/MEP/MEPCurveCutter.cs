@@ -19,8 +19,9 @@ namespace DS.RevitLib.Utils.MEP
         public MEPCurveCutter(MEPCurve mEPCurve, XYZ point1, XYZ point2)
         {
             this._mEPCurve = mEPCurve;
-            this._point1 = point1;
-            this._point2 = point2;
+
+            this._point1 = point1.RoundVector();
+            this._point2 = point2.RoundVector();
         }
 
         /// <summary>
