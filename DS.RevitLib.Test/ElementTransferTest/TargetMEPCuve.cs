@@ -13,21 +13,21 @@ namespace DS.RevitLib.Test.ElementTransferTest
         public TargetMEPCuve(MEPCurve mEPCurve, XYZ startPlacementPoint, XYZ entPlacementPoint, 
             Connector startConnector, Connector endConnector)
         {
-            _mEPCurve = mEPCurve;
+            MEPCurve = mEPCurve;
             StartPlacementPoint = startPlacementPoint;
             EntPlacementPoint = entPlacementPoint;
             StartConnector = startConnector;
             EndConnector = endConnector;
         }
 
-        public MEPCurve _mEPCurve { get; private set; }
+        public MEPCurve MEPCurve { get; private set; }
         public XYZ StartPlacementPoint { get; private set; }
         public XYZ EntPlacementPoint { get; private set; }
         public Line Line
         {
             get
             {
-               return _mEPCurve.GetCenterLine();
+               return MEPCurve.GetCenterLine();
             }
         }
 

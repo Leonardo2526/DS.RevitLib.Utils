@@ -14,27 +14,27 @@ namespace DS.RevitLib.Test.ElementTransferTest
 {
     internal class TransformBuilder
     {
-        private readonly Basis _sourceBasis;
-        private readonly Basis _operationBasis;
+        private readonly Basis _targetBasis;
+        private Basis _opertationBasis;
 
-        public TransformBuilder(Basis sourceBasis, Basis operationBasis)
+        public TransformBuilder(Basis sourceBasis, Basis targetBasis)
         {
-            _sourceBasis = sourceBasis;
-            _operationBasis = operationBasis;
+            _opertationBasis = sourceBasis.Clone();
+            _targetBasis = targetBasis;
         }
 
         public TransformModel Build()
         {
             var transformModel = new TransformModel();
 
-            transformModel.MoveVector = _operationBasis.Point - _sourceBasis.Point;
+            transformModel.MoveVector = _targetBasis.Point - _opertationBasis.Point;
             Transform transform = Transform.CreateTranslation(transformModel.MoveVector);
+            _opertationBasis.Transform(transform);
+            transformModel.Transforms.Add(transform);
 
-            _sourceBasis.Transform(transform);
 
 
-
-            (XYZ basis1, XYZ basis2) = GetNotEqualBasises(_sourceBasis, _operationBasis);
+            (XYZ basis1, XYZ basis2) = GetNotEqualBasises(_opertationBasis, _targetBasis);
             while(basis1 is not null)
             {
                 double angle;
@@ -43,18 +43,19 @@ namespace DS.RevitLib.Test.ElementTransferTest
                 {
                     angle = 180.DegToRad();
                     axis = XYZUtils.GetPerpendicular(basis1, 
-                        new List<XYZ>() { _sourceBasis.X, _sourceBasis.Y, _sourceBasis.Z }).First();
+                        new List<XYZ>() { _opertationBasis.X, _opertationBasis.Y, _opertationBasis.Z }).First();
                 }
                 else
                 {
                     angle = basis1.AngleTo(basis2);
                 }
-                transform = Transform.CreateRotation(axis, angle);
-                _sourceBasis.Transform(transform);
+                transform = Transform.CreateRotationAtPoint(axis, angle, _opertationBasis.Point);
+                _opertationBasis.Transform(transform);
+                transformModel.Transforms.Add(transform);
 
-                Line axisLine = Line.CreateBound(_sourceBasis.Point, _sourceBasis.Point + axis);
+                Line axisLine = Line.CreateBound(_opertationBasis.Point, _opertationBasis.Point + axis);
                 transformModel.Rotations.Add(new RotationModel(axisLine, angle));
-                (basis1, basis2) = GetNotEqualBasises(_sourceBasis, _operationBasis);
+                (basis1, basis2) = GetNotEqualBasises(_opertationBasis, _targetBasis);
             }
 
 

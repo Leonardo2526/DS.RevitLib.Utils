@@ -2,6 +2,7 @@
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.MEP;
 using DS.RevitLib.Utils.Models;
+using DS.RevitLib.Utils.Visualisators;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -47,7 +48,7 @@ namespace DS.RevitLib.Utils.Solids.Models
             }
         }
 
-        public Basis Basis { get; private set; }
+        public Basis Basis { get; set; }
 
         private List<XYZ> GetConnectorPoints()
         {
@@ -74,6 +75,14 @@ namespace DS.RevitLib.Utils.Solids.Models
             Basis.Transform(transform);
         }
 
+        public void Transform(List<Transform> transforms)
+        {
+            foreach (var transform in transforms)
+            {
+                Transform(transform);
+            }
+        }
+
         private XYZ GetMaxSizeOrth(List<XYZ> orths)
         {
             XYZ maxVector = null;
@@ -97,6 +106,13 @@ namespace DS.RevitLib.Utils.Solids.Models
             model.Basis = new Basis(Basis.X, Basis.Y, Basis.Z, Basis.Point);
             return model;
 
+        }
+
+        public void ShowBoundingBox()
+        {
+            BoundingBoxXYZ box = Solid.GetBoundingBox();
+            IVisualisator vs = new BoundingBoxVisualisator(box, Element.Document);
+            new Visualisator(vs);
         }
     }
 }

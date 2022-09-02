@@ -59,32 +59,18 @@ namespace DS.RevitLib.Test
             TargetMEPCuve targetMEPCuve = new TargetMEPCuve(targetElement, startPoint, endPoint, con1, con2);
 
 
-            //Collisions search
+            //Create collisions checker
             var checkedObjects2 = GetGeometryElements(Doc);
             var excludedObjects = new List<Element> { targetElement };
             var colChecker = new SolidCollisionChecker(checkedObjects2, excludedObjects);
 
-            var transformBuilder = new OperationTransformer(targetMEPCuve, operationModel, colChecker);
-            transformBuilder.Create();
+            var operationModelTransformer = new ModelTransformer(targetMEPCuve, operationModel, colChecker);
+            operationModelTransformer.Create();
 
-            var transformModel = new TransformBuilder(sorceModel.Basis.Clone(), operationModel.Basis).Build();
-            //var transformModel = new TransformBuilder(sorceModel, operationModel).Build();
-
+            var transformModel = new TransformBuilder(sorceModel.Basis, operationModel.Basis).Build();
+            //var result model = operationModel.Transform(transformModel.Transforms);
             Disconnect(operationElement);
             TransformElement(operationElement, transformModel);
-        }
-
-        private void Show(SolidModelExt model)
-        {
-            BoundingBoxXYZ box = model.Solid.GetBoundingBox();
-            IVisualisator vs = new BoundingBoxVisualisator(box, Doc);
-            new Visualisator(vs);
-
-            var lineCreator = new ModelCurveCreator(Doc);
-            lineCreator.Create(model.CentralLine);
-
-            var normLine = Line.CreateBound(model.CentralPoint, model.CentralPoint + model.Basis.Y);
-            lineCreator.Create(normLine);
         }
 
         private List<Element> GetGeometryElements(Document doc, Transform tr = null)
@@ -174,17 +160,6 @@ namespace DS.RevitLib.Test
                     {
                         ElementTransformUtils.RotateElement(Doc, element.Id, rot.Axis, rot.Angle);
                     }
-
-                   // if (transformModel.CenterLineRotation is not null && transformModel.CenterLineRotation.Angle != 0)
-                   // {
-                   //     ElementTransformUtils.RotateElement(Doc, element.Id,
-                   //             transformModel.CenterLineRotation.Axis, transformModel.CenterLineRotation.Angle);
-                   // }
-                   // if (transformModel.MaxOrthLineRotation is not null && transformModel.MaxOrthLineRotation.Angle != 0)
-                   // {
-                   //     ElementTransformUtils.RotateElement(Doc, element.Id,
-                   //transformModel.MaxOrthLineRotation.Axis, transformModel.MaxOrthLineRotation.Angle);
-                   // }
                 }
 
                 catch (Exception e)
