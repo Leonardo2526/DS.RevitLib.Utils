@@ -1,11 +1,9 @@
 ﻿using Autodesk.Revit.DB;
-using Autodesk.Revit.UI;
 using DS.RevitLib.Utils.Elements;
 using DS.RevitLib.Utils.TransactionCommitter;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography;
 
 namespace DS.RevitLib.Utils.MEP.Creator
 {
@@ -215,6 +213,26 @@ namespace DS.RevitLib.Utils.MEP.Creator
                 var keyValuePair = famInstParameters.Where(obj => obj.Key.Id == param.Key.Id).FirstOrDefault();
                 parameterSetter.SetValue(keyValuePair.Key, param.Value);
             }
+        }
+
+
+        public void Insert(FamilyInstance family, MEPCurve mEPCurve, out List<MEPCurve> splittedMEPCurves)
+        {
+            var (famInstCon1, famInstCon2) = ConnectorUtils.GetMainConnectors(family);
+            splittedMEPCurves = mEPCurve.Cut(famInstCon1.Origin, famInstCon2.Origin);
+
+            //connect connectors
+            List<Connector> cons = new List<Connector>();
+            foreach (var curve in splittedMEPCurves)
+            {
+                cons.AddRange(ConnectorUtils.GetConnectors(curve));
+            }
+
+            var selectedCon = ConnectorUtils.GetClosest(famInstCon1, cons);
+            ConnectorUtils.ConnectConnectors(_doc, famInstCon1, selectedCon);
+
+            selectedCon = ConnectorUtils.GetClosest(famInstCon2, cons);
+            ConnectorUtils.ConnectConnectors(_doc, famInstCon2, selectedCon);
         }
 
     }

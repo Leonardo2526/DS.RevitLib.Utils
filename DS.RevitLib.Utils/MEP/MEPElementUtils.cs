@@ -187,7 +187,25 @@ namespace DS.RevitLib.Utils.MEP
             }
         }
 
-       
+        /// <summary>
+        /// Disconnect element from all connected connectors.
+        /// </summary>
+        /// <param name="element"></param>
+        public static void Disconnect(Element element)
+        {
+            var cons = ConnectorUtils.GetConnectors(element);
+            foreach (var con in cons)
+            {
+                var connectors = con.AllRefs;
+                foreach (Connector c in connectors)
+                {
+                    if (con.IsConnectedTo(c))
+                    {
+                        ConnectorUtils.DisconnectConnectors(con, c);
+                    }
+                }
+            }
+        }
 
     }
 }

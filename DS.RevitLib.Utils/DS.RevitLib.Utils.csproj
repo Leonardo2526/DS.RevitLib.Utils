@@ -86,9 +86,11 @@
     <Compile Include="Elements\PartTypesChecker.cs" />
     <Compile Include="CollisionUtils.cs" />
     <Compile Include="Elements\ElementFilterUtils.cs" />
-    <Compile Include="Extensions\ElementExtension.cs" />
+    <Compile Include="Elements\ElementExtension.cs" />
     <Compile Include="Extensions\MEPCurveExtension.cs" />
     <Compile Include="Lines\LineExtensions.cs" />
+    <Compile Include="MEP\MEPCurveExtensions.cs" />
+    <Compile Include="MEP\MEPCurveCutter.cs" />
     <Compile Include="Models\Basis.cs" />
     <Compile Include="ObjectExtension.cs" />
     <Compile Include="Planes\PlaneExtensions.cs" />

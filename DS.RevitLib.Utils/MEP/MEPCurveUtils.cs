@@ -424,5 +424,28 @@ namespace DS.RevitLib.Utils.MEP
                 return freeCons;
             };
         }
+
+        
+        public static MEPCurve GetMaxLengthMEPCurve(List<MEPCurve> mEPCurves)
+        {
+            double maxLength = 0;
+            MEPCurve maxLengthMEPCurve = mEPCurves.First();
+            if (mEPCurves.Count == 1)
+            {
+                return maxLengthMEPCurve;
+            }
+
+            for (int i = 1; i < mEPCurves.Count; i++)
+            {
+                double l = MEPCurveUtils.GetLength(mEPCurves[i]);
+                if (l > maxLength)
+                {
+                    maxLength = l;
+                    maxLengthMEPCurve = mEPCurves[i];
+                }
+
+            }
+            return maxLengthMEPCurve;
+        }
     }
 }
