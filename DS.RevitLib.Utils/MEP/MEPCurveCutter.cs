@@ -65,8 +65,8 @@ namespace DS.RevitLib.Utils.MEP
             var toDelete = orderedElements.Where(obj => obj.Id != orderedElements.First().Id && obj.Id != orderedElements.Last().Id).ToList();
             foreach (var del in toDelete)
             {
-                ElementUtils.DeleteElement(_mEPCurve.Document, del);
                 orderedElements.Remove(del);
+                ElementUtils.DeleteElement(_mEPCurve.Document, del);
             }
 
             return orderedElements.Cast<MEPCurve>().ToList();
@@ -81,14 +81,13 @@ namespace DS.RevitLib.Utils.MEP
         /// <returns></returns>
         private MEPCurve GetMEPCurveByPoint(MEPCurve mEPCurve1, MEPCurve mEPCurve2, XYZ point)
         {
-            var line1 = MEPCurveUtils.GetLine(mEPCurve1);
-            var p1 = line1.Project(point);
+            var (con1, con2) = ConnectorUtils.GetMainConnectors(mEPCurve1);
 
-            if (p1.Distance == 0)
+            if (point.IsBetweenPoints(con1.Origin, con2.Origin))
             {
                 return mEPCurve1;
-            }
 
+            }
             return mEPCurve2;
         }
     }
