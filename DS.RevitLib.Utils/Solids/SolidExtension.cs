@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.DB;
+using DS.RevitLib.Utils.Visualisators;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -39,6 +40,32 @@ namespace DS.RevitLib.Utils.Extensions
                 result.Add(x.GetEndPoint(1));
             });
             return result;
+        }
+
+        /// <summary>
+        /// Get two edge points in project to line. 
+        /// </summary>
+        /// <param name="solid"></param>
+        /// <param name="line"></param>
+        /// <returns>Get two project points with max distance between them.</returns>
+        public static (XYZ point1, XYZ point2) GetEdgeProjectPoints(this Solid solid, Line line)
+        {
+            List<XYZ> solidPoints = solid.ExtractPoints();
+            List<XYZ> projSolidPoints = solidPoints.Select(obj => line.Project(obj).XYZPoint).ToList();
+            (XYZ point1, XYZ point2) = XYZUtils.GetMaxDistancePoints(projSolidPoints, out double dist);
+            return (point1, point2);
+        }
+
+        /// <summary>
+        /// Show bounding box of solid.
+        /// </summary>
+        /// <param name="solid"></param>
+        /// <param name="doc"></param>
+        public static void ShowBB(this Solid solid, Document doc)
+        {
+            BoundingBoxXYZ box = solid.GetBoundingBox();
+            IVisualisator vs = new BoundingBoxVisualisator(box, doc);
+            new Visualisator(vs);
         }
 
     }
