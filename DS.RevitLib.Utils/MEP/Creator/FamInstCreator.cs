@@ -1,5 +1,5 @@
 ﻿using Autodesk.Revit.DB;
-using Autodesk.Revit.UI;
+using DS.RevitLib.Utils.Elements;
 using DS.RevitLib.Utils.TransactionCommitter;
 using System;
 using System.Collections.Generic;
@@ -146,9 +146,17 @@ namespace DS.RevitLib.Utils.MEP.Creator
             return familyInstance;
         }
 
-
-        public FamilyInstance CreateFamilyInstane(FamilySymbol familySymbol, MEPCurve baseMEPCurve)
+        /// <summary>
+        /// Create family instance.
+        /// </summary>
+        /// <param name="familySymbol"></param>
+        /// <param name="point"></param>
+        /// <param name="baseMEPCurve"></param>
+        /// <returns>Returns created family instance.</returns>
+        public FamilyInstance CreateFamilyInstane(FamilySymbol familySymbol, XYZ point, Level level = null, Element baseElement = null,
+            CopyParameterOption copyParameterOption = CopyParameterOption.All)
         {
+            level ??= new FilteredElementCollector(_doc).OfClass(typeof(Level)).Cast<Level>().FirstOrDefault();
             FamilyInstance familyInstance = null;
             using (Transaction transNew = new Transaction(_doc, _transactionPrefix + "CreateFamilyInstane"))
             {
@@ -156,8 +164,25 @@ namespace DS.RevitLib.Utils.MEP.Creator
                 {
                     transNew.Start();
 
-                    familyInstance = _doc.Create.NewFamilyInstance(new XYZ(0,0,0), familySymbol, baseMEPCurve.ReferenceLevel, 
+                    familyInstance = _doc.Create.NewFamilyInstance(point, familySymbol, level,
                         Autodesk.Revit.DB.Structure.StructuralType.NonStructural);
+
+                    //baseElement option
+                    if (baseElement is not null)
+                    {
+                        Insulation.Create(baseElement, familyInstance);
+                        switch (copyParameterOption)
+                        {
+                            case CopyParameterOption.All:
+                                ElementParameter.CopyAllParameters(baseElement, familyInstance);
+                                break;
+                            case CopyParameterOption.Sizes:
+                                ElementParameter.CopySizeParameters(baseElement, familyInstance);
+                                break;
+                            default:
+                                break;
+                        }
+                    }
                 }
 
                 catch (Exception e)
@@ -167,7 +192,47 @@ namespace DS.RevitLib.Utils.MEP.Creator
                 ErrorMessages += _committer?.ErrorMessages;
             }
 
+            //elevation correction
+            var lp = ElementUtils.GetLocationPoint(familyInstance);
+            if (Math.Round(lp.Z, 3) != Math.Round(point.Z, 3))
+            {
+                ElementsMover.MoveElement(familyInstance, point - lp);
+            }
+
             return familyInstance;
+        }
+
+        public void SetSizeParameters(FamilyInstance famInst, Dictionary<Parameter, double> parameters)
+        {
+            var famInstParameters = MEPElementUtils.GetSizeParameters(famInst);
+
+            var parameterSetter = new ParameterSetter(famInst, _committer, _transactionPrefix);
+
+            foreach (var param in parameters)
+            {
+                var keyValuePair = famInstParameters.Where(obj => obj.Key.Id == param.Key.Id).FirstOrDefault();
+                parameterSetter.SetValue(keyValuePair.Key, param.Value);
+            }
+        }
+
+
+        public void Insert(FamilyInstance family, MEPCurve mEPCurve, out List<MEPCurve> splittedMEPCurves)
+        {
+            var (famInstCon1, famInstCon2) = ConnectorUtils.GetMainConnectors(family);
+            splittedMEPCurves = mEPCurve.Cut(famInstCon1.Origin, famInstCon2.Origin);
+
+            //connect connectors
+            List<Connector> cons = new List<Connector>();
+            foreach (var curve in splittedMEPCurves)
+            {
+                cons.AddRange(ConnectorUtils.GetConnectors(curve));
+            }
+
+            var selectedCon = ConnectorUtils.GetClosest(famInstCon1, cons);
+            ConnectorUtils.ConnectConnectors(_doc, famInstCon1, selectedCon);
+
+            selectedCon = ConnectorUtils.GetClosest(famInstCon2, cons);
+            ConnectorUtils.ConnectConnectors(_doc, famInstCon2, selectedCon);
         }
 
     }

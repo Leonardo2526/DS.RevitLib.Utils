@@ -1,10 +1,6 @@
 ﻿using Autodesk.Revit.DB;
-using DS.RevitLib.Utils.MEP.Creator;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.MEP.SystemTree
 {
@@ -12,97 +8,93 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
     {
         public Composite Composite { get; set; }
 
-        public MEPSystemModel(Composite rootComponent)
+        public MEPSystemModel(Composite composite)
         {
-            Composite = rootComponent;
-            //GetMEPSystemComponents(Composite);
+            Composite = composite;
 
         }
 
-        public List<MEPSystemComponent> MEPSystemComponents { get; private set; } = new List<MEPSystemComponent>();
-
-        public List<MEPSystemComponent> ParentComponents
+        public MEPSystemComponent Root
         {
             get
             {
-                return GetParentComponents(Composite);
+                return Composite.Root as MEPSystemComponent;
             }
         }
 
-        public List<Element> ParentElements
+        public List<MEPSystemComponent> AllComponents
         {
             get
             {
-                return ParentComponents.SelectMany(x => x.Elements).ToList();
+                return GetAllComponents();
             }
         }
+
+        public List<MEPSystemComponent> Parents
+        {
+            get
+            {
+                return GetParents();
+            }
+        }
+
+        public List<MEPSystemComponent> Childs
+        {
+            get
+            {
+                return GetChildren();
+            }
+        }
+
         public List<Element> AllElements
         {
             get
             {
-                return MEPSystemComponents.SelectMany(x => x.Elements).ToList();
+                return AllComponents.SelectMany(x => x.Elements).ToList();
             }
         }
 
 
-        private List<MEPSystemComponent> GetParentComponents(Composite composite)
+        #region Methods
+
+        private List<MEPSystemComponent> GetParents()
         {
             List<MEPSystemComponent> list = new List<MEPSystemComponent>();
 
-            foreach (Composite child in composite.Children)
+            foreach (Component item in Composite.Parents)
             {
-                MEPSystemComponent mep = child.Root as MEPSystemComponent;
+                var mep = item as MEPSystemComponent;
                 list.Add(mep);
             }
 
             return list;
         }
 
-        //private void GetMEPSystemComponents(Component composite)
-        //{
-
-        //    if (composite.Root is not null)
-        //    {
-        //        MEPSystemComponent mep = composite.Root as MEPSystemComponent;
-        //        MEPSystemComponents.Add(mep);
-        //    }
-
-        //    foreach (Component child in composite.Children)
-        //    {
-        //        GetMEPSystemComponents(child);
-        //    }
-
-        //}
-
-
-        public List<Element> GetElements(Composite composite)
+        private List<MEPSystemComponent> GetChildren()
         {
-            List<Element> list = new List<Element>();
+            List<MEPSystemComponent> list = new List<MEPSystemComponent>();
 
-            MEPSystemComponent rootMEPComp = composite.Root as MEPSystemComponent;
-            list.AddRange(rootMEPComp.Elements);
-
-            List<MEPSystemComponent> childrenMEPComp = composite.Children.Select(x => x as MEPSystemComponent).ToList();
-            List<Element> children = childrenMEPComp.SelectMany(x => x.Elements).ToList();
-            list.AddRange(children);
-
-
-            List<MEPSystemComponent> parentsMEPComp = composite.Parents.Select(x => x as MEPSystemComponent).ToList();
-            List<Element> parents = parentsMEPComp.SelectMany(x => x.Elements).ToList();
-            list.AddRange(parents);
+            foreach (Component item in Composite.Children)
+            {
+                var mep = item as MEPSystemComponent;
+                list.Add(mep);
+            }
 
             return list;
         }
 
-        public List<Element> GetRootElements(Composite composite)
+        private List<MEPSystemComponent> GetAllComponents()
         {
-            List<Element> list = new List<Element>();
+            var mEPSystemComponents = new List<MEPSystemComponent>();
+            mEPSystemComponents.AddRange(Parents);
+            mEPSystemComponents.AddRange(Childs);
+            mEPSystemComponents.Add(Root);
 
-            MEPSystemComponent rootMEPComp = composite.Root as MEPSystemComponent;
-            list.AddRange(rootMEPComp.Elements);
-
-            return list;
+            return mEPSystemComponents;
         }
+
+        #endregion
+
 
     }
 }

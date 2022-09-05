@@ -1,19 +1,21 @@
 ﻿using Autodesk.Revit.DB;
 using DS.RevitLib.Utils.Extensions;
+using DS.RevitLib.Utils.MEP;
+using DS.RevitLib.Utils.MEP.Creator;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace DS.RevitLib.Utils.MEP
+namespace DS.RevitLib.Utils.Elements
 {
-    public static class MEPCurveParameter
+    public static class ElementParameter
     {
         /// <summary>
-        /// Copy baseMEPCurve parameters to targetMEPCurve
+        /// Copy baseElement parameters to targetElement
         /// </summary>
-        /// <param name="baseMEPCurve"></param>
-        /// <param name="targetMEPCurve"></param>
-        public static void Copy(MEPCurve baseMEPCurve, MEPCurve targetMEPCurve)
+        /// <param name="baseElement"></param>
+        /// <param name="targetElement"></param>
+        public static void CopyAllParameters(Element baseElement, Element targetElement)
         {
             var exceptions = new List<BuiltInParameter>()
             {
@@ -25,12 +27,12 @@ namespace DS.RevitLib.Utils.MEP
                 BuiltInParameter.RBS_DUCT_TOP_ELEVATION,
                 BuiltInParameter.RBS_DUCT_BOTTOM_ELEVATION,
             };
-           
-            foreach (Parameter oldp in baseMEPCurve.Parameters)
+
+            foreach (Parameter oldp in baseElement.Parameters)
             {
                 if (oldp.Definition is InternalDefinition id && exceptions.Contains(id.BuiltInParameter)) continue;
 
-                var p = targetMEPCurve.get_Parameter(oldp.Definition);
+                var p = targetElement.get_Parameter(oldp.Definition);
 
                 if (p is null) continue;
 
@@ -59,6 +61,21 @@ namespace DS.RevitLib.Utils.MEP
             }
         }
 
+        /// <summary>
+        /// Copy baseElement size parameters to targetElement
+        /// </summary>
+        /// <param name="baseElement"></param>
+        /// <param name="targetElement"></param>
+        public static void CopySizeParameters(Element baseElement, Element targetElement)
+        {
+            var baseParameters = MEPElementUtils.GetSizeParameters(baseElement);
+            var targetParameters = MEPElementUtils.GetSizeParameters(targetElement);
 
+            foreach (var targetParam in targetParameters)
+            {
+                var keyValuePair = baseParameters.Where(obj => obj.Key.Id == targetParam.Key.Id).FirstOrDefault();
+                targetParam.Key.Set(keyValuePair.Value);
+            }           
+        }
     }
 }

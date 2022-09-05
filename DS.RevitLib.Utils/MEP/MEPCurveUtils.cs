@@ -84,51 +84,6 @@ namespace DS.RevitLib.Utils.MEP
         }
 
         /// <summary>
-        /// Get norm vectors of MEPCurve from it's faces.
-        /// </summary>
-        /// <param name="mEPCurve"></param>
-        /// <returns>Returns norm vectors of MEPCurve.</returns>
-        public static List<XYZ> GetNormVectors(MEPCurve mEPCurve)
-        {
-            var vectors = new List<XYZ>();
-            var faces = ElementUtils.GetFaces(mEPCurve);
-
-            foreach (var faceArray in faces)
-            {
-                foreach (Face face in faceArray)
-                {
-                    XYZ vector = face.ComputeNormal(UV.Zero);
-                    vectors.Add(vector);
-                }
-            }
-
-            return vectors;
-        }
-
-        /// <summary>
-        /// Get norm otho vectors of MEPCurve from it's faces in perpendicular plane to MEPCurve's direction.
-        /// </summary>
-        /// <param name="mEPCurve"></param>
-        /// <returns>Returns norm ortho vectors of MEPCurve.</returns>
-        public static List<XYZ> GetOrthoNormVectors(MEPCurve mEPCurve)
-        {
-            XYZ dir = GetDirection(mEPCurve);
-
-            var orthoVectors = new List<XYZ>();
-            var vectors = GetNormVectors(mEPCurve);
-
-            foreach (var vector in vectors)
-            {
-                if (!XYZUtils.Collinearity(vector, dir))
-                {
-                    orthoVectors.Add(vector);
-                }
-            }
-
-            return orthoVectors;
-        }
-
-        /// <summary>
         /// Get plane by two MEPCurves
         /// </summary>
         /// <param name="mEPCurve1"></param>
@@ -239,7 +194,7 @@ namespace DS.RevitLib.Utils.MEP
                 XYZ p1 = intersection.GetCurveSegment(0).GetEndPoint(0);
                 XYZ p2 = intersection.GetCurveSegment(0).GetEndPoint(1);
 
-                (XYZ minPoint, XYZ maxPoint) = PointUtils.GetMinMaxPoints(new List<XYZ> { p1, p2 }, mEPCurveline);
+                (XYZ minPoint, XYZ maxPoint) = XYZUtils.GetMinMaxPoints(new List<XYZ> { p1, p2 }, mEPCurveline);
                 intersectionPoint = maxPoint;
             }
 
@@ -258,7 +213,7 @@ namespace DS.RevitLib.Utils.MEP
             XYZ baseDir = GetDirection(baseMEPCurve);
             XYZ dir = GetDirection(mEPCurve);
 
-            List<XYZ> baseNorms = GetOrthoNormVectors(baseMEPCurve);
+            List<XYZ> baseNorms = ElementUtils.GetOrthoNormVectors(baseMEPCurve);
 
             XYZ measureVector = GetMesureVector(baseNorms, dir, baseDir);
 
@@ -320,7 +275,7 @@ namespace DS.RevitLib.Utils.MEP
         /// </summary>
         /// <param name="mEPCurve"></param>
         /// <returns>Returns actual sized in recrangle case and diameter in round case.</returns>
-        public static (double, double) GetWidthHeight(MEPCurve mEPCurve)
+        public static (double width, double heigth) GetWidthHeight(MEPCurve mEPCurve)
         {
             double width = 0;
             double heigth = 0;
@@ -444,9 +399,11 @@ namespace DS.RevitLib.Utils.MEP
         public static List<Connector> GetNotSpudConnectors(MEPCurve mEPCurve)
         {
             var connectedElems = ConnectorUtils.GetConnectedElements(mEPCurve);
+
             if (connectedElems is null || !connectedElems.Any())
             {
-                return null;
+                var connectors = ConnectorUtils.GetConnectors( mEPCurve);
+                return connectors;
             }
 
             var notSpudElements = connectedElems.ExludeSpudes();            
@@ -466,6 +423,29 @@ namespace DS.RevitLib.Utils.MEP
                 var freeCons = ConnectorUtils.GetFreeConnector(mEPCurve);
                 return freeCons;
             };
+        }
+
+        
+        public static MEPCurve GetMaxLengthMEPCurve(List<MEPCurve> mEPCurves)
+        {
+            double maxLength = 0;
+            MEPCurve maxLengthMEPCurve = mEPCurves.First();
+            if (mEPCurves.Count == 1)
+            {
+                return maxLengthMEPCurve;
+            }
+
+            for (int i = 1; i < mEPCurves.Count; i++)
+            {
+                double l = MEPCurveUtils.GetLength(mEPCurves[i]);
+                if (l > maxLength)
+                {
+                    maxLength = l;
+                    maxLengthMEPCurve = mEPCurves[i];
+                }
+
+            }
+            return maxLengthMEPCurve;
         }
     }
 }

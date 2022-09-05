@@ -2,6 +2,7 @@
 using Autodesk.Revit.DB.Mechanical;
 using Autodesk.Revit.DB.Plumbing;
 using Autodesk.Revit.UI;
+using DS.RevitLib.Utils.Elements;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.TransactionCommitter;
 using System;
@@ -101,7 +102,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
                     }
                
                     Insulation.Create(baseMEPCurve, mEPCurve);
-                    MEPCurveParameter.Copy(baseMEPCurve, mEPCurve);
+                    ElementParameter.CopyAllParameters(baseMEPCurve, mEPCurve);
                 }
                 catch (Exception e)
                 { ErrorMessages += e + "\n"; }
@@ -136,7 +137,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
                     }
 
                     Insulation.Create(BaseMEPCurve, mEPCurve);
-                    MEPCurveParameter.Copy(BaseMEPCurve, mEPCurve);
+                    ElementParameter.CopyAllParameters(BaseMEPCurve, mEPCurve);
                 }
 
                 catch (Exception e)
@@ -183,23 +184,19 @@ namespace DS.RevitLib.Utils.MEP.Creator
         }
 
         /// <summary>
-        /// Rotate MEPCurve by angle in rads.
+        /// Rotate MEPCurve around it's axe by angle in rads.
         /// </summary>
         /// <param name="mEPCurve"></param>
         /// <param name="angle"></param>
         /// <returns>Return rotated MEPCurve.</returns>
-        public MEPCurve Rotate(double angle)
+        public MEPCurve Rotate(Line axis, double angle)
         {
             using (Transaction transNew = new Transaction(Doc, TransactionPrefix + "RotateMEPCurve"))
             {
                 try
                 {
                     transNew.Start();
-
-                    var locCurve = BaseMEPCurve.Location as LocationCurve;
-                    var line = locCurve.Curve as Line;
-
-                    BaseMEPCurve.Location.Rotate(line, angle);
+                    BaseMEPCurve.Location.Rotate(axis, angle);
                 }
                 catch (Exception e)
                 { ErrorMessages += e + "\n"; }

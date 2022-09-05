@@ -1,5 +1,6 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
+using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.MEP;
 using System;
 using System.Collections.Generic;
@@ -101,7 +102,7 @@ namespace DS.RevitLib.Utils.Solids
                     }
                 }
                 catch (Exception ex)
-                { 
+                {
                     //TaskDialog.Show("Error", "Failed to find intersection between solids. \n" + ex.Message); 
                 }
             }
@@ -129,7 +130,7 @@ namespace DS.RevitLib.Utils.Solids
                 XYZ p1 = intersection.GetCurveSegment(0).GetEndPoint(0);
                 XYZ p2 = intersection.GetCurveSegment(0).GetEndPoint(1);
 
-                return p1.DistanceTo(p2);             
+                return p1.DistanceTo(p2);
             }
 
             return 0;
@@ -159,7 +160,7 @@ namespace DS.RevitLib.Utils.Solids
                 return (Math.Max(p1_Center, p2_Center), Math.Min(p1_Center, p2_Center));
             }
 
-            return (0,0);
+            return (0, 0);
         }
 
         /// <summary>
@@ -192,6 +193,46 @@ namespace DS.RevitLib.Utils.Solids
             Solid resusltSolid = UniteSolids(solidIntersections, 1);
 
             return resusltSolid;
+        }
+
+        /// <summary>
+        /// Get norm vectors of solid from it's faces.
+        /// </summary>
+        /// <param name="solid"></param>
+        /// <returns>Returns norm vectors of element.</returns>
+        public static List<XYZ> GetOrhts(Solid solid)
+        {
+            var vectors = new List<XYZ>();
+            var faces = solid.Faces;
+
+            foreach (Face face in faces)
+            {
+                XYZ vector = face.ComputeNormal(UV.Zero);
+                vectors.Add(vector);
+            }
+
+            return vectors;
+        }
+
+        /// <summary>
+        /// Get norm otho vectors of solid from it's faces in perpendicular plane to solid's centralLine.
+        /// </summary>
+        /// <param name="solid"></param>
+        /// <returns>Returns norm ortho vectors of element.</returns>
+        public static List<XYZ> GetOrthoNormVectors(Solid solid, Line centralLine)
+        {
+            var orthoVectors = new List<XYZ>();
+            var vectors = GetOrhts(solid);
+
+            foreach (var vector in vectors)
+            {
+                if (!XYZUtils.Collinearity(vector, centralLine.Direction))
+                {
+                    orthoVectors.Add(vector);
+                }
+            }
+
+            return orthoVectors;
         }
     }
 }

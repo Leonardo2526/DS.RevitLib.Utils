@@ -7,13 +7,12 @@ using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils
 {
-    public static class Class1
+    public static class ObjectExtension
     {
-        public static bool EqualsV()
+        public static Document GetDocument(this object obj)
         {
-            XYZ vector1 = new XYZ(1, 0, 0);
-            XYZ vector2 = new XYZ(1, 0, 0);
-            return vector1.IsAlmostEqualTo(vector2);
+            var element = obj as Element;
+            return element?.Document;
         }
     }
 }

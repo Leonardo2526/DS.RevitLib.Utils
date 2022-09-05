@@ -1,5 +1,6 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
+using DS.RevitLib.Utils.Planes;
 using System;
 
 namespace DS.RevitLib.Utils.ModelCurveUtils
@@ -24,7 +25,7 @@ namespace DS.RevitLib.Utils.ModelCurveUtils
         public string ErrorMessages { get; private set; }
 
 
-        public ModelCurve CreateByPoints(XYZ startPoint, XYZ endPoint)
+        public ModelCurve Create(XYZ startPoint, XYZ endPoint)
         {
             ModelCurve modelLine = null;
 
@@ -41,6 +42,37 @@ namespace DS.RevitLib.Utils.ModelCurveUtils
 
                     // Create a ModelLine element using the created geometry line and sketch plane
                     modelLine = _doc.Create.NewModelCurve(geomLine, sketch) as ModelCurve;
+                }
+
+                catch (Exception e)
+                { ErrorMessages += e + "\n"; }
+
+                if (transNew.HasStarted())
+                {
+                    transNew.Commit();
+                }
+            }
+
+            return modelLine;
+        }
+
+        public ModelCurve Create(Line line)
+        {
+            ModelCurve modelLine = null;
+
+            Plane plane = PlaneUtils.CreateByLineAndPoint(line);
+
+            using (Transaction transNew = new Transaction(_doc, _transactionPrefix + "CreateModelCurve"))
+            {
+                try
+                {
+                    transNew.Start();
+
+                    // Create a sketch plane in current document
+                    SketchPlane sketch = SketchPlane.Create(_doc, plane);
+
+                    // Create a ModelLine element using the created geometry line and sketch plane
+                    modelLine = _doc.Create.NewModelCurve(line, sketch) as ModelCurve;
                 }
 
                 catch (Exception e)
