@@ -1,5 +1,6 @@
 ﻿using Autodesk.Revit.DB;
 using DS.RevitLib.Utils.Extensions;
+using System;
 
 namespace DS.RevitLib.Utils.Models
 {
@@ -23,6 +24,8 @@ namespace DS.RevitLib.Utils.Models
         public XYZ Point { get; private set; }
 
 
+
+        #region PublicMethods
         public void Transform(Transform transform)
         {
             if (transform.IsTranslation)
@@ -42,7 +45,6 @@ namespace DS.RevitLib.Utils.Models
             return (Basis)this.MemberwiseClone();
         }
 
-
         public void Round(int i = 3)
         {
             X = X.RoundVector(i);
@@ -50,6 +52,44 @@ namespace DS.RevitLib.Utils.Models
             Z = Z.RoundVector(i);
             Point = Point.RoundVector(i);
         }
+
+        /// <summary>
+        /// Check if basis is orthogonal
+        /// </summary>
+        public bool IsOrthogonal(int roundValue = 2)
+        {
+            double scalarXY = X.DotProduct(Y);
+            double scalarXZ = X.DotProduct(Z);
+            double scalarYZ = Y.DotProduct(Z);
+            if (Math.Round(scalarXY, roundValue) == 0 &&
+                Math.Round(scalarXZ, roundValue) == 0 &&
+                Math.Round(scalarYZ, roundValue) == 0)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Get orientation of basis.
+        /// </summary>
+        /// <returns></returns>
+        public BasisOrientation GetOrientaion()
+        {
+            double det = X.TripleProduct(Y, Z);
+
+            if (det > 0)
+            {
+                return BasisOrientation.Right;
+            }
+
+            return BasisOrientation.Left;
+        }
+
+        #endregion
+
+
     }
 
 }

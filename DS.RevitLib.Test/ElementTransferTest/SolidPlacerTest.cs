@@ -7,6 +7,7 @@ using DS.RevitLib.Utils;
 using DS.RevitLib.Utils.Collisions.Checkers;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.MEP;
+using DS.RevitLib.Utils.MEP.Creator;
 using DS.RevitLib.Utils.ModelCurveUtils;
 using DS.RevitLib.Utils.Models;
 using DS.RevitLib.Utils.Solids.Models;
@@ -71,6 +72,10 @@ namespace DS.RevitLib.Test
             //var result model = operationModel.Transform(transformModel.Transforms);
             Disconnect(operationElement);
             TransformElement(operationElement, transformModel);
+
+            FamInstCreator famInstCreator = new FamInstCreator(Doc, null, null);
+            famInstCreator.Insert(operationElement as FamilyInstance, targetElement, out List<MEPCurve> mEPCurves);
+
         }
 
         private List<Element> GetGeometryElements(Document doc, Transform tr = null)
