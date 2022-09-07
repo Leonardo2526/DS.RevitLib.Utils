@@ -201,6 +201,18 @@ namespace DS.RevitLib.Utils
             return perpend;
         }
 
+        /// <summary>
+        ///  Generate a random XYZ with coordinates as floating-point number that is greater than or equal to 0.0,
+        ///  and less than 1.0.
+        /// </summary>
+        /// <returns></returns>
+        public static XYZ GenerateXYZ()
+        {
+            var rand = new Random();
+            rand.NextDouble();
+            return new XYZ(rand.NextDouble(), rand.NextDouble(), rand.NextDouble());
+        }
+
         #endregion
 
 

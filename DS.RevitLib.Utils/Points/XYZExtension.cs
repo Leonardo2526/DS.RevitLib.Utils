@@ -163,5 +163,20 @@ namespace DS.RevitLib.Utils.Extensions
             return false;
         }
 
+        /// <summary>
+        /// Get a random normilise perpendicular vector.
+        /// </summary>
+        /// <param name="vector"></param>
+        /// <param name="basePoint">Common point of two perpendicular vectors.</param>
+        /// <returns></returns>
+        public static XYZ GetRandomPerpendicular(this XYZ vector, XYZ basePoint = null)
+        {
+            basePoint ??= new XYZ(0,0,0);
+
+            XYZ randPoint = XYZUtils.GenerateXYZ();
+            XYZ randVector = randPoint - basePoint;
+            return vector.CrossProduct(randVector).RoundVector().Normalize();
+        }
+
     }
 }
