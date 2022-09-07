@@ -10,9 +10,9 @@ namespace DS.RevitLib.Utils.Collisions.Checkers
 {
     public abstract class CollisionChecker<T, P> : ICollisionChecker
     {
-        protected readonly List<P> _checkedObjects2;
-        protected readonly List<P> _exludedObjects;
-        protected List<T> _checkedObjects1;
+        private readonly List<P> _checkedObjects2;
+        private readonly List<P> _exludedObjects;
+        private List<T> _checkedObjects1;
 
         protected CollisionChecker( List<P> checkedObjects2, List<P> exludedObjects = null)
         {
@@ -31,11 +31,17 @@ namespace DS.RevitLib.Utils.Collisions.Checkers
         {
             get
             {
-                return _checkedObjects1?.First().GetDocument() ?? _checkedObjects2?.First().GetDocument();
+                return CheckedObjects1?.First().GetDocument() ?? CheckedObjects2?.First().GetDocument();
             }
         }
         protected abstract FilteredElementCollector Collector { get; set; }
         protected abstract ExclusionFilter ExclusionFilter { get; }
+
+        public List<P> CheckedObjects2 => _checkedObjects2;
+
+        public List<P> ExludedObjects => _exludedObjects;
+
+        public List<T> CheckedObjects1 { get => _checkedObjects1; protected set => _checkedObjects1 = value; }
 
         public abstract List<ICollision> GetCollisions();
         public abstract List<ICollision> GetCollisions(List<T> checkedObjects1);
