@@ -22,7 +22,7 @@ namespace DS.RevitLib.Utils.Solids.Models
             //create basis
             var basisX = CentralLine.Direction;
             List<XYZ> normOrths = DS.RevitLib.Utils.Solids.SolidUtils.GetOrthoNormVectors(Solid, CentralLine);
-            var basisY = GetMaxSizeOrth(normOrths);
+            var basisY = GetMaxSizeBasis(normOrths, basisX);
             var basisZ = basisX.CrossProduct(basisY);
             Basis = new Basis(basisX, basisY, basisZ, CentralPoint);
             Basis.Round();
@@ -99,6 +99,21 @@ namespace DS.RevitLib.Utils.Solids.Models
             }
 
             return maxVector;
+        }
+
+        private XYZ GetMaxSizeBasis(List<XYZ> orths, XYZ basisX)
+        {
+            XYZ maxSizeOrth = GetMaxSizeOrth(orths);
+
+            if (XYZUtils.Perpendicular(maxSizeOrth, basisX))
+            {
+                return maxSizeOrth;
+            }
+            else
+            {
+                XYZ cross = maxSizeOrth.CrossProduct(basisX);
+                return basisX.CrossProduct(cross).RoundVector().Normalize();
+            }
         }
 
         public SolidModelExt Clone()
