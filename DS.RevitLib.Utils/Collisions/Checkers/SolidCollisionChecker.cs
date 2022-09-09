@@ -16,6 +16,10 @@ namespace DS.RevitLib.Utils.Collisions.Checkers
         {
         }
 
+        public SolidCollisionChecker(List<SolidModelExt> checkedObjects1, List<Element> checkedObjects2, List<Element> exludedObjects = null) : 
+            base(checkedObjects1, checkedObjects2, exludedObjects)
+        {
+        }
 
         protected override FilteredElementCollector Collector
         {
