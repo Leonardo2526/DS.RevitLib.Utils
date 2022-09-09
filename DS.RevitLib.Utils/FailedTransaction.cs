@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.DB;
+using DS.RevitLib.Utils.TransactionCommitter;
 using System;
 using System.Linq;
 
@@ -36,6 +37,19 @@ namespace DS.RevitLib.Utils
 
                 transNew.Commit();
             }
+        }
+
+        public void CreateFittingByConnectors(Connector con1 = null, Connector con2 = null)
+        {
+            using (Transaction transNew = new Transaction(_doc, "CreateFittingByConnectors"))
+            {
+                transNew.Start();
+
+                _doc.Create.NewElbowFitting(con1, con2);
+
+                transNew.Commit();
+            }
+
         }
     }
 }
