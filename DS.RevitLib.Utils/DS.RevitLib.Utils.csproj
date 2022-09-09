@@ -88,6 +88,7 @@
     <Compile Include="Elements\ElementFilterUtils.cs" />
     <Compile Include="Elements\ElementExtension.cs" />
     <Compile Include="Extensions\MEPCurveExtension.cs" />
+    <Compile Include="FailedTransaction.cs" />
     <Compile Include="Lines\LineExtensions.cs" />
     <Compile Include="MEP\MEPCurveExtensions.cs" />
     <Compile Include="MEP\MEPCurveCutter.cs" />

@@ -36,6 +36,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
             {
                 familyInstance = famInstCreator.
                     CreateFittingByMEPCurves(MEPCurves[i] as MEPCurve, MEPCurves[i + 1] as MEPCurve);
+                ErrorMessages += famInstCreator.ErrorMessages;
                 AllElements.Insert(i + 1, familyInstance);
             }
             return this;
