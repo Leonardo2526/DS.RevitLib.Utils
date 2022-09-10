@@ -23,7 +23,7 @@ namespace DS.RevitLib.Test
             UIDocument uidoc = uiapp.ActiveUIDocument;
             Document doc = uiapp.ActiveUIDocument.Document;
 
-            SolidCollisionCheckerTest.Run(doc);
+            SolidCollisionCheckerTest.RunWithLink(doc);
 
             //var selector = new SystemModelTest(uidoc, doc, uiapp);
             //selector.RunTest();

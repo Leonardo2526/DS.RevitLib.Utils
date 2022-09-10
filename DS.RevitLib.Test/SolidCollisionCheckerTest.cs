@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Windows.Forms.LinkLabel;
 
 namespace DS.RevitLib.Test
 {
@@ -27,11 +28,16 @@ namespace DS.RevitLib.Test
 
             List<RevitLinkInstance> allLinks = new List<RevitLinkInstance>();
             allLinks = new FilteredElementCollector(doc).OfClass(typeof(RevitLinkInstance)).Cast<RevitLinkInstance>().ToList();
-            var geomlinkElems = GetGeometryElements(allLinks.First().GetLinkDocument());
-            var linkElements = geomlinkElems.Select(obj => obj.Element).ToList();
 
-            var checker = new SolidCollisionChecker(solidsExt, linkElements, null);
-            var collisions = checker.GetCollisions();
+            List<ICollision> collisions = new List<ICollision>();
+            foreach (var link in allLinks)
+            {
+                var geomlinkElems = GetGeometryElements(link.GetLinkDocument());
+                var linkElements = geomlinkElems.Select(obj => obj.Element).ToList();
+
+                var checker = new SolidCollisionChecker(linkElements, null);
+                collisions.AddRange(checker.GetCollisions(solidsExt));
+            }
 
             string outString = null;
             foreach (SolidElemCollision col in collisions)
@@ -42,6 +48,48 @@ namespace DS.RevitLib.Test
             TaskDialog.Show("Collisions: ", collisions.Count.ToString() + "\n" + outString);
         }
 
+        public static void RunWithLink(Document doc)
+        {
+            var geomModelElems = GetGeometryElements(doc);
+            var modelElements = geomModelElems.Select(obj => obj.Element).ToList();
+            var solidsExt = new List<SolidModelExt>();
+            foreach (var elem in modelElements)
+            {
+                solidsExt.Add(new SolidModelExt(elem));
+            }
+
+            List<RevitLinkInstance> allLinks = new List<RevitLinkInstance>();
+            allLinks = new FilteredElementCollector(doc).OfClass(typeof(RevitLinkInstance)).Cast<RevitLinkInstance>().ToList();
+
+            List<ICollision> collisions = new List<ICollision>();
+            foreach (var link in allLinks)
+            {
+                var geomlinkElems = GetGeometryElements(link.GetLinkDocument());
+                var linkElements = geomlinkElems.Select(obj => obj.Element).ToList();
+
+                var checker = new LinkCollisionChecker(linkElements, link, null);
+
+                collisions.AddRange(checker.GetCollisions(solidsExt));
+            }
+
+            //List<ICollision> collisions = new List<ICollision>();
+            //foreach (var link in allLinks)
+            //{
+            //    var geomlinkElems = GetGeometryElements(link.GetLinkDocument());
+            //    var linkElements = geomlinkElems.Select(obj => obj.Element).ToList();
+
+            //    var checker = new SolidCollisionChecker(linkElements, null);
+            //    collisions.AddRange(checker.GetCollisions(solidsExt));
+            //}
+
+            string outString = null;
+            foreach (SolidElemCollision col in collisions)
+            {
+                outString += col.Object1.Element.Id + " - " + col.Object2.Id + "\n";
+            }
+
+            TaskDialog.Show("Collisions: ", collisions.Count.ToString() + "\n" + outString);
+        }
 
 
         private static List<GeometryData> GetGeometryElements(Document doc, Transform tr = null)

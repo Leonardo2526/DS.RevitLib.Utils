@@ -3,6 +3,7 @@ using DS.RevitLib.Utils.Collisions.Models;
 using DS.RevitLib.Utils.Solids.Models;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -45,7 +46,7 @@ namespace DS.RevitLib.Utils.Collisions.Checkers
         private List<ICollision> GetObjectCollisions(SolidModelExt object1)
         {
             var excludedElementsIds = new List<ElementId>();
-
+           
             if (ExludedObjects is not null && ExludedObjects.Any())
             {
                 excludedElementsIds.AddRange(ExludedObjects.Select(obj => obj.Id).ToList());
@@ -93,16 +94,15 @@ namespace DS.RevitLib.Utils.Collisions.Checkers
             return AllCollisions;
         }
 
-        protected override ICollision BuildCollision(SolidModelExt object1, Element object2)
-        {
-            return new SolidElemCollision(object1, object2);
-        }
-
         public override List<ICollision> GetCollisions(List<SolidModelExt> checkedObjects1)
         {
             CheckedObjects1 = checkedObjects1;
             return GetCollisions();
+        }
 
+        protected override ICollision BuildCollision(SolidModelExt object1, Element object2)
+        {
+            return new SolidElemCollision(object1, object2);
         }
 
         public bool CollisionExist(List<ICollision> collisions, ICollision collision)
