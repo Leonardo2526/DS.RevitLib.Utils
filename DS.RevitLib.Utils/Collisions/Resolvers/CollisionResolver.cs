@@ -12,14 +12,12 @@ namespace DS.RevitLib.Utils.Collisions.Resolvers
     public abstract class CollisionResolver
     {
         protected CollisionResolver _successor;
-
-        protected readonly ICollisionChecker _collisionChecker;
-        protected readonly List<ICollisionChecker> _collisionCheckers;
+        protected readonly List<ICollisionChecker> _collisionCheckers = new List<ICollisionChecker>();
 
         protected CollisionResolver(ICollision collision, ICollisionChecker collisionChecker)
         {
             Collision = collision;
-            _collisionChecker = collisionChecker;
+            _collisionCheckers.Add(collisionChecker);
         }
 
         protected CollisionResolver(ICollision collision, List<ICollisionChecker> collisionChecker)
@@ -30,7 +28,7 @@ namespace DS.RevitLib.Utils.Collisions.Resolvers
 
         public ICollision Collision { get; }
         public bool IsResolved { get; protected set; }
-
+        public List<ICollision> UnresolvedCollisions { get; protected set; }
 
 
         public abstract void Resolve();
@@ -39,5 +37,20 @@ namespace DS.RevitLib.Utils.Collisions.Resolvers
             _successor = successor;
         }
 
+        protected List<ICollision> GetCollisions()
+        {
+            var collisions = new List<ICollision>();
+
+            foreach (ICollisionChecker checker in _collisionCheckers)
+            {
+                var checkerCollisions = checker.GetCollisions();
+                if (checkerCollisions != null && checkerCollisions.Any())
+                {
+                    collisions.AddRange(checkerCollisions);
+                }
+            }
+
+            return collisions;
+        }
     }
 }

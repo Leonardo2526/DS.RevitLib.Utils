@@ -80,7 +80,7 @@ namespace DS.RevitLib.Utils.Collisions.Checkers
                 return null;
             }
 
-
+            AllCollisions  = new List<ICollision>();
             foreach (SolidModelExt object1 in CheckedObjects1)
             {
                 var collisions = GetObjectCollisions(object1);
