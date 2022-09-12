@@ -41,12 +41,12 @@ namespace DS.RevitLib.Utils.Collisions.Checkers
             }
         }
 
-            public List<ICollision> AllCollisions { get; private set; } = new List<ICollision>();
+        public List<ICollision> AllCollisions { get; private set; } = new List<ICollision>();
 
         private List<ICollision> GetObjectCollisions(SolidModelExt object1)
         {
             var excludedElementsIds = new List<ElementId>();
-           
+
             if (ExludedObjects is not null && ExludedObjects.Any())
             {
                 excludedElementsIds.AddRange(ExludedObjects.Select(obj => obj.Id).ToList());
@@ -55,7 +55,7 @@ namespace DS.RevitLib.Utils.Collisions.Checkers
             excludedElementsIds.Add(object1.Element.Id);
             var exculdedFilter = new ExclusionFilter(excludedElementsIds);
 
-            List<Element>  elements = Collector.WherePasses(new ElementIntersectsSolidFilter(object1.Solid)).
+            List<Element> elements = Collector.WherePasses(new ElementIntersectsSolidFilter(object1.Solid)).
                 WherePasses(exculdedFilter).
                 ToElements().ToList();
 
@@ -64,7 +64,7 @@ namespace DS.RevitLib.Utils.Collisions.Checkers
             foreach (var elem in elements)
             {
                 var col = BuildCollision(object1, elem);
-                if(!CollisionExist(AllCollisions, col))
+                if (!CollisionExist(AllCollisions, col))
                 {
                     collisions.Add(col);
                 }
