@@ -71,12 +71,12 @@ namespace DS.RevitLib.Utils.Extensions
 
             foreach (var elem in elements)
             {
-                var lp =  ElementUtils.GetLocationPoint(elem);
+                var lp = ElementUtils.GetLocationPoint(elem);
                 pointsList.Add(lp);
             }
 
             //find edge location points
-             var (point1, point2) = XYZUtils.GetMaxDistancePoints(pointsList, out double maxDist);
+            var (point1, point2) = XYZUtils.GetMaxDistancePoints(pointsList, out double maxDist);
 
             var distances = new Dictionary<double, Element>();
 
@@ -154,6 +154,61 @@ namespace DS.RevitLib.Utils.Extensions
             }
 
             return null;
+        }
+
+        public static bool IsGeometryElement(this Element element)
+        {
+            var g = element.get_Geometry(new Options() { ComputeReferences = false, 
+                DetailLevel = ViewDetailLevel.Fine, IncludeNonVisibleObjects = false })
+                ?.Cast<GeometryObject>().ToList();
+
+            return CheckGeometry(g);
+
+            bool CheckGeometry(List<GeometryObject> g)
+            {
+                if (g is null) return false;
+
+                foreach (var elem in g)
+                {
+                    if (elem is Solid s && s.Volume > 1e-6)
+                        return true;
+                    else if (elem is GeometryInstance gi)
+                    {
+                        var go = gi.GetInstanceGeometry();
+                        return CheckGeometry(go?.Cast<GeometryObject>().ToList());
+                    }
+                }
+                return false;
+            }
+
+        }
+
+        /// <summary>
+        /// Get center point of element from center of it's solid. If element is elbow returns it's location point.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <returns>Returns element center point.</returns>
+        public static XYZ GetCenterPoint(this Element element)
+        {
+            if (!element.IsGeometryElement())
+            {
+                return null;
+            }
+
+            //Check elbow type
+            if (element is FamilyInstance familyInstance)
+            {
+                var partType = ElementUtils.GetPartType(familyInstance);
+                if (partType == PartType.Elbow)
+                {
+                    var positionPoint = element.Location as LocationPoint;
+                    return positionPoint.Point;
+                }
+            }
+
+
+            Solid solid = ElementUtils.GetSolid(element);
+            return solid.ComputeCentroid();
         }
     }
 }
