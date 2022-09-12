@@ -31,7 +31,7 @@ namespace DS.RevitLib.Test.Collisions.Resolvers
             Transform rotateTransform = Transform.CreateRotationAtPoint(axis, angle, _operationElement.CentralPoint);
             _operationElement.Transform(rotateTransform);
 
-            if (!_collisionChecker.GetCollisions().Any())
+            if (!_collisionCheckers.First().GetCollisions().Any())
             {
                 IsResolved = true;
             }

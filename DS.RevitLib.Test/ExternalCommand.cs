@@ -23,11 +23,13 @@ namespace DS.RevitLib.Test
             UIDocument uidoc = uiapp.ActiveUIDocument;
             Document doc = uiapp.ActiveUIDocument.Document;
 
+            SolidCollisionCheckerTest.RunWithLink(doc);
+
             //var selector = new SystemModelTest(uidoc, doc, uiapp);
             //selector.RunTest();
 
-            var test = new SolidPlacerTest(uidoc, doc, uiapp);
-            test.Run();
+            //var test = new SolidPlacerTest(uidoc, doc, uiapp);
+            //test.Run();
 
             return Autodesk.Revit.UI.Result.Succeeded;
         }

@@ -43,6 +43,8 @@ namespace DS.RevitLib.Utils.Collisions.Checkers
 
         public List<T> CheckedObjects1 { get => _checkedObjects1; protected set => _checkedObjects1 = value; }
 
+        //public List<ICollision> Collisions { get; protected set; }
+
         public abstract List<ICollision> GetCollisions();
         public abstract List<ICollision> GetCollisions(List<T> checkedObjects1);
 

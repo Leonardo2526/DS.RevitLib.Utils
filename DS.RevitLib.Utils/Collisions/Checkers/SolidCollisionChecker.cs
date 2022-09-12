@@ -3,6 +3,7 @@ using DS.RevitLib.Utils.Collisions.Models;
 using DS.RevitLib.Utils.Solids.Models;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,6 +17,10 @@ namespace DS.RevitLib.Utils.Collisions.Checkers
         {
         }
 
+        public SolidCollisionChecker(List<SolidModelExt> checkedObjects1, List<Element> checkedObjects2, List<Element> exludedObjects = null) :
+            base(checkedObjects1, checkedObjects2, exludedObjects)
+        {
+        }
 
         protected override FilteredElementCollector Collector
         {
@@ -36,29 +41,33 @@ namespace DS.RevitLib.Utils.Collisions.Checkers
             }
         }
 
+        public List<ICollision> AllCollisions { get; private set; } = new List<ICollision>();
 
         private List<ICollision> GetObjectCollisions(SolidModelExt object1)
         {
-            List<Element> elements;
+            var excludedElementsIds = new List<ElementId>();
 
-            if (ExclusionFilter is null)
+            if (ExludedObjects is not null && ExludedObjects.Any())
             {
-                elements = Collector.WherePasses(new ElementIntersectsSolidFilter(object1.Solid)).
-                    ToElements().ToList();
+                excludedElementsIds.AddRange(ExludedObjects.Select(obj => obj.Id).ToList());
             }
-            else
-            {
-                elements = Collector.WherePasses(new ElementIntersectsSolidFilter(object1.Solid)).
-                    WherePasses(ExclusionFilter).
-                    ToElements().ToList();
-            }
+
+            excludedElementsIds.Add(object1.Element.Id);
+            var exculdedFilter = new ExclusionFilter(excludedElementsIds);
+
+            List<Element> elements = Collector.WherePasses(new ElementIntersectsSolidFilter(object1.Solid)).
+                WherePasses(exculdedFilter).
+                ToElements().ToList();
 
             //build all object1 collisions
             var collisions = new List<ICollision>();
             foreach (var elem in elements)
             {
                 var col = BuildCollision(object1, elem);
-                collisions.Add(col);
+                if (!CollisionExist(AllCollisions, col))
+                {
+                    collisions.Add(col);
+                }
             }
 
             return collisions;
@@ -71,19 +80,24 @@ namespace DS.RevitLib.Utils.Collisions.Checkers
                 return null;
             }
 
-            var allCollisions = new List<ICollision>();
-
-            foreach (var item in CheckedObjects1)
+            AllCollisions  = new List<ICollision>();
+            foreach (SolidModelExt object1 in CheckedObjects1)
             {
-                var collisions = GetObjectCollisions(item);
+                var collisions = GetObjectCollisions(object1);
                 if (collisions is null || !collisions.Any())
                 {
                     continue;
                 }
-                allCollisions.AddRange(collisions);
+                AllCollisions.AddRange(collisions);
             }
 
-            return allCollisions;
+            return AllCollisions;
+        }
+
+        public override List<ICollision> GetCollisions(List<SolidModelExt> checkedObjects1)
+        {
+            CheckedObjects1 = checkedObjects1;
+            return GetCollisions();
         }
 
         protected override ICollision BuildCollision(SolidModelExt object1, Element object2)
@@ -91,11 +105,18 @@ namespace DS.RevitLib.Utils.Collisions.Checkers
             return new SolidElemCollision(object1, object2);
         }
 
-        public override List<ICollision> GetCollisions(List<SolidModelExt> checkedObjects1)
+        public bool CollisionExist(List<ICollision> collisions, ICollision collision)
         {
-            CheckedObjects1 = checkedObjects1;
-            return GetCollisions();
-
+            var sCollision = collision as SolidElemCollision;
+            foreach (SolidElemCollision existCollison in collisions.Cast<SolidElemCollision>())
+            {
+                if (sCollision.Object1.Element.Id == existCollison.Object2.Id &&
+                    existCollison.Object1.Element.Id == sCollision.Object2.Id)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }

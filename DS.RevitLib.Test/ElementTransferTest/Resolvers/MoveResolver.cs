@@ -53,7 +53,7 @@ namespace DS.RevitLib.Utils.Collisions.Resolvers
             _operationElement.Transform(rotateTransform);
             IsResolved = true;
 
-            if (!_collisionChecker.GetCollisions().Any())
+            if (!_collisionCheckers.First().GetCollisions().Any())
             {
                 IsResolved = true;
             }
