@@ -210,5 +210,40 @@ namespace DS.RevitLib.Utils.Extensions
             Solid solid = ElementUtils.GetSolid(element);
             return solid.ComputeCentroid();
         }
+
+        /// <summary>
+        /// Get center point of any types of elements
+        /// </summary>
+        /// <param name="element"></param>
+        /// <returns></returns>
+        public static XYZ GetLocationPoint(this Element element)
+        {
+            // Get the Location property and judge whether it exists
+            Location position = element.Location;
+
+            // If the location is a point location, give the user information
+            LocationPoint positionPoint = position as LocationPoint;
+            if (null != positionPoint)
+            {
+                return positionPoint.Point;
+            }
+            else
+            {
+                // If the location is a curve location, give the user information
+                LocationCurve positionCurve = position as LocationCurve;
+                if (null != positionCurve)
+                {
+                    XYZ startPoint = positionCurve.Curve.GetEndPoint(0);
+                    XYZ endPoint = positionCurve.Curve.GetEndPoint(1);
+
+                    XYZ centerPoint = new XYZ((startPoint.X + endPoint.X) / 2,
+                        (startPoint.Y + endPoint.Y) / 2,
+                        (startPoint.Z + endPoint.Z) / 2);
+                    return centerPoint;
+                }
+            }
+
+            return null;
+        }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.DB;
+using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.MEP.SystemTree.Relatives;
 using System;
 using System.Collections.Generic;
@@ -26,20 +27,20 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
                     Select(x => x as MEPCurve).ToList();
             }
         }
-       
+
         public List<FamilyInstance> FamilyInstances
         {
             get
             {
                 return Elements.OfType<FamilyInstance>().ToList();
             }
-        }      
-       
+        }
+
         public List<FamilyInstance> Accessories
         {
             get
             {
-                return Elements.Where(x => 
+                return Elements.Where(x =>
                 x.Category.Name.Contains("Accessories") || x.Category.Name.Contains("Арматура")).
                     OfType<FamilyInstance>().ToList();
             }
@@ -114,13 +115,37 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
             foreach (var item in familyInstances)
             {
                 var lp = ElementUtils.GetLocationPoint(item);
-                if (Math.Round(lp.DistanceTo(point), 3) ==0)
+                if (Math.Round(lp.DistanceTo(point), 3) == 0)
                 {
                     return item;
                 }
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Get all spuds connected to gived MEPCurve
+        /// </summary>
+        /// <param name="mEPCurve"></param>
+        /// <returns></returns>
+        public List<FamilyInstance> GetConnectedSpuds(MEPCurve mEPCurve)
+        {
+            if (ChildrenNodes is null || !ChildrenNodes.Any())
+            {
+                return null;
+            }
+
+            var spudsToBase = new List<FamilyInstance>();
+            foreach (var child in ChildrenNodes)
+            {
+                if (child.Element.IsSpud() && ConnectorUtils.ElementsConnected(child.Element, mEPCurve))
+                {
+                    spudsToBase.Add(child.Element);
+                }
+            }
+
+            return spudsToBase;
         }
     }
 }

@@ -454,18 +454,31 @@ namespace DS.RevitLib.Utils.MEP
             var connectors = GetConnectors(element);
             XYZ lp = ElementUtils.GetLocationPoint(element);
 
-            for (int i = 0; i < connectors.Count - 1; i++)
+            if (element is FamilyInstance)
             {
-                for (int j = i + 1; j < connectors.Count; j++)
+                for (int i = 0; i < connectors.Count - 1; i++)
                 {
-                    XYZ dir1 = (connectors[i].Origin - lp).RoundVector();
-                    XYZ dir2 = (connectors[j].Origin - lp).RoundVector();
-                    if (XYZUtils.Collinearity(dir1, dir2))
+                    for (int j = i + 1; j < connectors.Count; j++)
                     {
-                        return (connectors[i], connectors[j]);
+                        XYZ dir1 = (connectors[i].Origin - lp).RoundVector();
+                        XYZ dir2 = (connectors[j].Origin - lp).RoundVector();
+                        if (XYZUtils.Collinearity(dir1, dir2))
+                        {
+                            return (connectors[i], connectors[j]);
+                        }
                     }
                 }
             }
+            else if (element is MEPCurve)
+            {
+                List<XYZ> points = connectors.Select(obj => obj.Origin).ToList();
+                var (point1, point2) = XYZUtils.GetMaxDistancePoints(points, out double dist);
+
+                var con1 = connectors.Where(c => Math.Round(c.Origin.DistanceTo(point1) ,3) == 0).First();
+                var con2 = connectors.Where(c => Math.Round(c.Origin.DistanceTo(point2) ,3) == 0).First();
+                return (con1, con2);
+            }
+
 
             return (null, null);
         }
