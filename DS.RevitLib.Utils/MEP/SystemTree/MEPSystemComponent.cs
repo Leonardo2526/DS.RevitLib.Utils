@@ -147,5 +147,46 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
 
             return spudsToBase;
         }
+
+
+        /// <summary>
+        /// Get elements from Elements list by connector of BaseElement.
+        /// </summary>
+        /// <param name="baseElemCon"></param>
+        /// <returns>Returns list of elements from BaseElement with baseElemCon direction to edge element. 
+        /// BaseElement is not included.</returns>
+        public List<Element> GetElementsSpan(Connector baseElemCon)
+        {
+            if(baseElemCon.Owner.Id != BaseElement.Id)
+            {
+                throw new ArgumentException("Connector owner is not BaseElement.");
+            }
+
+            var connectedElem = ConnectorUtils.GetConnectedByConnector(baseElemCon, BaseElement);
+            if (connectedElem is null)
+                return null;
+
+            int dInd = FindIndex(BaseElement) - FindIndex(connectedElem);
+            if (dInd > 0)
+            {
+                var elems = GetElements(Elements.First(), connectedElem);
+                elems.Reverse();
+                return elems;
+            }
+            else
+            {
+                return GetElements(connectedElem, Elements.Last());
+            }
+        }
+
+        /// <summary>
+        /// Find index of element.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <returns>Returns index of element in current list of Elements.</returns>
+        public int FindIndex(Element element)
+        {
+            return Elements.FindIndex(obj => obj.Id == element.Id);
+        }
     }
 }
