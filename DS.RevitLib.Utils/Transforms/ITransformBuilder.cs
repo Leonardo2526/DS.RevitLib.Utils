@@ -6,8 +6,7 @@ using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.Transforms
 {
-    public interface ITransformBuilder<T,P>
+    public interface ITransformBuilder
     {
-        public abstract AbstractTransformModel<T, P> Build(T sourceObject, P targetObject);
     }
 }
