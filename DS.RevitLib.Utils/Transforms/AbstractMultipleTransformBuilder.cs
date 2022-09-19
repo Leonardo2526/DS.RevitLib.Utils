@@ -20,6 +20,6 @@ namespace DS.RevitLib.Utils.Transforms
 
         public abstract AbstractTransformModel<T, P> Build(T sourceObject, P targetObject);
 
-        public abstract List<AbstractTransformModel<T, P>> Build(List<T> sourceObjects, List<T> targetObjects);
+        public abstract List<AbstractTransformModel<T, P>> Build();
     }
 }
