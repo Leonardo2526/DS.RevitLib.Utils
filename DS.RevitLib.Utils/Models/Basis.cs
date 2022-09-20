@@ -138,8 +138,8 @@ namespace DS.RevitLib.Utils.Models
         public void Show(Document doc)
         {
             var creator = new ModelCurveCreator(doc);
-            creator.Create(Point, Point + X);
-            creator.Create(Point, Point + Y);
+            creator.Create(Point, Point + X.Multiply(3));
+            creator.Create(Point, Point + Y.Multiply(2));
             creator.Create(Point, Point + Z);
         }
 

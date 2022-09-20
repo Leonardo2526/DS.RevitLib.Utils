@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DS.ClassLib.VarUtils;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,8 +9,9 @@ namespace DS.RevitLib.Utils.Transforms
 {
     public abstract class AbstractTransformBuilder<T,P> : ITransformBuilder
     {
-        protected T _sourceObject;
-        protected P _targetObject;
+        protected readonly T _sourceObject;
+        protected readonly P _targetObject;
+        protected T _operationObject;
 
         protected AbstractTransformBuilder(T sourceObject, P targetObject)
         {

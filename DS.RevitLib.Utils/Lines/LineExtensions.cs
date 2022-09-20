@@ -76,9 +76,13 @@ namespace DS.RevitLib.Utils.Lines
             XYZ lp1 = line.GetEndPoint(0);
             XYZ lp2 = line.GetEndPoint(1);
 
-            if (!p1.IsBetweenPoints(lp1, lp2) | !p2.IsBetweenPoints(lp1, lp2))
+            if (!p1.IsBetweenPoints(lp1, lp2))
             {
-                throw new ArgumentException("input points are outside line boundaries.");
+                throw new ArgumentException($"Point {p1} is outside of line boundaries.");
+            }
+            if (!p2.IsBetweenPoints(lp1, lp2))
+            {
+                throw new ArgumentException($"Point {p2} is outside of line boundaries.");
             }
 
             List<XYZ> points = new List<XYZ> { lp1, lp2, p1, p2 };

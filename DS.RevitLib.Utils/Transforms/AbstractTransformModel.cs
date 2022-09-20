@@ -13,6 +13,6 @@ namespace DS.RevitLib.Utils.Transforms
         
         public T SourceObject { get; }
         public P TargetObject { get; }
-        public List<Transform> Transforms { get; set; }
+        public List<Transform> Transforms { get; set; } = new List<Transform>();
     }
 }
