@@ -27,13 +27,8 @@ namespace DS.RevitLib.Utils.Collisions.Checkers
             _exludedObjects = exludedObjects;
         }
 
-        protected Document Document
-        {
-            get
-            {
-                return CheckedObjects1?.First().GetDocument() ?? CheckedObjects2?.First().GetDocument();
-            }
-        }
+        protected abstract Document Document { get; }
+
         protected abstract FilteredElementCollector Collector { get; set; }
         protected abstract ExclusionFilter ExclusionFilter { get; }
 

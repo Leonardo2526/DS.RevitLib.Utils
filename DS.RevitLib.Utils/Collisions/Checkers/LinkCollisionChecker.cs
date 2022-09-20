@@ -30,6 +30,14 @@ namespace DS.RevitLib.Utils.Collisions.Checkers
 
         private List<SolidModelExt> LinkSolidsExt { get; set; } = new List<SolidModelExt>();
 
+        protected override Document Document
+        {
+            get
+            {              
+                return CheckedObjects1.First().Element.Document;
+            }
+        }
+
         public override List<ICollision> GetCollisions()
         {
             List<ICollision> collisions = new List<ICollision>();
