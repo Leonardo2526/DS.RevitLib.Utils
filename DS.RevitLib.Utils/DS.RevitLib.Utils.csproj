@@ -94,10 +94,12 @@
     <Compile Include="Extensions\MEPCurveExtension.cs" />
     <Compile Include="FailedTransaction.cs" />
     <Compile Include="FamilyInstances\FamilyInstanceExtensions.cs" />
+    <Compile Include="PathFinders\IPathFinder.cs" />
     <Compile Include="Lines\LineExtensions.cs" />
     <Compile Include="MEP\MEPCurveExtensions.cs" />
     <Compile Include="MEP\MEPCurveCutter.cs" />
     <Compile Include="MEP\Models\MEPCurveModel.cs" />
+    <Compile Include="PathFinders\SimplePathFinder.cs" />
     <Compile Include="Transforms\AbstractTransformBuilder.cs" />
     <Compile Include="Transforms\AbstractTransformModel.cs" />
     <Compile Include="Models\Basis.cs" />
