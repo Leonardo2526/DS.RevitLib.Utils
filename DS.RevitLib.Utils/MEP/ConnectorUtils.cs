@@ -445,10 +445,11 @@ namespace DS.RevitLib.Utils.MEP
         }
 
         /// <summary>
-        /// Get main connectors of element.
+        /// Get main connectors of element. 
         /// </summary>
         /// <param name="element"></param>
-        /// <returns>Returns two connectors. Element location point is on line between this connectors.</returns>
+        /// <returns>If element is MEPCurve returns two connectors of it with max distance between them.
+        /// If element is FamilyInstance returns two connectors if element's location point is on line between them.</returns>
         public static (Connector con1, Connector con2) GetMainConnectors(Element element)
         {
             var connectors = GetConnectors(element);

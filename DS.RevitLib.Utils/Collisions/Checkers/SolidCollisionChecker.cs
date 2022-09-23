@@ -42,6 +42,14 @@ namespace DS.RevitLib.Utils.Collisions.Checkers
         }
 
         public List<ICollision> AllCollisions { get; private set; } = new List<ICollision>();
+        protected override Document Document
+        {
+            get
+            {
+                return CheckedObjects1.First().Element.Document;
+            }
+        }
+
 
         private List<ICollision> GetObjectCollisions(SolidModelExt object1)
         {
@@ -77,7 +85,7 @@ namespace DS.RevitLib.Utils.Collisions.Checkers
         {
             if (Document is null || Collector is null)
             {
-                return null;
+                throw new ArgumentNullException("Document or Collercor is null");
             }
 
             AllCollisions  = new List<ICollision>();

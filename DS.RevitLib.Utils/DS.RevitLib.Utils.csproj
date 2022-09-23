@@ -26,6 +26,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>x64</PlatformTarget>
+    <DocumentationFile>bin\Debug\DS.RevitLib.Utils.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -81,21 +82,30 @@
     <Compile Include="Elements\Alignments\IAlignment.cs" />
     <Compile Include="Elements\Alignments\Strategies\Solids\NormOrthSolidRotator.cs" />
     <Compile Include="Elements\Alignments\Strategies\Solids\CentralLineSolidRotator.cs" />
+    <Compile Include="Elements\Models\AbstractElementModel.cs" />
     <Compile Include="Elements\CopyParameterOption.cs" />
     <Compile Include="Elements\Creators\ElementCreator.cs" />
     <Compile Include="Elements\ElementsMover.cs" />
+    <Compile Include="Elements\Models\ElementModel.cs" />
     <Compile Include="Elements\PartTypesChecker.cs" />
     <Compile Include="CollisionUtils.cs" />
     <Compile Include="Elements\ElementFilterUtils.cs" />
     <Compile Include="Elements\ElementExtension.cs" />
     <Compile Include="Extensions\MEPCurveExtension.cs" />
     <Compile Include="FailedTransaction.cs" />
+    <Compile Include="FamilyInstances\FamilyInstanceExtensions.cs" />
+    <Compile Include="PathFinders\IPathFinder.cs" />
     <Compile Include="Lines\LineExtensions.cs" />
     <Compile Include="MEP\MEPCurveExtensions.cs" />
     <Compile Include="MEP\MEPCurveCutter.cs" />
+    <Compile Include="MEP\Models\MEPCurveModel.cs" />
+    <Compile Include="PathFinders\SimplePathFinder.cs" />
+    <Compile Include="Transactions\TransactionBuilder.cs" />
+    <Compile Include="Transforms\TransformBuilder.cs" />
+    <Compile Include="Transforms\TransformModel.cs" />
     <Compile Include="Models\Basis.cs" />
     <Compile Include="Models\BasisOrientation.cs" />
-    <Compile Include="ObjectExtension.cs" />
+    <Compile Include="Transforms\MultipleTransformBuilder.cs" />
     <Compile Include="Planes\PlaneExtensions.cs" />
     <Compile Include="Planes\PlaneUtils.cs" />
     <Compile Include="Models\RotationModel.cs" />
@@ -109,12 +119,12 @@
     <Compile Include="Elements\Alignments\Strategies\CentralLineRotator.cs" />
     <Compile Include="Elements\Alignments\Strategies\AlignmentRotator.cs" />
     <Compile Include="MEP\SimpleMEPSystemBuilder.cs" />
-    <Compile Include="MEP\Models\MEPElementsModel.cs" />
+    <Compile Include="MEP\SystemModels\MEPElementsModel.cs" />
     <Compile Include="MEP\Symbols\SymbolPlacer.cs" />
     <Compile Include="MEP\SystemTree\Component.cs" />
     <Compile Include="MEP\SystemTree\ComponentBuilder.cs" />
-    <Compile Include="MEP\Models\MEPCurvesModel.cs" />
-    <Compile Include="MEP\Models\MEPElement.cs" />
+    <Compile Include="MEP\SystemModels\MEPCurvesModel.cs" />
+    <Compile Include="MEP\SystemModels\MEPElement.cs" />
     <Compile Include="MEP\SystemTree\Composite.cs" />
     <Compile Include="MEP\SystemTree\CompositeBuilder.cs" />
     <Compile Include="MEP\SystemTree\ConnectedBuilders\AbstractConnectedBuilder.cs" />
@@ -163,14 +173,13 @@
     <Compile Include="Solids\SolidExtractor.cs" />
     <Compile Include="Solids\SolidPlacer.cs" />
     <Compile Include="Solids\SolidUtils.cs" />
-    <Compile Include="TransactionCommitter\Committer.cs" />
-    <Compile Include="TransactionCommitter\BaseCommitter.cs" />
-    <Compile Include="TransactionCommitter\RollBackCommitter.cs" />
+    <Compile Include="Transactions\Committer.cs" />
+    <Compile Include="Transactions\BaseCommitter.cs" />
+    <Compile Include="Transactions\RollBackCommitter.cs" />
     <Compile Include="Points\XYZAlgorithms\MaxDistance\MaxDistanceClient.cs" />
     <Compile Include="Points\XYZAlgorithms\MaxDistance\Strategies\MaxDistnaceStrategy.cs" />
     <Compile Include="Points\XYZAlgorithms\MaxDistance\Strategies\NaiveStrategy.cs" />
     <Compile Include="Points\XYZUtils.cs" />
-    <Compile Include="Models\TransformModel.cs" />
     <Compile Include="Visualisators\BoundingBoxVisualisator.cs" />
     <Compile Include="Visualisators\IVisualisator.cs" />
     <Compile Include="Visualisators\Visualisator.cs" />

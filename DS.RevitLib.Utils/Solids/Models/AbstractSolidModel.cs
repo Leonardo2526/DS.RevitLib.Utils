@@ -13,7 +13,10 @@ namespace DS.RevitLib.Utils.Solids.Models
 
         public Solid Solid { get; protected set; }
 
-        public XYZ SolidCenter
+        /// <summary>
+        /// Centroid of the Solid
+        /// </summary>
+        public XYZ Center
         {
             get
             {
