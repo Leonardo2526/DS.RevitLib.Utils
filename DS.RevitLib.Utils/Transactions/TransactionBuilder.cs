@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using DS.RevitLib.Utils.TransactionCommitter;
 using System;
+using System.Windows.Forms;
 
 namespace DS.RevitLib.Utils
 {
@@ -41,11 +42,12 @@ namespace DS.RevitLib.Utils
         /// Build new transaction.
         /// </summary>
         /// <param name="operation"></param>
-        /// <returns></returns>
-        public T Build(Func<T> operation)
+        /// <param name="transactionName"></param>
+        /// <returns>Returns object of transacion.</returns>
+        public T Build(Func<T> operation, string transactionName)
         {
             T result = default;
-            using (Transaction transNew = new(_doc, _transactionPrefix + $"{operation}"))
+            using (Transaction transNew = new(_doc, _transactionPrefix + transactionName))
             {
                 try
                 {
@@ -63,12 +65,16 @@ namespace DS.RevitLib.Utils
         }
 
         /// <summary>
-        /// Build some transaction operation
+        ///  Build some transaction operation
         /// </summary>
         /// <param name="operation"></param>
-        public void Build(Action operation)
+        /// <param name="transactionName"></param>
+        public void Build(Action operation, string transactionName)
         {
-            using (Transaction transNew = new(_doc, _transactionPrefix + $"{operation}"))
+            MessageBox.Show(operation.Method.Name);
+            MessageBox.Show(operation.Method.Attributes.ToString());
+            MessageBox.Show(operation.Method.ReturnParameter.Name);
+            using (Transaction transNew = new(_doc, _transactionPrefix + transactionName))
             {
                 try
                 {
