@@ -100,6 +100,7 @@
     <Compile Include="MEP\MEPCurveCutter.cs" />
     <Compile Include="MEP\Models\MEPCurveModel.cs" />
     <Compile Include="PathFinders\SimplePathFinder.cs" />
+    <Compile Include="Transactions\TransactionBuilder.cs" />
     <Compile Include="Transforms\TransformBuilder.cs" />
     <Compile Include="Transforms\TransformModel.cs" />
     <Compile Include="Models\Basis.cs" />
@@ -172,9 +173,9 @@
     <Compile Include="Solids\SolidExtractor.cs" />
     <Compile Include="Solids\SolidPlacer.cs" />
     <Compile Include="Solids\SolidUtils.cs" />
-    <Compile Include="TransactionCommitter\Committer.cs" />
-    <Compile Include="TransactionCommitter\BaseCommitter.cs" />
-    <Compile Include="TransactionCommitter\RollBackCommitter.cs" />
+    <Compile Include="Transactions\Committer.cs" />
+    <Compile Include="Transactions\BaseCommitter.cs" />
+    <Compile Include="Transactions\RollBackCommitter.cs" />
     <Compile Include="Points\XYZAlgorithms\MaxDistance\MaxDistanceClient.cs" />
     <Compile Include="Points\XYZAlgorithms\MaxDistance\Strategies\MaxDistnaceStrategy.cs" />
     <Compile Include="Points\XYZAlgorithms\MaxDistance\Strategies\NaiveStrategy.cs" />
