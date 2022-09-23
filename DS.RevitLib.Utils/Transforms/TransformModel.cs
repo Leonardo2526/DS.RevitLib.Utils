@@ -1,13 +1,18 @@
 ﻿using Autodesk.Revit.DB;
 using System.Collections.Generic;
 
-namespace DS.RevitLib.Utils.Models
+namespace DS.RevitLib.Utils.Transforms
 {
-    public class TransformModel
+    public abstract class TransformModel
     {
-        public XYZ MoveVector { get; set; }
-        public List<RotationModel> Rotations { get; set; } = new List<RotationModel>();
-
+        protected TransformModel(object sourceObject, object targetObject)
+        {
+            SourceObject = sourceObject;
+            TargetObject = targetObject;
+        }
+        
+        public object SourceObject { get; }
+        public object TargetObject { get; }
         public List<Transform> Transforms { get; set; } = new List<Transform>();
     }
 }

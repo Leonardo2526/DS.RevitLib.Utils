@@ -65,20 +65,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ElementTransferTest\AvailableMEPCurves.cs" />
-    <Compile Include="ElementTransferTest\PlacementOption.cs" />
-    <Compile Include="ElementTransferTest\PlacementPoint.cs" />
-    <Compile Include="ElementTransferTest\Resolvers\AroundCenterLineRotateResolver.cs" />
-    <Compile Include="ElementTransferTest\Resolvers\MoveResolver.cs" />
-    <Compile Include="ElementTransferTest\Resolvers\RotateCenterLineResolver.cs" />
-    <Compile Include="ElementTransferTest\SolidCollisionClient.cs" />
-    <Compile Include="ElementTransferTest\SolidPlacerTest.cs" />
-    <Compile Include="ElementTransferTest\TargetMEPCuve.cs" />
-    <Compile Include="ElementTransferTest\ModelTransformer.cs" />
-    <Compile Include="ElementTransferTest\TransformBuilder.cs" />
     <Compile Include="ExternalCommand.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ElementTransferTest\SystemModelTest.cs" />
     <Compile Include="SolidCollisionCheckerTest.cs" />
   </ItemGroup>
   <ItemGroup>

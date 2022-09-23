@@ -50,11 +50,16 @@ namespace DS.RevitApp.Test.PathFinders
                 dirZ = _baseLine1.Direction.CrossProduct(dir2);
             }
 
+            dirZ = dirZ.Normalize();
             Line line = Line.CreateUnbound(point1, dirZ);
             XYZ gp1 = line.Project(point2).XYZPoint;
             if (gp1.DistanceTo(_point1) < _minZDist)
             {
-                gp1 += dirZ.Multiply(_minZDist);
+                gp1 = _point1 + dirZ.Multiply(_minZDist);
+            }
+            if (gp1.DistanceTo(_point1) < _minPointDist)
+            {
+                gp1 = _point1 + dirZ.Multiply(_minPointDist);
             }
 
             line = Line.CreateUnbound(gp1, _baseLine1.Direction);
