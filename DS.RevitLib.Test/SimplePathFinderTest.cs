@@ -30,7 +30,7 @@ namespace DS.RevitLib.Test
             var mc1 = _doc.GetElement(reference) as MEPCurve;
             var (con1, con2) = ConnectorUtils.GetMainConnectors(mc1);
 
-            var finder = new SimplePathFinder(mc1.GetCenterLine(), null, 500.mmToFyt2(), 500.mmToFyt2(), 45, _uidoc);
+            var finder = new SimplePathFinder(mc1.GetCenterLine(), null, 500.mmToFyt2(), 500.mmToFyt2(), 45);
             return finder.Find(con1.Origin, con2.Origin);
         }
 
@@ -44,7 +44,7 @@ namespace DS.RevitLib.Test
             var mc2 = _doc.GetElement(reference) as MEPCurve;
             var (con21, con22) = ConnectorUtils.GetMainConnectors(mc2);
 
-            var finder = new SimplePathFinder(mc1.GetCenterLine(), mc2.GetCenterLine(), 500.mmToFyt2(), 500.mmToFyt2(), 45, _uidoc);
+            var finder = new SimplePathFinder(mc1.GetCenterLine(), mc2.GetCenterLine(), 500.mmToFyt2(), 500.mmToFyt2(), 45);
             return finder.Find(con11.Origin, con21.Origin);
         }
 

@@ -1,15 +1,10 @@
 ﻿using Autodesk.Revit.DB;
-using Autodesk.Revit.UI;
 using DS.ClassLib.VarUtils;
 using DS.RevitLib.Utils;
-using DS.RevitLib.Utils.Extensions;
-using DS.RevitLib.Utils.Lines;
 using DS.RevitLib.Utils.PathFinders;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Revit.Async;
-using System.Net;
 
 namespace DS.RevitApp.Test.PathFinders
 {
@@ -22,12 +17,10 @@ namespace DS.RevitApp.Test.PathFinders
         private readonly Line _baseLine2;
         private readonly double _minPointDist;
         private readonly double _minZDist;
-        private Line _currentLine;
-        private double _angle;
-        private readonly UIDocument _uIDocument;
-        private double _maxCutWidth;
+        private readonly double _angle;
+        private readonly double _maxCutWidth;
 
-        public SimplePathFinder(Line baseLine1, Line baseLine2 = null, double minPointDist = 0, double minZDist = 0, double angle = 90, UIDocument uIDocument = null)
+        public SimplePathFinder(Line baseLine1, Line baseLine2 = null, double minPointDist = 0, double minZDist = 0, double angle = 90)
         {
             if (minZDist < minPointDist)
             {
@@ -39,7 +32,6 @@ namespace DS.RevitApp.Test.PathFinders
             _maxCutWidth = _minPointDist * 3;
             _minZDist = minZDist;
             _angle = angle;
-            _uIDocument = uIDocument;
         }
 
         public List<XYZ> Find(XYZ point1, XYZ point2)
@@ -79,6 +71,9 @@ namespace DS.RevitApp.Test.PathFinders
 
             return result;
         }
+
+
+        #region PrivateProperties
 
         private XYZ GetGp1(out Line line)
         {
@@ -142,7 +137,6 @@ namespace DS.RevitApp.Test.PathFinders
 
             return (startPointRes, endPointRes);
         }
-
 
         private List<XYZ> CutAngles(List<XYZ> points)
         {
@@ -209,5 +203,7 @@ namespace DS.RevitApp.Test.PathFinders
             }
             return false;
         }
+
+        #endregion
     }
 }
