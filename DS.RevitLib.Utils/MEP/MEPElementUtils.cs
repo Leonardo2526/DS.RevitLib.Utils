@@ -7,6 +7,7 @@ using Ivanov.RevitLib.Utils;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -191,21 +192,29 @@ namespace DS.RevitLib.Utils.MEP
         /// Disconnect element from all connected connectors.
         /// </summary>
         /// <param name="element"></param>
-        public static void Disconnect(Element element)
+        /// <param name="transactionCommit">Check if needed commit transaction</param>
+        public static void Disconnect(Element element, bool transactionCommit = false)
         {
             var cons = ConnectorUtils.GetConnectors(element);
-            foreach (var con in cons)
+            foreach (var con1 in cons)
             {
-                var connectors = con.AllRefs;
-                foreach (Connector c in connectors)
+                var connectors = con1.AllRefs;
+                foreach (Connector con2 in connectors)
                 {
-                    if (con.IsConnectedTo(c))
+                    if (con1.IsConnectedTo(con2))
                     {
-                        ConnectorUtils.DisconnectConnectors(con, c);
+                        if (transactionCommit)
+                        {
+                            ConnectorUtils.DisconnectConnectors(con1, con2);
+                        }
+                        else
+                        {
+                            con1.DisconnectFrom(con2);
+                        }
+
                     }
                 }
             }
         }
-
     }
 }

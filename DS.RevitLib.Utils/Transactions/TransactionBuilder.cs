@@ -71,9 +71,6 @@ namespace DS.RevitLib.Utils
         /// <param name="transactionName"></param>
         public void Build(Action operation, string transactionName)
         {
-            MessageBox.Show(operation.Method.Name);
-            MessageBox.Show(operation.Method.Attributes.ToString());
-            MessageBox.Show(operation.Method.ReturnParameter.Name);
             using (Transaction transNew = new(_doc, _transactionPrefix + transactionName))
             {
                 try

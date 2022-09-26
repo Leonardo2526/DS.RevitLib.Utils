@@ -21,9 +21,9 @@ namespace DS.RevitLib.Utils.MEP
         /// Cut MEPCurve between points.
         /// </summary>
         /// <returns>Returns splitted MEPCurves</returns>
-        public static List<MEPCurve> Cut(this MEPCurve mEPCurve, XYZ point1, XYZ point2)
+        public static List<MEPCurve> Cut(this MEPCurve mEPCurve, XYZ point1, XYZ point2, bool transactionCommit = false)
         {
-            var cutter = new MEPCurveCutter(mEPCurve, point1, point2);
+            var cutter = new MEPCurveCutter(mEPCurve, point1, point2, transactionCommit);
             return cutter.Cut();
         }
 

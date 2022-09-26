@@ -46,6 +46,9 @@
     <Reference Include="Ivanov.RevitLib.Utils">
       <HintPath>..\..\VAR.RevitLib.Utils\Ivanov.RevitLib.Utils\bin\Release\Ivanov.RevitLib.Utils.dll</HintPath>
     </Reference>
+    <Reference Include="Revit.Async, Version=2.0.1.0, Culture=neutral, processorArchitecture=AMD64">
+      <HintPath>..\packages\Revit.Async.2.0.1\lib\net45\Revit.Async.dll</HintPath>
+    </Reference>
     <Reference Include="RevitAPI">
       <HintPath>C:\Program Files\Autodesk\Revit 2020\RevitAPI.dll</HintPath>
       <Private>False</Private>
@@ -184,7 +187,9 @@
     <Compile Include="Visualisators\IVisualisator.cs" />
     <Compile Include="Visualisators\Visualisator.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>

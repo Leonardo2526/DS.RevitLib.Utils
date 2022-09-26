@@ -101,13 +101,13 @@ namespace DS.RevitLib.Utils.MEP.Symbols
        private List<MEPCurve> GetSplittedElements(MEPCurve mEPCurve, XYZ mEPCurveDir, XYZ placementPoint, double familyLength)
         {
             var creator = new MEPCurveCreator(mEPCurve);
-            MEPCurve splittedMEPCurve1 = creator.SplitElement(placementPoint + mEPCurveDir.Multiply(familyLength/2)) as MEPCurve;
+            MEPCurve splittedMEPCurve1 = creator.SplitElementTransaction(placementPoint + mEPCurveDir.Multiply(familyLength/2)) as MEPCurve;
 
 
             XYZ pointToSplit = placementPoint - mEPCurveDir.Multiply(familyLength/2);
             MEPCurve mEPCurveToSplit = GetMEPCurveToSplit(mEPCurve, splittedMEPCurve1, pointToSplit);
             var splitCreator = new MEPCurveCreator(mEPCurveToSplit);
-            MEPCurve splittedMEPCurve2 = splitCreator.SplitElement(pointToSplit) as MEPCurve;
+            MEPCurve splittedMEPCurve2 = splitCreator.SplitElementTransaction(pointToSplit) as MEPCurve;
 
             var mepCurves = new List<MEPCurve>()
             { mEPCurve, splittedMEPCurve1, splittedMEPCurve2};

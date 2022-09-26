@@ -4,6 +4,7 @@ using Autodesk.Revit.DB.Plumbing;
 using Autodesk.Revit.UI;
 using DS.RevitLib.Utils.Elements;
 using DS.RevitLib.Utils.Extensions;
+using DS.RevitLib.Utils.MEP.Models;
 using DS.RevitLib.Utils.TransactionCommitter;
 using System;
 using System.Collections.Generic;
@@ -150,27 +151,15 @@ namespace DS.RevitLib.Utils.MEP.Creator
             return mEPCurve;
         }
 
-        public Element SplitElement(XYZ splitPoint)
+        public Element SplitElementTransaction(XYZ splitPoint)
         {
             Element newElement = null;
-            var elementTypeName = BaseMEPCurve.GetType().Name;
-
             using (Transaction transNew = new Transaction(Doc, TransactionPrefix + "SplitElement"))
             {
                 try
                 {
                     transNew.Start();
-
-                    ElementId newCurveId;
-                    if (elementTypeName == "Pipe")
-                    {
-                        newCurveId = PlumbingUtils.BreakCurve(Doc, BaseMEPCurve.Id, splitPoint);
-                    }
-                    else
-                    {
-                        newCurveId = MechanicalUtils.BreakCurve(Doc, BaseMEPCurve.Id, splitPoint);
-                    }
-                    newElement = Doc.GetElement(newCurveId);
+                    newElement = SplitElement(splitPoint);
                 }
 
                 catch (Exception e)
@@ -181,6 +170,22 @@ namespace DS.RevitLib.Utils.MEP.Creator
             }
 
             return newElement;
+        }
+
+        public Element SplitElement(XYZ splitPoint)
+        {
+            ElementId newCurveId;
+            var elementTypeName = BaseMEPCurve.GetType().Name;
+
+            if (elementTypeName == "Pipe")
+            {
+                newCurveId = PlumbingUtils.BreakCurve(Doc, BaseMEPCurve.Id, splitPoint);
+            }
+            else
+            {
+                newCurveId = MechanicalUtils.BreakCurve(Doc, BaseMEPCurve.Id, splitPoint);
+            }
+            return Doc.GetElement(newCurveId);
         }
 
         /// <summary>

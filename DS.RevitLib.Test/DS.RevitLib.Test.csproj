@@ -67,6 +67,7 @@
   <ItemGroup>
     <Compile Include="ExternalCommand.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SimplePathFinderTest.cs" />
     <Compile Include="SolidCollisionCheckerTest.cs" />
   </ItemGroup>
   <ItemGroup>

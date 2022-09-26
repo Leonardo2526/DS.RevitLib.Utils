@@ -14,25 +14,15 @@ namespace DS.RevitLib.Utils.MEP.Creator
         private readonly Document _doc;
         private readonly string _transactionPrefix;
         private readonly Committer _committer;
-
+        private readonly bool _transactionCommit;
         #endregion
 
-        public FamInstCreator(Document doc, Committer committer = null, string transactionPrefix = "")
+        public FamInstCreator(Document doc, Committer committer = null, string transactionPrefix = "", bool transactionCommit = false)
         {
             _doc = doc;
-            if (committer is null)
-            {
-                _committer = new BaseCommitter();
-            }
-            else
-            {
-                _committer = committer;
-            }
-
-            if (!String.IsNullOrEmpty(transactionPrefix))
-            {
-                _transactionPrefix = transactionPrefix + "_";
-            }
+            _committer = committer is null ? new BaseCommitter() : committer;
+            _transactionPrefix = string.IsNullOrEmpty(transactionPrefix) ? null : transactionPrefix + "_";
+            _transactionCommit = transactionCommit;
         }
 
 
@@ -216,6 +206,12 @@ namespace DS.RevitLib.Utils.MEP.Creator
         }
 
 
+
+
+        delegate void ConnectOperation(Connector c1, Connector c2);
+        private void TransactionConnect(Connector c1, Connector c2) => ConnectorUtils.ConnectConnectors(_doc, c1, c2);
+        private void Connect(Connector c1, Connector c2) => c1.ConnectTo(c2);  
+
         public void Insert(FamilyInstance family, MEPCurve mEPCurve, out List<MEPCurve> splittedMEPCurves)
         {
             var (famInstCon1, famInstCon2) = ConnectorUtils.GetMainConnectors(family);
@@ -229,10 +225,11 @@ namespace DS.RevitLib.Utils.MEP.Creator
             }
 
             var selectedCon = ConnectorUtils.GetClosest(famInstCon1, cons);
-            ConnectorUtils.ConnectConnectors(_doc, famInstCon1, selectedCon);
+            ConnectOperation connectOperation = _transactionCommit ? TransactionConnect : Connect;
+            connectOperation.Invoke(famInstCon1, selectedCon);          
 
             selectedCon = ConnectorUtils.GetClosest(famInstCon2, cons);
-            ConnectorUtils.ConnectConnectors(_doc, famInstCon2, selectedCon);
+            connectOperation.Invoke(famInstCon2, selectedCon);
         }
 
     }

@@ -5,21 +5,25 @@ using DS.RevitLib.Utils.MEP.Creator;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Remoting.Contexts;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace DS.RevitLib.Utils.MEP
 {
     internal class MEPCurveCutter
     {
         private readonly MEPCurve _mEPCurve;
+        private readonly bool _transactionCommit;
         private readonly XYZ _point1;        
         private readonly XYZ _point2;
 
-        public MEPCurveCutter(MEPCurve mEPCurve, XYZ point1, XYZ point2)
+        public MEPCurveCutter(MEPCurve mEPCurve, XYZ point1, XYZ point2, bool transactionCommit = false)
         {
             this._mEPCurve = mEPCurve;
-
+            _transactionCommit = transactionCommit;
             this._point1 = point1.RoundVector();
             this._point2 = point2.RoundVector();
         }
@@ -44,22 +48,35 @@ namespace DS.RevitLib.Utils.MEP
         private List<MEPCurve> Split(MEPCurve mEPCurve)
         {
             var creator = new MEPCurveCreator(mEPCurve);
-            MEPCurve splittedMEPCurve1 = creator.SplitElement(_point1) as MEPCurve;
-            var angleAlignment = new AngleAlignment(splittedMEPCurve1, _mEPCurve);
-            angleAlignment.AlignNormOrths();
+
+            MEPCurve splittedMEPCurve1 = _transactionCommit ? 
+                creator.SplitElementTransaction(_point1) as MEPCurve : 
+                creator.SplitElement(_point1) as MEPCurve;
+
+            //var angleAlignment = new AngleAlignment(splittedMEPCurve1, _mEPCurve);
+            //angleAlignment.AlignNormOrths();
 
             MEPCurve mEPCurveToSplit = GetMEPCurveByPoint(mEPCurve, splittedMEPCurve1, _point2);
             var splitCreator = new MEPCurveCreator(mEPCurveToSplit);
-            MEPCurve splittedMEPCurve2 = splitCreator.SplitElement(_point2) as MEPCurve;
-            angleAlignment = new AngleAlignment(splittedMEPCurve2, _mEPCurve);
-            angleAlignment.AlignNormOrths();
+            MEPCurve splittedMEPCurve2 = _transactionCommit ?
+                splitCreator.SplitElementTransaction(_point2) as MEPCurve :
+                splitCreator.SplitElement(_point2) as MEPCurve;
+
+            //angleAlignment = new AngleAlignment(splittedMEPCurve2, _mEPCurve);
+            //angleAlignment.AlignNormOrths();
 
             return new List<MEPCurve>() { mEPCurve, splittedMEPCurve1, splittedMEPCurve2};
         }
 
 
+        delegate void DeleteOperation(Element element);
+        private void TransactionDelete(Element element) => ElementUtils.DeleteElement(_mEPCurve.Document, element);
+        private void Delete(Element element) => _mEPCurve.Document.Delete(element.Id);
+
         private List<MEPCurve> DeleteMiddleMEPCurve(List<MEPCurve> mEPCurves)
         {
+            DeleteOperation operation = _transactionCommit ? TransactionDelete : Delete;
+
             var orderedElements = mEPCurves.Cast<Element>().ToList().Order();
 
             //get elements to delete
@@ -67,7 +84,7 @@ namespace DS.RevitLib.Utils.MEP
             foreach (var del in toDelete)
             {
                 orderedElements.Remove(del);
-                ElementUtils.DeleteElement(_mEPCurve.Document, del);
+                operation.Invoke(del);
             }
 
             return orderedElements.Cast<MEPCurve>().ToList();
