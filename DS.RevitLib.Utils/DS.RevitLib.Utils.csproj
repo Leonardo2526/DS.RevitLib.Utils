@@ -103,6 +103,8 @@
     <Compile Include="MEP\MEPCurveCutter.cs" />
     <Compile Include="MEP\Models\MEPCurveModel.cs" />
     <Compile Include="PathFinders\SimplePathFinder.cs" />
+    <Compile Include="Points\Models\MEPConnectionPoint.cs" />
+    <Compile Include="Points\Models\IMEPConnectionPoint.cs" />
     <Compile Include="Transactions\TransactionBuilder.cs" />
     <Compile Include="Transforms\TransformBuilder.cs" />
     <Compile Include="Transforms\TransformModel.cs" />

@@ -25,18 +25,11 @@ namespace DS.RevitApp.Test.PathFinders
         public SimplePathFinder(Line baseLine1, Line baseLine2 = null, 
             double minPointDist = 0, double maxCutWidth = 0, double angle = 90, double minZDist = 0)
         {
-            if (minZDist < minPointDist)
+            if (minZDist!=0 && minZDist < minPointDist)
             {
                 throw new ArgumentException("minZDist < minPointDist");
             }
-            if (minPointDist !=0 && maxCutWidth < minPointDist)
-            {
-                throw new ArgumentException("maxCutWidth < minPointDist");
-            }
-            if (minZDist != 0 && maxCutWidth < minZDist)
-            {
-                throw new ArgumentException("maxCutWidth < minZDist");
-            }
+            
             _baseLine1 = baseLine1;
             _baseLine2 = baseLine2;
             _minPointDist = minPointDist;
@@ -68,16 +61,16 @@ namespace DS.RevitApp.Test.PathFinders
             var line3 = Line.CreateUnbound(gp2, line2.Direction.CrossProduct(gp1 - _point1));
             XYZ gp3 = line3.Project(point2).XYZPoint;
 
-            if (Math.Round(gp1.DistanceTo(_point1), 3) != 0)
+            if (Math.Round(gp1.DistanceTo(_point1), 3) >= _minPointDist)
             {
                 result.Add(gp1);
             }
-            if (Math.Round(gp2.DistanceTo(_point2), 3) != 0 && Math.Round(gp2.DistanceTo(gp1), 3) != 0)
+            if (Math.Round(gp2.DistanceTo(_point2), 3) >= _minPointDist && Math.Round(gp2.DistanceTo(gp1), 3) >= _minPointDist)
             {
                 result.Add(gp2);
 
             }
-            if (Math.Round(gp3.DistanceTo(_point2), 3) != 0 && Math.Round(gp3.DistanceTo(gp2), 3) != 0)
+            if (Math.Round(gp3.DistanceTo(_point2), 3) >= _minPointDist && Math.Round(gp3.DistanceTo(gp2), 3) >= _minPointDist)
             {
                 result.Add(gp3);
             }

@@ -1,5 +1,8 @@
 ﻿using Autodesk.Revit.DB;
+using DS.ClassLib.VarUtils;
 using DS.RevitLib.Utils.Extensions;
+using DS.RevitLib.Utils.Models;
+using iUtils.Comparable;
 using Ivanov.RevitLib.Utils;
 using System;
 using System.Collections.Generic;
@@ -200,7 +203,7 @@ namespace DS.RevitLib.Utils.MEP
 
             return 2 * mEPCurveline.Distance(intersectionPoint);
         }
-
+      
         /// <summary>
         /// Check if MEPCurves are equal oriented. 
         /// Check if size by one of baseMEPCurve norm vector is equal to mEPCurve size by the same vector.
@@ -210,22 +213,9 @@ namespace DS.RevitLib.Utils.MEP
         /// <returns>Return true if MEPCurves are equal oriented.</returns>
         public static bool EqualOriented(MEPCurve baseMEPCurve, MEPCurve mEPCurve)
         {
-            XYZ baseDir = GetDirection(baseMEPCurve);
-            XYZ dir = GetDirection(mEPCurve);
-
-            List<XYZ> baseNorms = ElementUtils.GetOrthoNormVectors(baseMEPCurve);
-
-            XYZ measureVector = GetMesureVector(baseNorms, dir, baseDir);
-
-            double baseSize = GetSizeByVector(baseMEPCurve, measureVector);
-            double size = GetSizeByVector(mEPCurve, measureVector);
-
-            if (Math.Abs(baseSize - size) < 0.001)
-            {
-                return true;
-            }
-
-            return false;
+            Basis baseBasis = baseMEPCurve.GetBasis();
+            Basis curveBasis = mEPCurve.GetBasis();
+            return XYZUtils.Collinearity(baseBasis.Y, curveBasis.Y);
         }
 
         /// <summary>
@@ -234,7 +224,7 @@ namespace DS.RevitLib.Utils.MEP
         /// <param name="baseNorms"></param>
         /// <param name="dir"></param>
         /// <returns>Return vector which direction is not parallel to mEPCurve's direction.</returns>
-        private static XYZ GetMesureVector(List<XYZ> baseNorms, XYZ dir, XYZ baseDir)
+        private static XYZ GetMesureVector(List<XYZ> baseNorms, XYZ dir)
         {
             foreach (var norm in baseNorms)
             {
@@ -362,7 +352,7 @@ namespace DS.RevitLib.Utils.MEP
                 var s = "Elements aren't connected";
                 throw new ArgumentException(s);
             }
-            
+
             var mEPCurveDir = GetDirection(mEPCurve);
 
             var mEPCurveLP = ElementUtils.GetLocationPoint(mEPCurve);
@@ -385,7 +375,7 @@ namespace DS.RevitLib.Utils.MEP
             if (connectedElems is null || !connectedElems.Any())
             {
                 return connectedElems;
-            }           
+            }
 
             return connectedElems.OrderByPoint(basePoint);
         }
@@ -402,11 +392,11 @@ namespace DS.RevitLib.Utils.MEP
 
             if (connectedElems is null || !connectedElems.Any())
             {
-                var connectors = ConnectorUtils.GetConnectors( mEPCurve);
+                var connectors = ConnectorUtils.GetConnectors(mEPCurve);
                 return connectors;
             }
 
-            var notSpudElements = connectedElems.ExludeSpudes();            
+            var notSpudElements = connectedElems.ExludeSpudes();
 
             if (notSpudElements is not null && notSpudElements.Any())
             {
@@ -416,7 +406,7 @@ namespace DS.RevitLib.Utils.MEP
                     var (elem1Con, elem2Con) = ConnectorUtils.GetCommonConnectors(elem, mEPCurve);
                     cons.Add(elem2Con);
                 }
-               return cons;
+                return cons;
             }
             else
             {
@@ -425,7 +415,7 @@ namespace DS.RevitLib.Utils.MEP
             };
         }
 
-        
+
         public static MEPCurve GetMaxLengthMEPCurve(List<MEPCurve> mEPCurves)
         {
             double maxLength = 0;
