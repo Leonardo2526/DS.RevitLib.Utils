@@ -7,10 +7,9 @@ using System.Collections.Generic;
 using System.Linq;
 
 namespace DS.RevitApp.Test.PathFinders
-{
+{   
     public class SimplePathFinder : IPathFinder
     {
-
         private XYZ _point1;
         private XYZ _point2;
         private Line _baseLine1;
@@ -20,20 +19,38 @@ namespace DS.RevitApp.Test.PathFinders
         private readonly double _angle;
         private readonly double _maxCutWidth;
 
-        public SimplePathFinder(Line baseLine1, Line baseLine2 = null, double minPointDist = 0, double minZDist = 0, double angle = 90)
+        /// <summary>
+        /// An object for path creation without collisions account.
+        /// </summary>
+        public SimplePathFinder(Line baseLine1, Line baseLine2 = null, 
+            double minPointDist = 0, double maxCutWidth = 0, double angle = 90, double minZDist = 0)
         {
             if (minZDist < minPointDist)
             {
                 throw new ArgumentException("minZDist < minPointDist");
             }
+            if (minPointDist !=0 && maxCutWidth < minPointDist)
+            {
+                throw new ArgumentException("maxCutWidth < minPointDist");
+            }
+            if (minZDist != 0 && maxCutWidth < minZDist)
+            {
+                throw new ArgumentException("maxCutWidth < minZDist");
+            }
             _baseLine1 = baseLine1;
             _baseLine2 = baseLine2;
             _minPointDist = minPointDist;
-            _maxCutWidth = _minPointDist * 3;
+            _maxCutWidth = maxCutWidth;
             _minZDist = minZDist;
             _angle = angle;
         }
 
+        /// <summary>
+        /// Create path between two points.
+        /// </summary>
+        /// <param name="point1"></param>
+        /// <param name="point2"></param>
+        /// <returns>Returns path's coordinates.</returns>
         public List<XYZ> Find(XYZ point1, XYZ point2)
         {
             _point1 = point1;
