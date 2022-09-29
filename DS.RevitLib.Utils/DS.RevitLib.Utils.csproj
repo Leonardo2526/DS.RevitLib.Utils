@@ -81,7 +81,7 @@
     <Compile Include="Collisions\Checkers\ICollisionChecker.cs" />
     <Compile Include="Collisions\Checkers\SolidCollisionChecker.cs" />
     <Compile Include="Connection\IConnectionFactory.cs" />
-    <Compile Include="Connection\Strategies\ConnectorMEPCurveStategy.cs" />
+    <Compile Include="Connection\Strategies\ConnectorMEPCurveStrategy.cs" />
     <Compile Include="Connection\Strategies\IConnectionStrategy.cs" />
     <Compile Include="Connection\MEPCurveConnectionFactory.cs" />
     <Compile Include="Connection\Strategies\ElbowMEPCurveStrategy.cs" />

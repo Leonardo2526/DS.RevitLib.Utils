@@ -9,14 +9,13 @@ using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.Connection.Strategies
 {
-    internal class ElbowMEPCurveStrategy : MEPCurveConnectionStrategy
+    internal class ConnectorMEPCurveStrategy : MEPCurveConnectionStrategy
     {
         private readonly Connector _elem1Con;
         private readonly Connector _elem2Con;
 
-        public ElbowMEPCurveStrategy(Document doc, 
-            MEPCurveGeometryModel mEPCurve1, MEPCurveGeometryModel mEPCurve2, 
-            double minCurveLength, 
+        public ConnectorMEPCurveStrategy(Document doc, 
+            MEPCurveGeometryModel mEPCurve1, MEPCurveGeometryModel mEPCurve2, double minCurveLength, 
             Connector elem1Con, Connector elem2Con) : 
             base(doc, mEPCurve1, mEPCurve2, minCurveLength)
         {
@@ -29,8 +28,8 @@ namespace DS.RevitLib.Utils.Connection.Strategies
             var transaction = new TransactionBuilder<FamilyInstance>(_doc, new RollBackCommitter());
             transaction.Build(() =>
             {
-                ConnectionElement = _doc.Create.NewElbowFitting(_elem1Con, _elem2Con);
-            }, "InsertElbow");
+                _elem1Con.ConnectTo(_elem2Con);
+            }, "ConnectConnectors");
 
             return !transaction.ErrorMessages.Any();
         }

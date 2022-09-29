@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace DS.RevitLib.Test
 {
-    internal class ConnectionFactoryClient
+    public class ConnectionFactoryClient
     {
         private readonly UIDocument _uidoc;
         private readonly Document _doc;

@@ -15,6 +15,8 @@ namespace DS.RevitLib.Utils.MEP.Models
             (Width, Height) = MEPCurveUtils.GetWidthHeight(mEPCurve);
             Length = MEPCurveUtils.GetLength(mEPCurve);
             Area = MEPCurveUtils.GetCrossSectionArea(mEPCurve);
+            var (con1, con2) = ConnectorUtils.GetMainConnectors(MEPCurve);
+            MainConnectors = new List<Connector> { con1, con2 };
         }
 
         #region Properties
@@ -28,14 +30,8 @@ namespace DS.RevitLib.Utils.MEP.Models
                 return ConnectorUtils.GetConnectors(MEPCurve);
             }
         }
-        public List<Connector> MainConnectors
-        {
-            get
-            {
-                var (con1, con2) = ConnectorUtils.GetMainConnectors(MEPCurve);
-                return new List<Connector> { con1, con2 } ;
-            }
-        }
+        public List<Connector> MainConnectors { get; private set; }
+
         public List<XYZ> ConnectorsPoints
         {
             get
@@ -59,14 +55,7 @@ namespace DS.RevitLib.Utils.MEP.Models
         {
             get
             {
-                if (Type.Name == "Pipe" || Type.Name == "Duct")
-                {
-                    return Insulation.GetThickness(MEPCurve);
-                }
-                else
-                {
-                    return 0;
-                }
+                return Insulation.GetThickness(MEPCurve);
             }
         }
 

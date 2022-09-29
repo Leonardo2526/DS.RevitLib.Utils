@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using DS.RevitLib.Utils.Extensions;
+using DS.RevitLib.Utils.MEP.Models;
 using DS.RevitLib.Utils.MEP.Neighbours;
 using System;
 using System.Collections.Generic;
@@ -126,6 +127,31 @@ namespace DS.RevitLib.Utils.MEP
 
         }
 
+        /// <summary>
+        /// Get neighbour connectors. 
+        /// </summary>
+        /// <param name="connectors1"></param>
+        /// <param name="connectors2"></param>
+        /// <returns>Returns two connectors of elements with zero distance.</returns>
+        public static (Connector con1, Connector con2) GetNeighbourConnectors(List<Connector> connectors1, List<Connector> connectors2)
+        {           
+            Connector elem1Con = null, elem2Con = null;
+            foreach (Connector c1 in connectors1)
+            {
+                var cons2 = connectors2.
+                    Where(con => (con.Origin - c1.Origin).IsZeroLength());
+                if (!cons2.Any())
+                {
+                   continue;
+                }
+                elem1Con = c1;
+                elem2Con = cons2.First();
+                break;
+            }
+
+            return (elem1Con, elem2Con);
+        }
+
         public static List<Connector> GetConnectors(Element element)
         {
             ConnectorSet connectorSet = GetConnectorSet(element);
@@ -242,7 +268,7 @@ namespace DS.RevitLib.Utils.MEP
         }
 
         /// <summary>
-        /// Get common connectors between two elements
+        /// Get common connected connectors between two elements
         /// </summary>
         /// <param name="element1"></param>
         /// <param name="element2"></param>

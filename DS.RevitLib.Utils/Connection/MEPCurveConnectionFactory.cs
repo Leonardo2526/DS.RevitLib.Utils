@@ -6,6 +6,7 @@ using DS.RevitLib.Utils.MEP.Creator;
 using DS.RevitLib.Utils.MEP.Models;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -30,7 +31,7 @@ namespace DS.RevitLib.Utils.Connection
         {
             _doc = doc;
             _mEPCurveModel1 = new MEPCurveGeometryModel(mEPCurve1);
-            _mEPCurveModel2 = new MEPCurveGeometryModel(mEPCurve1);
+            _mEPCurveModel2 = new MEPCurveGeometryModel(mEPCurve2);
             _minLength = minLength;
         }
 
@@ -43,25 +44,26 @@ namespace DS.RevitLib.Utils.Connection
 
         private MEPCurveConnectionStrategy GetStrategy()
         {
-            var (elem1Con, elem2Con) = ConnectorUtils.GetCommonConnectors(_mEPCurveModel1.MEPCurve, _mEPCurveModel2.MEPCurve);
-
+            var (elem1Con, elem2Con) = ConnectorUtils.GetNeighbourConnectors(_mEPCurveModel1.MainConnectors, _mEPCurveModel2.MainConnectors);
             if (elem1Con is not null && elem2Con is not null)
             {
                 return XYZUtils.Collinearity(_mEPCurveModel1.Direction, _mEPCurveModel2.Direction) ?
-                    new ConnectorMEPCurveStategy(_mEPCurveModel1, _mEPCurveModel2, _minLength) :
-                    new ElbowMEPCurveStrategy(_mEPCurveModel1, _mEPCurveModel2, _minLength);
+                    new ConnectorMEPCurveStrategy(_doc, _mEPCurveModel1, _mEPCurveModel2, _minLength, elem1Con, elem2Con) :
+                    new ElbowMEPCurveStrategy(_doc, _mEPCurveModel1, _mEPCurveModel2, _minLength, elem1Con, elem2Con);
             }
 
             //try get tee or spud stratagies
             XYZ mc2ConXYZ1 = _mEPCurveModel2.MainConnectors.First().Origin;
             XYZ mc2ConXYZ2 = _mEPCurveModel2.MainConnectors.Last().Origin;
-
+                    
             XYZ pointOnCurve = _mEPCurveModel1.MainConnectors.First().Origin.
                 IsBetweenPoints(mc2ConXYZ1, mc2ConXYZ2) ? _mEPCurveModel1.MainConnectors.First().Origin : null;
             pointOnCurve ??= _mEPCurveModel1.MainConnectors.Last().Origin.
                     IsBetweenPoints(mc2ConXYZ1, mc2ConXYZ2) ? _mEPCurveModel1.MainConnectors.Last().Origin : null;
             return pointOnCurve is not null && XYZUtils.Perpendicular(_mEPCurveModel1.Direction, _mEPCurveModel2.Direction) ?
-                new TeeMEPCurveStrategy(_mEPCurveModel1, _mEPCurveModel2, _minLength) : null;
+                new TeeMEPCurveStrategy(_doc, _mEPCurveModel1, _mEPCurveModel2, _minLength, 
+                _mEPCurveModel1.MainConnectors.Where(obj => (obj.Origin - pointOnCurve).IsZeroLength()).First()) : null;
         }
+
     }
 }
