@@ -80,6 +80,13 @@
     <Compile Include="Collisions\Checkers\CollisionChecker.cs" />
     <Compile Include="Collisions\Checkers\ICollisionChecker.cs" />
     <Compile Include="Collisions\Checkers\SolidCollisionChecker.cs" />
+    <Compile Include="Connection\IConnectionFactory.cs" />
+    <Compile Include="Connection\Strategies\ConnectorMEPCurveStategy.cs" />
+    <Compile Include="Connection\Strategies\IConnectionStrategy.cs" />
+    <Compile Include="Connection\MEPCurveConnectionFactory.cs" />
+    <Compile Include="Connection\Strategies\ElbowMEPCurveStrategy.cs" />
+    <Compile Include="Connection\Strategies\MEPCurveConnectionStrategy.cs" />
+    <Compile Include="Connection\Strategies\TeeMEPCurveStrategy.cs" />
     <Compile Include="Elements\Alignments\SolidAngleAlignment.cs" />
     <Compile Include="Elements\Alignments\AngleAlignment.cs" />
     <Compile Include="Elements\Alignments\IAlignment.cs" />
@@ -97,11 +104,12 @@
     <Compile Include="Extensions\MEPCurveExtension.cs" />
     <Compile Include="FailedTransaction.cs" />
     <Compile Include="FamilyInstances\FamilyInstanceExtensions.cs" />
+    <Compile Include="MEP\Models\MEPCurveModel.cs" />
     <Compile Include="PathFinders\IPathFinder.cs" />
     <Compile Include="Lines\LineExtensions.cs" />
     <Compile Include="MEP\MEPCurveExtensions.cs" />
     <Compile Include="MEP\MEPCurveCutter.cs" />
-    <Compile Include="MEP\Models\MEPCurveModel.cs" />
+    <Compile Include="MEP\Models\MEPCurveGeometryModel.cs" />
     <Compile Include="PathFinders\SimplePathFinder.cs" />
     <Compile Include="Points\Models\MEPConnectionPoint.cs" />
     <Compile Include="Points\Models\IMEPConnectionPoint.cs" />

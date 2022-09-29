@@ -1,0 +1,67 @@
+﻿using Autodesk.Revit.DB;
+using DS.RevitLib.Utils.Connection.Strategies;
+using DS.RevitLib.Utils.Extensions;
+using DS.RevitLib.Utils.MEP;
+using DS.RevitLib.Utils.MEP.Creator;
+using DS.RevitLib.Utils.MEP.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DS.RevitLib.Utils.Connection
+{
+    public class MEPCurveConnectionFactory : IConnectionFactory
+    {
+        private readonly Document _doc;
+        private readonly MEPCurveGeometryModel _mEPCurveModel1;
+        private readonly MEPCurveGeometryModel _mEPCurveModel2;
+        private readonly double _minLength;
+
+        /// <summary>
+        /// Initiate factory object to connect two MEPCurves
+        /// </summary>
+        /// <param name="doc"></param>
+        /// <param name="mEPCurve1"></param>
+        /// <param name="mEPCurve2"></param>
+        /// <param name="minLength">Minimum length between two MEPCurve's connectors.</param>
+        public MEPCurveConnectionFactory(Document doc, MEPCurve mEPCurve1, MEPCurve mEPCurve2, double minLength = 0)
+        {
+            _doc = doc;
+            _mEPCurveModel1 = new MEPCurveGeometryModel(mEPCurve1);
+            _mEPCurveModel2 = new MEPCurveGeometryModel(mEPCurve1);
+            _minLength = minLength;
+        }
+
+        /// <inheritdoc/>
+        public bool Connect()
+        {
+            var strategy = GetStrategy();
+            return strategy is not null && strategy.Connect();
+        }
+
+        private MEPCurveConnectionStrategy GetStrategy()
+        {
+            var (elem1Con, elem2Con) = ConnectorUtils.GetCommonConnectors(_mEPCurveModel1.MEPCurve, _mEPCurveModel2.MEPCurve);
+
+            if (elem1Con is not null && elem2Con is not null)
+            {
+                return XYZUtils.Collinearity(_mEPCurveModel1.Direction, _mEPCurveModel2.Direction) ?
+                    new ConnectorMEPCurveStategy(_mEPCurveModel1, _mEPCurveModel2, _minLength) :
+                    new ElbowMEPCurveStrategy(_mEPCurveModel1, _mEPCurveModel2, _minLength);
+            }
+
+            //try get tee or spud stratagies
+            XYZ mc2ConXYZ1 = _mEPCurveModel2.MainConnectors.First().Origin;
+            XYZ mc2ConXYZ2 = _mEPCurveModel2.MainConnectors.Last().Origin;
+
+            XYZ pointOnCurve = _mEPCurveModel1.MainConnectors.First().Origin.
+                IsBetweenPoints(mc2ConXYZ1, mc2ConXYZ2) ? _mEPCurveModel1.MainConnectors.First().Origin : null;
+            pointOnCurve ??= _mEPCurveModel1.MainConnectors.Last().Origin.
+                    IsBetweenPoints(mc2ConXYZ1, mc2ConXYZ2) ? _mEPCurveModel1.MainConnectors.Last().Origin : null;
+            return pointOnCurve is not null && XYZUtils.Perpendicular(_mEPCurveModel1.Direction, _mEPCurveModel2.Direction) ?
+                new TeeMEPCurveStrategy(_mEPCurveModel1, _mEPCurveModel2, _minLength) : null;
+        }
+    }
+}
