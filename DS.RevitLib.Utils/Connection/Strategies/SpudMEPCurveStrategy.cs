@@ -30,6 +30,7 @@ namespace DS.RevitLib.Utils.Connection.Strategies
             transaction.Build(() =>
             {
                 ConnectionElement = _doc.Create.NewTakeoffFitting(_elem1Con, _mEPCurve2.MEPCurve);
+                Insulation.Create(_mEPCurve1.MEPCurve, ConnectionElement);
             }, "InsertSpud");
 
             return !transaction.ErrorMessages.Any();

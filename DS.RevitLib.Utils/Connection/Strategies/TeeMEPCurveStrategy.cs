@@ -45,6 +45,7 @@ namespace DS.RevitLib.Utils.Connection.Strategies
             transaction.Build(() =>
             {
                 ConnectionElement = _doc.Create.NewTeeFitting(c1, c2, _elem1Con);
+                Insulation.Create(_mEPCurve1.MEPCurve, ConnectionElement);
             }, "InsertTee");
 
             return !transaction.ErrorMessages.Any();

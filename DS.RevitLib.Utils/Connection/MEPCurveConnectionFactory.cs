@@ -62,6 +62,7 @@ namespace DS.RevitLib.Utils.Connection
             pointOnCurve ??= _mEPCurveModel1.MainConnectors.Last().Origin.
                     IsBetweenPoints(mc2ConXYZ1, mc2ConXYZ2) ? _mEPCurveModel1.MainConnectors.Last().Origin : null;
 
+            //need only perpendicular MEPCurves
             if (pointOnCurve is null || !XYZUtils.Perpendicular(_mEPCurveModel1.Direction, _mEPCurveModel2.Direction))
             {
                 return null;

@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.DB;
+using DS.RevitLib.Utils.MEP;
 using DS.RevitLib.Utils.MEP.Models;
 using DS.RevitLib.Utils.TransactionCommitter;
 using System;
@@ -28,8 +29,9 @@ namespace DS.RevitLib.Utils.Connection.Strategies
         {
             var transaction = new TransactionBuilder<FamilyInstance>(_doc, new RollBackCommitter());
             transaction.Build(() =>
-            {
+            {              
                 ConnectionElement = _doc.Create.NewElbowFitting(_elem1Con, _elem2Con);
+                Insulation.Create(_mEPCurve1.MEPCurve, ConnectionElement);
             }, "InsertElbow");
 
             return !transaction.ErrorMessages.Any();
