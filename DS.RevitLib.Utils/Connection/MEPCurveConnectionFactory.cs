@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.Mechanical;
 using DS.RevitLib.Utils.Connection.Strategies;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.MEP;
@@ -55,14 +56,36 @@ namespace DS.RevitLib.Utils.Connection
             //try get tee or spud stratagies
             XYZ mc2ConXYZ1 = _mEPCurveModel2.MainConnectors.First().Origin;
             XYZ mc2ConXYZ2 = _mEPCurveModel2.MainConnectors.Last().Origin;
-                    
+
             XYZ pointOnCurve = _mEPCurveModel1.MainConnectors.First().Origin.
                 IsBetweenPoints(mc2ConXYZ1, mc2ConXYZ2) ? _mEPCurveModel1.MainConnectors.First().Origin : null;
             pointOnCurve ??= _mEPCurveModel1.MainConnectors.Last().Origin.
                     IsBetweenPoints(mc2ConXYZ1, mc2ConXYZ2) ? _mEPCurveModel1.MainConnectors.Last().Origin : null;
-            return pointOnCurve is not null && XYZUtils.Perpendicular(_mEPCurveModel1.Direction, _mEPCurveModel2.Direction) ?
-                new TeeMEPCurveStrategy(_doc, _mEPCurveModel1, _mEPCurveModel2, _minLength, 
-                _mEPCurveModel1.MainConnectors.Where(obj => (obj.Origin - pointOnCurve).IsZeroLength()).First()) : null;
+
+            if (pointOnCurve is null || !XYZUtils.Perpendicular(_mEPCurveModel1.Direction, _mEPCurveModel2.Direction))
+            {
+                return null;
+            }
+
+            var routePrefManager = _mEPCurveModel1.MEPCurveType.RoutingPreferenceManager;
+            Connector curve1Con = _mEPCurveModel1.MainConnectors.
+                            Where(obj => (obj.Origin - pointOnCurve).IsZeroLength()).First();
+            switch (routePrefManager.PreferredJunctionType)
+            {
+                case PreferredJunctionType.Tee:
+                    {
+                        return new TeeMEPCurveStrategy(_doc, _mEPCurveModel1, _mEPCurveModel2, _minLength, curve1Con);
+                    }
+                case PreferredJunctionType.Tap:
+                    {
+                        return new SpudMEPCurveStrategy(_doc, _mEPCurveModel1, _mEPCurveModel2, _minLength, curve1Con);
+                    }
+                default:
+                    break;
+            }
+
+            return null;
+
         }
 
     }

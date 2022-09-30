@@ -86,6 +86,7 @@
     <Compile Include="Connection\MEPCurveConnectionFactory.cs" />
     <Compile Include="Connection\Strategies\ElbowMEPCurveStrategy.cs" />
     <Compile Include="Connection\Strategies\MEPCurveConnectionStrategy.cs" />
+    <Compile Include="Connection\Strategies\SpudMEPCurveStrategy.cs" />
     <Compile Include="Connection\Strategies\TeeMEPCurveStrategy.cs" />
     <Compile Include="Elements\Alignments\SolidAngleAlignment.cs" />
     <Compile Include="Elements\Alignments\AngleAlignment.cs" />
