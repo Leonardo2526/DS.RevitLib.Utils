@@ -371,6 +371,17 @@ namespace DS.RevitLib.Utils
         }
 
         /// <summary>
+        /// Get element's directions.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <returns>Return directions by main connectors of element</returns>
+        public static XYZ GetMainDirection(Element element)
+        {
+            var (con1, con2) = ConnectorUtils.GetMainConnectors(element);
+            return (con1.Origin - con2.Origin).Normalize().RoundVector();
+        }
+
+        /// <summary>
         /// Highlight elements in revit.
         /// </summary>
         /// <param name="elements"></param>

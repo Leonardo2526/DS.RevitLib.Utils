@@ -351,6 +351,35 @@ namespace DS.RevitLib.Utils.MEP
             return resultCon;
         }
 
+        /// <summary>
+        /// Get two connector from the lists with minimum distance between them.
+        /// </summary>
+        /// <param name="connectors1"></param>
+        /// <param name="connectors2"></param>
+        /// <returns>Return closest connectors.</returns>
+        public static (Connector con1, Connector con2) GetClosest(List<Connector> connectors1, List<Connector> connectors2)
+        {
+            Connector resCon1 = null;
+            Connector resCon2 = null;
+            double distance = 10000;
+
+            foreach (var c1 in connectors1)
+            {
+                foreach (var c2 in connectors2)
+                {
+                    double curDistance = c1.Origin.DistanceTo(c2.Origin);
+                    if (curDistance < distance)
+                    {
+                        distance = curDistance;
+                        resCon1 = c1;
+                        resCon2 = c2;
+                    }
+                }
+            }
+
+            return (resCon1, resCon2);
+        }
+
         public static void ConnectConnectors(Document Doc, Connector c1, Connector c2)
         {
             if (!c1.IsConnectedTo(c2))
