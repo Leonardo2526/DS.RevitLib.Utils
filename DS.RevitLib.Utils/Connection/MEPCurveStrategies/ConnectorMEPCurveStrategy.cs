@@ -14,6 +14,15 @@ namespace DS.RevitLib.Utils.Connection.Strategies
         private readonly Connector _elem1Con;
         private readonly Connector _elem2Con;
 
+        /// <summary>
+        /// Initiate object to connect two neighbour connectors.
+        /// </summary>
+        /// <param name="doc"></param>
+        /// <param name="mEPCurve1"></param>
+        /// <param name="mEPCurve2"></param>
+        /// <param name="minCurveLength"></param>
+        /// <param name="elem1Con"></param>
+        /// <param name="elem2Con"></param>
         public ConnectorMEPCurveStrategy(Document doc, 
             MEPCurveGeometryModel mEPCurve1, MEPCurveGeometryModel mEPCurve2, double minCurveLength, 
             Connector elem1Con, Connector elem2Con) : 

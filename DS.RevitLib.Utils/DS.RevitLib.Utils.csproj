@@ -87,12 +87,13 @@
     <Compile Include="Connection\ElementStrategies\TeeElementStrategy.cs" />
     <Compile Include="Connection\IConnectionFactory.cs" />
     <Compile Include="Connection\MEPCurveStrategies\ConnectorMEPCurveStrategy.cs" />
-    <Compile Include="Connection\MEPCurveStrategies\IConnectionStrategy.cs" />
+    <Compile Include="Connection\IConnectionStrategy.cs" />
     <Compile Include="Connection\MEPCurveConnectionFactory.cs" />
     <Compile Include="Connection\MEPCurveStrategies\ElbowMEPCurveStrategy.cs" />
     <Compile Include="Connection\MEPCurveStrategies\MEPCurveConnectionStrategy.cs" />
     <Compile Include="Connection\MEPCurveStrategies\SpudMEPCurveStrategy.cs" />
     <Compile Include="Connection\MEPCurveStrategies\TeeMEPCurveStrategy.cs" />
+    <Compile Include="Connection\MEPCurveStrategies\TeeWithCutMEPCurveStrategy.cs" />
     <Compile Include="Elements\Alignments\SolidAngleAlignment.cs" />
     <Compile Include="Elements\Alignments\AngleAlignment.cs" />
     <Compile Include="Elements\Alignments\IAlignment.cs" />

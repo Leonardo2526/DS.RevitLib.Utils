@@ -49,14 +49,14 @@ namespace DS.RevitLib.Utils.Connection
             var dir1 = ElementUtils.GetMainDirection(_element1);
             var dir2 = ElementUtils.GetMainDirection(_element2);
 
-            if (commonCon1 is not null && commonCon2 is not null && XYZUtils.Collinearity(dir1, dir2))
+            if (commonCon1 is not null && commonCon2 is not null)
             {
                 return new ConnectorElementStrategy(_doc, commonCon1, commonCon2);
             }
-
-            return _element3 is null ? 
-                new ElbowElementStrategy(_doc, cons1, cons2) : 
-                new TeeElementStrategy(_doc, cons1, cons2, ConnectorUtils.GetConnectors(_element3));
+            return null;
+            //return _element3 is null ? 
+            //    new ElbowElementStrategy(_doc, cons1, cons2) : 
+            //    new TeeElementStrategy(_doc, cons1, cons2, ConnectorUtils.GetConnectors(_element3));
         }
     }
 }

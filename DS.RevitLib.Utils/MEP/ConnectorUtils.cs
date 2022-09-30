@@ -352,6 +352,33 @@ namespace DS.RevitLib.Utils.MEP
         }
 
         /// <summary>
+        /// Select connector from the list which is closest to line;
+        /// </summary>
+        /// <param name="line"></param>
+        /// <param name="connectors"></param>
+        /// <returns>Return closest connector.</returns>
+        public static Connector GetClosest(Line line, List<Connector> connectors)
+        {
+            Connector resultCon = connectors.FirstOrDefault();
+            double distance = line.Distance(resultCon.Origin);
+
+            if (connectors.Count > 1)
+            {
+                for (int i = 1; i < connectors.Count; i++)
+                {
+                    double curDistance = line.Distance(connectors[i].Origin);
+                    if (curDistance < distance)
+                    {
+                        distance = curDistance;
+                        resultCon = connectors[i];
+                    }
+                }
+            }
+
+            return resultCon;
+        }
+
+        /// <summary>
         /// Get two connector from the lists with minimum distance between them.
         /// </summary>
         /// <param name="connectors1"></param>

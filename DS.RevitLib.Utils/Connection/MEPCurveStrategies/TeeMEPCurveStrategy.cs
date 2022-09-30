@@ -1,51 +1,44 @@
 ﻿using Autodesk.Revit.DB;
-using Autodesk.Revit.DB.Mechanical;
-using Autodesk.Revit.DB.Plumbing;
-using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.MEP;
 using DS.RevitLib.Utils.MEP.Models;
 using DS.RevitLib.Utils.TransactionCommitter;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.Connection.Strategies
 {
     internal class TeeMEPCurveStrategy : MEPCurveConnectionStrategy
     {
-        private readonly Connector _elem1Con;
+        private readonly MEPCurveGeometryModel _mEPCurve3;
+        private readonly Connector _curve1Con;
 
-        public TeeMEPCurveStrategy(Document doc,
-            MEPCurveGeometryModel mEPCurve1, MEPCurveGeometryModel mEPCurve2, double minCurveLength, Connector elem1Con) :
+        /// <summary>
+        /// Initiate object to connect mEPCurves by insert tee between them.
+        /// </summary>
+        /// <param name="doc"></param>
+        /// <param name="mEPCurve1">Child element</param>
+        /// <param name="mEPCurve2">Parent element</param>
+        /// <param name="mEPCurve3">Parent element</param>
+        /// <param name="minCurveLength"></param>
+        public TeeMEPCurveStrategy(Document doc, 
+            MEPCurveGeometryModel mEPCurve1, MEPCurveGeometryModel mEPCurve2, MEPCurveGeometryModel mEPCurve3, Connector curve1Con, double minCurveLength) : 
             base(doc, mEPCurve1, mEPCurve2, minCurveLength)
         {
-            _elem1Con = elem1Con;
+            _mEPCurve3 = mEPCurve3;
+            _curve1Con = curve1Con;
         }
 
         public override bool Connect()
         {
+            (Connector c2, Connector c3) = ConnectorUtils.GetClosest(_mEPCurve2.MainConnectors, _mEPCurve3.MainConnectors); // parent connectors
+
             var transaction = new TransactionBuilder<FamilyInstance>(_doc, new RollBackCommitter());
-
-            MEPCurve newMEPCurve = null;
             transaction.Build(() =>
             {
-                ElementId newId = _mEPCurve2.MEPCurve.GetType().Name == "Pipe" ?
-                    PlumbingUtils.BreakCurve(_doc, _mEPCurve2.MEPCurve.Id, _elem1Con.Origin) :
-                    MechanicalUtils.BreakCurve(_doc, _mEPCurve2.MEPCurve.Id, _elem1Con.Origin);
-                newMEPCurve = (MEPCurve)_doc.GetElement(newId);
-
-            }, "BreakCurve");
-
-            (Connector con1, Connector con2) = ConnectorUtils.GetMainConnectors(newMEPCurve);
-            var (c1, c2) = ConnectorUtils.GetNeighbourConnectors(_mEPCurve2.Connectors, new List<Connector> { con1, con2 });
-            var r1 = c1.Owner;
-            var r2 = c2.Owner;
-            transaction.Build(() =>
-            {
-                ConnectionElement = _doc.Create.NewTeeFitting(c1, c2, _elem1Con);
+                ConnectionElement = _doc.Create.NewTeeFitting(c3, c2, _curve1Con);
                 Insulation.Create(_mEPCurve1.MEPCurve, ConnectionElement);
+                
             }, "InsertTee");
 
             return !transaction.ErrorMessages.Any();

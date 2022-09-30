@@ -39,6 +39,29 @@ namespace DS.RevitLib.Utils
         }
 
         /// <summary>
+        /// Get point with minimum distance to line.
+        /// </summary>
+        /// <param name="line"></param>
+        /// <param name="points"></param>
+        /// <returns></returns>
+        public static XYZ GetClosestToLine(Line line, List<XYZ> points)
+        {
+            double resDist = 10000;
+            XYZ resPoint = null;
+            foreach (var point in points)
+            {
+                double currentDist = line.Distance(point);
+                if (currentDist < resDist)
+                {
+                    resDist = currentDist;
+                    resPoint = point;
+                }
+            }
+
+            return resPoint;
+        }
+
+        /// <summary>
         /// Select line from the list which has minimum length;
         /// </summary>
         /// <param name="lines"></param>
