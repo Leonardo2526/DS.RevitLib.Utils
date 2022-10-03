@@ -23,7 +23,7 @@ namespace DS.RevitLib.Utils.Connection.Strategies
         /// <param name="cons1"></param>
         /// <param name="cons2"></param>
         /// <param name="baseMEPCurve">Element to copy insulation.</param>
-        public ElbowElementStrategy(Document doc, List<Connector> cons1, List<Connector> cons2, MEPCurve baseMEPCurve = null) : 
+        public ElbowElementStrategy(Document doc, List<Connector> cons1, List<Connector> cons2, MEPCurve baseMEPCurve = null) :
             base(doc)
         {
             _cons1 = cons1;
@@ -31,20 +31,15 @@ namespace DS.RevitLib.Utils.Connection.Strategies
             _baseMEPCurve = baseMEPCurve;
         }
 
-        public override bool Connect()
+        public override void Connect()
         {
             (Connector c1, Connector c2) = ConnectorUtils.GetClosest(_cons1, _cons2);
-            var transaction = new TransactionBuilder<FamilyInstance>(_doc, new RollBackCommitter());
-            transaction.Build(() =>
-            {              
-                ConnectionElement = _doc.Create.NewElbowFitting(c1, c2);
-                if (_baseMEPCurve is not null)
-                {
-                    Insulation.Create(_baseMEPCurve, ConnectionElement);
-                }
-            }, "InsertElbow");
 
-            return !transaction.ErrorMessages.Any();
+            ConnectionElement = _doc.Create.NewElbowFitting(c1, c2);
+            if (_baseMEPCurve is not null)
+            {
+                Insulation.Create(_baseMEPCurve, ConnectionElement);
+            }
         }
 
         public override bool IsConnectionAvailable()

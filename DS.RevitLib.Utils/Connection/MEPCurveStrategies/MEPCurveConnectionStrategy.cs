@@ -16,17 +16,22 @@ namespace DS.RevitLib.Utils.Connection.Strategies
         protected readonly double _minCurveLength;
 
         protected MEPCurveConnectionStrategy(Document doc,
-            MEPCurveGeometryModel mEPCurve1, MEPCurveGeometryModel mEPCurve2, double minCurveLength)
+            MEPCurveGeometryModel mEPCurve1, MEPCurveGeometryModel mEPCurve2, double minCurveLength, 
+            TransactionBuilder<Element> transactionBuilder = null)
         {
             _doc = doc;
             _mEPCurve1 = mEPCurve1;
             _mEPCurve2 = mEPCurve2;
             _minCurveLength = minCurveLength;
+            TransactionBuilder = transactionBuilder;
+            TransactionBuilder ??= new TransactionBuilder<Element>(doc);
         }
 
         public FamilyInstance ConnectionElement {get; protected set;}
 
-        public abstract bool Connect();
+        public TransactionBuilder<Element> TransactionBuilder { get; protected set; }
+
+        public abstract void Connect();
         public abstract bool IsConnectionAvailable();
     }
 }

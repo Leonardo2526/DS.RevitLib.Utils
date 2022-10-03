@@ -8,15 +8,15 @@ namespace DS.RevitLib.Utils.Connection.Strategies
     public interface IConnectionStrategy
     {
         /// <summary>
-        /// Elements used to for connection.
+        /// Elements used for connection.
         /// </summary>
-        public FamilyInstance ConnectionElement { get; }
+        public FamilyInstance ConnectionElement { get; }     
 
         /// <summary>
         /// Connect elements.
         /// </summary>
         /// <returns>Returns true if connection was successfull.</returns>
-        public bool Connect();
+        public void Connect();
 
         /// <summary>
         /// Check if connection is available.

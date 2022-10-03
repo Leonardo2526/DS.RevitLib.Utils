@@ -31,22 +31,16 @@ namespace DS.RevitLib.Utils.Connection.Strategies
             _cons3 = cons3;
         }
 
-        public override bool Connect()
+        public override void Connect()
         {
             (Connector c2, Connector c3) = ConnectorUtils.GetClosest(_cons2, _cons3);
             Connector c1 = ConnectorUtils.GetClosest(c2, _cons1);
 
-            var transaction = new TransactionBuilder<FamilyInstance>(_doc, new RollBackCommitter());
-            transaction.Build(() =>
+            ConnectionElement = _doc.Create.NewTeeFitting(c3, c2, c1);
+            if (_baseMEPCurve is not null)
             {
-                ConnectionElement = _doc.Create.NewTeeFitting(c3, c2, c1);
-                if (_baseMEPCurve is not null)
-                {
-                    Insulation.Create(_baseMEPCurve, ConnectionElement);
-                }
-            }, "InsertTee");
-
-            return !transaction.ErrorMessages.Any();
+                Insulation.Create(_baseMEPCurve, ConnectionElement);
+            }
         }
 
         public override bool IsConnectionAvailable()

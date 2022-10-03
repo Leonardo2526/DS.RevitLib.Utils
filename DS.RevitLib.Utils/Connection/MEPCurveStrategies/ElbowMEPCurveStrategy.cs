@@ -34,16 +34,10 @@ namespace DS.RevitLib.Utils.Connection.Strategies
             _elem2Con = elem2Con;
         }
 
-        public override bool Connect()
-        {
-            var transaction = new TransactionBuilder<FamilyInstance>(_doc, new RollBackCommitter());
-            transaction.Build(() =>
-            {              
+        public override void Connect()
+        {           
                 ConnectionElement = _doc.Create.NewElbowFitting(_elem1Con, _elem2Con);
                 Insulation.Create(_mEPCurve1.MEPCurve, ConnectionElement);
-            }, "InsertElbow");
-
-            return !transaction.ErrorMessages.Any();
         }
 
         public override bool IsConnectionAvailable()

@@ -32,16 +32,10 @@ namespace DS.RevitLib.Utils.Connection.Strategies
             _elem1Con = elem1Con;
         }
 
-        public override bool Connect()
+        public override void Connect()
         {
-            var transaction = new TransactionBuilder<FamilyInstance>(_doc, new RollBackCommitter());
-            transaction.Build(() =>
-            {
-                ConnectionElement = _doc.Create.NewTakeoffFitting(_elem1Con, _mEPCurve2.MEPCurve);
-                Insulation.Create(_mEPCurve1.MEPCurve, ConnectionElement);
-            }, "InsertSpud");
-
-            return !transaction.ErrorMessages.Any();
+            ConnectionElement = _doc.Create.NewTakeoffFitting(_elem1Con, _mEPCurve2.MEPCurve);
+            Insulation.Create(_mEPCurve1.MEPCurve, ConnectionElement);
         }
 
         public override bool IsConnectionAvailable()

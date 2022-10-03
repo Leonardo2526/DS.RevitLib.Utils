@@ -8,7 +8,6 @@
         /// <summary>
         /// Connect elements.
         /// </summary>
-        /// <returns>Returns true if connection was successfull.</returns>
-        public bool Connect();
+        public void Connect();
     }
 }

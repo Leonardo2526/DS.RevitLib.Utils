@@ -22,7 +22,7 @@ namespace DS.RevitLib.Utils.Connection.Strategies
 
         public FamilyInstance ConnectionElement {get; protected set;}
 
-        public abstract bool Connect();
+        public abstract void Connect();
         public abstract bool IsConnectionAvailable();
     }
 }

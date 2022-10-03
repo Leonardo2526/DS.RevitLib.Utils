@@ -21,15 +21,9 @@ namespace DS.RevitLib.Utils.Connection.Strategies
             _con2 = con2;
         }
 
-        public override bool Connect()
+        public override void Connect()
         {
-            var transaction = new TransactionBuilder<FamilyInstance>(_doc, new RollBackCommitter());
-            transaction.Build(() =>
-            {
-                _con1.ConnectTo(_con2);
-            }, "ConnectConnectors");
-
-            return !transaction.ErrorMessages.Any();
+            _con1.ConnectTo(_con2);
         }
 
         public override bool IsConnectionAvailable()

@@ -34,10 +34,10 @@ namespace DS.RevitLib.Utils.Connection
         }
 
         /// <inheritdoc/>
-        public bool Connect()
+        public void Connect()
         {
             var strategy = GetStrategy();
-            return strategy is not null && strategy.Connect();
+            strategy.Connect();
         }
 
         private ElementConnectionStrategy GetStrategy()

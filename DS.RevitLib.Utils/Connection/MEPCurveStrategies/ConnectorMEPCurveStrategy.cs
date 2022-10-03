@@ -23,24 +23,18 @@ namespace DS.RevitLib.Utils.Connection.Strategies
         /// <param name="minCurveLength"></param>
         /// <param name="elem1Con"></param>
         /// <param name="elem2Con"></param>
-        public ConnectorMEPCurveStrategy(Document doc, 
-            MEPCurveGeometryModel mEPCurve1, MEPCurveGeometryModel mEPCurve2, double minCurveLength, 
-            Connector elem1Con, Connector elem2Con) : 
+        public ConnectorMEPCurveStrategy(Document doc,
+            MEPCurveGeometryModel mEPCurve1, MEPCurveGeometryModel mEPCurve2, double minCurveLength,
+            Connector elem1Con, Connector elem2Con) :
             base(doc, mEPCurve1, mEPCurve2, minCurveLength)
         {
             _elem1Con = elem1Con;
             _elem2Con = elem2Con;
         }
 
-        public override bool Connect()
+        public override void Connect()
         {
-            var transaction = new TransactionBuilder<FamilyInstance>(_doc, new RollBackCommitter());
-            transaction.Build(() =>
-            {
-                _elem1Con.ConnectTo(_elem2Con);
-            }, "ConnectConnectors");
-
-            return !transaction.ErrorMessages.Any();
+            _elem1Con.ConnectTo(_elem2Con);
         }
 
         public override bool IsConnectionAvailable()
