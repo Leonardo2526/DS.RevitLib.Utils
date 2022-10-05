@@ -8,14 +8,30 @@ using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.Points.Models
 {
+    /// <summary>
+    /// Class for object to describe a point for element's connection.
+    /// </summary>
     public class MEPConnectionPoint : IMEPConnectionPoint
     {
+        /// <summary>
+        /// Initiate a new object for element connection.
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="element"></param>
         public MEPConnectionPoint(XYZ point, Element element)
         {
             Point = point;
             Element = element;
         }
+
+        /// <summary>
+        /// Point of connection to element.
+        /// </summary>
         public XYZ Point { get; private set; }
+
+        /// <summary>
+        /// Element to connect.
+        /// </summary>
         public Element Element { get; private set; }
 
         /// <summary>

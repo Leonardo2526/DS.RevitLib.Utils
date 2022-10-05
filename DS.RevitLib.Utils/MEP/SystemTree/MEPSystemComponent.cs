@@ -100,8 +100,56 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
             int maxInd = Math.Max(ind1, ind2);
 
             var range = Elements.FindAll(x => Elements.IndexOf(x) >= minInd && Elements.IndexOf(x) <= maxInd);
+            List<ElementId> rangeIds = range.Select(obj => obj.Id).ToList();
+            var mEPCurveIds = Elements.OfType<MEPCurve>().Select(obj => obj.Id).ToList();
+
+            //spud correction
+            (MEPCurve mePCurve, int ind) = GetSpudMEPCurveToInsert(elem1, rangeIds, mEPCurveIds);
+            if (mePCurve is not null)
+            {
+                range.Insert(ind, mePCurve);
+            }
+            (mePCurve, ind) = GetSpudMEPCurveToInsert(elem2, rangeIds, mEPCurveIds);
+            if (mePCurve is not null)
+            {
+                range.Insert(ind, mePCurve);
+            }
 
             return range;
+        }
+
+        /// <summary>
+        /// Get MEPCurve connected to child spud if range doesn't contain it yet.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <param name="rangeIds"></param>
+        /// <param name="mEPCurveIds"></param>
+        /// <returns></returns>
+        private (MEPCurve mePCurve, int ind) GetSpudMEPCurveToInsert(Element element, 
+            List<ElementId> rangeIds, List<ElementId> mEPCurveIds)
+        {
+            var partType = element is FamilyInstance ? ElementUtils.GetPartType(element as FamilyInstance) : PartType.Undefined;
+
+            if (partType == PartType.SpudPerpendicular)
+            {
+                var childIds = ChildrenNodes.Select(obj => obj.Element.Id).ToList();
+                if (!childIds.Contains(element.Id))
+                {
+                    return (null, 0);
+                }
+
+                List <MEPCurve> connectedMEPCurves = ConnectorUtils.GetConnectedElements(element).OfType<MEPCurve>().ToList();
+                var connectedMEPCurvesIds = connectedMEPCurves.Select(obj => obj.Id);
+                var intersectionId = connectedMEPCurvesIds.Intersect(mEPCurveIds).First();
+
+                if (!rangeIds.Contains(intersectionId))
+                {
+                    var ind = rangeIds.IndexOf(element.Id);
+                    return (element.Document.GetElement(intersectionId) as MEPCurve, ind);
+                }
+            }
+
+            return (null, 0);
         }
 
         /// <summary>
@@ -157,7 +205,7 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
         /// BaseElement is not included.</returns>
         public List<Element> GetElementsSpan(Connector baseElemCon)
         {
-            if(baseElemCon.Owner.Id != BaseElement.Id)
+            if (baseElemCon.Owner.Id != BaseElement.Id)
             {
                 throw new ArgumentException("Connector owner is not BaseElement.");
             }
