@@ -112,6 +112,10 @@
     <Compile Include="FailedTransaction.cs" />
     <Compile Include="FamilyInstances\FamilyInstanceExtensions.cs" />
     <Compile Include="MEP\Models\MEPCurveModel.cs" />
+    <Compile Include="MEP\SystemTree\Relatives\NewFolder1\FamInstRelationBuilder.cs" />
+    <Compile Include="MEP\SystemTree\Relatives\NewFolder1\NewElementRelationBuilder.cs" />
+    <Compile Include="MEP\SystemTree\Relatives\NewFolder1\SpudRelationBuilder.cs" />
+    <Compile Include="MEP\SystemTree\Relatives\NewFolder1\TeeRelationBuilder.cs" />
     <Compile Include="PathFinders\IPathFinder.cs" />
     <Compile Include="Lines\LineExtensions.cs" />
     <Compile Include="MEP\MEPCurveExtensions.cs" />
@@ -120,6 +124,7 @@
     <Compile Include="PathFinders\SimplePathFinder.cs" />
     <Compile Include="Points\Models\MEPConnectionPoint.cs" />
     <Compile Include="Points\Models\IMEPConnectionPoint.cs" />
+    <Compile Include="SelectionFilters\FamilyInstanceSelectionFilter.cs" />
     <Compile Include="Transactions\TransactionBuilder.cs" />
     <Compile Include="Transforms\TransformBuilder.cs" />
     <Compile Include="Transforms\TransformModel.cs" />
@@ -157,7 +162,7 @@
     <Compile Include="MEP\SystemTree\Pushers\NodePusher.cs" />
     <Compile Include="MEP\SystemTree\Pushers\PostNodePusher.cs" />
     <Compile Include="MEP\SystemTree\Pushers\Pusher.cs" />
-    <Compile Include="MEP\SystemTree\Relatives\RealtionshipsFinder.cs" />
+    <Compile Include="MEP\SystemTree\Relatives\ElementRelation.cs" />
     <Compile Include="MEP\SystemTree\MEPSystemComponent.cs" />
     <Compile Include="MEP\Creator\ParameterSetter.cs" />
     <Compile Include="MEP\SystemTree\MEPSystemModel.cs" />

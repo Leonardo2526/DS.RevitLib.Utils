@@ -1,11 +1,11 @@
 ﻿using Autodesk.Revit.DB;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.MEP;
+using DS.RevitLib.Utils.MEP.SystemTree.Relatives;
+using DS.RevitLib.Utils.MEP.SystemTree.Relatives.NewFolder1;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.FamilyInstances
 {
@@ -35,6 +35,34 @@ namespace DS.RevitLib.Utils.FamilyInstances
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Get elements connected to current familyInstance.
+        /// </summary>
+        /// <param name="familyInstance"></param>
+        /// <returns>Returns parents and child connected to current familyInstance.</returns>
+        public static (List<Element> parents, Element child) GetConnectedElements(this FamilyInstance familyInstance)
+        {
+            var builder = new FamInstRelationBuilder(familyInstance);
+            var parents = new List<Element>();
+            Element child = null;
+
+            List<Element> connectedMEPCurves = ConnectorUtils.GetConnectedElements(familyInstance).ToList();
+            foreach (var mEPCurve in connectedMEPCurves)
+            {
+                var relation = builder.GetRelation(mEPCurve);
+                if (relation == Relation.Parent)
+                {
+                    parents.Add(mEPCurve);
+                }
+                else
+                {
+                    child = mEPCurve;
+                }
+            }
+
+            return (parents, child);
         }
     }
 }

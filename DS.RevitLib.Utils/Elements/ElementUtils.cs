@@ -347,8 +347,8 @@ namespace DS.RevitLib.Utils
         /// <summary>
         /// Get element's directions.
         /// </summary>
-        /// <param name="mEPCurve"></param>
-        /// <returns>Return vectors(directions) by all connectors of element</returns>
+        /// <param name="element"></param>
+        /// <returns>Return vectors(directions) between all connectors of element</returns>
         public static List<XYZ> GetDirections(Element element)
         {
             var dirs = new List<XYZ>();

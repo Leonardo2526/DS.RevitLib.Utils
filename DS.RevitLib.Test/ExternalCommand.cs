@@ -23,8 +23,11 @@ namespace DS.RevitLib.Test
             UIDocument uidoc = uiapp.ActiveUIDocument;
             Document doc = uiapp.ActiveUIDocument.Document;
 
-            var client = new ConnectionFactoryClient(uidoc);
-            client.Run();
+            var test = new GetConnectedElementsTest(uidoc, doc);
+            test.Run();
+
+            //var client = new ConnectionFactoryClient(uidoc);
+            //client.Run();
 
 
             //var pathFinderTest = new SimplePathFinderTest(uidoc, doc);
