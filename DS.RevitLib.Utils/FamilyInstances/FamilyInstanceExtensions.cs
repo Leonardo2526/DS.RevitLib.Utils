@@ -44,14 +44,20 @@ namespace DS.RevitLib.Utils.FamilyInstances
         /// <returns>Returns parents and child connected to current familyInstance.</returns>
         public static (List<Element> parents, Element child) GetConnectedElements(this FamilyInstance familyInstance)
         {
-            var builder = new FamInstRelationBuilder(familyInstance);
+            List<Element> connectedElements = ConnectorUtils.GetConnectedElements(familyInstance).ToList();
+
+            var relationBuilder = new FamInstRelationBuilder(familyInstance);
+            if (relationBuilder.Builer is null)
+            {
+                return (connectedElements, null);
+            }
+
             var parents = new List<Element>();
             Element child = null;
 
-            List<Element> connectedMEPCurves = ConnectorUtils.GetConnectedElements(familyInstance).ToList();
-            foreach (var mEPCurve in connectedMEPCurves)
+            foreach (var mEPCurve in connectedElements)
             {
-                var relation = builder.GetRelation(mEPCurve);
+                var relation = relationBuilder.GetRelation(mEPCurve);
                 if (relation == Relation.Parent)
                 {
                     parents.Add(mEPCurve);

@@ -135,5 +135,29 @@ namespace DS.RevitLib.Utils.Extensions
             return vector.CrossProduct(randVector).RoundVector().Normalize();
         }
 
+        /// <summary>
+        /// Get line from the list with minimum distnace to given poin.
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="lines"></param>
+        /// <returns></returns>
+        public static Line GetClosestLine(this XYZ point, List<Line> lines)
+        {
+            double resDist = lines.First().Distance(point);
+            Line resLine = lines.First();
+
+            foreach (var line in lines)
+            {
+                double dist = line.Distance(point);
+                if (dist < resDist)
+                {
+                    resDist = dist;
+                    resLine = line;
+                }
+            }
+
+            return resLine;
+        }
+
     }
 }

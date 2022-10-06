@@ -9,16 +9,16 @@ namespace DS.RevitLib.Utils.MEP.SystemTree.Relatives.NewFolder1
 {
     internal class FamInstRelationBuilder : NewElementRelationBuilder<FamilyInstance>
     {
-        private readonly NewElementRelationBuilder<FamilyInstance> _builer;
+        public NewElementRelationBuilder<FamilyInstance> Builer { get; private set; }
 
         public FamInstRelationBuilder(FamilyInstance baseElement) : base(baseElement)
         {
-            _builer = GetBuilder();
+            Builer = GetBuilder();
         }
 
         public override Relation GetRelation(Element element)
         {
-            return _builer.GetRelation(element);
+            return Builer.GetRelation(element);
         }
 
         private NewElementRelationBuilder<FamilyInstance> GetBuilder()
