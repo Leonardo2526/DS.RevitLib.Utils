@@ -25,7 +25,6 @@ namespace DS.RevitLib.Utils
             return Line.CreateBound(startPoint + offset, endPoint + offset);
         }
 
-
         public static XYZ GetClosestToLine(Line line, XYZ point1, XYZ point2)
         {
             double length1 = line.Distance(point1);
@@ -36,6 +35,29 @@ namespace DS.RevitLib.Utils
             }
 
             return point1;
+        }
+
+        /// <summary>
+        /// Get point with minimum distance to line.
+        /// </summary>
+        /// <param name="line"></param>
+        /// <param name="points"></param>
+        /// <returns></returns>
+        public static XYZ GetClosestToLine(Line line, List<XYZ> points)
+        {
+            double resDist = 10000;
+            XYZ resPoint = null;
+            foreach (var point in points)
+            {
+                double currentDist = line.Distance(point);
+                if (currentDist < resDist)
+                {
+                    resDist = currentDist;
+                    resPoint = point;
+                }
+            }
+
+            return resPoint;
         }
 
         /// <summary>

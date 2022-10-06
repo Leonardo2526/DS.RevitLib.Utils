@@ -23,9 +23,16 @@ namespace DS.RevitLib.Test
             UIDocument uidoc = uiapp.ActiveUIDocument;
             Document doc = uiapp.ActiveUIDocument.Document;
 
-            var pathFinderTest = new SimplePathFinderTest(uidoc, doc);
-            var path = pathFinderTest.RunTest2();
-            pathFinderTest.ShowPath(path);
+            var test = new GetConnectedElementsTest(uidoc, doc);
+            test.Run();
+
+            //var client = new ConnectionFactoryClient(uidoc);
+            //client.Run();
+
+
+            //var pathFinderTest = new SimplePathFinderTest(uidoc, doc);
+            //var path = pathFinderTest.RunTest2();
+            //pathFinderTest.ShowPath(path);
             //SolidCollisionCheckerTest.RunWithLink(doc);
 
             //var selector = new SystemModelTest(uidoc, doc, uiapp);

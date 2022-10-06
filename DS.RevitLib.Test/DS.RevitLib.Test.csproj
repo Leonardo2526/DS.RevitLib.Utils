@@ -65,7 +65,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ConnectionFactoryClient.cs" />
     <Compile Include="ExternalCommand.cs" />
+    <Compile Include="GetConnectedElementsTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SimplePathFinderTest.cs" />
     <Compile Include="SolidCollisionCheckerTest.cs" />

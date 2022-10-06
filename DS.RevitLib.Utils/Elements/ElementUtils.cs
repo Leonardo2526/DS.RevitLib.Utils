@@ -347,8 +347,8 @@ namespace DS.RevitLib.Utils
         /// <summary>
         /// Get element's directions.
         /// </summary>
-        /// <param name="mEPCurve"></param>
-        /// <returns>Return vectors(directions) by all connectors of element</returns>
+        /// <param name="element"></param>
+        /// <returns>Return vectors(directions) between all connectors of element</returns>
         public static List<XYZ> GetDirections(Element element)
         {
             var dirs = new List<XYZ>();
@@ -368,6 +368,17 @@ namespace DS.RevitLib.Utils
             }
 
             return dirs;
+        }
+
+        /// <summary>
+        /// Get element's directions.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <returns>Return directions by main connectors of element</returns>
+        public static XYZ GetMainDirection(Element element)
+        {
+            var (con1, con2) = ConnectorUtils.GetMainConnectors(element);
+            return (con1.Origin - con2.Origin).Normalize().RoundVector();
         }
 
         /// <summary>

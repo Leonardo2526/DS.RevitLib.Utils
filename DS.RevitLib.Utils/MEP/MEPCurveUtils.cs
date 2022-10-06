@@ -205,8 +205,7 @@ namespace DS.RevitLib.Utils.MEP
         }
       
         /// <summary>
-        /// Check if MEPCurves are equal oriented. 
-        /// Check if size by one of baseMEPCurve norm vector is equal to mEPCurve size by the same vector.
+        /// Check if MEPCurves are equal oriented.
         /// </summary>
         /// <param name="baseMEPCurve"></param>
         /// <param name="mEPCurve"></param>
@@ -215,7 +214,7 @@ namespace DS.RevitLib.Utils.MEP
         {
             Basis baseBasis = baseMEPCurve.GetBasis();
             Basis curveBasis = mEPCurve.GetBasis();
-            return XYZUtils.Collinearity(baseBasis.Y, curveBasis.Y);
+            return XYZUtils.Collinearity(baseBasis.Y, curveBasis.Y) || XYZUtils.Collinearity(baseBasis.Z, curveBasis.Z);
         }
 
         /// <summary>

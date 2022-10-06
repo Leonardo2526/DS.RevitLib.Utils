@@ -8,7 +8,7 @@ namespace DS.RevitLib.Utils
     /// <summary>
     /// Class for transaction creation.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">T is output result of building.</typeparam>
     public class TransactionBuilder<T>
     {
         private readonly Document _doc;
