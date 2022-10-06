@@ -61,6 +61,7 @@ namespace DS.RevitLib.Utils.Points.Models
 
             var famInst = Element is FamilyInstance ? Element as FamilyInstance : null;
             var (parents, child) = famInst.GetConnectedElements();
+            return parents.First() as MEPCurve;
 
             var mParents = parents.OfType<MEPCurve>().ToList();
 
