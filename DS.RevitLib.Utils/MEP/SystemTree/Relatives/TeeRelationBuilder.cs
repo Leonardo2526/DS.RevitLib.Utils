@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DS.RevitLib.Utils.MEP.SystemTree.Relatives.NewFolder1
+namespace DS.RevitLib.Utils.MEP.SystemTree.Relatives
 {
     internal class TeeRelationBuilder : NewElementRelationBuilder<FamilyInstance>
     {

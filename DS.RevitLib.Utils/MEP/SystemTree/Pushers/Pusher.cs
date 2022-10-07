@@ -26,23 +26,27 @@ namespace DS.RevitLib.Utils.MEP.SystemTree.Relatives
         protected Relation GetRelation(FamilyInstance familyInstance, Element element)
         {
             PartType partType = ElementUtils.GetPartType(familyInstance);
+            NewElementRelationBuilder<FamilyInstance> relationBuilder = null;
             switch (partType)
             {
                 case PartType.Tee:
                     {
-                        return new TeeRelation(familyInstance, element).Get();
+                        relationBuilder = new TeeRelationBuilder(familyInstance);
                     }
-                case PartType.SpudPerpendicular: case PartType.SpudAdjustable:
-                case PartType.TapPerpendicular: case PartType.TapAdjustable:
+                    break;
+                case PartType.SpudPerpendicular:
+                case PartType.SpudAdjustable:
+                case PartType.TapPerpendicular:
+                case PartType.TapAdjustable:
                     {
-                        return new SpudRelation(familyInstance, element).Get();
+                        relationBuilder = new SpudRelationBuilder(familyInstance);
                     }
+                    break;
                 default:
                     break;
             }
 
-
-            return Relation.Default;
+            return relationBuilder.GetRelation(element) == Relation.Child ? Relation.Parent : Relation.Child;
         }
     }
 }
