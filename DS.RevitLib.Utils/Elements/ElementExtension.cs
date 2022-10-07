@@ -112,6 +112,11 @@ namespace DS.RevitLib.Utils.Extensions
             return roots.Any() ? roots : elements;
         }
 
+        /// <summary>
+        /// Check if element is spud or tap.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <returns></returns>
         public static bool IsSpud(this Element element)
         {
             if (element is not FamilyInstance familyInstance)
@@ -120,7 +125,8 @@ namespace DS.RevitLib.Utils.Extensions
             }
 
             var pt = ElementUtils.GetPartType(familyInstance);
-            if (pt == PartType.SpudPerpendicular || pt == PartType.SpudAdjustable)
+            if (pt == PartType.SpudPerpendicular || pt == PartType.SpudAdjustable ||
+                pt == PartType.TapPerpendicular || pt == PartType.TapAdjustable)
             {
                 return true;
             }

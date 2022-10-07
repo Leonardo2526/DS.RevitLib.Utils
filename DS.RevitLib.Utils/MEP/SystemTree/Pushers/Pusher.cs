@@ -32,7 +32,8 @@ namespace DS.RevitLib.Utils.MEP.SystemTree.Relatives
                     {
                         return new TeeRelation(familyInstance, element).Get();
                     }
-                case PartType.SpudPerpendicular:
+                case PartType.SpudPerpendicular: case PartType.SpudAdjustable:
+                case PartType.TapPerpendicular: case PartType.TapAdjustable:
                     {
                         return new SpudRelation(familyInstance, element).Get();
                     }
