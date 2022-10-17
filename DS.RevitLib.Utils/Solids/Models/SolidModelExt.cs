@@ -15,6 +15,7 @@ namespace DS.RevitLib.Utils.Solids.Models
         {
             Element = element;
             Solid = ElementUtils.GetSolid(element);
+            SolidCentroid = Solid.ComputeCentroid();
             ConnectorsPoints = GetConnectorPoints();
             Length = ConnectorsPoints.First().DistanceTo(ConnectorsPoints.Last());
             CentralLine = Element.GetCenterLine();
@@ -48,6 +49,8 @@ namespace DS.RevitLib.Utils.Solids.Models
                 return (CentralLine.GetEndPoint(0) + CentralLine.GetEndPoint(1)) / 2;
             }
         }
+
+        public XYZ SolidCentroid { get; private set; }
 
         public Basis Basis { get; set; }
 
@@ -90,7 +93,8 @@ namespace DS.RevitLib.Utils.Solids.Models
             double maxSize = 0;
             foreach (var orth in orths)
             {
-                double size = GetSizeByVector(orth);
+                //double size = 0;
+                double size = GetSizeByVector(orth, SolidCentroid);
                 if (size > maxSize)
                 {
                     maxSize = size;

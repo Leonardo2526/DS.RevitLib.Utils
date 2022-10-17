@@ -116,11 +116,12 @@ namespace DS.RevitLib.Utils.Solids
         /// </summary>
         /// <param name="solid"></param>
         /// <param name="normVector"></param>
+        /// <param name="solidCentroid"></param>
         /// <returns>Returns distance between two points of intersection between solid and line by vector.</returns>
-        public static double GetSizeByVector(Solid solid, XYZ normVector)
+        public static double GetSizeByVector(Solid solid, XYZ normVector, XYZ solidCentroid = null)
         {
-            XYZ centerPoint = solid.ComputeCentroid();
-            Line intersectLine = Line.CreateBound(centerPoint, centerPoint + normVector.Multiply(100));
+            solidCentroid ??= solid.ComputeCentroid();
+            Line intersectLine = Line.CreateBound(solidCentroid, solidCentroid + normVector.Multiply(100));
 
             SolidCurveIntersectionOptions intersectOptions = new SolidCurveIntersectionOptions();
             SolidCurveIntersection intersection = solid.IntersectWithCurve(intersectLine, intersectOptions);

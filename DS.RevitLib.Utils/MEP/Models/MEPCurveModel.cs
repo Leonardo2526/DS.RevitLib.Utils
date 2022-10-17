@@ -74,7 +74,7 @@ namespace DS.RevitLib.Utils.MEP.Models
 
         public override double GetSizeByVector(XYZ orth)
         {
-            return SolidModel.GetSizeByVector(orth);
+            return SolidModel.GetSizeByVector(orth, SolidModel.Center);
         }
 
     }

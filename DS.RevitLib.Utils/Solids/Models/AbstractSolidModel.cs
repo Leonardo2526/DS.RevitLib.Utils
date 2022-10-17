@@ -24,9 +24,9 @@ namespace DS.RevitLib.Utils.Solids.Models
             }
         }
 
-        public double GetSizeByVector(XYZ orth)
+        public double GetSizeByVector(XYZ orth, XYZ solidCentroid)
         {
-            return DS.RevitLib.Utils.Solids.SolidUtils.GetSizeByVector(Solid, orth);
+            return DS.RevitLib.Utils.Solids.SolidUtils.GetSizeByVector(Solid, orth, solidCentroid);
         }
     }
 }

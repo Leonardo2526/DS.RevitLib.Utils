@@ -32,7 +32,7 @@ namespace DS.RevitLib.Utils.Elements.Alignments.Strategies
             double maxSize = 0;
             foreach (var orth in orths)
             {
-                double size = _operationElement.GetSizeByVector(orth);
+                double size = _operationElement.GetSizeByVector(orth, _operationElement.SolidCentroid);
                 if (size > maxSize)
                 {
                     maxSize = size;
