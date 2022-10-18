@@ -4,7 +4,7 @@
 		<Name>DS.RevitLib.Test</Name>
 		<FullClassName>DS.RevitLib.Test.ExternalCommand</FullClassName>
 		<Text>DS.RevitLib.Test</Text>
-		<Description>DS.RevitLib.Test</Description>
+		<Description>Revit utils library test</Description>
 		<VisibilityMode>AlwaysVisible</VisibilityMode>
 		<Assembly>.\DS.RevitLib.Test\DS.RevitLib.Test.dll</Assembly>
 		<AddInId>cde07917-cc30-4ccc-8dc2-c0e4a2651eba</AddInId>

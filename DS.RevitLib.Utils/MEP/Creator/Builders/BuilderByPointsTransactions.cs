@@ -63,7 +63,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
             if (baseMEPCurve is not null && baseMEPCurve.IsRectangular())
                 {
                     RotationBuilder rotationBuilder = new RotationBuilder(baseMEPCurve, mEPCurve, TransactionPrefix);
-                    rotationBuilder.Rotate();
+                    rotationBuilder.RotateTransaction();
 
                 //Check if size of MEPCurve should be swapped.
                 if (!MEPCurveUtils.EqualOriented(baseMEPCurve, mEPCurve))

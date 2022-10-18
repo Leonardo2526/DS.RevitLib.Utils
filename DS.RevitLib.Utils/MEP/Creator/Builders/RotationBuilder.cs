@@ -33,8 +33,8 @@ namespace DS.RevitLib.Utils.MEP.Creator.Builders
             this.AlignAxe = GetAlignmentVector(baseMEPCurve);
         }
 
-        public MEPCurve Rotate()
-        {  
+        public MEPCurve RotateTransaction()
+        {
             //Rotation axe
             XYZ rotationAxe = MEPCurveUtils.GetDirection(_MEPCurve);
 
@@ -58,6 +58,34 @@ namespace DS.RevitLib.Utils.MEP.Creator.Builders
             var rotationLine = MEPCurveUtils.GetLine(_MEPCurve);
             var mEPCurveCreator = new MEPCurveTransactions(_MEPCurve, null, TransactionPrefix);
             return mEPCurveCreator.Rotate(rotationLine, angleRad * rotDir);
+        }
+
+        public MEPCurve Rotate()
+        {  
+            //Rotation axe
+            XYZ rotationAxe = MEPCurveUtils.GetDirection(_MEPCurve);
+
+            List<XYZ> normOrthoVectors = ElementUtils.GetOrthoNormVectors(_MEPCurve);
+
+            //Vector for alignment with rotation
+            XYZ vectorToRotateNorm = normOrthoVectors.First();
+
+            double angleRad = vectorToRotateNorm.AngleTo(AlignAxe);
+            double angleDeg = angleRad.RadToDeg();
+
+            double prec = 3.0;
+            if (Math.Abs(angleDeg - 0) < prec || Math.Abs(angleDeg - 180) < prec ||
+                Math.Abs(angleDeg - 90) < prec || Math.Abs(angleDeg - 270) < prec)
+            {
+                return _MEPCurve;
+            }
+
+            int rotDir = GetRotationSide(AlignAxe, vectorToRotateNorm, rotationAxe);
+
+            var rotationLine = MEPCurveUtils.GetLine(_MEPCurve);
+            _MEPCurve.Location.Rotate(rotationLine, angleRad * rotDir);
+
+            return _MEPCurve;
         }
 
         private XYZ GetAlignmentVector(MEPCurve baseMEPCurve)
