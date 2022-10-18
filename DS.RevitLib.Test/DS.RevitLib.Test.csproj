@@ -65,6 +65,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AlignMEPCurvesTest.cs" />
     <Compile Include="BuilderByPointsTest.cs" />
     <Compile Include="ConnectionFactoryClient.cs" />
     <Compile Include="ExternalCommand.cs" />

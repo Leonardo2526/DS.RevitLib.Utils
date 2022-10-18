@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Xml.Linq;
 
 namespace DS.RevitLib.Utils.MEP
 {
@@ -71,7 +72,6 @@ namespace DS.RevitLib.Utils.MEP
             return locCurve.Curve as Line;
         }
 
-
         /// <summary>
         /// Get angle berween two MEPCurves in rads.
         /// </summary>
@@ -119,7 +119,6 @@ namespace DS.RevitLib.Utils.MEP
 
             return Plane.CreateByThreePoints(difPlanePoints[0], difPlanePoints[1], difPlanePoints[2]);
         }
-
 
         private static List<XYZ> GetNotEqualPoints(List<XYZ> planePoints)
         {
@@ -170,13 +169,12 @@ namespace DS.RevitLib.Utils.MEP
             return false;
         }
 
-
         /// <summary>
         /// Get MEPCurve's size by vector of MEPCurve's center point.
         /// </summary>
         /// <param name="mEPCurve"></param>
         /// <param name="normVector"></param>
-        /// <returns>Return double length between MEPCurve's center point and intersection point between vector and MEPCurve's solid.</returns>
+        /// <returns>Return double length between MEPCurve's center point and intersection point between vector and MEPCurve's solid.</returns> 
         public static double GetSizeByVector(MEPCurve mEPCurve, XYZ normVector)
         {
             List<Solid> elemSolids = ElementUtils.GetSolids(mEPCurve);
@@ -203,7 +201,7 @@ namespace DS.RevitLib.Utils.MEP
 
             return 2 * mEPCurveline.Distance(intersectionPoint);
         }
-      
+
         /// <summary>
         /// Check if MEPCurves are equal oriented.
         /// </summary>
@@ -235,7 +233,6 @@ namespace DS.RevitLib.Utils.MEP
 
             return null;
         }
-
 
         private static List<XYZ> GetVectorsInPlane(Plane plane, List<XYZ> vectors)
         {
@@ -367,7 +364,6 @@ namespace DS.RevitLib.Utils.MEP
             return false;
         }
 
-
         public static List<Element> GetOrderedConnected(MEPCurve mEPCurve, XYZ basePoint)
         {
             var connectedElems = ConnectorUtils.GetConnectedElements(mEPCurve);
@@ -378,7 +374,6 @@ namespace DS.RevitLib.Utils.MEP
 
             return connectedElems.OrderByPoint(basePoint);
         }
-
 
         /// <summary>
         /// Get not spud connectors of MEPCurve.
@@ -414,7 +409,6 @@ namespace DS.RevitLib.Utils.MEP
             };
         }
 
-
         public static MEPCurve GetMaxLengthMEPCurve(List<MEPCurve> mEPCurves)
         {
             double maxLength = 0;
@@ -436,5 +430,44 @@ namespace DS.RevitLib.Utils.MEP
             }
             return maxLengthMEPCurve;
         }
+
+        /// <summary>
+        /// Align <paramref name="operationMEPCurve"/> of rectangular profile with 
+        /// <paramref name="sourceMEPCurve"/> by reference direction rotation.
+        /// </summary>
+        /// <param name="sourceMEPCurve"></param>
+        /// <param name="operationMEPCurve"></param>
+        public static void AlignMEPCurve(MEPCurve sourceMEPCurve, MEPCurve operationMEPCurve)
+        {
+            if (!sourceMEPCurve.IsRectangular())
+                return;
+
+            //Check if rect is needed to align
+            Basis baseBasis = sourceMEPCurve.GetBasis();
+            Basis curveBasis = operationMEPCurve.GetBasis();
+            if (XYZUtils.Collinearity(baseBasis.Y, curveBasis.Y) || XYZUtils.Collinearity(baseBasis.Z, curveBasis.Z))
+            {
+                return;
+            }
+
+            //get align options
+            XYZ cross = baseBasis.X.CrossProduct(curveBasis.X);
+            (XYZ baseAlignBasis, XYZ alignBasis) = XYZUtils.Collinearity(baseBasis.Y, cross) ?
+                 (baseBasis.Y, curveBasis.Y) :
+                 (baseBasis.Z, curveBasis.Z);
+            //(XYZ baseAlignBasis, XYZ alignBasis) = GetAlignBasis(baseBasis, curveBasis, cross);
+            double angle = baseAlignBasis.AngleTo(alignBasis);
+            Line axis = operationMEPCurve.GetCenterLine();
+            //Line axis = Line.CreateUnbound(curveBasis.Point, curveBasis.X);
+            var basis = new Basis(axis.Direction, baseAlignBasis, alignBasis, axis.Origin);
+
+            BasisOrientation orientation = basis.GetOrientaion();
+            angle = orientation == BasisOrientation.Left ? angle : -angle;
+
+            //align
+
+            ElementTransformUtils.RotateElement(sourceMEPCurve.Document, operationMEPCurve.Id, axis, angle);
+        }
     }
+
 }

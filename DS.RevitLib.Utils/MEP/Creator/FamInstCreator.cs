@@ -43,7 +43,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
         /// <param name="con2"></param>
         /// <param name="con3"></param>
         /// <returns></returns>
-        public static FamilyInstance CreateElbow(Connector con1, Connector con2, Connector con3 = null)
+        public static FamilyInstance Create(Connector con1, Connector con2, Connector con3 = null)
         {
             Document doc = con1.MEPSystem.Document;
             return con3 is null ? doc.Create.NewElbowFitting(con1, con2) : doc.Create.NewTeeFitting(con1, con2, con3);

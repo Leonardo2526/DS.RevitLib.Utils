@@ -1,18 +1,23 @@
 ﻿using Autodesk.Revit.DB;
+using DS.RevitLib.Utils.Extensions;
+using DS.RevitLib.Utils.MEP.Creator.Builders;
 using DS.RevitLib.Utils.MEP.Models;
 using DS.RevitLib.Utils.MEP.SystemTree;
+using DS.RevitLib.Utils.Models;
 using DS.RevitLib.Utils.TransactionCommitter;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace DS.RevitLib.Utils.MEP.Creator
 {
     public class MEPCurvesModel : MEPElementsModel
     {
-        protected readonly Document _doc;
+        private readonly Document _doc;
 
         public MEPCurvesModel(MEPElementsModel mEPSystemModel)
         {
@@ -25,7 +30,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
         /// Add elbows to given MEPSystem.
         /// </summary>
         /// <returns>Returns MEPElementsModel with elbows.</returns>
-        public MEPElementsModel WithElbows()
+        public MEPCurvesModel WithElbows()
         {
             FamilyInstance familyInstance;
 
@@ -36,5 +41,29 @@ namespace DS.RevitLib.Utils.MEP.Creator
             }
             return this;
         }
+
+        /// <summary>
+        /// Align ducts by <paramref name="baseMEPCurve"/>.
+        /// </summary>
+        /// <param name="baseMEPCurve"></param>
+        /// <returns>Returns aligned MEPCurves.</returns>
+        public MEPCurvesModel RefineDucts(MEPCurve baseMEPCurve)
+        {
+            if (!baseMEPCurve.IsRectangular())
+            {
+                return this;
+            }
+
+            List<MEPCurve> mEPCurves = MEPCurves.Cast<MEPCurve>().ToList();
+            MEPCurve currentBaseCurve = baseMEPCurve;
+            for (int i = 0; i < mEPCurves.Count; i++)
+            {
+                MEPCurve mEPCurve = mEPCurves[i];
+                MEPCurveUtils.AlignMEPCurve(currentBaseCurve, mEPCurve);
+                currentBaseCurve = mEPCurve;
+            }
+            return this;
+        }
+
     }
 }

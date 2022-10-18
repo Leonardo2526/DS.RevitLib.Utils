@@ -6,6 +6,7 @@ using DS.RevitLib.Utils;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.MEP;
 using DS.RevitLib.Utils.MEP.Creator;
+using DS.RevitLib.Utils.MEP.SystemTree;
 using DS.RevitLib.Utils.ModelCurveUtils;
 using System;
 using System.Collections.Generic;
@@ -33,12 +34,17 @@ namespace DS.RevitLib.Test
             ShowPath(points);
             //List<XYZ> points = GetPoints45_1();
 
-            var transactionBuilder = new TransactionBuilder<MEPCurve>(_doc);
+            var transactionBuilder = new TransactionBuilder<Element>(_doc);
 
             var builder = new BuilderByPoints(_mc1, points);
+            builder.BuildSystem(transactionBuilder);
+
             //var builder = new BuilderByPointsTransactions(mEPCurve, points);
             //transactionBuilder.Build(() => builder.BuildMEPCurves(), "Create MEPSystem");
-            transactionBuilder.Build(() => builder.BuildMEPCurves().WithElbows(), "Create MEPSystem");
+            //MEPCurvesModel mEPElementsModel = null;
+            //transactionBuilder.Build(() => mEPElementsModel = builder.BuildMEPCurves(), "Create MEPSystem by path");
+            //transactionBuilder.Build(() => mEPElementsModel.RefineDucts(_mc1), "RectangularFixing");
+            //transactionBuilder.Build(() => mEPElementsModel = mEPElementsModel.WithElbows(), "Insert elbows by path");
         }
 
         private List<XYZ> GetPoints90_1()
