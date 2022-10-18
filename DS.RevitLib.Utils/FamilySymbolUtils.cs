@@ -22,7 +22,7 @@ namespace DS.RevitLib.Utils
         /// <returns>Return length between main connectors of created family instance.</returns>
         public double GetLength(FamilySymbol familySymbol, Document document, Element baseElement = null)
         {
-            var famInstCreator = new FamInstCreator(document, _committer, _transactionPrefix);
+            var famInstCreator = new FamInstTransactions(document, _committer, _transactionPrefix);
             FamilyInstance famInst = famInstCreator.
                 CreateFamilyInstane(familySymbol, new XYZ(0, 0, 0), null, baseElement, CopyParameterOption.Sizes);
 

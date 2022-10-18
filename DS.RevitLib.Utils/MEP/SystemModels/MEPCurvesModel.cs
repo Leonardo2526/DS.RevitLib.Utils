@@ -13,30 +13,25 @@ namespace DS.RevitLib.Utils.MEP.Creator
     public class MEPCurvesModel : MEPElementsModel
     {
         protected readonly Document _doc;
-        private readonly Committer _committer;
-        private readonly string _transactionPrefix;
 
-        public MEPCurvesModel(MEPElementsModel mEPSystemModel, Document doc, Committer committer, 
-            string transactionPrefix)
+        public MEPCurvesModel(MEPElementsModel mEPSystemModel)
         {
-            _doc = doc;
-            this._committer = committer;
+            _doc = mEPSystemModel.AllElements.First().Document;
             AllElements = mEPSystemModel.AllElements;
             MEPCurves = mEPSystemModel.MEPCurves;
-            _transactionPrefix = transactionPrefix;
         }
 
-
-        public MEPElementsModel WithFittings()
+        /// <summary>
+        /// Add elbows to given MEPSystem.
+        /// </summary>
+        /// <returns>Returns MEPElementsModel with elbows.</returns>
+        public MEPElementsModel WithElbows()
         {
-            FamInstCreator famInstCreator = new FamInstCreator(_doc, _committer, _transactionPrefix);
             FamilyInstance familyInstance;
 
             for (int i = 0; i < MEPCurves.Count - 1; i++)
             {
-                familyInstance = famInstCreator.
-                    CreateFittingByMEPCurves(MEPCurves[i] as MEPCurve, MEPCurves[i + 1] as MEPCurve);
-                ErrorMessages += famInstCreator.ErrorMessages;
+                familyInstance = FamInstCreator.CreateElbow(MEPCurves[i] as MEPCurve, MEPCurves[i + 1] as MEPCurve);
                 AllElements.Insert(i + 1, familyInstance);
             }
             return this;

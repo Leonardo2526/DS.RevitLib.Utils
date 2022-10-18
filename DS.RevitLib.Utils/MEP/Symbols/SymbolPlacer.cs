@@ -41,7 +41,7 @@ namespace DS.RevitLib.Utils.MEP.Symbols
 
         public FamilyInstance Place()
         {           
-            var famInstCreator = new FamInstCreator(_doc, _committer, _transactionPrefix);
+            var famInstCreator = new FamInstTransactions(_doc, _committer, _transactionPrefix);
             FamilyInstance famInst = famInstCreator.
                 CreateFamilyInstane(_familySymbol, _placementPoint, _targerMEPCurve.ReferenceLevel, _sourceFamInst);
 
@@ -100,13 +100,13 @@ namespace DS.RevitLib.Utils.MEP.Symbols
 
        private List<MEPCurve> GetSplittedElements(MEPCurve mEPCurve, XYZ mEPCurveDir, XYZ placementPoint, double familyLength)
         {
-            var creator = new MEPCurveCreator(mEPCurve);
+            var creator = new MEPCurveTransactions(mEPCurve);
             MEPCurve splittedMEPCurve1 = creator.SplitElementTransaction(placementPoint + mEPCurveDir.Multiply(familyLength/2)) as MEPCurve;
 
 
             XYZ pointToSplit = placementPoint - mEPCurveDir.Multiply(familyLength/2);
             MEPCurve mEPCurveToSplit = GetMEPCurveToSplit(mEPCurve, splittedMEPCurve1, pointToSplit);
-            var splitCreator = new MEPCurveCreator(mEPCurveToSplit);
+            var splitCreator = new MEPCurveTransactions(mEPCurveToSplit);
             MEPCurve splittedMEPCurve2 = splitCreator.SplitElementTransaction(pointToSplit) as MEPCurve;
 
             var mepCurves = new List<MEPCurve>()

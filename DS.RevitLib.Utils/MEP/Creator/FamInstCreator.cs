@@ -7,70 +7,34 @@ using System.Linq;
 
 namespace DS.RevitLib.Utils.MEP.Creator
 {
-    public class FamInstCreator
+    /// <summary>
+    /// Class for create and modify FamilyInstances. 
+    /// Transactions are not provided, so methods should be wrapped to transacion.
+    /// </summary>
+    public static class FamInstCreator
     {
-        #region Fields
-
-        private readonly Document _doc;
-        private readonly string _transactionPrefix;
-        private readonly Committer _committer;
-        private readonly bool _transactionCommit;
-        #endregion
-
-        public FamInstCreator(Document doc, Committer committer = null, string transactionPrefix = "", bool transactionCommit = false)
-        {
-            _doc = doc;
-            _committer = committer is null ? new BaseCommitter() : committer;
-            _transactionPrefix = string.IsNullOrEmpty(transactionPrefix) ? null : transactionPrefix + "_";
-            _transactionCommit = transactionCommit;
-        }
-
-
-        private Level MEPLevel
-        {
-            get
-            {
-                return new FilteredElementCollector(_doc)
-                .OfClass(typeof(Level))
-                .Cast<Level>()
-                .FirstOrDefault();
-            }
-        }
-
-        public string ErrorMessages { get; private set; }
+        #region PublicMethods
 
         /// <summary>
-        /// Create fitting between two pipes
+        /// Create new elbow between two MEPCurves.
         /// </summary>
         /// <param name="mepCurve1"></param>
         /// <param name="mepCurve2"></param>
-        public FamilyInstance CreateFittingByMEPCurves(MEPCurve mepCurve1, MEPCurve mepCurve2)
+        public static FamilyInstance CreateElbow(MEPCurve mepCurve1, MEPCurve mepCurve2)
         {
-            FamilyInstance familyInstance = null;
-            using (Transaction transNew = new Transaction(_doc, _transactionPrefix + "CreateFittingByMEPCurves"))
-            {
-                try
-                {
-                    transNew.Start();
+            Document doc = mepCurve1.Document;
+            FamilyInstance familyInstance;
 
-                    List<Connector> connectors1 = ConnectorUtils.GetConnectors(mepCurve1);
-                    List<Connector> connectors2 = ConnectorUtils.GetConnectors(mepCurve2);
+            List<Connector> connectors1 = ConnectorUtils.GetConnectors(mepCurve1);
+            List<Connector> connectors2 = ConnectorUtils.GetConnectors(mepCurve2);
 
-                    ConnectorUtils.GetNeighbourConnectors(out Connector con1, out Connector con2,
-                    connectors1, connectors2);
+            ConnectorUtils.GetNeighbourConnectors(out Connector con1, out Connector con2,
+            connectors1, connectors2);
 
-                    familyInstance = _doc.Create.NewElbowFitting(con1, con2);
-                }
+            familyInstance = doc.Create.NewElbowFitting(con1, con2);
 
-                catch (Exception e)
-                { ErrorMessages += e + "\n"; }
-
-                _committer.Commit(transNew);
-                ErrorMessages += _committer?.ErrorMessages;
-            }
             return familyInstance;
         }
-
 
         /// <summary>
         /// Create elbow or tee by given connectors
@@ -79,34 +43,10 @@ namespace DS.RevitLib.Utils.MEP.Creator
         /// <param name="con2"></param>
         /// <param name="con3"></param>
         /// <returns></returns>
-        public FamilyInstance CreateFittingByConnectors(Connector con1, Connector con2, Connector con3 = null)
+        public static FamilyInstance CreateElbow(Connector con1, Connector con2, Connector con3 = null)
         {
-            FamilyInstance familyInstance = null;
-            using (Transaction transNew = new Transaction(_doc, _transactionPrefix + "CreateFittingByConnectors"))
-            {
-                try
-                {
-                    transNew.Start();
-
-                    if (con3 is null)
-                    {
-
-                        familyInstance = _doc.Create.NewElbowFitting(con1, con2);
-                    }
-                    else
-                    {
-                        familyInstance = _doc.Create.NewTeeFitting(con1, con2, con3);
-                    }
-                }
-
-                catch (Exception e)
-                { ErrorMessages += e + "\n"; }
-
-                _committer.Commit(transNew);
-                ErrorMessages += _committer?.ErrorMessages;
-            }
-
-            return familyInstance;
+            Document doc = con1.MEPSystem.Document;
+            return con3 is null ? doc.Create.NewElbowFitting(con1, con2) : doc.Create.NewTeeFitting(con1, con2, con3);
         }
 
         /// <summary>
@@ -115,25 +55,10 @@ namespace DS.RevitLib.Utils.MEP.Creator
         /// <param name="con"></param>
         /// <param name="mEPCurve"></param>
         /// <returns></returns>
-        public FamilyInstance CreateTakeOffFitting(Connector con, MEPCurve mEPCurve)
+        public static FamilyInstance Create(Connector con, MEPCurve mEPCurve)
         {
-            FamilyInstance familyInstance = null;
-            using (Transaction transNew = new Transaction(_doc, _transactionPrefix + "CreateTakeOffFitting"))
-            {
-                try
-                {
-                    transNew.Start();
-                    familyInstance = _doc.Create.NewTakeoffFitting(con, mEPCurve);
-                }
-
-                catch (Exception e)
-                { ErrorMessages += e + "\n"; }
-
-                _committer.Commit(transNew);
-                ErrorMessages += _committer?.ErrorMessages;
-            }
-
-            return familyInstance;
+            Document doc = mEPCurve.Document;
+            return doc.Create.NewTakeoffFitting(con, mEPCurve);
         }
 
         /// <summary>
@@ -141,46 +66,35 @@ namespace DS.RevitLib.Utils.MEP.Creator
         /// </summary>
         /// <param name="familySymbol"></param>
         /// <param name="point"></param>
-        /// <param name="baseMEPCurve"></param>
+        /// <param name="level"></param>
+        /// <param name="baseElement"></param>
+        /// <param name="copyParameterOption"></param>
         /// <returns>Returns created family instance.</returns>
-        public FamilyInstance CreateFamilyInstane(FamilySymbol familySymbol, XYZ point, Level level = null, Element baseElement = null,
+        public static FamilyInstance Create(FamilySymbol familySymbol, XYZ point, Level level = null, Element baseElement = null,
             CopyParameterOption copyParameterOption = CopyParameterOption.All)
         {
-            level ??= new FilteredElementCollector(_doc).OfClass(typeof(Level)).Cast<Level>().FirstOrDefault();
-            FamilyInstance familyInstance = null;
-            using (Transaction transNew = new Transaction(_doc, _transactionPrefix + "CreateFamilyInstane"))
-            {
-                try
-                {
-                    transNew.Start();
-
-                    familyInstance = _doc.Create.NewFamilyInstance(point, familySymbol, level,
+            Document doc = familySymbol.Document;
+            level ??= new FilteredElementCollector(doc).OfClass(typeof(Level)).Cast<Level>().FirstOrDefault();
+            FamilyInstance familyInstance = doc.Create.NewFamilyInstance(point, familySymbol, level,
                         Autodesk.Revit.DB.Structure.StructuralType.NonStructural);
 
-                    //baseElement option
-                    if (baseElement is not null)
-                    {
-                        Insulation.Create(baseElement, familyInstance);
-                        switch (copyParameterOption)
-                        {
-                            case CopyParameterOption.All:
-                                ElementParameter.CopyAllParameters(baseElement, familyInstance);
-                                break;
-                            case CopyParameterOption.Sizes:
-                                ElementParameter.CopySizeParameters(baseElement, familyInstance);
-                                break;
-                            default:
-                                break;
-                        }
-                    }
+            //baseElement option
+            if (baseElement is not null)
+            {
+                Insulation.Create(baseElement, familyInstance);
+                switch (copyParameterOption)
+                {
+                    case CopyParameterOption.All:
+                        ElementParameter.CopyAllParameters(baseElement, familyInstance);
+                        break;
+                    case CopyParameterOption.Sizes:
+                        ElementParameter.CopySizeParameters(baseElement, familyInstance);
+                        break;
+                    default:
+                        break;
                 }
-
-                catch (Exception e)
-                { ErrorMessages += e + "\n"; }
-
-                _committer.Commit(transNew);
-                ErrorMessages += _committer?.ErrorMessages;
             }
+
 
             //elevation correction
             var lp = ElementUtils.GetLocationPoint(familyInstance);
@@ -192,46 +106,23 @@ namespace DS.RevitLib.Utils.MEP.Creator
             return familyInstance;
         }
 
-        public void SetSizeParameters(FamilyInstance famInst, Dictionary<Parameter, double> parameters)
+        /// <summary>
+        /// Set <paramref name="parameters"/> to <paramref name="famInst"/>
+        /// </summary>
+        /// <param name="famInst"></param>
+        /// <param name="parameters"></param>
+        public static void SetSizeParameters(FamilyInstance famInst, Dictionary<Parameter, double> parameters)
         {
             var famInstParameters = MEPElementUtils.GetSizeParameters(famInst);
-
-            var parameterSetter = new ParameterSetter(famInst, _committer, _transactionPrefix);
 
             foreach (var param in parameters)
             {
                 var keyValuePair = famInstParameters.Where(obj => obj.Key.Id == param.Key.Id).FirstOrDefault();
-                parameterSetter.SetValue(keyValuePair.Key, param.Value);
+                keyValuePair.Key.Set(param.Value);
             }
         }
 
-
-
-
-        delegate void ConnectOperation(Connector c1, Connector c2);
-        private void TransactionConnect(Connector c1, Connector c2) => ConnectorUtils.ConnectConnectors(_doc, c1, c2);
-        private void Connect(Connector c1, Connector c2) => c1.ConnectTo(c2);  
-
-        public void Insert(FamilyInstance family, MEPCurve mEPCurve, out List<MEPCurve> splittedMEPCurves)
-        {
-            var (famInstCon1, famInstCon2) = ConnectorUtils.GetMainConnectors(family);
-            splittedMEPCurves = mEPCurve.Cut(famInstCon1.Origin, famInstCon2.Origin);
-
-            //connect connectors
-            List<Connector> cons = new List<Connector>();
-            foreach (var curve in splittedMEPCurves)
-            {
-                cons.AddRange(ConnectorUtils.GetConnectors(curve));
-            }
-
-            var selectedCon = ConnectorUtils.GetClosest(famInstCon1, cons);
-            ConnectOperation connectOperation = _transactionCommit ? TransactionConnect : Connect;
-            connectOperation.Invoke(famInstCon1, selectedCon);          
-
-            selectedCon = ConnectorUtils.GetClosest(famInstCon2, cons);
-            connectOperation.Invoke(famInstCon2, selectedCon);
-        }
-
+        #endregion
     }
 }
 

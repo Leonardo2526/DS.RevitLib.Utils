@@ -47,7 +47,7 @@ namespace DS.RevitLib.Utils.MEP
 
         private List<MEPCurve> Split(MEPCurve mEPCurve)
         {
-            var creator = new MEPCurveCreator(mEPCurve);
+            var creator = new MEPCurveTransactions(mEPCurve);
 
             MEPCurve splittedMEPCurve1 = _transactionCommit ? 
                 creator.SplitElementTransaction(_point1) as MEPCurve : 
@@ -57,7 +57,7 @@ namespace DS.RevitLib.Utils.MEP
             //angleAlignment.AlignNormOrths();
 
             MEPCurve mEPCurveToSplit = GetMEPCurveByPoint(mEPCurve, splittedMEPCurve1, _point2);
-            var splitCreator = new MEPCurveCreator(mEPCurveToSplit);
+            var splitCreator = new MEPCurveTransactions(mEPCurveToSplit);
             MEPCurve splittedMEPCurve2 = _transactionCommit ?
                 splitCreator.SplitElementTransaction(_point2) as MEPCurve :
                 splitCreator.SplitElement(_point2) as MEPCurve;
