@@ -5,88 +5,53 @@ using System;
 
 namespace DS.RevitLib.Utils.ModelCurveUtils
 {
-
+    /// <summary>
+    /// Class for create and modify ModelCurves. 
+    /// Transactions are not provided, so a used method should be wrapped into transacion.
+    /// </summary>
     public class ModelCurveCreator
     {
-
         private readonly Document _doc;
-        private readonly string _transactionPrefix;
 
-        public ModelCurveCreator(Document doc, string transactionPrefix = "")
+        /// <summary>
+        /// Create a new instance of object to create and modify ModelCurves. 
+        /// </summary>
+        /// <param name="doc"></param>
+        public ModelCurveCreator(Document doc)
         {
             _doc = doc;
-
-            if (!String.IsNullOrEmpty(transactionPrefix))
-            {
-                _transactionPrefix = transactionPrefix + "_";
-            }
         }
 
-        public string ErrorMessages { get; private set; }
-
-
+        /// <summary>
+        /// Create a new ModelCurve between <paramref name="startPoint"/> and <paramref name="endPoint"/>.
+        /// </summary>
+        /// <param name="startPoint"></param>
+        /// <param name="endPoint"></param>
+        /// <returns>Returns created ModelCurve.</returns>
         public ModelCurve Create(XYZ startPoint, XYZ endPoint)
         {
-            ModelCurve modelLine = null;
-
             (Plane geomPlane, Line geomLine) = GetBaseElements(startPoint, endPoint);
 
-            using (Transaction transNew = new Transaction(_doc, _transactionPrefix + "CreateModelCurve"))
-            {
-                try
-                {
-                    transNew.Start();
+            // Create a sketch plane in current document
+            SketchPlane sketch = SketchPlane.Create(_doc, geomPlane);
 
-                    // Create a sketch plane in current document
-                    SketchPlane sketch = SketchPlane.Create(_doc, geomPlane);
-
-                    // Create a ModelLine element using the created geometry line and sketch plane
-                    modelLine = _doc.Create.NewModelCurve(geomLine, sketch) as ModelCurve;
-                }
-
-                catch (Exception e)
-                { ErrorMessages += e + "\n"; }
-
-                if (transNew.HasStarted())
-                {
-                    transNew.Commit();
-                }
-            }
-
-            return modelLine;
+            return _doc.Create.NewModelCurve(geomLine, sketch);
         }
 
+        /// <summary>
+        /// Create a new ModelCurve from <paramref name="line"/>.
+        /// </summary>
+        /// <param name="line"></param>
+        /// <returns>Returns created ModelCurve.</returns>
         public ModelCurve Create(Line line)
         {
-            ModelCurve modelLine = null;
-
             Plane plane = PlaneUtils.CreateByLineAndPoint(line);
 
-            using (Transaction transNew = new Transaction(_doc, _transactionPrefix + "CreateModelCurve"))
-            {
-                try
-                {
-                    transNew.Start();
+            // Create a sketch plane in current document
+            SketchPlane sketch = SketchPlane.Create(_doc, plane);
 
-                    // Create a sketch plane in current document
-                    SketchPlane sketch = SketchPlane.Create(_doc, plane);
-
-                    // Create a ModelLine element using the created geometry line and sketch plane
-                    modelLine = _doc.Create.NewModelCurve(line, sketch) as ModelCurve;
-                }
-
-                catch (Exception e)
-                { ErrorMessages += e + "\n"; }
-
-                if (transNew.HasStarted())
-                {
-                    transNew.Commit();
-                }
-            }
-
-            return modelLine;
+            return _doc.Create.NewModelCurve(line, sketch);
         }
-
 
         private (Plane plane, Line line) GetBaseElements(XYZ startPoint, XYZ endPoint)
         {

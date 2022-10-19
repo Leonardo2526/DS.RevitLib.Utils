@@ -10,14 +10,9 @@ namespace DS.RevitLib.Utils.Elements
 {
     public static class ElementParameter
     {
-        /// <summary>
-        /// Copy baseElement parameters to targetElement
-        /// </summary>
-        /// <param name="baseElement"></param>
-        /// <param name="targetElement"></param>
-        public static void CopyAllParameters(Element baseElement, Element targetElement)
+        private static List<BuiltInParameter> GetExceptions()
         {
-            var exceptions = new List<BuiltInParameter>()
+            var parameters = new List<BuiltInParameter>
             {
                 BuiltInParameter.RBS_CTC_TOP_ELEVATION,
                 BuiltInParameter.RBS_OFFSET_PARAM,
@@ -27,10 +22,30 @@ namespace DS.RevitLib.Utils.Elements
                 BuiltInParameter.RBS_DUCT_TOP_ELEVATION,
                 BuiltInParameter.RBS_DUCT_BOTTOM_ELEVATION,
             };
+            return parameters;
+        }
+        private static List<BuiltInParameter> GetSizeBuiltInParameters()
+        {
+            var parameters = new List<BuiltInParameter>
+            {
+                BuiltInParameter.CONNECTOR_DIAMETER,
+                BuiltInParameter.CONNECTOR_RADIUS,
+                BuiltInParameter.CONNECTOR_HEIGHT,
+                BuiltInParameter.CONNECTOR_WIDTH
+            };
+            return parameters;
+        }
 
+        /// <summary>
+        /// Copy baseElement parameters to targetElement
+        /// </summary>
+        /// <param name="baseElement"></param>
+        /// <param name="targetElement"></param>
+        public static void CopyAllParameters(Element baseElement, Element targetElement)
+        {
             foreach (Parameter oldp in baseElement.Parameters)
             {
-                if (oldp.Definition is InternalDefinition id && exceptions.Contains(id.BuiltInParameter)) continue;
+                if (oldp.Definition is InternalDefinition id && GetExceptions().Contains(id.BuiltInParameter)) continue;
 
                 var p = targetElement.get_Parameter(oldp.Definition);
 
@@ -66,7 +81,7 @@ namespace DS.RevitLib.Utils.Elements
         /// </summary>
         /// <param name="baseElement"></param>
         /// <param name="targetElement"></param>
-        public static void CopySizeParameters(Element baseElement, Element targetElement)
+        public static void CopySizeParameters(FamilyInstance baseElement, FamilyInstance targetElement)
         {
             var baseParameters = MEPElementUtils.GetSizeParameters(baseElement);
             var targetParameters = MEPElementUtils.GetSizeParameters(targetElement);
@@ -75,7 +90,7 @@ namespace DS.RevitLib.Utils.Elements
             {
                 var keyValuePair = baseParameters.Where(obj => obj.Key.Id == targetParam.Key.Id).FirstOrDefault();
                 targetParam.Key.Set(keyValuePair.Value);
-            }           
+            }
         }
     }
 }

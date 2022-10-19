@@ -4,12 +4,13 @@ using DS.RevitLib.Utils.TransactionCommitter;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Xml.Linq;
 
 namespace DS.RevitLib.Utils.MEP.Creator
 {
     /// <summary>
     /// Class for create and modify FamilyInstances. 
-    /// Transactions are not provided, so methods should be wrapped to transacion.
+    /// Transactions are not provided, so a used method should be wrapped into transacion.
     /// </summary>
     public static class FamInstCreator
     {
@@ -62,45 +63,25 @@ namespace DS.RevitLib.Utils.MEP.Creator
         }
 
         /// <summary>
-        /// Create family instance.
+        /// Create family instance by <paramref name="familySymbol"/> in <paramref name="point"/>.
         /// </summary>
         /// <param name="familySymbol"></param>
         /// <param name="point"></param>
         /// <param name="level"></param>
-        /// <param name="baseElement"></param>
-        /// <param name="copyParameterOption"></param>
         /// <returns>Returns created family instance.</returns>
-        public static FamilyInstance Create(FamilySymbol familySymbol, XYZ point, Level level = null, Element baseElement = null,
-            CopyParameterOption copyParameterOption = CopyParameterOption.All)
+        public static FamilyInstance Create(FamilySymbol familySymbol, XYZ point, Level level = null)
         {
             Document doc = familySymbol.Document;
             level ??= new FilteredElementCollector(doc).OfClass(typeof(Level)).Cast<Level>().FirstOrDefault();
+
             FamilyInstance familyInstance = doc.Create.NewFamilyInstance(point, familySymbol, level,
-                        Autodesk.Revit.DB.Structure.StructuralType.NonStructural);
-
-            //baseElement option
-            if (baseElement is not null)
-            {
-                Insulation.Create(baseElement, familyInstance);
-                switch (copyParameterOption)
-                {
-                    case CopyParameterOption.All:
-                        ElementParameter.CopyAllParameters(baseElement, familyInstance);
-                        break;
-                    case CopyParameterOption.Sizes:
-                        ElementParameter.CopySizeParameters(baseElement, familyInstance);
-                        break;
-                    default:
-                        break;
-                }
-            }
-
+                            Autodesk.Revit.DB.Structure.StructuralType.NonStructural);
 
             //elevation correction
             var lp = ElementUtils.GetLocationPoint(familyInstance);
             if (Math.Round(lp.Z, 3) != Math.Round(point.Z, 3))
             {
-                ElementsMover.MoveElement(familyInstance, point - lp);
+                ElementTransformUtils.MoveElement(doc, familyInstance.Id, point - lp);
             }
 
             return familyInstance;

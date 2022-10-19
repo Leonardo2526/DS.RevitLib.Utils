@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.Elements
 {
+    /// <summary>
+    /// Options to copy parameters.
+    /// </summary>
     public enum CopyParameterOption
     {
         /// <summary>

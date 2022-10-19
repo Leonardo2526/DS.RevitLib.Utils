@@ -167,7 +167,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
                                 ElementParameter.CopyAllParameters(baseElement, familyInstance);
                                 break;
                             case CopyParameterOption.Sizes:
-                                ElementParameter.CopySizeParameters(baseElement, familyInstance);
+                                ElementParameter.CopySizeParameters(baseElement as FamilyInstance, familyInstance);
                                 break;
                             default:
                                 break;

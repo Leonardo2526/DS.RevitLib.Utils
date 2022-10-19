@@ -21,7 +21,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
         private readonly MEPCurve _baseMEPCurve;
 
         /// <summary>
-        /// Create instance of object to create and modify MEPCurves. 
+        /// Create a new instance of object to create and modify MEPCurves. 
         /// </summary>
         /// <param name="baseMEPCurve">MEPCurve to get parameters for creation methods.</param>
         public MEPCurveCreator(MEPCurve baseMEPCurve)

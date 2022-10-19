@@ -24,7 +24,8 @@ namespace DS.RevitLib.Test
             Document doc = uiapp.ActiveUIDocument.Document;
 
             //var test = new AlignMEPCurvesTest(uidoc);
-            var test = new BuilderByPointsTest(uidoc);
+            //var test = new BuilderByPointsTest(uidoc);
+            var test = new GetAssociatedParameterTest(uidoc);
             test.Run();
 
             //var client = new ConnectionFactoryClient(uidoc);
