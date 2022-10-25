@@ -105,21 +105,21 @@ namespace DS.RevitLib.Utils.MEP
         /// <summary>
         /// Get element's parameter associated with parameter of connectors.
         /// </summary>
-        /// <param name="element"></param>
+        /// <param name="famInst"></param>
         /// <param name="connectorParameter"></param>
         /// <returns>Return assiciated parameter.</returns>
-        public static Parameter GetAssociatedParameter(Element element, BuiltInParameter connectorParameter)
+        public static Parameter GetAssociatedParameter(FamilyInstance famInst, BuiltInParameter connectorParameter)
         {
-            var connectors = ConnectorUtils.GetConnectors(element);
+            var connectors = ConnectorUtils.GetConnectors(famInst);
 
             var connectorInfo = (MEPFamilyConnectorInfo)connectors.First().GetMEPConnectorInfo();
-
+            
             var associatedFamilyParameterId = connectorInfo.GetAssociateFamilyParameterId(new ElementId(connectorParameter));
 
             if (associatedFamilyParameterId == ElementId.InvalidElementId)
                 return null;
 
-            var document = element.Document;
+            var document = famInst.Document;
 
             var parameterElement = document.GetElement(associatedFamilyParameterId) as ParameterElement;
 
@@ -128,7 +128,7 @@ namespace DS.RevitLib.Utils.MEP
 
             var paramterDefinition = parameterElement.GetDefinition();
 
-            return element.get_Parameter(paramterDefinition);
+            return famInst.get_Parameter(paramterDefinition);
         }
 
         /// <summary>
@@ -167,16 +167,16 @@ namespace DS.RevitLib.Utils.MEP
         /// <summary>
         /// Get element's size parameters.
         /// </summary>
-        /// <param name="element"></param>
+        /// <param name="famInst"></param>
         /// <returns>Returns all not nullable connector size parameters.</returns>
-        public static Dictionary<Parameter, double> GetSizeParameters(Element element)
+        public static Dictionary<Parameter, double> GetSizeParameters(FamilyInstance famInst)
         {
             var dict = new Dictionary<Parameter, double>();
 
-            AddParameter(GetAssociatedParameter(element, BuiltInParameter.CONNECTOR_DIAMETER), dict);
-            AddParameter(GetAssociatedParameter(element, BuiltInParameter.CONNECTOR_RADIUS), dict);
-            AddParameter(GetAssociatedParameter(element, BuiltInParameter.CONNECTOR_HEIGHT), dict);
-            AddParameter(GetAssociatedParameter(element, BuiltInParameter.CONNECTOR_WIDTH), dict);
+            AddParameter(GetAssociatedParameter(famInst, BuiltInParameter.CONNECTOR_DIAMETER), dict);
+            AddParameter(GetAssociatedParameter(famInst, BuiltInParameter.CONNECTOR_RADIUS), dict);
+            AddParameter(GetAssociatedParameter(famInst, BuiltInParameter.CONNECTOR_HEIGHT), dict);
+            AddParameter(GetAssociatedParameter(famInst, BuiltInParameter.CONNECTOR_WIDTH), dict);
 
             return dict;
         }

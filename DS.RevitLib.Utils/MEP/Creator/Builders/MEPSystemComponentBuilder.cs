@@ -14,7 +14,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
         #region Constructor
         protected MEPElementsModel MEPElementsModel { get; set; }
 
-        public MEPElementsModelBuilder(MEPCurve baseMEPCurve, string transactionPrefix)
+        public MEPElementsModelBuilder(MEPCurve baseMEPCurve, string transactionPrefix = "")
         {
             Doc = baseMEPCurve.Document;
             BaseMEPCurve = baseMEPCurve;
@@ -43,7 +43,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
 
         #region Methods
 
-        abstract public MEPCurvesModel BuildMEPCurves();
+        abstract public MEPCurvesModelTransaction BuildMEPCurves();
      
 
         #endregion

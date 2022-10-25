@@ -23,7 +23,9 @@ namespace DS.RevitLib.Test
             UIDocument uidoc = uiapp.ActiveUIDocument;
             Document doc = uiapp.ActiveUIDocument.Document;
 
-            var test = new GetConnectedElementsTest(uidoc, doc);
+            //var test = new AlignMEPCurvesTest(uidoc);
+            var test = new BuilderByPointsTest(uidoc);
+            //var test = new GetAssociatedParameterTest(uidoc);
             test.Run();
 
             //var client = new ConnectionFactoryClient(uidoc);

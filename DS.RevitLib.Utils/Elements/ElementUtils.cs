@@ -7,6 +7,7 @@ using System.Linq;
 using DS.RevitLib.Utils.Solids;
 using DS.RevitLib.Utils.MEP;
 using DS.RevitLib.Utils.Extensions;
+using DS.RevitLib.Utils.Elements;
 
 namespace DS.RevitLib.Utils
 {
@@ -506,6 +507,28 @@ namespace DS.RevitLib.Utils
             }
 
             return maxVector;
+        }
+
+        /// <summary>
+        /// Copy parameters and insulation from <paramref name="sourceElement"/> to <paramref name="targetElement"/>.
+        /// </summary>
+        /// <param name="sourceElement"></param>
+        /// <param name="targetElement"></param>
+        /// <param name="copyParameterOption"></param>
+        public static void CopyConnectorParameters(FamilyInstance sourceElement, FamilyInstance targetElement, CopyParameterOption copyParameterOption)
+        {
+                Insulation.Create(sourceElement, targetElement);
+                switch (copyParameterOption)
+                {
+                    case CopyParameterOption.All:
+                        ElementParameter.CopyAllParameters(sourceElement, targetElement);
+                        break;
+                    case CopyParameterOption.Sizes:
+                        ElementParameter.CopySizeParameters(sourceElement, targetElement);
+                        break;
+                    default:
+                        break;
+                }           
         }
        
     }

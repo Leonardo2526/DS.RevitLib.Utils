@@ -1,4 +1,6 @@
 ﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.Mechanical;
+using Autodesk.Revit.DB.Plumbing;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.Lines;
 using DS.RevitLib.Utils.MEP.Creator;
@@ -44,6 +46,24 @@ namespace DS.RevitLib.Utils.MEP
             basis.Round();
 
             return basis;
+        }
+
+        /// <summary>
+        /// Split given <paramref name="mEPCurve"/> in <paramref name="point"/>.
+        /// </summary>
+        /// <param name="mEPCurve"></param>
+        /// <param name="point"></param>
+        /// <returns>Returns a new created MEPCurve.</returns>
+        public static MEPCurve Split(this MEPCurve mEPCurve, XYZ point)
+        {
+            Document doc = mEPCurve.Document;
+
+            var elementTypeName = mEPCurve.GetType().Name;
+            ElementId newCurveId = elementTypeName == "Pipe" ?
+                PlumbingUtils.BreakCurve(doc, mEPCurve.Id, point) :
+                MechanicalUtils.BreakCurve(doc, mEPCurve.Id, point);
+
+            return doc.GetElement(newCurveId) as MEPCurve;
         }
     }
 }

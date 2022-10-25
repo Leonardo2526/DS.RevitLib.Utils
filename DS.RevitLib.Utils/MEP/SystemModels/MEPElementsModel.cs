@@ -12,7 +12,7 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
 
         #region Properties
 
-        public List<Element> MEPCurves { get; set; } = new List<Element>();
+        public List<MEPCurve> MEPCurves { get; set; } = new List<MEPCurve>();
         public List<Element> AllElements { get; set; } = new List<Element>();
 
         public Connector StartConnector

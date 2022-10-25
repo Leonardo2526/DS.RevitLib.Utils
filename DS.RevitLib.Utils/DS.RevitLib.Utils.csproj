@@ -100,7 +100,7 @@
     <Compile Include="Elements\Alignments\Strategies\Solids\NormOrthSolidRotator.cs" />
     <Compile Include="Elements\Alignments\Strategies\Solids\CentralLineSolidRotator.cs" />
     <Compile Include="Elements\Models\AbstractElementModel.cs" />
-    <Compile Include="Elements\CopyParameterOption.cs" />
+    <Compile Include="Elements\Parameters\CopyParameterOption.cs" />
     <Compile Include="Elements\Creators\ElementCreator.cs" />
     <Compile Include="Elements\ElementsMover.cs" />
     <Compile Include="Elements\Models\ElementModel.cs" />
@@ -111,11 +111,16 @@
     <Compile Include="Extensions\MEPCurveExtension.cs" />
     <Compile Include="FailedTransaction.cs" />
     <Compile Include="FamilyInstances\FamilyInstanceExtensions.cs" />
+    <Compile Include="MEP\Creator\Builders\BuilderByPoints.cs" />
+    <Compile Include="MEP\Creator\FamInstCreator.cs" />
+    <Compile Include="MEP\Creator\MEPCurveCreator.cs" />
     <Compile Include="MEP\Models\MEPCurveModel.cs" />
+    <Compile Include="MEP\SystemModels\MEPCurvesModel.cs" />
     <Compile Include="MEP\SystemTree\Relatives\FamInstRelationBuilder.cs" />
     <Compile Include="MEP\SystemTree\Relatives\NewElementRelationBuilder.cs" />
     <Compile Include="MEP\SystemTree\Relatives\SpudRelationBuilder.cs" />
     <Compile Include="MEP\SystemTree\Relatives\TeeRelationBuilder.cs" />
+    <Compile Include="ModelCurveUtils\ModelCurveTransaction.cs" />
     <Compile Include="PathFinders\IPathFinder.cs" />
     <Compile Include="Lines\LineExtensions.cs" />
     <Compile Include="MEP\MEPCurveExtensions.cs" />
@@ -125,7 +130,6 @@
     <Compile Include="Points\Models\MEPConnectionPoint.cs" />
     <Compile Include="Points\Models\IMEPConnectionPoint.cs" />
     <Compile Include="SelectionFilters\FamilyInstanceSelectionFilter.cs" />
-    <Compile Include="Solids\Models\SolidModelExtTest.cs" />
     <Compile Include="Transactions\TransactionBuilder.cs" />
     <Compile Include="Transforms\TransformBuilder.cs" />
     <Compile Include="Transforms\TransformModel.cs" />
@@ -138,7 +142,7 @@
     <Compile Include="Solids\SolidExtension.cs" />
     <Compile Include="Points\XYZExtension.cs" />
     <Compile Include="FamilySymbolUtils.cs" />
-    <Compile Include="MEP\Creator\Builders\BuilderByPoints.cs" />
+    <Compile Include="MEP\Creator\Builders\BuilderByPointsTransactions.cs" />
     <Compile Include="MEP\Creator\Builders\MEPSystemComponentBuilder.cs" />
     <Compile Include="MEP\Creator\Builders\RotationBuilder.cs" />
     <Compile Include="Elements\Alignments\Strategies\NormOrthRotator.cs" />
@@ -149,7 +153,7 @@
     <Compile Include="MEP\Symbols\SymbolPlacer.cs" />
     <Compile Include="MEP\SystemTree\Component.cs" />
     <Compile Include="MEP\SystemTree\ComponentBuilder.cs" />
-    <Compile Include="MEP\SystemModels\MEPCurvesModel.cs" />
+    <Compile Include="MEP\SystemModels\MEPCurvesModelTransaction.cs" />
     <Compile Include="MEP\SystemModels\MEPElement.cs" />
     <Compile Include="MEP\SystemTree\Composite.cs" />
     <Compile Include="MEP\SystemTree\CompositeBuilder.cs" />
@@ -177,9 +181,9 @@
     <Compile Include="GPExtractor\GPExtractor.cs" />
     <Compile Include="Elements\IElement.cs" />
     <Compile Include="GPExtractor\VisiblePointsCreator.cs" />
-    <Compile Include="MEP\Creator\MEPCurveCreator.cs" />
-    <Compile Include="MEP\Creator\FamInstCreator.cs" />
-    <Compile Include="Elements\ElementParameter.cs" />
+    <Compile Include="MEP\Creator\MEPCurveTransactions.cs" />
+    <Compile Include="MEP\Creator\FamInstTransactions.cs" />
+    <Compile Include="Elements\Parameters\ElementParameter.cs" />
     <Compile Include="MEP\Insulation.cs" />
     <Compile Include="MEP\ConnectorUtils.cs" />
     <Compile Include="Elements\ElementEraser.cs" />

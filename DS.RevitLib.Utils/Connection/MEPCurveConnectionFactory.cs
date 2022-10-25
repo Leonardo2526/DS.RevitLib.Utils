@@ -61,8 +61,9 @@ namespace DS.RevitLib.Utils.Connection
             var projPoint = _mEPCurveModel2.Line.Project(curve1Con.Origin).XYZPoint;
             if (_mEPCurveModel3 is null)
             {
-                if ((projPoint - _mEPCurveModel2.Line.GetEndPoint(0)).IsZeroLength() || 
-                    (projPoint - _mEPCurveModel2.Line.GetEndPoint(1)).IsZeroLength())
+                var p1 = _mEPCurveModel2.Line.GetEndPoint(0);
+                var p2 = _mEPCurveModel2.Line.GetEndPoint(1);
+                if (p1.DistanceTo(projPoint) < 0.001|| p2.DistanceTo(projPoint) < 0.001)
                 {
                     (elem1Con, elem2Con) = ConnectorUtils.GetClosest(_mEPCurveModel1.MainConnectors, _mEPCurveModel2.MainConnectors);
                     return new ElbowMEPCurveStrategy(_doc, _mEPCurveModel1, _mEPCurveModel2, _minLength, elem1Con, elem2Con);
