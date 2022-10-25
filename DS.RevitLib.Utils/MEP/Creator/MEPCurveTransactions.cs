@@ -156,7 +156,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
                 try
                 {
                     transNew.Start();
-                    newElement = SplitElement(splitPoint);
+                    newElement = BaseMEPCurve.Split(splitPoint);
                 }
 
                 catch (Exception e)
@@ -167,23 +167,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
             }
 
             return newElement;
-        }
-
-        public Element SplitElement(XYZ splitPoint)
-        {
-            ElementId newCurveId;
-            var elementTypeName = BaseMEPCurve.GetType().Name;
-
-            if (elementTypeName == "Pipe")
-            {
-                newCurveId = PlumbingUtils.BreakCurve(Doc, BaseMEPCurve.Id, splitPoint);
-            }
-            else
-            {
-                newCurveId = MechanicalUtils.BreakCurve(Doc, BaseMEPCurve.Id, splitPoint);
-            }
-            return Doc.GetElement(newCurveId);
-        }
+        }       
 
         /// <summary>
         /// Rotate MEPCurve around it's axe by angle in rads.

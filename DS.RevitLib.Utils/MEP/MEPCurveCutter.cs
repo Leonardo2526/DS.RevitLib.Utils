@@ -50,8 +50,8 @@ namespace DS.RevitLib.Utils.MEP
             var creator = new MEPCurveTransactions(mEPCurve);
 
             MEPCurve splittedMEPCurve1 = _transactionCommit ? 
-                creator.SplitElementTransaction(_point1) as MEPCurve : 
-                creator.SplitElement(_point1) as MEPCurve;
+                creator.SplitElementTransaction(_point1) as MEPCurve :
+                mEPCurve.Split(_point1);
 
             //var angleAlignment = new AngleAlignment(splittedMEPCurve1, _mEPCurve);
             //angleAlignment.AlignNormOrths();
@@ -60,7 +60,7 @@ namespace DS.RevitLib.Utils.MEP
             var splitCreator = new MEPCurveTransactions(mEPCurveToSplit);
             MEPCurve splittedMEPCurve2 = _transactionCommit ?
                 splitCreator.SplitElementTransaction(_point2) as MEPCurve :
-                splitCreator.SplitElement(_point2) as MEPCurve;
+                 mEPCurveToSplit.Split(_point2);
 
             //angleAlignment = new AngleAlignment(splittedMEPCurve2, _mEPCurve);
             //angleAlignment.AlignNormOrths();
@@ -106,6 +106,9 @@ namespace DS.RevitLib.Utils.MEP
                 return mEPCurve1;
 
             }
+
+            var (con3, con4) = ConnectorUtils.GetMainConnectors(mEPCurve2);
+
             return mEPCurve2;
         }
     }
