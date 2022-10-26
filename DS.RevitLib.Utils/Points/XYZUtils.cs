@@ -11,6 +11,9 @@ using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils
 {
+    /// <summary>
+    ///  Object representing tools to work with XYZ points.
+    /// </summary>
     public static class XYZUtils
     {
         #region PublicMethods

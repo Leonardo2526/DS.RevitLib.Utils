@@ -24,17 +24,16 @@ namespace DS.RevitLib.Test
             Document doc = uiapp.ActiveUIDocument.Document;
 
             //var test = new AlignMEPCurvesTest(uidoc);
-            var test = new BuilderByPointsTest(uidoc);
+            //var test = new BuilderByPointsTest(uidoc);
             //var test = new GetAssociatedParameterTest(uidoc);
-            test.Run();
 
             //var client = new ConnectionFactoryClient(uidoc);
             //client.Run();
 
 
-            //var pathFinderTest = new SimplePathFinderTest(uidoc, doc);
-            //var path = pathFinderTest.RunTest2();
-            //pathFinderTest.ShowPath(path);
+            var pathFinderTest = new SimplePathFinderTest(uidoc, doc);
+            var path = pathFinderTest.RunTest2();
+            pathFinderTest.ShowPath(path);
             //SolidCollisionCheckerTest.RunWithLink(doc);
 
             //var selector = new SystemModelTest(uidoc, doc, uiapp);

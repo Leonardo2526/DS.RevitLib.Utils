@@ -44,17 +44,24 @@ namespace DS.RevitLib.Test
             var mc2 = _doc.GetElement(reference) as MEPCurve;
             var (con21, con22) = ConnectorUtils.GetMainConnectors(mc2);
             double midDistPoints = 500.mmToFyt2();
-            var finder = new SimplePathFinder(mc1.GetCenterLine(), mc2.GetCenterLine(), midDistPoints, midDistPoints * 5, 45, midDistPoints * 3);
+            var finder = new SimplePathFinder(mc1.GetCenterLine(), mc2.GetCenterLine(), midDistPoints, midDistPoints * 5, 90, midDistPoints * 3);
             return finder.Find(con11.Origin, con21.Origin);
         }
 
         public void ShowPath(List<XYZ> path)
         {
-            var mcreator = new ModelCurveCreator(_doc);
-            for (int i = 0; i < path.Count - 1; i++)
+            using (var tr = new Transaction(_doc,"show"))
             {
-                mcreator.Create(path[i], path[i + 1]);
-                var line = Line.CreateBound(path[i], path[i + 1]);
+                tr.Start();
+
+                var mcreator = new ModelCurveCreator(_doc);
+                for (int i = 0; i < path.Count - 1; i++)
+                {
+                    mcreator.Create(path[i], path[i + 1]);
+                    var line = Line.CreateBound(path[i], path[i + 1]);
+                }
+
+                tr.Commit();
             }
         }
     }

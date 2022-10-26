@@ -5,10 +5,13 @@ using System.Linq;
 using Ivanov.RevitLib.Utils;
 using DS.RevitLib.Utils.MEP;
 using DS.ClassLib.VarUtils;
+using DS.RevitLib.Utils.ModelCurveUtils;
 
 namespace DS.RevitLib.Utils.Extensions
 {
-
+    /// <summary>
+    /// Object representing extension methods to work with XYZ points.
+    /// </summary>
     public static class XYZExtension
 
     {
@@ -128,7 +131,7 @@ namespace DS.RevitLib.Utils.Extensions
         /// <returns></returns>
         public static XYZ GetRandomPerpendicular(this XYZ vector, XYZ basePoint = null)
         {
-            basePoint ??= new XYZ(0,0,0);
+            basePoint ??= new XYZ(0, 0, 0);
 
             XYZ randPoint = XYZUtils.GenerateXYZ();
             XYZ randVector = randPoint - basePoint;
@@ -157,6 +160,39 @@ namespace DS.RevitLib.Utils.Extensions
             }
 
             return resLine;
+        }
+
+        /// <summary>
+        /// Show current point in model as 3 crossing line in this <paramref name="point"/>.
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="transactionBuilder"></param>
+        /// <param name="doc"></param>
+        /// <param name="labelSize">Size of label's line to show.</param>
+        public static void Show(this XYZ point, Document doc, double labelSize = 0, TransactionBuilder<Element> transactionBuilder = null)
+        {
+            transactionBuilder ??= new TransactionBuilder<Element>(doc);
+            labelSize = labelSize == 0 ? 100.mmToFyt2() : labelSize;
+
+            Line line1 = Line.CreateBound(
+                point + XYZ.BasisX.Multiply(labelSize / 2),
+                point - XYZ.BasisX.Multiply(labelSize / 2));
+
+            Line line2 = Line.CreateBound(
+               point + XYZ.BasisY.Multiply(labelSize / 2),
+               point - XYZ.BasisY.Multiply(labelSize / 2));
+
+            Line line3 = Line.CreateBound(
+               point + XYZ.BasisZ.Multiply(labelSize / 2),
+               point - XYZ.BasisZ.Multiply(labelSize / 2));
+
+            transactionBuilder.Build(() =>
+            {
+                var creator = new ModelCurveCreator(doc);
+                creator.Create(line1);
+                creator.Create(line2);
+                creator.Create(line3);
+            }, "ShowPoint");
         }
 
     }

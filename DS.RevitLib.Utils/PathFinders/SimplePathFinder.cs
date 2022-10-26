@@ -7,7 +7,11 @@ using System.Collections.Generic;
 using System.Linq;
 
 namespace DS.RevitApp.Test.PathFinders
-{   
+{
+
+    /// <summary>
+    ///  Object representing a tool to build path points.
+    /// </summary>
     public class SimplePathFinder : IPathFinder
     {
         private XYZ _point1;
