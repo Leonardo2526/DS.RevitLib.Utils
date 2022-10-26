@@ -12,6 +12,8 @@ namespace DS.RevitLib.Utils.Visualisators
     {
         private readonly BoundingBoxXYZ _boundingBoxXYZ;
         private readonly Document _document;
+        private XYZ _minTrPoint;
+        private XYZ _maxTrPoint;
 
         public BoundingBoxVisualisator(BoundingBoxXYZ boundingBoxXYZ, Document document)
         {
@@ -27,10 +29,10 @@ namespace DS.RevitLib.Utils.Visualisators
             XYZ minPoint = _boundingBoxXYZ.Min;
             XYZ maxPoint = _boundingBoxXYZ.Max;
 
-            XYZ minTrPoint = transform.OfPoint(minPoint);
-            XYZ maxTrPoint = transform.OfPoint(maxPoint);
+            _minTrPoint = transform.OfPoint(minPoint);
+            _maxTrPoint = transform.OfPoint(maxPoint);
 
-            List<Line> lines = GetLines(minTrPoint, maxTrPoint);
+            List<Line> lines = GetLines(_minTrPoint, _maxTrPoint);
 
             var lineCreator = new ModelCurveCreator(_document);
 
@@ -50,6 +52,7 @@ namespace DS.RevitLib.Utils.Visualisators
             lines.AddRange(GetSideLines(minPoints));
             lines.AddRange(GetSideLines(maxPoints));
             lines.AddRange(GetIntermediateLines(minPoints, maxPoints));
+            lines.AddRange(GetDiagonals(minPoints, maxPoints));
 
             return lines;
         }
@@ -79,6 +82,16 @@ namespace DS.RevitLib.Utils.Visualisators
                 Line.CreateBound(maxPoints[3], minPoints[2]),
                 Line.CreateBound(maxPoints[1], minPoints[2]),
 
+            };
+
+            return lines;
+        }
+
+        private List<Line> GetDiagonals(List<XYZ> minPoints, List<XYZ> maxPoints)
+        {
+            var lines = new List<Line>()
+            {
+                Line.CreateBound(_minTrPoint, _maxTrPoint)
             };
 
             return lines;
