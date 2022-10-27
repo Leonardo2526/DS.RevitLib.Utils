@@ -109,7 +109,9 @@
     <Compile Include="CollisionUtils.cs" />
     <Compile Include="Elements\ElementFilterUtils.cs" />
     <Compile Include="Elements\ElementExtension.cs" />
+    <Compile Include="Lines\LinesConnector.cs" />
     <Compile Include="Extensions\MEPCurveExtension.cs" />
+    <Compile Include="Extensions\SolidOffsetExtractor.cs" />
     <Compile Include="FailedTransaction.cs" />
     <Compile Include="FamilyInstances\FamilyInstanceExtensions.cs" />
     <Compile Include="MEP\Creator\Builders\BuilderByPoints.cs" />

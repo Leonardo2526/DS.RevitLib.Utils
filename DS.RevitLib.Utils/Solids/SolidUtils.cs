@@ -8,6 +8,10 @@ using System.Linq;
 
 namespace DS.RevitLib.Utils.Solids
 {
+
+    /// <summary>
+    /// Toolf for 'Solid' object.
+    /// </summary>
     public static class SolidUtils
     {
         /// <summary>
@@ -235,5 +239,6 @@ namespace DS.RevitLib.Utils.Solids
 
             return orthoVectors;
         }
+
     }
 }

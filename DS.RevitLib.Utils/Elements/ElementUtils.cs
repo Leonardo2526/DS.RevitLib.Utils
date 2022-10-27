@@ -529,7 +529,6 @@ namespace DS.RevitLib.Utils
                     default:
                         break;
                 }           
-        }
-       
+        }       
     }
 }

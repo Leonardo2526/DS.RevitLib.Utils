@@ -24,27 +24,19 @@ namespace DS.RevitLib.Utils
         {
             XYZ p1 = curve.GetEndPoint(0);
             XYZ p2 = curve.GetEndPoint(1);
-            point ??= GetPoint(p1, p2, curve);
 
-            return Plane.CreateByThreePoints(p1, p2, point);
-        }
-
-        private static XYZ GetPoint(XYZ p1, XYZ p2, Curve curve)
-        {
-            XYZ curveCenter = curve.GetCenter();
-            XYZ v1 = p2 - p1;
-            XYZ vc = p1- curveCenter;
-            if (!XYZUtils.Collinearity(v1, vc))
+            if (curve is Line)
             {
-                return curveCenter;
+                point ??= XYZUtils.GenerateXYZ();
+                return Plane.CreateByThreePoints(p1, p2, point);
+            }
+            else if (curve is Arc)
+            {
+                Arc arc = curve as Arc;
+                return Plane.CreateByNormalAndOrigin(arc.Normal, arc.Center);
             }
 
-            if (Math.Abs(p1.X - p2.X) < 0.01 & Math.Abs(p1.Y - p2.Y) < 0.01)
-            {
-                return p2 + XYZ.BasisY;
-            }
-
-            return p2 + XYZ.BasisZ;
+            return null;
         }
 
         /// <summary>
@@ -73,7 +65,14 @@ namespace DS.RevitLib.Utils
                 (startPoint.Y + endPoint.Y) / 2,
                 (startPoint.Z + endPoint.Z) / 2);
 
-            return curve.Project(centerPoint).XYZPoint;
+            try
+            {
+                centerPoint = curve.Project(centerPoint)?.XYZPoint;
+            }
+            catch (Exception)
+            { }
+
+            return centerPoint;
         }
     }
 }

@@ -251,5 +251,20 @@ namespace DS.RevitLib.Utils.Extensions
 
             return null;
         }
+
+        /// <summary>
+        /// Show all edges of elements solid.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <remarks>Transaction is not provided, so methods should be wrapped to transacion.</remarks>
+        public static void ShowEdges(this Element element)
+        {
+            Document doc = element.Document;
+            var solids = ElementUtils.GetSolids(element);
+            foreach (Solid s in solids)
+            {
+                s.ShowEdges(doc);
+            }
+        }
     }
 }

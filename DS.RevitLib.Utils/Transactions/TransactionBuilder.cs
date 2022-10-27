@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.UI;
 using DS.RevitLib.Utils.TransactionCommitter;
 using System;
 using System.Windows.Forms;
@@ -55,7 +56,7 @@ namespace DS.RevitLib.Utils
                     result = operation.Invoke();
                 }
                 catch (Exception e)
-                { ErrorMessages += e + "\n"; }
+                { TaskDialog.Show("RevitException", e.Message); ErrorMessages += e + "\n"; }
 
                 _committer?.Commit(transNew);
                 ErrorMessages += _committer?.ErrorMessages;
@@ -79,7 +80,7 @@ namespace DS.RevitLib.Utils
                     operation.Invoke();
                 }
                 catch (Exception e)
-                { ErrorMessages += e + "\n"; }
+                { TaskDialog.Show("RevitException", e.Message); ErrorMessages += e + "\n"; }
 
                 _committer?.Commit(transNew);
                 ErrorMessages += _committer?.ErrorMessages;
