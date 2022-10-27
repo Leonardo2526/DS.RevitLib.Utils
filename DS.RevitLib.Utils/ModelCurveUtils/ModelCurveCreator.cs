@@ -2,6 +2,7 @@
 using Autodesk.Revit.UI;
 using DS.RevitLib.Utils.Planes;
 using System;
+using System.Drawing;
 
 namespace DS.RevitLib.Utils.ModelCurveUtils
 {
@@ -51,6 +52,22 @@ namespace DS.RevitLib.Utils.ModelCurveUtils
             SketchPlane sketch = SketchPlane.Create(_doc, plane);
 
             return _doc.Create.NewModelCurve(line, sketch);
+        }
+
+        /// <summary>
+        /// Create a new ModelCurve from <paramref name="curve"/>.
+        /// </summary>
+        /// <param name="curve"></param>
+        /// <param name="point">Reference point to get curve plane.</param>
+        /// <returns>Returns created ModelCurve.</returns>
+        public ModelCurve Create(Curve curve, XYZ point = null)
+        {
+            Plane plane = curve.GetPlane(point);
+
+            // Create a sketch plane in current document
+            SketchPlane sketch = SketchPlane.Create(_doc, plane);
+
+            return _doc.Create.NewModelCurve(curve, sketch);
         }
 
         private (Plane plane, Line line) GetBaseElements(XYZ startPoint, XYZ endPoint)

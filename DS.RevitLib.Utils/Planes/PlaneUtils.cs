@@ -12,7 +12,6 @@ namespace DS.RevitLib.Utils.Planes
         /// <summary>
         /// Create plane by line and point. If point us null then point is assigned as one of the basis.
         /// </summary>
-        /// <param name="plane"></param>
         /// <param name="line"></param>
         /// <param name="point"></param>
         /// <returns></returns>

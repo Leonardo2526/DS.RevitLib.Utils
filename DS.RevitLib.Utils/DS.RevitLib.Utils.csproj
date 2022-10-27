@@ -94,6 +94,7 @@
     <Compile Include="Connection\MEPCurveStrategies\SpudMEPCurveStrategy.cs" />
     <Compile Include="Connection\MEPCurveStrategies\TeeMEPCurveStrategy.cs" />
     <Compile Include="Connection\MEPCurveStrategies\TeeWithCutMEPCurveStrategy.cs" />
+    <Compile Include="CurveExtensions.cs" />
     <Compile Include="Elements\Alignments\SolidAngleAlignment.cs" />
     <Compile Include="Elements\Alignments\AngleAlignment.cs" />
     <Compile Include="Elements\Alignments\IAlignment.cs" />

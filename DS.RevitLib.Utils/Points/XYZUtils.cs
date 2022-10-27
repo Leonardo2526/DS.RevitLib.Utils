@@ -216,6 +216,20 @@ namespace DS.RevitLib.Utils
             return new XYZ(rand.NextDouble(), rand.NextDouble(), rand.NextDouble());
         }
 
+        /// <summary>
+        /// Get average point between <paramref name="points"/>.
+        /// </summary>
+        /// <param name="points"></param>
+        /// <returns>Retruns average point.</returns>
+        public static XYZ GetAverage(List<XYZ> points)
+        {
+            double x = points.Select(p => p.X).Average();
+            double y = points.Select(p => p.Y).Average();
+            double z = points.Select(p => p.Z).Average();
+
+            return new XYZ(x, y, z);
+        }
+
         #endregion
 
 
