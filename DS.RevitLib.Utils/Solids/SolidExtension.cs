@@ -5,9 +5,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms.VisualStyles;
 
 namespace DS.RevitLib.Utils.Extensions
 {
+    /// <summary>
+    /// Extension methods for 'Solid' object.
+    /// </summary>
     public static class SolidExtension
     {
         /// <summary>
@@ -66,6 +70,62 @@ namespace DS.RevitLib.Utils.Extensions
             BoundingBoxXYZ box = solid.GetBoundingBox();
             IVisualisator vs = new BoundingBoxVisualisator(box, doc);
             new Visualisator(vs);
+        }
+
+        /// <summary>
+        /// Get all EdgeArrays from solid.
+        /// </summary>
+        /// <param name="solid"></param>
+        /// <returns>Returns all EdgeArrays of <paramref name="solid"/>.</returns>
+        public static List<EdgeArray> GetEdgeArrays(this Solid solid)
+        {
+            var faces = solid.Faces;
+
+            var edgeArrays = new List<EdgeArray>();
+            foreach (Face face in faces)
+            {
+                for (int i = 0; i < face.EdgeLoops.Size; i++)
+                {
+                    EdgeArray edgeArray = face.EdgeLoops.get_Item(i);
+                    edgeArrays.Add(edgeArray);
+                }
+            }
+            return edgeArrays;
+        }
+
+        /// <summary>
+        /// Get all curves from solid.
+        /// </summary>
+        /// <param name="solid"></param>
+        /// <returns>Returns all curves from edges of <paramref name="solid"/>.</returns>
+        public static List<Curve> GetCurves(this Solid solid)
+        {
+            List<EdgeArray> edgeArrays = solid.GetEdgeArrays();
+
+            var curves = new List<Curve>();
+            foreach (EdgeArray edgeArray in edgeArrays)
+            {
+                for (int i = 0; i < edgeArray.Size; i++)
+                {
+                    Edge edge = edgeArray.get_Item(i);
+                    var curve = edge.AsCurve();
+                    curves.Add(curve);
+                }
+            }
+
+            return curves;
+        }
+
+        /// <summary>
+        /// Show all edges of solid.
+        /// </summary>
+        /// <param name="solid"></param>
+        /// <param name="doc"></param>
+        /// <remarks>Transaction is not provided, so methods should be wrapped to transacion.</remarks>
+        public static void ShowEdges(this Solid solid, Document doc)
+        {
+            var curves = solid.GetCurves();
+            curves.ForEach(obj => obj.Show(doc));
         }
 
     }

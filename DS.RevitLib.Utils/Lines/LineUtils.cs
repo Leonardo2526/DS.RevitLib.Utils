@@ -1,12 +1,17 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
+using DS.RevitLib.Utils.GPExtractor;
 using DS.RevitLib.Utils.ModelCurveUtils;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace DS.RevitLib.Utils
 {
+    /// <summary>
+    /// Tools to work with lines.
+    /// </summary>
     public static class LineUtils
     {
         public static Line CreateCenterLine(Element element, XYZ offset = null, bool show = false)
@@ -95,6 +100,22 @@ namespace DS.RevitLib.Utils
         {
             var creator = new ModelCurveCreator(doc);
             creator.Create(line.GetEndPoint(0), line.GetEndPoint(1));
+        }
+
+        /// <summary>
+        /// Create lines list from <paramref name="points"/>.
+        /// </summary>
+        /// <param name="points"></param>
+        /// <returns>Returns list of lines created by given points.</returns>
+        public static List<Line> GetLines(List<XYZ> points)
+        {
+            var lines = new List<Line>();
+            for (int i = 0; i < points.Count - 1; i++)
+            {
+                var line = Line.CreateBound(points[i], points[i + 1]);
+                lines.Add(line);
+            }
+            return lines;
         }
 
     }
