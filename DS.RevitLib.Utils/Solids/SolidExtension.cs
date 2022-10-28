@@ -128,5 +128,16 @@ namespace DS.RevitLib.Utils.Extensions
             curves.ForEach(obj => obj.Show(doc));
         }
 
+        /// <summary>
+        /// Show shape of <paramref name="solid"/>.
+        /// </summary>
+        /// <param name="solid"></param>
+        /// <param name="doc"></param>
+        public static void ShowShape(this Solid solid, Document doc)
+        {
+            DirectShape ds = DirectShape.CreateElement(doc, new ElementId(BuiltInCategory.OST_GenericModel));
+            ds.SetShape(new GeometryObject[] { solid });
+        }
+
     }
 }
