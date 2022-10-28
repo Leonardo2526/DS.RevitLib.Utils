@@ -4,6 +4,7 @@ using DS.RevitLib.Utils.MEP;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -17,43 +18,64 @@ namespace DS.RevitLib.Utils.Extensions
         private readonly MEPCurve _mEPCurve;
         private readonly double _offset;
         private readonly Line _mEPCurveLine;
+        private readonly XYZ _startPoint;
+        private readonly XYZ _endPoint;
         private double _extrusionDist;
         private XYZ _extrusionDir;
-        private XYZ _startPoint;
-        private XYZ _endPoint;
 
-        public SolidOffsetExtractor(MEPCurve mEPCurve, double offset, XYZ refPoint = null, XYZ extrusionDir = null, double extrusionDist = 0)
+        /// <summary>
+        /// Create a new instance of object to extract solid from <paramref name="mEPCurve"/>.
+        /// </summary>
+        /// <param name="mEPCurve"></param>
+        /// <param name="offset"></param>
+        public SolidOffsetExtractor(MEPCurve mEPCurve, double offset)
         {
             _mEPCurve = mEPCurve;
             _offset = offset;
-            _startPoint = refPoint;
-            _extrusionDir = extrusionDir;
             _mEPCurveLine = MEPCurveUtils.GetLine(mEPCurve);
-            _extrusionDist = extrusionDist;
-            //_extrusionDist = extrusionDist == 0 ? MEPCurveUtils.GetLength(mEPCurve) : extrusionDist;
             _doc = mEPCurve.Document;
+
+            _startPoint = _mEPCurveLine.GetEndPoint(0);
+            _endPoint = _mEPCurveLine.GetEndPoint(1);
         }
 
+        /// <summary>
+        /// Create a new instance of object to extract solid from <paramref name="mEPCurve"/>
+        /// between <paramref name="startPoint"/> and <paramref name="endPoint"/>.
+        /// </summary>
+        /// <param name="mEPCurve"></param>
+        /// <param name="offset"></param>
+        /// <param name="startPoint"></param>
+        /// <param name="endPoint"></param>
+        public SolidOffsetExtractor(MEPCurve mEPCurve, double offset, XYZ startPoint, XYZ endPoint)
+        {
+            _mEPCurve = mEPCurve;
+            _offset = offset;
+            _mEPCurveLine = MEPCurveUtils.GetLine(mEPCurve);
+            _doc = mEPCurve.Document;
+
+            _startPoint = startPoint;
+            _endPoint = endPoint;
+        }
+
+        /// <summary>
+        /// Extract <see cref="Solid"/> from <see cref="_mEPCurve"/>.
+        /// </summary>
+        /// <returns></returns>
         public Solid Extract()
         {
+            _extrusionDir = (_endPoint - _startPoint).Normalize();
+            _extrusionDist = _startPoint.DistanceTo(_endPoint);
+
             var solid = ElementUtils.GetSolid(_mEPCurve);
-
             List<Curve> faceCurves = GetFaceCurves(solid);
-            _startPoint ??= _mEPCurveLine.Project(faceCurves.FirstOrDefault().GetEndPoint(0)).XYZPoint;
-            _extrusionDir ??= GetDirection(_startPoint).Normalize();
 
-            List<Curve> transformFaceCurves = new List<Curve>();
-            double dist = _startPoint.DistanceTo(_endPoint);
-            _extrusionDist = _extrusionDist == 0 ? dist : _extrusionDist;
-            XYZ moveVector = _extrusionDir.Negate() * dist;
+            //move face curves to start point
+            var faceCenterPoint = _mEPCurveLine.Project(faceCurves.FirstOrDefault().GetEndPoint(0)).XYZPoint;
+            XYZ moveVector = _startPoint - faceCenterPoint;
+            faceCurves = moveVector.IsZeroLength() ? faceCurves : GetTransformed(moveVector, faceCurves);
 
-            Transform transform = Transform.CreateTranslation(moveVector);
-            foreach (var curve in faceCurves)
-            {
-                transformFaceCurves.Add(curve.CreateTransformed(transform));
-            }
-
-            List<Curve> offsetCurves = GetOffsetCurves(solid, transformFaceCurves);
+            List<Curve> offsetCurves = GetOffsetCurves(solid, faceCurves);
 
             //connect offseted lines
             List<Line> lines = offsetCurves.OfType<Line>().ToList();
@@ -68,12 +90,18 @@ namespace DS.RevitLib.Utils.Extensions
             return CreateExtrudedSolid(offsetCurves);
         }
 
-        private XYZ GetDirection(XYZ refPoint)
+
+        #region PrivateMethods
+
+        private List<Curve> GetTransformed(XYZ moveVector, List<Curve> curves)
         {
-            XYZ p1 = _mEPCurveLine.GetEndPoint(0);
-            XYZ p2 = _mEPCurveLine.GetEndPoint(1);
-            _endPoint = (refPoint - p1).IsZeroLength() ? p2 : p1;
-            return _endPoint - refPoint;
+            var transformFaceCurves = new List<Curve>();
+            Transform transform = Transform.CreateTranslation(moveVector);
+            foreach (var curve in curves)
+            {
+                transformFaceCurves.Add(curve.CreateTransformed(transform));
+            }
+            return transformFaceCurves;
         }
 
         private List<Curve> GetFaceCurves(Solid solid)
@@ -130,5 +158,8 @@ namespace DS.RevitLib.Utils.Extensions
 
             return GeometryCreationUtilities.CreateExtrusionGeometry(loop, _extrusionDir, _extrusionDist);
         }
+
+        #endregion
+
     }
 }

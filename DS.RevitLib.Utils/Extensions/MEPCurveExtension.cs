@@ -82,17 +82,26 @@ namespace DS.RevitLib.Utils.Extensions
         /// <param name="mEPCurve"></param>
         /// <param name="offset">Offset distance in feets. If value is positive offset will be outside of <paramref name="mEPCurve"/>, 
         /// and inside if negative. </param>
-        /// <param name="refPoint">Start point of solid extrusion. 
-        /// If value is not specified it will be set by value of one of <paramref name="mEPCurve"/> connectors.</param>
-        /// <param name="extrusionDir">Extrusion direction of solid. 
-        /// If value is not specified it will be set as direction from <paramref name="refPoint"/> 
-        /// to another <paramref name="mEPCurve"/> connector.</param>
-        /// <param name="extrusionDist">Extrusion distance of solid. If value is not specified it will be set as <paramref name="mEPCurve"/> length.</param>
-        /// <returns>Returns offseted solid from <paramref name="mEPCurve"/> with specified offset parameteres.</returns>
-        public static Solid GetOffsetSolid(this MEPCurve mEPCurve, double offset, XYZ refPoint = null, XYZ extrusionDir = null, double extrusionDist = 0)
+        /// <returns>Returns offseted solid from <paramref name="mEPCurve"/> with specified offset distance.</returns>
+        public static Solid GetOffsetSolid(this MEPCurve mEPCurve, double offset)
         {
-            return new SolidOffsetExtractor(mEPCurve, offset, refPoint, extrusionDir, extrusionDist).Extract();
+            return new SolidOffsetExtractor(mEPCurve, offset).Extract();
         }
-    
+
+        /// <summary>
+        /// Get offseted solid from <paramref name="mEPCurve"/>.
+        /// </summary>
+        /// <param name="mEPCurve"></param>
+        /// <param name="offset">Offset distance in feets. If value is positive offset will be outside of <paramref name="mEPCurve"/>, 
+        /// and inside if negative. </param>
+        /// <param name="startPoint">Start point of solid extrusion.</param>
+        /// <param name="endPoint">End point of solid extrusion.</param>
+        /// <returns>Returns offseted solid from <paramref name="mEPCurve"/> 
+        /// between <paramref name="startPoint"/> and <paramref name="endPoint"/> with specified offset distance.</returns>
+        public static Solid GetOffsetSolid(this MEPCurve mEPCurve, double offset, XYZ startPoint, XYZ endPoint)
+        {
+            return new SolidOffsetExtractor(mEPCurve, offset, startPoint, endPoint).Extract();
+        }
+
     }
 }
