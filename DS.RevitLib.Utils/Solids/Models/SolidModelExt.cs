@@ -14,7 +14,7 @@ namespace DS.RevitLib.Utils.Solids.Models
         public SolidModelExt(Element element, Solid solid = null) : base(solid)
         {
             Element = element;
-            Solid = ElementUtils.GetSolid(element);
+            Solid ??= ElementUtils.GetSolid(element);
             SolidCentroid = Solid.ComputeCentroid();
             ConnectorsPoints = GetConnectorPoints();
             Length = ConnectorsPoints.First().DistanceTo(ConnectorsPoints.Last());
