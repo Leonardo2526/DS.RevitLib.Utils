@@ -1,9 +1,4 @@
-﻿using Autodesk.Revit.DB;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace DS.RevitLib.Utils.MEP.SystemTree
 {
@@ -15,7 +10,7 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
         }
 
         public Composite()
-        {}
+        { }
 
         public Component Root { get; set; }
         public List<Component> Children { get; } = new List<Component>();

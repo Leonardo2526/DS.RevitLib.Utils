@@ -1,12 +1,8 @@
 ﻿using Autodesk.Revit.DB;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.FamilyInstances;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices.ComTypes;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.Points.Models
 {
@@ -64,7 +60,7 @@ namespace DS.RevitLib.Utils.Points.Models
 
             var mParents = parents.OfType<MEPCurve>().ToList();
 
-            if (PartType==PartType.Elbow)
+            if (PartType == PartType.Elbow)
             {
                 XYZ nextDir = path[2] - path[1];
                 bool firstCollinerity = XYZUtils.Collinearity(nextDir, mParents.First().GetCenterLine().Direction);

@@ -1,14 +1,8 @@
 ﻿using Autodesk.Revit.DB;
 using DS.RevitLib.Utils.Lines;
 using DS.RevitLib.Utils.MEP;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace DS.RevitLib.Utils.Extensions
 {

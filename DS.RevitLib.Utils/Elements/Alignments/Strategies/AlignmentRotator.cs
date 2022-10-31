@@ -1,5 +1,4 @@
 ﻿using Autodesk.Revit.DB;
-using DS.RevitLib.Utils.Elements.Creators;
 using DS.RevitLib.Utils.Extensions;
 
 namespace DS.RevitLib.Utils.Elements.Alignments.Strategies
@@ -28,7 +27,7 @@ namespace DS.RevitLib.Utils.Elements.Alignments.Strategies
             if (!XYZUtils.Collinearity(_targetBaseVector, _operationBaseVector))
             {
                 _rotationAxis = GetRotationAxis();
-                _rotationAngle = GetRotationAngle(_targetBaseVector, _operationBaseVector);               
+                _rotationAngle = GetRotationAngle(_targetBaseVector, _operationBaseVector);
             }
         }
 
@@ -42,7 +41,7 @@ namespace DS.RevitLib.Utils.Elements.Alignments.Strategies
 
         protected abstract double GetRotationAngle(XYZ targetBaseVector, XYZ operationBaseVector);
 
-        public abstract T Rotate();       
+        public abstract T Rotate();
 
     }
 }

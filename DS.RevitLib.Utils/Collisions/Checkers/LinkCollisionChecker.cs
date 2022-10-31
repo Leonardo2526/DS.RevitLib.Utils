@@ -4,10 +4,6 @@ using DS.RevitLib.Utils.Solids.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
-using static System.Windows.Forms.LinkLabel;
 
 namespace DS.RevitLib.Utils.Collisions.Checkers
 {
@@ -33,7 +29,7 @@ namespace DS.RevitLib.Utils.Collisions.Checkers
         protected override Document Document
         {
             get
-            {              
+            {
                 return CheckedObjects1.First().Element.Document;
             }
         }
@@ -54,7 +50,7 @@ namespace DS.RevitLib.Utils.Collisions.Checkers
             List<ICollision> collisions = new List<ICollision>();
 
             foreach (var linkObj in LinkSolidsExt)
-            {               
+            {
                 var intersectionSolidsResult = BooleanOperationsUtils.
                     ExecuteBooleanOperation(object1.Solid, linkObj.Solid, BooleanOperationsType.Intersect);
                 if (intersectionSolidsResult.Volume > 0)

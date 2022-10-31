@@ -1,12 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using DS.RevitLib.Utils.MEP;
 using DS.RevitLib.Utils.MEP.Models;
-using DS.RevitLib.Utils.TransactionCommitter;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.Connection.Strategies
 {
@@ -24,10 +19,10 @@ namespace DS.RevitLib.Utils.Connection.Strategies
         /// <param name="minCurveLength"></param>
         /// <param name="elem1Con"></param>
         /// <param name="elem2Con"></param>
-        public ElbowMEPCurveStrategy(Document doc, 
-            MEPCurveGeometryModel mEPCurve1, MEPCurveGeometryModel mEPCurve2, 
-            double minCurveLength, 
-            Connector elem1Con, Connector elem2Con) : 
+        public ElbowMEPCurveStrategy(Document doc,
+            MEPCurveGeometryModel mEPCurve1, MEPCurveGeometryModel mEPCurve2,
+            double minCurveLength,
+            Connector elem1Con, Connector elem2Con) :
             base(doc, mEPCurve1, mEPCurve2, minCurveLength)
         {
             _elem1Con = elem1Con;
@@ -35,9 +30,9 @@ namespace DS.RevitLib.Utils.Connection.Strategies
         }
 
         public override void Connect()
-        {           
-                ConnectionElement = _doc.Create.NewElbowFitting(_elem1Con, _elem2Con);
-                Insulation.Create(_mEPCurve1.MEPCurve, ConnectionElement);
+        {
+            ConnectionElement = _doc.Create.NewElbowFitting(_elem1Con, _elem2Con);
+            Insulation.Create(_mEPCurve1.MEPCurve, ConnectionElement);
         }
 
         public override bool IsConnectionAvailable()

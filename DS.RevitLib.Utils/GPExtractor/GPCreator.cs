@@ -1,10 +1,7 @@
 ﻿using Autodesk.Revit.ApplicationServices;
 using Autodesk.Revit.DB;
-using Autodesk.Revit.DB.Structure;
 using Autodesk.Revit.UI;
 using System.Collections.Generic;
-using System.Linq;
-using DS.RevitLib.Utils;
 
 namespace DS.RevitLib.Utils.GPExtractor
 {

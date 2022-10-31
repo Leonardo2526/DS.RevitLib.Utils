@@ -1,11 +1,4 @@
-﻿using Autodesk.Revit.DB;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DS.RevitLib.Utils.MEP.SystemTree
+﻿namespace DS.RevitLib.Utils.MEP.SystemTree
 {
     internal abstract class AbstractConnectedBuilder<T>
     {

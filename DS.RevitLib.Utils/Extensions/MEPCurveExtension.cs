@@ -3,10 +3,6 @@ using Autodesk.Revit.DB.Mechanical;
 using Autodesk.Revit.DB.Plumbing;
 using DS.RevitLib.Utils.MEP;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.Extensions
 {
@@ -72,7 +68,7 @@ namespace DS.RevitLib.Utils.Extensions
             {
                 return elementType as DuctType;
             }
-           
+
             return null;
         }
 

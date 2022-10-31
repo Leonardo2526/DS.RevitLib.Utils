@@ -208,7 +208,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
 
         delegate void ConnectOperation(Connector c1, Connector c2);
         private void TransactionConnect(Connector c1, Connector c2) => ConnectorUtils.ConnectConnectors(_doc, c1, c2);
-        private void Connect(Connector c1, Connector c2) => c1.ConnectTo(c2);  
+        private void Connect(Connector c1, Connector c2) => c1.ConnectTo(c2);
 
         public void Insert(FamilyInstance family, MEPCurve mEPCurve, out List<MEPCurve> splittedMEPCurves)
         {
@@ -224,7 +224,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
 
             var selectedCon = ConnectorUtils.GetClosest(famInstCon1, cons);
             ConnectOperation connectOperation = _transactionCommit ? TransactionConnect : Connect;
-            connectOperation.Invoke(famInstCon1, selectedCon);          
+            connectOperation.Invoke(famInstCon1, selectedCon);
 
             selectedCon = ConnectorUtils.GetClosest(famInstCon2, cons);
             connectOperation.Invoke(famInstCon2, selectedCon);

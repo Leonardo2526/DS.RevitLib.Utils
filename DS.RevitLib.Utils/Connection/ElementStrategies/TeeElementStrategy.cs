@@ -1,9 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using DS.RevitLib.Utils.MEP;
-using DS.RevitLib.Utils.TransactionCommitter;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace DS.RevitLib.Utils.Connection.Strategies
 {

@@ -6,8 +6,6 @@ using DS.RevitLib.Utils.Points.XYZAlgorithms.MaxDistance.Strategies;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils
 {
@@ -88,7 +86,7 @@ namespace DS.RevitLib.Utils
         /// <returns>Returns true if two vectors are perpendicular.</returns>
         public static bool Perpendicular(XYZ a, XYZ b)
         {
-            if (Math.Round(a.DotProduct(b) , 3) ==0)
+            if (Math.Round(a.DotProduct(b), 3) == 0)
             {
                 return true;
             }

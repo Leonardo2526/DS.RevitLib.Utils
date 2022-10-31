@@ -1,14 +1,8 @@
 ﻿using Autodesk.Revit.DB;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.MEP.Creator.Builders;
-using DS.RevitLib.Utils.Points.Models;
 using DS.RevitLib.Utils.TransactionCommitter;
-using Ivanov.RevitLib.Utils;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.MEP.Creator
 {
@@ -17,7 +11,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
         private List<XYZ> _Points = new List<XYZ>();
         private readonly Committer _committer;
 
-        public BuilderByPointsTransactions(MEPCurve baseMEPCurve, List<XYZ> points, Committer committer=null, string transactionPrefix = "") : 
+        public BuilderByPointsTransactions(MEPCurve baseMEPCurve, List<XYZ> points, Committer committer = null, string transactionPrefix = "") :
             base(baseMEPCurve, transactionPrefix)
         {
             this._Points = points;
@@ -56,14 +50,14 @@ namespace DS.RevitLib.Utils.MEP.Creator
             return new MEPCurvesModelTransaction(MEPElementsModel, Doc, _committer, TransactionPrefix);
         }
 
-     
+
 
         private void RectangularFixing(MEPCurve baseMEPCurve, MEPCurve mEPCurve)
         {
             if (baseMEPCurve is not null && baseMEPCurve.IsRectangular())
-                {
-                    RotationBuilder rotationBuilder = new RotationBuilder(baseMEPCurve, mEPCurve, TransactionPrefix);
-                    rotationBuilder.RotateTransaction();
+            {
+                RotationBuilder rotationBuilder = new RotationBuilder(baseMEPCurve, mEPCurve, TransactionPrefix);
+                rotationBuilder.RotateTransaction();
 
                 //Check if size of MEPCurve should be swapped.
                 if (!MEPCurveUtils.EqualOriented(baseMEPCurve, mEPCurve))

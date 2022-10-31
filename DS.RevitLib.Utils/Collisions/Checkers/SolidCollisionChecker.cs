@@ -3,10 +3,7 @@ using DS.RevitLib.Utils.Collisions.Models;
 using DS.RevitLib.Utils.Solids.Models;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.Collisions.Checkers
 {
@@ -51,7 +48,7 @@ namespace DS.RevitLib.Utils.Collisions.Checkers
         }
 
 
-        private List<ICollision> GetObjectCollisions(SolidModelExt object1)
+        private List<ICollision> GetObjectCollisions(SolidModelExt object1, List<ElementId> excludedIdsOption = null)
         {
             var excludedElementsIds = new List<ElementId>();
 
@@ -61,7 +58,7 @@ namespace DS.RevitLib.Utils.Collisions.Checkers
             }
 
             excludedElementsIds.Add(object1.Element.Id);
-            var exculdedFilter = new ExclusionFilter(excludedElementsIds);
+            var exculdedFilter = excludedIdsOption is null ? new ExclusionFilter(excludedElementsIds) : new ExclusionFilter(excludedIdsOption);
 
             List<Element> elements = Collector.WherePasses(new ElementIntersectsSolidFilter(object1.Solid)).
                 WherePasses(exculdedFilter).
@@ -88,10 +85,33 @@ namespace DS.RevitLib.Utils.Collisions.Checkers
                 throw new ArgumentNullException("Document or Collercor is null");
             }
 
-            AllCollisions  = new List<ICollision>();
+            AllCollisions = new List<ICollision>();
             foreach (SolidModelExt object1 in CheckedObjects1)
             {
                 var collisions = GetObjectCollisions(object1);
+                if (collisions is null || !collisions.Any())
+                {
+                    continue;
+                }
+                AllCollisions.AddRange(collisions);
+            }
+
+            return AllCollisions;
+        }
+
+        public List<ICollision> GetCollisions(List<SolidModelExt> checkedObjects1, List<ElementId> excludedIdsOption = null)
+        {
+            CheckedObjects1 = checkedObjects1;
+
+            if (Document is null || Collector is null)
+            {
+                throw new ArgumentNullException("Document or Collercor is null");
+            }
+
+            AllCollisions = new List<ICollision>();
+            foreach (SolidModelExt object1 in CheckedObjects1)
+            {
+                var collisions = GetObjectCollisions(object1, excludedIdsOption);
                 if (collisions is null || !collisions.Any())
                 {
                     continue;

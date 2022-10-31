@@ -1,13 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using DS.RevitLib.Utils.MEP;
-using DS.RevitLib.Utils.Points.XYZAlgorithms.MaxDistance;
-using DS.RevitLib.Utils.Points.XYZAlgorithms.MaxDistance.Strategies;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace DS.RevitLib.Utils.Extensions
 {
@@ -164,8 +158,12 @@ namespace DS.RevitLib.Utils.Extensions
 
         public static bool IsGeometryElement(this Element element)
         {
-            var g = element.get_Geometry(new Options() { ComputeReferences = false, 
-                DetailLevel = ViewDetailLevel.Fine, IncludeNonVisibleObjects = false })
+            var g = element.get_Geometry(new Options()
+            {
+                ComputeReferences = false,
+                DetailLevel = ViewDetailLevel.Fine,
+                IncludeNonVisibleObjects = false
+            })
                 ?.Cast<GeometryObject>().ToList();
 
             return CheckGeometry(g);

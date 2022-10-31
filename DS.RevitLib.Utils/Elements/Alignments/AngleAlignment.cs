@@ -3,17 +3,11 @@ using DS.RevitLib.Utils.Elements.Alignments.Strategies;
 using DS.RevitLib.Utils.Elements.Creators;
 using DS.RevitLib.Utils.MEP;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace DS.RevitLib.Utils.Elements.Alignments
 {
-    public class AngleAlignment :  AbstractCreator, IAlignment<Element>
-    {     
+    public class AngleAlignment : AbstractCreator, IAlignment<Element>
+    {
         private readonly ElementCreator _creator;
 
         public AngleAlignment(Element operationElement, Element targetElement)
@@ -23,7 +17,7 @@ namespace DS.RevitLib.Utils.Elements.Alignments
             _creator = new ElementCreator(_committer, _transactionPrefix);
         }
 
-        public Element OperationElement {get; private set;}
+        public Element OperationElement { get; private set; }
         public Element TargetElement { get; private set; }
 
         public Element AlignNormOrths()

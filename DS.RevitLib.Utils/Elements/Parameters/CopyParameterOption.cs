@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DS.RevitLib.Utils.Elements
+﻿namespace DS.RevitLib.Utils.Elements
 {
     /// <summary>
     /// Options to copy parameters.
@@ -14,7 +8,7 @@ namespace DS.RevitLib.Utils.Elements
         /// <summary>
         /// Copy all parameters
         /// </summary>
-        All, 
+        All,
 
         /// <summary>
         /// Copy only size parameters like diameter, width or height

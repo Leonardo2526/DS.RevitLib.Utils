@@ -1,14 +1,10 @@
 ﻿using Autodesk.Revit.DB;
-using DS.ClassLib.VarUtils;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.Models;
-using iUtils.Comparable;
 using Ivanov.RevitLib.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography;
-using System.Xml.Linq;
 
 namespace DS.RevitLib.Utils.MEP
 {

@@ -1,15 +1,5 @@
 ﻿using Autodesk.Revit.DB;
-using DS.ClassLib.VarUtils;
-using DS.RevitLib.Utils.Elements.Creators;
-using DS.RevitLib.Utils.Extensions;
-using DS.RevitLib.Utils.GPExtractor;
-using DS.RevitLib.Utils.Models;
 using DS.RevitLib.Utils.Solids.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.Elements.Alignments.Strategies
 {
@@ -17,7 +7,7 @@ namespace DS.RevitLib.Utils.Elements.Alignments.Strategies
     /// Around element's normal orth vector central line rotation strategy
     /// </summary>
     internal class CentralLineSolidRotator : AlignmentRotator<SolidModelExt>
-    {   
+    {
         private XYZ _rotationPoint;
 
         public CentralLineSolidRotator(SolidModelExt operationElement, Element targetElement) :

@@ -1,9 +1,4 @@
 ﻿using Autodesk.Revit.DB;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.MEP.SystemTree.Relatives
 {
@@ -28,8 +23,10 @@ namespace DS.RevitLib.Utils.MEP.SystemTree.Relatives
             {
                 case PartType.Tee:
                     return new TeeRelationBuilder(_baseElement);
-                case PartType.SpudPerpendicular: case PartType.SpudAdjustable:
-                case PartType.TapAdjustable: case PartType.TapPerpendicular:
+                case PartType.SpudPerpendicular:
+                case PartType.SpudAdjustable:
+                case PartType.TapAdjustable:
+                case PartType.TapPerpendicular:
                     return new SpudRelationBuilder(_baseElement);
                 default:
                     break;

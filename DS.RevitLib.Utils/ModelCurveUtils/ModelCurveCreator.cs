@@ -1,8 +1,6 @@
 ﻿using Autodesk.Revit.DB;
-using Autodesk.Revit.UI;
 using DS.RevitLib.Utils.Planes;
 using System;
-using System.Drawing;
 
 namespace DS.RevitLib.Utils.ModelCurveUtils
 {

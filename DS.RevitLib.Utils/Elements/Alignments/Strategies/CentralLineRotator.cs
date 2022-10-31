@@ -1,13 +1,6 @@
 ﻿using Autodesk.Revit.DB;
-using DS.ClassLib.VarUtils;
 using DS.RevitLib.Utils.Elements.Creators;
 using DS.RevitLib.Utils.Extensions;
-using DS.RevitLib.Utils.GPExtractor;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.Elements.Alignments.Strategies
 {
@@ -18,7 +11,7 @@ namespace DS.RevitLib.Utils.Elements.Alignments.Strategies
     {
         private readonly ElementCreator _creator;
 
-        public CentralLineRotator(Element operationElement, Element targetElement, ElementCreator creator) : 
+        public CentralLineRotator(Element operationElement, Element targetElement, ElementCreator creator) :
             base(operationElement, targetElement)
         {
             _creator = creator;

@@ -3,8 +3,6 @@ using DS.ClassLib.VarUtils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.MEP.Creator.Builders
 {
@@ -25,7 +23,7 @@ namespace DS.RevitLib.Utils.MEP.Creator.Builders
             this._BaseMEPCurve = baseMEPCurve;
             this._MEPCurve = mEPCurve;
             TransactionPrefix = transactionPrefix;
-           
+
 
             this.BaseDir = MEPCurveUtils.GetDirection(baseMEPCurve);
             this.CurrentDir = MEPCurveUtils.GetDirection(mEPCurve);
@@ -61,7 +59,7 @@ namespace DS.RevitLib.Utils.MEP.Creator.Builders
         }
 
         public MEPCurve Rotate()
-        {  
+        {
             //Rotation axe
             XYZ rotationAxe = MEPCurveUtils.GetDirection(_MEPCurve);
 
@@ -104,17 +102,17 @@ namespace DS.RevitLib.Utils.MEP.Creator.Builders
                 XYZ p1 = plane.ProjectOnto(baseCenterPoint);
                 XYZ p2 = plane.ProjectOnto(baseCenterPoint + BaseDir);
                 return p2 - p1;
-            }            
+            }
         }
 
-        private int GetRotationSide(XYZ alignAxe,XYZ vectorToRotateNorm,XYZ rotationAxe)
+        private int GetRotationSide(XYZ alignAxe, XYZ vectorToRotateNorm, XYZ rotationAxe)
         {
             if (XYZUtils.BasisEqualToOrigin(alignAxe, vectorToRotateNorm, rotationAxe))
             {
                 return -1;
             }
 
-            return 1;          
+            return 1;
         }
 
     }

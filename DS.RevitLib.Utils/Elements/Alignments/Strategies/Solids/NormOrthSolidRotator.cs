@@ -1,15 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using DS.ClassLib.VarUtils;
-using DS.RevitLib.Utils.Extensions;
-using DS.RevitLib.Utils.GPExtractor;
-using DS.RevitLib.Utils.Models;
 using DS.RevitLib.Utils.Solids.Models;
-using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.Elements.Alignments.Strategies
 {

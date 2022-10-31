@@ -5,8 +5,6 @@ using DS.RevitLib.Utils.MEP.Creator;
 using DS.RevitLib.Utils.TransactionCommitter;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography;
-using System.Xml.Linq;
 
 namespace DS.RevitLib.Utils.MEP.Symbols
 {
@@ -40,7 +38,7 @@ namespace DS.RevitLib.Utils.MEP.Symbols
         public Connector BaseConnector { get; private set; }
 
         public FamilyInstance Place()
-        {           
+        {
             var famInstCreator = new FamInstTransactions(_doc, _committer, _transactionPrefix);
             FamilyInstance famInst = famInstCreator.
                 CreateFamilyInstane(_familySymbol, _placementPoint, _targerMEPCurve.ReferenceLevel, _sourceFamInst);
@@ -77,7 +75,7 @@ namespace DS.RevitLib.Utils.MEP.Symbols
             var p1 = line1.Project(pointToSplit);
             var p2 = line2.Project(pointToSplit);
 
-            if (p1.Distance==0)
+            if (p1.Distance == 0)
             {
                 return mEPCurve1;
             }
@@ -98,13 +96,13 @@ namespace DS.RevitLib.Utils.MEP.Symbols
             ConnectorUtils.ConnectConnectors(_doc, famInstCon2, selectedCon);
         }
 
-       private List<MEPCurve> GetSplittedElements(MEPCurve mEPCurve, XYZ mEPCurveDir, XYZ placementPoint, double familyLength)
+        private List<MEPCurve> GetSplittedElements(MEPCurve mEPCurve, XYZ mEPCurveDir, XYZ placementPoint, double familyLength)
         {
             var creator = new MEPCurveTransactions(mEPCurve);
-            MEPCurve splittedMEPCurve1 = creator.SplitElementTransaction(placementPoint + mEPCurveDir.Multiply(familyLength/2)) as MEPCurve;
+            MEPCurve splittedMEPCurve1 = creator.SplitElementTransaction(placementPoint + mEPCurveDir.Multiply(familyLength / 2)) as MEPCurve;
 
 
-            XYZ pointToSplit = placementPoint - mEPCurveDir.Multiply(familyLength/2);
+            XYZ pointToSplit = placementPoint - mEPCurveDir.Multiply(familyLength / 2);
             MEPCurve mEPCurveToSplit = GetMEPCurveToSplit(mEPCurve, splittedMEPCurve1, pointToSplit);
             var splitCreator = new MEPCurveTransactions(mEPCurveToSplit);
             MEPCurve splittedMEPCurve2 = splitCreator.SplitElementTransaction(pointToSplit) as MEPCurve;
@@ -129,7 +127,7 @@ namespace DS.RevitLib.Utils.MEP.Symbols
             double l1 = MEPCurveUtils.GetLength(mEPCurve1);
             double l2 = MEPCurveUtils.GetLength(mEPCurve2);
 
-            if (l1>l2)
+            if (l1 > l2)
             {
                 return mEPCurve1;
             }

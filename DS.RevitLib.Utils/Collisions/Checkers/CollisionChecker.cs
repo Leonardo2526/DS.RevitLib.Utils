@@ -1,10 +1,6 @@
 ﻿using Autodesk.Revit.DB;
 using DS.RevitLib.Utils.Collisions.Models;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.Collisions.Checkers
 {
@@ -14,7 +10,7 @@ namespace DS.RevitLib.Utils.Collisions.Checkers
         private readonly List<P> _exludedObjects;
         private List<T> _checkedObjects1;
 
-        protected CollisionChecker( List<P> checkedObjects2, List<P> exludedObjects = null)
+        protected CollisionChecker(List<P> checkedObjects2, List<P> exludedObjects = null)
         {
             _checkedObjects2 = checkedObjects2;
             _exludedObjects = exludedObjects;

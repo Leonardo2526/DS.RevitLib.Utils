@@ -1,17 +1,10 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using DS.RevitLib.Utils.Extensions;
-using DS.RevitLib.Utils.MEP.Creator;
-using DS.RevitLib.Utils.TransactionCommitter;
 using Ivanov.RevitLib.Utils;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.MEP
 {
@@ -113,7 +106,7 @@ namespace DS.RevitLib.Utils.MEP
             var connectors = ConnectorUtils.GetConnectors(famInst);
 
             var connectorInfo = (MEPFamilyConnectorInfo)connectors.First().GetMEPConnectorInfo();
-            
+
             var associatedFamilyParameterId = connectorInfo.GetAssociateFamilyParameterId(new ElementId(connectorParameter));
 
             if (associatedFamilyParameterId == ElementId.InvalidElementId)

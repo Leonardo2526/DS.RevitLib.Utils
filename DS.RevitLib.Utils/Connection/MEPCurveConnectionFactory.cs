@@ -1,16 +1,7 @@
 ﻿using Autodesk.Revit.DB;
-using Autodesk.Revit.DB.Mechanical;
 using DS.RevitLib.Utils.Connection.Strategies;
-using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.MEP;
-using DS.RevitLib.Utils.MEP.Creator;
 using DS.RevitLib.Utils.MEP.Models;
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.Connection
 {
@@ -30,13 +21,13 @@ namespace DS.RevitLib.Utils.Connection
         /// <param name="mEPCurve2"></param>
         /// <param name="mEPCurve3">Parent element. Optional parameter.</param>
         /// <param name="minLength">Minimum length between two MEPCurve's connectors.</param>
-        public MEPCurveConnectionFactory(Document doc, MEPCurve mEPCurve1, MEPCurve mEPCurve2, MEPCurve mEPCurve3 = null, 
+        public MEPCurveConnectionFactory(Document doc, MEPCurve mEPCurve1, MEPCurve mEPCurve2, MEPCurve mEPCurve3 = null,
             double minLength = 0)
         {
             _doc = doc;
             _mEPCurveModel1 = new MEPCurveGeometryModel(mEPCurve1);
             _mEPCurveModel2 = new MEPCurveGeometryModel(mEPCurve2);
-            _mEPCurveModel3 = mEPCurve3 is null ? null :  new MEPCurveGeometryModel(mEPCurve3);
+            _mEPCurveModel3 = mEPCurve3 is null ? null : new MEPCurveGeometryModel(mEPCurve3);
             _minLength = minLength;
         }
 
@@ -63,7 +54,7 @@ namespace DS.RevitLib.Utils.Connection
             {
                 var p1 = _mEPCurveModel2.Line.GetEndPoint(0);
                 var p2 = _mEPCurveModel2.Line.GetEndPoint(1);
-                if (p1.DistanceTo(projPoint) < 0.001|| p2.DistanceTo(projPoint) < 0.001)
+                if (p1.DistanceTo(projPoint) < 0.001 || p2.DistanceTo(projPoint) < 0.001)
                 {
                     (elem1Con, elem2Con) = ConnectorUtils.GetClosest(_mEPCurveModel1.MainConnectors, _mEPCurveModel2.MainConnectors);
                     return new ElbowMEPCurveStrategy(_doc, _mEPCurveModel1, _mEPCurveModel2, _minLength, elem1Con, elem2Con);
@@ -72,14 +63,14 @@ namespace DS.RevitLib.Utils.Connection
 
             //try get tee or spud stratagies
 
-            if (curve1Con is null || 
+            if (curve1Con is null ||
                 !XYZUtils.Perpendicular(_mEPCurveModel1.Direction, _mEPCurveModel2.Direction) ||
                 _mEPCurveModel3 is not null && !XYZUtils.Collinearity(_mEPCurveModel2.Direction, _mEPCurveModel3.Direction))
             {
                 return null;
             }
 
-            var routePrefManager = _mEPCurveModel1.MEPCurveType.RoutingPreferenceManager;          
+            var routePrefManager = _mEPCurveModel1.MEPCurveType.RoutingPreferenceManager;
             switch (routePrefManager.PreferredJunctionType)
             {
                 case PreferredJunctionType.Tee:

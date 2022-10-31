@@ -1,10 +1,6 @@
 ﻿using Autodesk.Revit.DB;
-using Autodesk.Revit.UI;
-using DS.RevitLib.Utils.GPExtractor;
 using DS.RevitLib.Utils.ModelCurveUtils;
-using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 
 namespace DS.RevitLib.Utils

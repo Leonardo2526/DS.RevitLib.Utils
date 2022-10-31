@@ -3,9 +3,6 @@ using DS.RevitLib.Utils.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.Lines
 {

@@ -1,20 +1,12 @@
 ﻿using Autodesk.Revit.DB;
 using DS.RevitLib.Utils.Elements.Alignments.Strategies;
-using DS.RevitLib.Utils.Elements.Creators;
 using DS.RevitLib.Utils.MEP;
-using DS.RevitLib.Utils.Models;
 using DS.RevitLib.Utils.Solids.Models;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace DS.RevitLib.Utils.Elements.Alignments
 {
-    public class SolidAngleAlignment :  AbstractCreator, IAlignment<SolidModelExt>
+    public class SolidAngleAlignment : AbstractCreator, IAlignment<SolidModelExt>
     {
 
         public SolidAngleAlignment(SolidModelExt operationSolid, Element targetElement)

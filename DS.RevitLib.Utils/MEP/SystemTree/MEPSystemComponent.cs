@@ -4,9 +4,6 @@ using DS.RevitLib.Utils.MEP.SystemTree.Relatives;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace DS.RevitLib.Utils.MEP.SystemTree
 {
@@ -125,7 +122,7 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
         /// <param name="rangeIds"></param>
         /// <param name="mEPCurveIds"></param>
         /// <returns></returns>
-        private (MEPCurve mePCurve, int ind) GetSpudMEPCurveToInsert(Element element, 
+        private (MEPCurve mePCurve, int ind) GetSpudMEPCurveToInsert(Element element,
             List<ElementId> rangeIds, List<ElementId> mEPCurveIds)
         {
             var partType = element is FamilyInstance ? ElementUtils.GetPartType(element as FamilyInstance) : PartType.Undefined;
@@ -138,7 +135,7 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
                     return (null, 0);
                 }
 
-                List <MEPCurve> connectedMEPCurves = ConnectorUtils.GetConnectedElements(element).OfType<MEPCurve>().ToList();
+                List<MEPCurve> connectedMEPCurves = ConnectorUtils.GetConnectedElements(element).OfType<MEPCurve>().ToList();
                 var connectedMEPCurvesIds = connectedMEPCurves.Select(obj => obj.Id);
                 var intersectionId = connectedMEPCurvesIds.Intersect(mEPCurveIds).First();
 

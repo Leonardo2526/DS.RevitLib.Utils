@@ -1,13 +1,12 @@
 ﻿using Autodesk.Revit.DB;
-using Autodesk.Revit.DB.Plumbing;
 using Autodesk.Revit.UI;
+using DS.RevitLib.Utils.Elements;
+using DS.RevitLib.Utils.Extensions;
+using DS.RevitLib.Utils.MEP;
+using DS.RevitLib.Utils.Solids;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using DS.RevitLib.Utils.Solids;
-using DS.RevitLib.Utils.MEP;
-using DS.RevitLib.Utils.Extensions;
-using DS.RevitLib.Utils.Elements;
 
 namespace DS.RevitLib.Utils
 {
@@ -517,18 +516,18 @@ namespace DS.RevitLib.Utils
         /// <param name="copyParameterOption"></param>
         public static void CopyConnectorParameters(FamilyInstance sourceElement, FamilyInstance targetElement, CopyParameterOption copyParameterOption)
         {
-                Insulation.Create(sourceElement, targetElement);
-                switch (copyParameterOption)
-                {
-                    case CopyParameterOption.All:
-                        ElementParameter.CopyAllParameters(sourceElement, targetElement);
-                        break;
-                    case CopyParameterOption.Sizes:
-                        ElementParameter.CopySizeParameters(sourceElement, targetElement);
-                        break;
-                    default:
-                        break;
-                }           
-        }       
+            Insulation.Create(sourceElement, targetElement);
+            switch (copyParameterOption)
+            {
+                case CopyParameterOption.All:
+                    ElementParameter.CopyAllParameters(sourceElement, targetElement);
+                    break;
+                case CopyParameterOption.Sizes:
+                    ElementParameter.CopySizeParameters(sourceElement, targetElement);
+                    break;
+                default:
+                    break;
+            }
+        }
     }
 }

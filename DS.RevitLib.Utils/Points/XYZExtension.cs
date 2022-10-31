@@ -1,11 +1,9 @@
 ﻿using Autodesk.Revit.DB;
-using System.Collections.Generic;
-using System;
-using System.Linq;
-using Ivanov.RevitLib.Utils;
-using DS.RevitLib.Utils.MEP;
 using DS.ClassLib.VarUtils;
 using DS.RevitLib.Utils.ModelCurveUtils;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace DS.RevitLib.Utils.Extensions
 {

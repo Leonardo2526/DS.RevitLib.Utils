@@ -1,14 +1,9 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Mechanical;
 using Autodesk.Revit.DB.Plumbing;
-using Autodesk.Revit.UI;
 using DS.RevitLib.Utils.Elements;
-using DS.RevitLib.Utils.Extensions;
-using DS.RevitLib.Utils.MEP.Models;
 using DS.RevitLib.Utils.TransactionCommitter;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace DS.RevitLib.Utils.MEP.Creator
 {
@@ -167,7 +162,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
             }
 
             return newElement;
-        }       
+        }
 
         /// <summary>
         /// Rotate MEPCurve around it's axe by angle in rads.

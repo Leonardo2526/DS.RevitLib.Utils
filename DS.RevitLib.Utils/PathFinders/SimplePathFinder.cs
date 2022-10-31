@@ -26,14 +26,14 @@ namespace DS.RevitApp.Test.PathFinders
         /// <summary>
         /// An object for path creation without collisions account.
         /// </summary>
-        public SimplePathFinder(Line baseLine1, Line baseLine2 = null, 
+        public SimplePathFinder(Line baseLine1, Line baseLine2 = null,
             double minPointDist = 0, double maxCutWidth = 0, double angle = 90, double minZDist = 0)
         {
-            if (minZDist!=0 && minZDist < minPointDist)
+            if (minZDist != 0 && minZDist < minPointDist)
             {
                 throw new ArgumentException("minZDist < minPointDist");
             }
-            
+
             _baseLine1 = baseLine1;
             _baseLine2 = baseLine2;
             _minPointDist = minPointDist;

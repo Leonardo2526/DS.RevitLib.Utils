@@ -10,7 +10,7 @@ namespace DS.RevitLib.Utils.Connection.Strategies
         /// <summary>
         /// Elements used for connection.
         /// </summary>
-        public FamilyInstance ConnectionElement { get; }     
+        public FamilyInstance ConnectionElement { get; }
 
         /// <summary>
         /// Connect elements.

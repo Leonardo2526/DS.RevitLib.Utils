@@ -1,15 +1,8 @@
 ﻿using Autodesk.Revit.DB;
-using DS.RevitLib.Utils.Elements.Alignments;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.MEP.Creator;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Remoting.Contexts;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace DS.RevitLib.Utils.MEP
 {
@@ -17,7 +10,7 @@ namespace DS.RevitLib.Utils.MEP
     {
         private readonly MEPCurve _mEPCurve;
         private readonly bool _transactionCommit;
-        private readonly XYZ _point1;        
+        private readonly XYZ _point1;
         private readonly XYZ _point2;
 
         public MEPCurveCutter(MEPCurve mEPCurve, XYZ point1, XYZ point2, bool transactionCommit = false)
@@ -49,7 +42,7 @@ namespace DS.RevitLib.Utils.MEP
         {
             var creator = new MEPCurveTransactions(mEPCurve);
 
-            MEPCurve splittedMEPCurve1 = _transactionCommit ? 
+            MEPCurve splittedMEPCurve1 = _transactionCommit ?
                 creator.SplitElementTransaction(_point1) as MEPCurve :
                 mEPCurve.Split(_point1);
 
@@ -65,7 +58,7 @@ namespace DS.RevitLib.Utils.MEP
             //angleAlignment = new AngleAlignment(splittedMEPCurve2, _mEPCurve);
             //angleAlignment.AlignNormOrths();
 
-            return new List<MEPCurve>() { mEPCurve, splittedMEPCurve1, splittedMEPCurve2};
+            return new List<MEPCurve>() { mEPCurve, splittedMEPCurve1, splittedMEPCurve2 };
         }
 
 

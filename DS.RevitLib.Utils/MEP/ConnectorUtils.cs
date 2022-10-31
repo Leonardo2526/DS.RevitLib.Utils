@@ -1,13 +1,10 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using DS.RevitLib.Utils.Extensions;
-using DS.RevitLib.Utils.MEP.Models;
 using DS.RevitLib.Utils.MEP.Neighbours;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography;
-using System.Xml.Linq;
 
 namespace DS.RevitLib.Utils.MEP
 {
@@ -134,7 +131,7 @@ namespace DS.RevitLib.Utils.MEP
         /// <param name="connectors2"></param>
         /// <returns>Returns two connectors of elements with zero distance.</returns>
         public static (Connector con1, Connector con2) GetNeighbourConnectors(List<Connector> connectors1, List<Connector> connectors2)
-        {           
+        {
             Connector elem1Con = null, elem2Con = null;
             foreach (Connector c1 in connectors1)
             {
@@ -142,7 +139,7 @@ namespace DS.RevitLib.Utils.MEP
                     Where(con => (con.Origin - c1.Origin).IsZeroLength());
                 if (!cons2.Any())
                 {
-                   continue;
+                    continue;
                 }
                 elem1Con = c1;
                 elem2Con = cons2.First();
@@ -557,8 +554,8 @@ namespace DS.RevitLib.Utils.MEP
                 List<XYZ> points = connectors.Select(obj => obj.Origin).ToList();
                 var (point1, point2) = XYZUtils.GetMaxDistancePoints(points, out double dist);
 
-                var con1 = connectors.Where(c => Math.Round(c.Origin.DistanceTo(point1) ,3) == 0).First();
-                var con2 = connectors.Where(c => Math.Round(c.Origin.DistanceTo(point2) ,3) == 0).First();
+                var con1 = connectors.Where(c => Math.Round(c.Origin.DistanceTo(point1), 3) == 0).First();
+                var con2 = connectors.Where(c => Math.Round(c.Origin.DistanceTo(point2), 3) == 0).First();
                 return (con1, con2);
             }
 

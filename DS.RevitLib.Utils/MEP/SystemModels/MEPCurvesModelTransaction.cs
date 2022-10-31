@@ -1,12 +1,6 @@
 ﻿using Autodesk.Revit.DB;
-using DS.RevitLib.Utils.MEP.Models;
 using DS.RevitLib.Utils.MEP.SystemTree;
 using DS.RevitLib.Utils.TransactionCommitter;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.MEP.Creator
 {
@@ -16,7 +10,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
         private readonly Committer _committer;
         private readonly string _transactionPrefix;
 
-        public MEPCurvesModelTransaction(MEPElementsModel mEPSystemModel, Document doc, Committer committer, 
+        public MEPCurvesModelTransaction(MEPElementsModel mEPSystemModel, Document doc, Committer committer,
             string transactionPrefix)
         {
             _doc = doc;

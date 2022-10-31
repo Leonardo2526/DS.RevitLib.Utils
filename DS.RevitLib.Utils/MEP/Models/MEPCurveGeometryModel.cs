@@ -1,5 +1,4 @@
 ﻿using Autodesk.Revit.DB;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -19,7 +18,7 @@ namespace DS.RevitLib.Utils.MEP.Models
             MainConnectors = new List<Connector> { con1, con2 };
             MEPCurveType = mEPCurve.Document.GetElement(mEPCurve.GetTypeId()) as MEPCurveType;
             Connectors = ConnectorUtils.GetConnectors(mEPCurve);
-            ConnectorsPoints= Connectors.Select(c => c.Origin).ToList();
+            ConnectorsPoints = Connectors.Select(c => c.Origin).ToList();
             Line = MEPCurveUtils.GetLine(mEPCurve);
         }
 
@@ -36,7 +35,7 @@ namespace DS.RevitLib.Utils.MEP.Models
         public double Width { get; }
         public double Height { get; }
         public double Area { get; }
-        public Line Line { get; }    
+        public Line Line { get; }
         public double InsulationThickness
         {
             get

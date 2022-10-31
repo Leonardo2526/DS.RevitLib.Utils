@@ -1,10 +1,4 @@
 ﻿using Autodesk.Revit.DB;
-using DS.RevitLib.Utils.MEP.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.Connection.Strategies
 {
@@ -20,7 +14,7 @@ namespace DS.RevitLib.Utils.Connection.Strategies
             _doc = doc;
         }
 
-        public FamilyInstance ConnectionElement {get; protected set;}
+        public FamilyInstance ConnectionElement { get; protected set; }
 
         public abstract void Connect();
         public abstract bool IsConnectionAvailable();
