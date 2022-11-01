@@ -134,6 +134,7 @@
     <Compile Include="Points\Models\IMEPConnectionPoint.cs" />
     <Compile Include="SelectionFilters\FamilyInstanceSelectionFilter.cs" />
     <Compile Include="Transactions\TransactionBuilder.cs" />
+    <Compile Include="Transactions\TrgEventBuilder.cs" />
     <Compile Include="Transforms\TransformBuilder.cs" />
     <Compile Include="Transforms\TransformModel.cs" />
     <Compile Include="Models\Basis.cs" />
