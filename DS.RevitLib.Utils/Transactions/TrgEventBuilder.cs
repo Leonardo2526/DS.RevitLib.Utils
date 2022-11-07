@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using DS.ClassLib.VarUtils;
+using DS.ClassLib.VarUtils.TaskEvents;
 using Revit.Async;
 using System;
 using System.Threading.Tasks;
@@ -13,20 +14,22 @@ namespace DS.RevitApp.TransactionTest
     public class TrgEventBuilder
     {
         private readonly Document _doc;
-        private readonly WindowTaskEvent _windowsTaskEvent;
-        private readonly Task _taskEvent;
+        private readonly Task _task;
+        private readonly IWindowTaskEvent _taskEvent;
+        private readonly int _id;
 
         /// <summary>
         /// Create a new instance of object to wrap transactions actions into 
-        /// transaction group with <paramref name="windowsTaskEvent"/>.
+        /// transaction group with <paramref name="taskEvent"/>.
         /// </summary>
         /// <param name="doc"></param>
-        /// <param name="windowsTaskEvent"><see cref="WindowTaskEvent"/> to create a new event task.</param>
-        public TrgEventBuilder(Document doc, WindowTaskEvent windowsTaskEvent)
+        /// <param name="taskEvent"><see cref="WindowTaskEvent"/> to create a new event task.</param>
+        public TrgEventBuilder(Document doc, IWindowTaskEvent taskEvent, int id)
         {
             _doc = doc;
-            _taskEvent = windowsTaskEvent.Create();
-            _windowsTaskEvent = windowsTaskEvent;
+            _taskEvent = taskEvent;
+            _id = id;
+            _task = taskEvent.Create();
         }
 
         /// <summary>
@@ -37,7 +40,7 @@ namespace DS.RevitApp.TransactionTest
         /// <returns>Returns a new async Task to perform transaction group operations.</returns>
         public async Task BuildAsync(Action operation, bool revitAsync = false)
         {
-            using (var trg = new TransactionGroup(_doc))
+            using (var trg = new TransactionGroup(_doc, $"{_id}"))
             {
                 trg.Start();
 
@@ -63,7 +66,7 @@ namespace DS.RevitApp.TransactionTest
                         operation.Invoke();
                     }
 
-                    _taskEvent.Wait();
+                    _task.Wait();
                     break;
                 }
             });
@@ -76,15 +79,15 @@ namespace DS.RevitApp.TransactionTest
         /// <param name="trg">Current opened transaction group.</param>
         private void TrgCommitter(TransactionGroup trg)
         {
-            if (trg.HasStarted() && !_windowsTaskEvent.WindowClosed)
+            if (trg.HasStarted() && !_taskEvent.WindowClosed)
             {
                 trg.RollBack();
-                TaskDialog.Show($"{GetType().Name}", "trg rolled");
+                //TaskDialog.Show($"{GetType().Name}", $"trg {_id} rolled");
             }
-            else if (trg.HasStarted() && _windowsTaskEvent.WindowClosed)
+            else if (trg.HasStarted() && _taskEvent.WindowClosed)
             {
                 trg.Commit();
-                TaskDialog.Show($"{GetType().Name}", "trg committed");
+                //TaskDialog.Show($"{GetType().Name}", $"trg {_id} committed");
             }
             else
             {
