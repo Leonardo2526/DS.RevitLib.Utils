@@ -1,29 +1,34 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Mechanical;
 using Autodesk.Revit.DB.Plumbing;
-using Autodesk.Revit.UI;
-using DS.RevitLib.Utils.Extensions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using DS.RevitLib.Utils.Elements;
 
 namespace DS.RevitLib.Utils.MEP.Creator
 {
-    public class MEPCurveCreator
+    /// <summary>
+    /// Class for create and modify MEPCurves. 
+    /// Transactions are not provided, so methods should be wrapped to transacion.
+    /// </summary>
+    internal class MEPCurveCreator
     {
-        private readonly Document Doc;
-        private readonly MEPCurve BaseMEPCurve;
+        private readonly Document _doc;
+        private readonly MEPCurve _baseMEPCurve;
 
-        public MEPCurveCreator(MEPCurve baseMEPCurve, string transactionPrefix = "")
+        /// <summary>
+        /// Create a new instance of object to create and modify MEPCurves. 
+        /// </summary>
+        /// <param name="baseMEPCurve">MEPCurve to get parameters for creation methods.</param>
+        public MEPCurveCreator(MEPCurve baseMEPCurve)
         {
-            Doc = baseMEPCurve.Document;
-            BaseMEPCurve = baseMEPCurve;
-
-            if (!String.IsNullOrEmpty(transactionPrefix))
-            {
-                TransactionPrefix = transactionPrefix + "_";
-            }
+            _doc = baseMEPCurve.Document;
+            _baseMEPCurve = baseMEPCurve;
         }
+
+        /// <summary>
+        /// Create object's instance to create and modify MEPCurves. 
+        /// </summary>
+        public MEPCurveCreator()
+        { }
 
 
         #region Properties
@@ -32,7 +37,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
         {
             get
             {
-                MEPCurve mEPCurve = BaseMEPCurve as MEPCurve;
+                MEPCurve mEPCurve = _baseMEPCurve as MEPCurve;
                 return mEPCurve.MEPSystem.GetTypeId();
             }
         }
@@ -40,168 +45,54 @@ namespace DS.RevitLib.Utils.MEP.Creator
         {
             get
             {
-                return BaseMEPCurve.GetTypeId();
+                return _baseMEPCurve.GetTypeId();
             }
         }
         private string ElementTypeName
         {
-            get { return BaseMEPCurve.GetType().Name; }
+            get { return _baseMEPCurve.GetType().Name; }
         }
         private ElementId MEPLevelId
         {
             get
             {
-                return BaseMEPCurve.ReferenceLevel.Id;
+                return _baseMEPCurve.ReferenceLevel.Id;
             }
         }
-
-        public string ErrorMessages { get; private set; }
-
-        private readonly string TransactionPrefix;
 
         #endregion
 
-
         /// <summary>
-        /// Create pipe between 2 points
+        /// Create MEPCurve between 2 points
         /// </summary>
         /// <param name="p1"></param>
         /// <param name="p2"></param>
-        /// <returns></returns>
-        public MEPCurve CreateMEPCurveByPoints(XYZ p1, XYZ p2, MEPCurve baseMEPCurve = null)
+        /// <param name="baseMEPCurve">MEPCurve to get parameters for creation methods.</param>
+        /// <returns>Returns created MEPCurve</returns>
+        public MEPCurve Create(XYZ p1, XYZ p2, MEPCurve baseMEPCurve = null)
         {
-            MEPCurve mEPCurve = null;
+            baseMEPCurve ??= _baseMEPCurve;
+            MEPCurve mEPCurve = ElementTypeName == "Pipe" ?
+                Pipe.Create(_doc, MEPSystemTypeId, ElementTypeId, MEPLevelId, p1, p2) :
+                Duct.Create(_doc, MEPSystemTypeId, ElementTypeId, MEPLevelId, p1, p2);
 
-            if(baseMEPCurve is null)
-            {
-                baseMEPCurve = BaseMEPCurve;
-            }
-
-            using (Transaction transNew = new Transaction(Doc, TransactionPrefix + "CreateMEPCurveByPoints"))
-            {
-                try
-                {
-                    transNew.Start();
-                    if (ElementTypeName == "Pipe")
-                    {
-                        mEPCurve = Pipe.Create(Doc, MEPSystemTypeId, ElementTypeId, MEPLevelId, p1, p2);
-                    }
-                    else
-                    {
-                        mEPCurve = Duct.Create(Doc, MEPSystemTypeId, ElementTypeId, MEPLevelId, p1, p2);
-                    }
-               
-                    Insulation.Create(baseMEPCurve, mEPCurve);
-                    MEPCurveParameter.Copy(baseMEPCurve, mEPCurve);
-                }
-                catch (Exception e)
-
-                { ErrorMessages += e + "\n"; }
-                if (transNew.HasStarted())
-                {
-                    transNew.Commit();
-                }
-            }
-            return mEPCurve;
-        }
-
-        /// <summary>
-        /// Create pipe between 2 connectors
-        /// </summary>
-        /// <param name="c1"></param>
-        /// <param name="c2"></param>
-        /// <returns></returns>
-        public MEPCurve CreateMEPCurveByConnectors(Connector c1, Connector c2)
-        {
-            MEPCurve mEPCurve = null;
-            using (Transaction transNew = new Transaction(Doc, TransactionPrefix + "CreateMEPCurveByConnectors"))
-            {
-                try
-                {
-                    transNew.Start();
-                    if (ElementTypeName == "Pipe")
-                    {
-                        mEPCurve = Pipe.Create(Doc, MEPSystemTypeId, ElementTypeId, c1, c2);
-                    }
-                    else
-                    {
-                        mEPCurve = Duct.Create(Doc, MEPSystemTypeId, ElementTypeId, c1, c2);
-                    }
-
-                    Insulation.Create(BaseMEPCurve, mEPCurve);
-                    MEPCurveParameter.Copy(BaseMEPCurve, mEPCurve);
-                }
-
-                catch (Exception e)
-                { ErrorMessages += e + "\n"; }
-                transNew.Commit();
-            }
+            Insulation.Create(baseMEPCurve, mEPCurve);
+            ElementParameter.CopyAllParameters(baseMEPCurve, mEPCurve);
 
             return mEPCurve;
         }
 
-        public Element SplitElement(XYZ splitPoint)
+        public MEPCurve Create(Connector c1, XYZ p2, MEPCurve baseMEPCurve = null)
         {
-            Element newElement = null;
-            var elementTypeName = BaseMEPCurve.GetType().Name;
+            baseMEPCurve ??= _baseMEPCurve;
+            MEPCurve mEPCurve = ElementTypeName == "Pipe" ?
+                Pipe.Create(_doc, ElementTypeId, MEPLevelId, c1, p2) :
+                Duct.Create(_doc, ElementTypeId, MEPLevelId, c1, p2);
 
-            using (Transaction transNew = new Transaction(Doc, TransactionPrefix + "SplitElement"))
-            {
-                try
-                {
-                    transNew.Start();
+            Insulation.Create(baseMEPCurve, mEPCurve);
+            ElementParameter.CopyAllParameters(baseMEPCurve, mEPCurve);
 
-                    ElementId newCurveId;
-                    if (elementTypeName == "Pipe")
-                    {
-                        newCurveId = PlumbingUtils.BreakCurve(Doc, BaseMEPCurve.Id, splitPoint);
-                    }
-                    else
-                    {
-                        newCurveId = MechanicalUtils.BreakCurve(Doc, BaseMEPCurve.Id, splitPoint);
-                    }
-                    newElement = Doc.GetElement(newCurveId);
-                }
-
-                catch (Exception e)
-                { ErrorMessages += e + "\n"; }
-                if (transNew.HasStarted())
-                {
-                    transNew.Commit();
-                }
-            }
-
-            return newElement;
-        }
-
-        /// <summary>
-        /// Rotate MEPCurve by angle in rads.
-        /// </summary>
-        /// <param name="mEPCurve"></param>
-        /// <param name="angle"></param>
-        /// <returns>Return rotated MEPCurve.</returns>
-        public MEPCurve Rotate(double angle)
-        {
-            using (Transaction transNew = new Transaction(Doc, TransactionPrefix + "RotateMEPCurve"))
-            {
-                try
-                {
-                    transNew.Start();
-
-                    var locCurve = BaseMEPCurve.Location as LocationCurve;
-                    var line = locCurve.Curve as Line;
-
-                    BaseMEPCurve.Location.Rotate(line, angle);
-                }
-                catch (Exception e)
-                { ErrorMessages += e + "\n"; }
-                if (transNew.HasStarted())
-                {
-                    transNew.Commit();
-                }
-            }
-
-            return BaseMEPCurve;
+            return mEPCurve;
         }
 
         /// <summary>
@@ -214,32 +105,13 @@ namespace DS.RevitLib.Utils.MEP.Creator
             double width = mEPCurve.Width;
             double height = mEPCurve.Height;
 
-            using (Transaction transNew = new Transaction(Doc, TransactionPrefix + "CreateMEPCurveByPoints"))
-            {
-                try
-                {
-                    transNew.Start();
+            Parameter widthParam = mEPCurve.get_Parameter(BuiltInParameter.RBS_CURVE_WIDTH_PARAM);
+            Parameter heightParam = mEPCurve.get_Parameter(BuiltInParameter.RBS_CURVE_HEIGHT_PARAM);
 
-                    Parameter widthParam = mEPCurve.get_Parameter(BuiltInParameter.RBS_CURVE_WIDTH_PARAM);
-                    Parameter heightParam = mEPCurve.get_Parameter(BuiltInParameter.RBS_CURVE_HEIGHT_PARAM);
+            widthParam.Set(height);
+            heightParam.Set(width);
 
-                    widthParam.Set(height);
-                    heightParam.Set(width);
-                }
-
-                catch (Exception e)
-                { }
-
-                if (transNew.HasStarted())
-                {
-                    transNew.Commit();
-                }
-            }
             return mEPCurve;
         }
-
-
-      
-
     }
 }

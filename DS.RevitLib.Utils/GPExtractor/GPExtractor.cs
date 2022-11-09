@@ -8,7 +8,7 @@ namespace DS.RevitLib.Utils.GPExtractor
     public static class GPExtractor
     {
         public static List<XYZ> GetGeneralPoints(List<Solid> solids)
-        {           
+        {
             var points = new List<XYZ>();
 
             foreach (Solid solid in solids)
@@ -23,24 +23,24 @@ namespace DS.RevitLib.Utils.GPExtractor
         {
             var points = new List<XYZ>();
 
-                foreach (Face face in solid.Faces)
+            foreach (Face face in solid.Faces)
+            {
+                Mesh mesh = face.Triangulate();
+
+                if (points.Count == 0)
+                    points.Add(mesh.Vertices[0]);
+
+                int i;
+                for (i = 0; i < mesh.Vertices.Count; i++)
                 {
-                    Mesh mesh = face.Triangulate();
+                    XYZ newPoint = mesh.Vertices[i];
 
-                    if (points.Count == 0)
-                        points.Add(mesh.Vertices[0]);
-
-                    int i;
-                    for (i = 0; i < mesh.Vertices.Count; i++)
-                    {
-                        XYZ newPoint = mesh.Vertices[i];
-
-                        if (CheckPoint(newPoint, points))
-                            points.Add(newPoint);
-                    }
-
+                    if (CheckPoint(newPoint, points))
+                        points.Add(newPoint);
                 }
-          
+
+            }
+
 
             return points;
         }

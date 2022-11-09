@@ -1,9 +1,8 @@
 ﻿using Autodesk.Revit.DB;
 using DS.RevitLib.Utils.Extensions;
-using DS.RevitLib.Utils.Solids;
+using DS.RevitLib.Utils.Models;
 using Ivanov.RevitLib.Utils;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -54,12 +53,20 @@ namespace DS.RevitLib.Utils.MEP
         /// <returns>Return vector(direction)</returns>
         public static XYZ GetDirection(MEPCurve mEPCurve)
         {
-            var locCurve = mEPCurve.Location as LocationCurve;
-            var line = locCurve.Curve as Line;
-
+            var line = GetLine(mEPCurve);
             return line.Direction;
         }
 
+        /// <summary>
+        /// Get MEPCurve's line.
+        /// </summary>
+        /// <param name="mEPCurve"></param>
+        /// <returns>Return vector(direction)</returns>
+        public static Line GetLine(MEPCurve mEPCurve)
+        {
+            var locCurve = mEPCurve.Location as LocationCurve;
+            return locCurve.Curve as Line;
+        }
 
         /// <summary>
         /// Get angle berween two MEPCurves in rads.
@@ -73,51 +80,6 @@ namespace DS.RevitLib.Utils.MEP
             XYZ vector2 = GetDirection(mEPCurve2);
 
             return vector1.AngleTo(vector2);
-        }
-
-        /// <summary>
-        /// Get norm vectors of MEPCurve from it's faces.
-        /// </summary>
-        /// <param name="mEPCurve"></param>
-        /// <returns>Returns norm vectors of MEPCurve.</returns>
-        public static List<XYZ> GetNormVectors(MEPCurve mEPCurve)
-        {
-            var vectors = new List<XYZ>();
-            var faces = ElementUtils.GetFaces(mEPCurve);
-
-            foreach (var faceArray in faces)
-            {
-                foreach (Face face in faceArray)
-                {
-                    XYZ vector = face.ComputeNormal(UV.Zero);
-                    vectors.Add(vector);
-                }
-            }
-
-            return vectors;
-        }
-
-        /// <summary>
-        /// Get norm otho vectors of MEPCurve from it's faces in perpendicular plane to MEPCurve's direction.
-        /// </summary>
-        /// <param name="mEPCurve"></param>
-        /// <returns>Returns norm ortho vectors of MEPCurve.</returns>
-        public static List<XYZ> GetOrthoNormVectors(MEPCurve mEPCurve)
-        {
-            XYZ dir = GetDirection(mEPCurve);
-
-            var orthoVectors = new List<XYZ>();
-            var vectors = GetNormVectors(mEPCurve);
-
-            foreach (var vector in vectors)
-            {
-                if (!XYZUtils.Collinearity(vector, dir))
-                {
-                    orthoVectors.Add(vector);
-                }
-            }
-
-            return orthoVectors;
         }
 
         /// <summary>
@@ -146,14 +108,13 @@ namespace DS.RevitLib.Utils.MEP
 
             List<XYZ> difPlanePoints = GetNotEqualPoints(planePoints);
 
-            if(difPlanePoints.Count <3)
+            if (difPlanePoints.Count < 3)
             {
                 return null;
             }
 
             return Plane.CreateByThreePoints(difPlanePoints[0], difPlanePoints[1], difPlanePoints[2]);
         }
-
 
         private static List<XYZ> GetNotEqualPoints(List<XYZ> planePoints)
         {
@@ -163,7 +124,7 @@ namespace DS.RevitLib.Utils.MEP
             };
 
             foreach (var point in planePoints)
-            {               
+            {
                 if (IsPointContainsInList(difPlanePoints, point))
                 {
                     continue;
@@ -196,21 +157,20 @@ namespace DS.RevitLib.Utils.MEP
         /// <returns>Return true if directions are equal.</returns>
         public static bool IsDirectionEqual(MEPCurve mEPCurve1, MEPCurve mEPCurve2)
         {
-            if(GetDirection(mEPCurve1).IsAlmostEqualTo(GetDirection(mEPCurve2)) ||
+            if (GetDirection(mEPCurve1).IsAlmostEqualTo(GetDirection(mEPCurve2)) ||
                 GetDirection(mEPCurve1).Negate().IsAlmostEqualTo(GetDirection(mEPCurve2)))
-                {
+            {
                 return true;
             }
             return false;
         }
-
 
         /// <summary>
         /// Get MEPCurve's size by vector of MEPCurve's center point.
         /// </summary>
         /// <param name="mEPCurve"></param>
         /// <param name="normVector"></param>
-        /// <returns>Return double length between MEPCurve's center point and intersection point between vector and MEPCurve's solid.</returns>
+        /// <returns>Return double length between MEPCurve's center point and intersection point between vector and MEPCurve's solid.</returns> 
         public static double GetSizeByVector(MEPCurve mEPCurve, XYZ normVector)
         {
             List<Solid> elemSolids = ElementUtils.GetSolids(mEPCurve);
@@ -231,7 +191,7 @@ namespace DS.RevitLib.Utils.MEP
                 XYZ p1 = intersection.GetCurveSegment(0).GetEndPoint(0);
                 XYZ p2 = intersection.GetCurveSegment(0).GetEndPoint(1);
 
-                (XYZ minPoint, XYZ maxPoint) = PointUtils.GetMinMaxPoints(new List<XYZ> { p1, p2 }, mEPCurveline);
+                (XYZ minPoint, XYZ maxPoint) = XYZUtils.GetMinMaxPoints(new List<XYZ> { p1, p2 }, mEPCurveline);
                 intersectionPoint = maxPoint;
             }
 
@@ -239,30 +199,16 @@ namespace DS.RevitLib.Utils.MEP
         }
 
         /// <summary>
-        /// Check if MEPCurves are equal oriented. 
-        /// Check if size by one of baseMEPCurve norm vector is equal to mEPCurve size by the same vector.
+        /// Check if MEPCurves are equal oriented.
         /// </summary>
         /// <param name="baseMEPCurve"></param>
         /// <param name="mEPCurve"></param>
         /// <returns>Return true if MEPCurves are equal oriented.</returns>
         public static bool EqualOriented(MEPCurve baseMEPCurve, MEPCurve mEPCurve)
         {
-            XYZ baseDir = GetDirection(baseMEPCurve);
-            XYZ dir = GetDirection(mEPCurve);
-
-            List<XYZ> baseNorms = GetOrthoNormVectors(baseMEPCurve);           
-
-            XYZ measureVector = GetMesureVector(baseNorms, dir, baseDir);
-
-            double baseSize = GetSizeByVector(baseMEPCurve, measureVector);
-            double size = GetSizeByVector(mEPCurve, measureVector);
-
-            if (Math.Abs(baseSize - size) < 0.001)
-            {
-                return true;
-            }
-
-            return false;
+            Basis baseBasis = baseMEPCurve.GetBasis();
+            Basis curveBasis = mEPCurve.GetBasis();
+            return XYZUtils.Collinearity(baseBasis.Y, curveBasis.Y) || XYZUtils.Collinearity(baseBasis.Z, curveBasis.Z);
         }
 
         /// <summary>
@@ -271,19 +217,18 @@ namespace DS.RevitLib.Utils.MEP
         /// <param name="baseNorms"></param>
         /// <param name="dir"></param>
         /// <returns>Return vector which direction is not parallel to mEPCurve's direction.</returns>
-        private static XYZ GetMesureVector(List<XYZ> baseNorms, XYZ dir, XYZ baseDir)
+        private static XYZ GetMesureVector(List<XYZ> baseNorms, XYZ dir)
         {
             foreach (var norm in baseNorms)
             {
-                    if(!XYZUtils.Collinearity(dir, norm))
-                    {
-                        return norm;
-                    }              
+                if (!XYZUtils.Collinearity(dir, norm))
+                {
+                    return norm;
+                }
             }
 
             return null;
         }
-
 
         private static List<XYZ> GetVectorsInPlane(Plane plane, List<XYZ> vectors)
         {
@@ -304,7 +249,221 @@ namespace DS.RevitLib.Utils.MEP
         {
             var doc = mEPCurve.Document;
             var type = doc.GetElement(mEPCurve.GetTypeId()) as MEPCurveType;
-            return type.Shape;           
+            return type.Shape;
+        }
+
+        /// <summary>
+        /// Get sized of MEPCurve.
+        /// </summary>
+        /// <param name="mEPCurve"></param>
+        /// <returns>Returns actual sized in recrangle case and diameter in round case.</returns>
+        public static (double width, double heigth) GetWidthHeight(MEPCurve mEPCurve)
+        {
+            double width = 0;
+            double heigth = 0;
+
+            ConnectorProfileType connectorProfileType = GetProfileType(mEPCurve);
+            switch (connectorProfileType)
+            {
+                case ConnectorProfileType.Invalid:
+                    break;
+                case ConnectorProfileType.Round:
+                    {
+                        width = mEPCurve.Diameter;
+                        heigth = width;
+                    }
+                    break;
+                case ConnectorProfileType.Rectangular:
+                    {
+                        width = mEPCurve.Width;
+                        heigth = mEPCurve.Height;
+                    }
+                    break;
+                case ConnectorProfileType.Oval:
+                    break;
+                default:
+                    break;
+            }
+
+            return (width, heigth);
+        }
+
+        /// <summary>
+        /// Get cross-sectional area of MEPCurve.
+        /// </summary>
+        /// <param name="mEPCurve"></param>
+        /// <returns></returns>
+        public static double GetCrossSectionArea(MEPCurve mEPCurve)
+        {
+            var doc = mEPCurve.Document;
+
+            var type = doc.GetElement(mEPCurve.GetTypeId()) as MEPCurveType;
+            var shape = type.Shape;
+            string typeName = mEPCurve.GetType().Name;
+
+            double area = 0;
+
+            switch (shape)
+            {
+                case ConnectorProfileType.Invalid:
+                    break;
+                case ConnectorProfileType.Round:
+                    double d;
+                    if (typeName == "Pipe")
+                    {
+                        d = mEPCurve.get_Parameter(BuiltInParameter.RBS_PIPE_OUTER_DIAMETER).AsDouble();
+                    }
+                    else
+                    {
+                        d = mEPCurve.get_Parameter(BuiltInParameter.RBS_CURVE_DIAMETER_PARAM).AsDouble();
+                    }
+                    area = Math.PI * Math.Pow(d, 2) / 4;
+                    break;
+                case ConnectorProfileType.Rectangular:
+                    double width = mEPCurve.get_Parameter(BuiltInParameter.RBS_CURVE_WIDTH_PARAM).AsDouble();
+                    double height = mEPCurve.get_Parameter(BuiltInParameter.RBS_CURVE_HEIGHT_PARAM).AsDouble();
+                    area = width * height;
+                    break;
+                case ConnectorProfileType.Oval:
+                    break;
+            }
+
+            return area;
+        }
+
+        /// <summary>
+        /// Check if connected element is root element.
+        /// </summary>
+        /// <param name="mEPCurve"></param>
+        /// <param name="element"></param>
+        /// <returns>Return true if element is not child spud.</returns>
+        public static bool IsRoot(MEPCurve mEPCurve, Element element)
+        {
+            if (!ConnectorUtils.ElementsConnected(mEPCurve, element))
+            {
+                var s = "Elements aren't connected";
+                throw new ArgumentException(s);
+            }
+
+            var mEPCurveDir = GetDirection(mEPCurve);
+
+            var mEPCurveLP = ElementUtils.GetLocationPoint(mEPCurve);
+            var elemLP = ElementUtils.GetLocationPoint(element);
+
+            XYZ vector = (mEPCurveLP - elemLP).RoundVector().Normalize();
+
+            if (XYZUtils.Collinearity(mEPCurveDir, vector))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public static List<Element> GetOrderedConnected(MEPCurve mEPCurve, XYZ basePoint)
+        {
+            var connectedElems = ConnectorUtils.GetConnectedElements(mEPCurve);
+            if (connectedElems is null || !connectedElems.Any())
+            {
+                return connectedElems;
+            }
+
+            return connectedElems.OrderByPoint(basePoint);
+        }
+
+        /// <summary>
+        /// Get not spud connectors of MEPCurve.
+        /// </summary>
+        /// <param name="mEPCurve"></param>
+        /// <returns></returns>
+        public static List<Connector> GetNotSpudConnectors(MEPCurve mEPCurve)
+        {
+            var connectedElems = ConnectorUtils.GetConnectedElements(mEPCurve);
+
+            if (connectedElems is null || !connectedElems.Any())
+            {
+                var connectors = ConnectorUtils.GetConnectors(mEPCurve);
+                return connectors;
+            }
+
+            var notSpudElements = connectedElems.ExludeSpudes();
+
+            if (notSpudElements is not null && notSpudElements.Any())
+            {
+                var cons = new List<Connector>();
+                foreach (var elem in notSpudElements)
+                {
+                    var (elem1Con, elem2Con) = ConnectorUtils.GetCommonConnectors(elem, mEPCurve);
+                    cons.Add(elem2Con);
+                }
+                return cons;
+            }
+            else
+            {
+                var freeCons = ConnectorUtils.GetFreeConnector(mEPCurve);
+                return freeCons;
+            };
+        }
+
+        public static MEPCurve GetMaxLengthMEPCurve(List<MEPCurve> mEPCurves)
+        {
+            double maxLength = 0;
+            MEPCurve maxLengthMEPCurve = mEPCurves.First();
+            if (mEPCurves.Count == 1)
+            {
+                return maxLengthMEPCurve;
+            }
+
+            for (int i = 1; i < mEPCurves.Count; i++)
+            {
+                double l = MEPCurveUtils.GetLength(mEPCurves[i]);
+                if (l > maxLength)
+                {
+                    maxLength = l;
+                    maxLengthMEPCurve = mEPCurves[i];
+                }
+
+            }
+            return maxLengthMEPCurve;
+        }
+
+        /// <summary>
+        /// Align <paramref name="operationMEPCurve"/> of rectangular profile with 
+        /// <paramref name="sourceMEPCurve"/> by reference direction rotation.
+        /// </summary>
+        /// <param name="sourceMEPCurve"></param>
+        /// <param name="operationMEPCurve"></param>
+        public static void AlignMEPCurve(MEPCurve sourceMEPCurve, MEPCurve operationMEPCurve)
+        {
+            if (!sourceMEPCurve.IsRectangular())
+                return;
+
+            //Check if rect is needed to align
+            Basis baseBasis = sourceMEPCurve.GetBasis();
+            Basis curveBasis = operationMEPCurve.GetBasis();
+            if (XYZUtils.Collinearity(baseBasis.Y, curveBasis.Y) || XYZUtils.Collinearity(baseBasis.Z, curveBasis.Z))
+            {
+                return;
+            }
+
+            //get align options
+            XYZ cross = baseBasis.X.CrossProduct(curveBasis.X);
+            (XYZ baseAlignBasis, XYZ alignBasis) = XYZUtils.Collinearity(baseBasis.Y, cross) ?
+                 (baseBasis.Y, curveBasis.Y) :
+                 (baseBasis.Z, curveBasis.Z);
+            //(XYZ baseAlignBasis, XYZ alignBasis) = GetAlignBasis(baseBasis, curveBasis, cross);
+            double angle = baseAlignBasis.AngleTo(alignBasis);
+            Line axis = operationMEPCurve.GetCenterLine();
+            //Line axis = Line.CreateUnbound(curveBasis.Point, curveBasis.X);
+            var basis = new Basis(axis.Direction, baseAlignBasis, alignBasis, axis.Origin);
+
+            BasisOrientation orientation = basis.GetOrientaion();
+            angle = orientation == BasisOrientation.Left ? angle : -angle;
+
+            //align
+
+            ElementTransformUtils.RotateElement(sourceMEPCurve.Document, operationMEPCurve.Id, axis, angle);
         }
     }
+
 }

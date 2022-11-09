@@ -1,8 +1,7 @@
 ﻿using Autodesk.Revit.DB;
+using DS.RevitLib.Utils.MEP.Neighbours;
 using System.Collections.Generic;
 using System.Linq;
-using DSSolid = DS.RevitLib.Utils.Solids;
-using DS.RevitLib.Utils.MEP.Neighbours;
 
 
 namespace DS.RevitLib.Utils.MEP
@@ -17,7 +16,7 @@ namespace DS.RevitLib.Utils.MEP
         }
 
         private List<Element> ConnectedElements = new List<Element>();
-        
+
         public List<Element> GetAllNeighbours(List<Element> elements, List<Element> excludedElements, Document Doc)
         {
             List<Element> connectedToCurrent = new List<Element>();
@@ -34,8 +33,8 @@ namespace DS.RevitLib.Utils.MEP
                         connectedToCurrent.Add(Doc.GetElement(elId));
                 }
             }
-            
-              elementsForSearch = NeighbourSearch.GetElementsForSearch(connectedToCurrent);
+
+            elementsForSearch = NeighbourSearch.GetElementsForSearch(connectedToCurrent);
 
             if (elementsForSearch.Count > 0)
             {

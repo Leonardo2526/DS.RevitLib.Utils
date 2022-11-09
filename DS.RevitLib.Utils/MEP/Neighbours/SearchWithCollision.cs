@@ -1,9 +1,5 @@
 ﻿using Autodesk.Revit.DB;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using DSSolid = DS.RevitLib.Utils.Solids;
 
 namespace DS.RevitLib.Utils.MEP.Neighbours
@@ -28,7 +24,7 @@ namespace DS.RevitLib.Utils.MEP.Neighbours
 
             foreach (Element element in elements)
             {
-                if (MEPElementUtils.CheckMEPElement(element))
+                if (MEPElementUtils.IsValidType(element))
                 {
                     List<Solid> solidIntersections = DSSolid.SolidUtils.GetIntersection(
                         _SourceColElements, new List<Element>() { element });

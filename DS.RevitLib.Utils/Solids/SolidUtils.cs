@@ -1,11 +1,15 @@
 ﻿using Autodesk.Revit.DB;
-using Autodesk.Revit.UI;
+using DS.RevitLib.Utils.MEP;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace DS.RevitLib.Utils.Solids
 {
+
+    /// <summary>
+    /// Toolf for 'Solid' object.
+    /// </summary>
     public static class SolidUtils
     {
         /// <summary>
@@ -23,17 +27,15 @@ namespace DS.RevitLib.Utils.Solids
             double minVolumeCm = UnitUtils.ConvertToInternalUnits(minVolume, DisplayUnitType.DUT_CUBIC_CENTIMETERS);
 
             Solid initialSolid = solids.FirstOrDefault();
-            solids.Remove(initialSolid);
-
-            foreach (var solid in solids)
+            for (int i = 1; i < solids.Count; i++)
             {
-                if (solid.Volume < minVolumeCm)
+                if (solids[i].Volume < minVolumeCm)
                 {
                     continue;
                 }
                 try
                 {
-                    initialSolid = BooleanOperationsUtils.ExecuteBooleanOperation(solid, initialSolid, BooleanOperationsType.Union);
+                    initialSolid = BooleanOperationsUtils.ExecuteBooleanOperation(solids[i], initialSolid, BooleanOperationsType.Union);
                 }
                 catch (Exception ex)
                 {
@@ -102,12 +104,139 @@ namespace DS.RevitLib.Utils.Solids
                     }
                 }
                 catch (Exception ex)
-                { 
+                {
                     //TaskDialog.Show("Error", "Failed to find intersection between solids. \n" + ex.Message); 
                 }
             }
 
             return null;
         }
+
+
+        /// <summary>
+        /// Get solid's size by vector from center point of solid. 
+        /// </summary>
+        /// <param name="solid"></param>
+        /// <param name="normVector"></param>
+        /// <param name="solidCentroid"></param>
+        /// <returns>Returns distance between two points of intersection between solid and line by vector.</returns>
+        public static double GetSizeByVector(Solid solid, XYZ normVector, XYZ solidCentroid = null)
+        {
+            solidCentroid ??= solid.ComputeCentroid();
+            Line intersectLine = Line.CreateBound(solidCentroid, solidCentroid + normVector.Multiply(100));
+
+            SolidCurveIntersectionOptions intersectOptions = new SolidCurveIntersectionOptions();
+            SolidCurveIntersection intersection = solid.IntersectWithCurve(intersectLine, intersectOptions);
+
+            if (intersection.SegmentCount != 0)
+            {
+                XYZ p1 = intersection.GetCurveSegment(0).GetEndPoint(0);
+                XYZ p2 = intersection.GetCurveSegment(0).GetEndPoint(1);
+
+                return p1.DistanceTo(p2);
+            }
+
+            return 0;
+        }
+
+        /// <summary>
+        /// Get min and max solid's sizes by vector from center point of solid. 
+        /// </summary>
+        /// <param name="solid"></param>
+        /// <param name="normVector"></param>
+        /// <returns>Returns distance between center point and points of intersection between solid and line by vector.</returns>
+        public static (double, double) GetMinMaxSizeByVector(Solid solid, XYZ normVector)
+        {
+            XYZ centerPoint = solid.ComputeCentroid();
+            Line intersectLine = Line.CreateBound(centerPoint, centerPoint + normVector.Multiply(100));
+
+            SolidCurveIntersectionOptions intersectOptions = new SolidCurveIntersectionOptions();
+            SolidCurveIntersection intersection = solid.IntersectWithCurve(intersectLine, intersectOptions);
+
+            if (intersection.SegmentCount != 0)
+            {
+                XYZ p1 = intersection.GetCurveSegment(0).GetEndPoint(0);
+                XYZ p2 = intersection.GetCurveSegment(0).GetEndPoint(1);
+
+                double p1_Center = p1.DistanceTo(centerPoint);
+                double p2_Center = p2.DistanceTo(centerPoint);
+                return (Math.Max(p1_Center, p2_Center), Math.Min(p1_Center, p2_Center));
+            }
+
+            return (0, 0);
+        }
+
+        /// <summary>
+        /// Get solid of intersections with element1 and all connected to element2.
+        /// </summary>
+        /// <param name="element1"></param>
+        /// <param name="element2"></param>
+        /// <param name="intersectionSolid"></param>
+        /// <returns>Returns united solid from all intersections.</returns>
+        public static Solid GetGroupIntersectionSolid(Element element1, Element element2, Solid intersectionSolid)
+        {
+            //Get connected to noBandable
+            var connectedToNoband = ConnectorUtils.GetAllConnectedWithCollisions(element2, element1, element2.Document);
+
+            if (connectedToNoband.Count == 0)
+            {
+                return intersectionSolid;
+            }
+
+            IList<Element> collisionElements = DS.RevitLib.Utils.CollisionUtils.GetByElements(element1, connectedToNoband, new List<Element>() { element2 });
+
+            if (collisionElements.Count == 0)
+            {
+                return intersectionSolid;
+            }
+
+            List<Solid> solidIntersections = GetIntersection(new List<Element>() { element1 }, collisionElements.ToList());
+            solidIntersections.Add(intersectionSolid);
+
+            Solid resusltSolid = UniteSolids(solidIntersections, 1);
+
+            return resusltSolid;
+        }
+
+        /// <summary>
+        /// Get norm vectors of solid from it's faces.
+        /// </summary>
+        /// <param name="solid"></param>
+        /// <returns>Returns norm vectors of element.</returns>
+        public static List<XYZ> GetOrhts(Solid solid)
+        {
+            var vectors = new List<XYZ>();
+            var faces = solid.Faces;
+
+            foreach (Face face in faces)
+            {
+                XYZ vector = face.ComputeNormal(UV.Zero);
+                vectors.Add(vector);
+            }
+
+            return vectors;
+        }
+
+        /// <summary>
+        /// Get norm otho vectors of solid from it's faces in perpendicular plane to solid's centralLine.
+        /// </summary>
+        /// <param name="solid"></param>
+        /// <returns>Returns norm ortho vectors of element.</returns>
+        public static List<XYZ> GetOrthoNormVectors(Solid solid, Line centralLine)
+        {
+            var orthoVectors = new List<XYZ>();
+            var vectors = GetOrhts(solid);
+
+            foreach (var vector in vectors)
+            {
+                if (!XYZUtils.Collinearity(vector, centralLine.Direction))
+                {
+                    orthoVectors.Add(vector);
+                }
+            }
+
+            return orthoVectors;
+        }
+
     }
 }

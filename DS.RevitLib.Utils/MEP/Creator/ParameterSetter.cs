@@ -1,26 +1,31 @@
 ﻿using Autodesk.Revit.DB;
+using DS.RevitLib.Utils.TransactionCommitter;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.MEP.Creator
 {
-    public static class ParameterSetter
+    public class ParameterSetter : AbstractCreator
     {
+        private readonly Element _element;
+
+        public ParameterSetter(Element element, Committer committer = null, string transactionPrefix = "") :
+            base(committer, transactionPrefix)
+        {
+            _element = element;
+        }
+
         /// <summary>
         /// Set new value to element's parameter
         /// </summary>
         /// <param name="mEPCurve"></param>
         /// <returns>Return MEPCurve with swaped parameters.</returns>
-        public static Element SetValue(Element element, Parameter parameter, double value)
-        {     
-            if(parameter is null)
+        public Element SetValue(Parameter parameter, double value)
+        {
+            if (parameter is null)
             {
-                return element;
+                return _element;
             }
-            using (Transaction transNew = new Transaction(element.Document, "SetParameter"))
+            using (Transaction transNew = new Transaction(_element.Document, _transactionPrefix + "SetParameter"))
             {
                 try
                 {
@@ -30,14 +35,13 @@ namespace DS.RevitLib.Utils.MEP.Creator
                 }
 
                 catch (Exception e)
-                { }
+                { ErrorMessages += e + "\n"; }
 
-                if (transNew.HasStarted())
-                {
-                    transNew.Commit();
-                }
+                _committer?.Commit(transNew);
+                ErrorMessages += _committer?.ErrorMessages;
+                WarningMessages += _committer?.WarningMessages;
             }
-            return element;
+            return _element;
         }
     }
 }

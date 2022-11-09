@@ -5,8 +5,6 @@ using Ivanov.RevitLib.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.MEP
 {
@@ -52,7 +50,7 @@ namespace DS.RevitLib.Utils.MEP
 
             List<Connector> connectors = ConnectorUtils.GetConnectors(element);
             Connector defaultCon = connectors.FirstOrDefault();
-            
+
             foreach (var con in connectors)
             {
                 if (defaultCon.Origin.IsAlmostEqualTo(con.Origin))
@@ -85,7 +83,7 @@ namespace DS.RevitLib.Utils.MEP
         /// </summary>
         /// <param name="element"></param>
         /// <returns>Return true if element is not System or Insulation type</returns>
-        public static bool CheckMEPElement(Element element)
+        public static bool IsValidType(Element element)
         {
             Type type = element.GetType();
 
@@ -100,12 +98,12 @@ namespace DS.RevitLib.Utils.MEP
         /// <summary>
         /// Get element's parameter associated with parameter of connectors.
         /// </summary>
-        /// <param name="element"></param>
+        /// <param name="famInst"></param>
         /// <param name="connectorParameter"></param>
         /// <returns>Return assiciated parameter.</returns>
-        public static Parameter GetAssociatedParameter(Element element, BuiltInParameter connectorParameter)
+        public static Parameter GetAssociatedParameter(FamilyInstance famInst, BuiltInParameter connectorParameter)
         {
-            var connectors = ConnectorUtils.GetConnectors(element);
+            var connectors = ConnectorUtils.GetConnectors(famInst);
 
             var connectorInfo = (MEPFamilyConnectorInfo)connectors.First().GetMEPConnectorInfo();
 
@@ -114,7 +112,7 @@ namespace DS.RevitLib.Utils.MEP
             if (associatedFamilyParameterId == ElementId.InvalidElementId)
                 return null;
 
-            var document = element.Document;
+            var document = famInst.Document;
 
             var parameterElement = document.GetElement(associatedFamilyParameterId) as ParameterElement;
 
@@ -123,7 +121,93 @@ namespace DS.RevitLib.Utils.MEP
 
             var paramterDefinition = parameterElement.GetDefinition();
 
-            return element.get_Parameter(paramterDefinition);
+            return famInst.get_Parameter(paramterDefinition);
+        }
+
+        /// <summary>
+        /// Check if element is node element.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <returns>Return true if element is of tee, spud or cross type.</returns>
+        public static bool IsNodeElement(Element element)
+        {
+            if (element is not FamilyInstance familyInstance)
+            {
+                return false;
+            }
+
+            var partType = ElementUtils.GetPartType(familyInstance);
+            switch (partType)
+            {
+                case PartType.Tee:
+                    return true;
+                case PartType.Cross:
+                    return true;
+                case PartType.TapPerpendicular:
+                    return true;
+                case PartType.TapAdjustable:
+                    return true;
+                case PartType.SpudAdjustable:
+                    return true;
+                case PartType.SpudPerpendicular:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+
+        /// <summary>
+        /// Get element's size parameters.
+        /// </summary>
+        /// <param name="famInst"></param>
+        /// <returns>Returns all not nullable connector size parameters.</returns>
+        public static Dictionary<Parameter, double> GetSizeParameters(FamilyInstance famInst)
+        {
+            var dict = new Dictionary<Parameter, double>();
+
+            AddParameter(GetAssociatedParameter(famInst, BuiltInParameter.CONNECTOR_DIAMETER), dict);
+            AddParameter(GetAssociatedParameter(famInst, BuiltInParameter.CONNECTOR_RADIUS), dict);
+            AddParameter(GetAssociatedParameter(famInst, BuiltInParameter.CONNECTOR_HEIGHT), dict);
+            AddParameter(GetAssociatedParameter(famInst, BuiltInParameter.CONNECTOR_WIDTH), dict);
+
+            return dict;
+        }
+        private static void AddParameter(Parameter parameter, Dictionary<Parameter, double> dictionary)
+        {
+            if (parameter is not null)
+            {
+                dictionary.Add(parameter, parameter.AsDouble());
+            }
+        }
+
+        /// <summary>
+        /// Disconnect element from all connected connectors.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <param name="transactionCommit">Check if needed commit transaction</param>
+        public static void Disconnect(Element element, bool transactionCommit = false)
+        {
+            var cons = ConnectorUtils.GetConnectors(element);
+            foreach (var con1 in cons)
+            {
+                var connectors = con1.AllRefs;
+                foreach (Connector con2 in connectors)
+                {
+                    if (con1.IsConnectedTo(con2))
+                    {
+                        if (transactionCommit)
+                        {
+                            ConnectorUtils.DisconnectConnectors(con1, con2);
+                        }
+                        else
+                        {
+                            con1.DisconnectFrom(con2);
+                        }
+
+                    }
+                }
+            }
         }
     }
 }

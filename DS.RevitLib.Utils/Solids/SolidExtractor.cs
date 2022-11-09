@@ -1,7 +1,5 @@
 ﻿using Autodesk.Revit.DB;
 using System.Collections.Generic;
-using DS.RevitLib.Utils.Solids;
-using System.Collections;
 
 namespace DS.RevitLib.Utils.Solids
 {

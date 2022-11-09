@@ -3,13 +3,12 @@ using Autodesk.Revit.DB.Mechanical;
 using Autodesk.Revit.DB.Plumbing;
 using DS.RevitLib.Utils.MEP;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.Extensions
 {
+    /// <summary>
+    /// Extension methods for 'MEPCurve' objects.
+    /// </summary>
     public static class MEPCurveExtension
     {
         /// <summary>
@@ -69,8 +68,36 @@ namespace DS.RevitLib.Utils.Extensions
             {
                 return elementType as DuctType;
             }
-           
+
             return null;
         }
+
+        /// <summary>
+        /// Get offseted solid from <paramref name="mEPCurve"/>.
+        /// </summary>
+        /// <param name="mEPCurve"></param>
+        /// <param name="offset">Offset distance in feets. If value is positive offset will be outside of <paramref name="mEPCurve"/>, 
+        /// and inside if negative. </param>
+        /// <returns>Returns offseted solid from <paramref name="mEPCurve"/> with specified offset distance.</returns>
+        public static Solid GetOffsetSolid(this MEPCurve mEPCurve, double offset)
+        {
+            return new SolidOffsetExtractor(mEPCurve, offset).Extract();
+        }
+
+        /// <summary>
+        /// Get offseted solid from <paramref name="mEPCurve"/>.
+        /// </summary>
+        /// <param name="mEPCurve"></param>
+        /// <param name="offset">Offset distance in feets. If value is positive offset will be outside of <paramref name="mEPCurve"/>, 
+        /// and inside if negative. </param>
+        /// <param name="startPoint">Start point of solid extrusion.</param>
+        /// <param name="endPoint">End point of solid extrusion.</param>
+        /// <returns>Returns offseted solid from <paramref name="mEPCurve"/> 
+        /// between <paramref name="startPoint"/> and <paramref name="endPoint"/> with specified offset distance.</returns>
+        public static Solid GetOffsetSolid(this MEPCurve mEPCurve, double offset, XYZ startPoint, XYZ endPoint)
+        {
+            return new SolidOffsetExtractor(mEPCurve, offset, startPoint, endPoint).Extract();
+        }
+
     }
 }

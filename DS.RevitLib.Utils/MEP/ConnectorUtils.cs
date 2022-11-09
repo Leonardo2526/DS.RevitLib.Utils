@@ -26,7 +26,7 @@ namespace DS.RevitLib.Utils.MEP
                 foreach (Connector con in connectorSet)
                 {
                     ElementId elementId = con.Owner.Id;
-                    if (elementId != element.Id && MEPElementUtils.CheckMEPElement(con.Owner))
+                    if (elementId != element.Id && MEPElementUtils.IsValidType(con.Owner))
                     {
                         connectedElements.Add(con.Owner);
                     }
@@ -83,13 +83,23 @@ namespace DS.RevitLib.Utils.MEP
 
             foreach (var one in elements)
             {
-                if (!excludedElements.Any(two => two.Id == one.Id))
+                if ((bool)!excludedElements?.Any(two => two.Id == one.Id))
                 {
                     NoIntersections.Add(one);
                 }
             }
 
             return NoIntersections;
+        }
+
+        /// <summary>
+        /// Get all sysytem elements connected to current element. 
+        /// </summary>
+        public static List<Element> GetConnectedElements(Element element, Document Doc)
+        {
+            INeighbourSearch neighbourSearch = new Search();
+            NeighbourElement neighbourElement = new NeighbourElement(neighbourSearch);
+            return neighbourElement.GetAllNeighbours(new List<Element>() { element }, new List<Element>(), Doc);
         }
 
         public static void GetNeighbourConnectors(out Connector con1, out Connector con2,
@@ -112,6 +122,31 @@ namespace DS.RevitLib.Utils.MEP
                 }
             }
 
+        }
+
+        /// <summary>
+        /// Get neighbour connectors. 
+        /// </summary>
+        /// <param name="connectors1"></param>
+        /// <param name="connectors2"></param>
+        /// <returns>Returns two connectors of elements with zero distance.</returns>
+        public static (Connector con1, Connector con2) GetNeighbourConnectors(List<Connector> connectors1, List<Connector> connectors2)
+        {
+            Connector elem1Con = null, elem2Con = null;
+            foreach (Connector c1 in connectors1)
+            {
+                var cons2 = connectors2.
+                    Where(con => (con.Origin - c1.Origin).IsZeroLength());
+                if (!cons2.Any())
+                {
+                    continue;
+                }
+                elem1Con = c1;
+                elem2Con = cons2.First();
+                break;
+            }
+
+            return (elem1Con, elem2Con);
         }
 
         public static List<Connector> GetConnectors(Element element)
@@ -230,7 +265,7 @@ namespace DS.RevitLib.Utils.MEP
         }
 
         /// <summary>
-        /// Get common connectors between two elements
+        /// Get common connected connectors between two elements
         /// </summary>
         /// <param name="element1"></param>
         /// <param name="element2"></param>
@@ -250,7 +285,7 @@ namespace DS.RevitLib.Utils.MEP
 
                 foreach (Connector con in connectorSet)
                 {
-                    if (con.Owner.Id == element2.Id && MEPElementUtils.CheckMEPElement(con.Owner))
+                    if (con.Owner.Id == element2.Id && MEPElementUtils.IsValidType(con.Owner))
                     {
                         return (elem1Con, con);
                     }
@@ -311,6 +346,62 @@ namespace DS.RevitLib.Utils.MEP
             }
 
             return resultCon;
+        }
+
+        /// <summary>
+        /// Select connector from the list which is closest to line;
+        /// </summary>
+        /// <param name="line"></param>
+        /// <param name="connectors"></param>
+        /// <returns>Return closest connector.</returns>
+        public static Connector GetClosest(Line line, List<Connector> connectors)
+        {
+            Connector resultCon = connectors.FirstOrDefault();
+            double distance = line.Distance(resultCon.Origin);
+
+            if (connectors.Count > 1)
+            {
+                for (int i = 1; i < connectors.Count; i++)
+                {
+                    double curDistance = line.Distance(connectors[i].Origin);
+                    if (curDistance < distance)
+                    {
+                        distance = curDistance;
+                        resultCon = connectors[i];
+                    }
+                }
+            }
+
+            return resultCon;
+        }
+
+        /// <summary>
+        /// Get two connector from the lists with minimum distance between them.
+        /// </summary>
+        /// <param name="connectors1"></param>
+        /// <param name="connectors2"></param>
+        /// <returns>Return closest connectors.</returns>
+        public static (Connector con1, Connector con2) GetClosest(List<Connector> connectors1, List<Connector> connectors2)
+        {
+            Connector resCon1 = null;
+            Connector resCon2 = null;
+            double distance = 10000;
+
+            foreach (var c1 in connectors1)
+            {
+                foreach (var c2 in connectors2)
+                {
+                    double curDistance = c1.Origin.DistanceTo(c2.Origin);
+                    if (curDistance < distance)
+                    {
+                        distance = curDistance;
+                        resCon1 = c1;
+                        resCon2 = c2;
+                    }
+                }
+            }
+
+            return (resCon1, resCon2);
         }
 
         public static void ConnectConnectors(Document Doc, Connector c1, Connector c2)
@@ -413,6 +504,63 @@ namespace DS.RevitLib.Utils.MEP
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Check if elements are connected.
+        /// </summary>
+        /// <param name="element1"></param>
+        /// <param name="element2"></param>
+        /// <returns>Return true if elements are connected.</returns>
+        public static bool ElementsConnected(Element element1, Element element2)
+        {
+            var (elem1Con, elem2Con) = GetCommonConnectors(element1, element2);
+            if (elem1Con is null || elem2Con is null)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Get main connectors of element. 
+        /// </summary>
+        /// <param name="element"></param>
+        /// <returns>If element is MEPCurve returns two connectors of it with max distance between them.
+        /// If element is FamilyInstance returns two connectors if element's location point is on line between them.</returns>
+        public static (Connector con1, Connector con2) GetMainConnectors(Element element)
+        {
+            var connectors = GetConnectors(element);
+            XYZ lp = ElementUtils.GetLocationPoint(element);
+
+            if (element is FamilyInstance)
+            {
+                for (int i = 0; i < connectors.Count - 1; i++)
+                {
+                    for (int j = i + 1; j < connectors.Count; j++)
+                    {
+                        XYZ dir1 = (connectors[i].Origin - lp).RoundVector();
+                        XYZ dir2 = (connectors[j].Origin - lp).RoundVector();
+                        if (XYZUtils.Collinearity(dir1, dir2))
+                        {
+                            return (connectors[i], connectors[j]);
+                        }
+                    }
+                }
+            }
+            else if (element is MEPCurve)
+            {
+                List<XYZ> points = connectors.Select(obj => obj.Origin).ToList();
+                var (point1, point2) = XYZUtils.GetMaxDistancePoints(points, out double dist);
+
+                var con1 = connectors.Where(c => Math.Round(c.Origin.DistanceTo(point1), 3) == 0).First();
+                var con2 = connectors.Where(c => Math.Round(c.Origin.DistanceTo(point2), 3) == 0).First();
+                return (con1, con2);
+            }
+
+
+            return (null, null);
         }
     }
 }

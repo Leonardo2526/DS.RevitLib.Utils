@@ -1,65 +1,71 @@
 ﻿using Autodesk.Revit.DB;
-using DS.RevitLib.Utils.Extensions;
-using DS.RevitLib.Utils.MEP.Creator.Builders;
-using Ivanov.RevitLib.Utils;
-using System;
+using DS.RevitLib.Utils.MEP.SystemTree;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.MEP.Creator
 {
-    public class BuilderByPoints : MEPSystemBuilder
+    /// <summary>
+    /// Class to create MEPCurves. 
+    /// Transactions are not provided, so methods should be wrapped to transacion.
+    /// </summary>
+    public class BuilderByPoints
     {
-        public BuilderByPoints(MEPCurve baseMEPCurve, List<XYZ> points, string transactionPrefix = "") : 
-            base(baseMEPCurve, transactionPrefix)
+        private readonly List<XYZ> _points = new();
+        private readonly MEPCurve _baseMEPCurve;
+        private readonly MEPElementsModel _mEPElementsModel;
+
+        /// <summary>
+        /// Create instance of object to create MEPCurves by 
+        /// <paramref name="baseMEPCurve"/> and <paramref name="points"/>.
+        /// </summary>
+        /// <param name="baseMEPCurve"></param>
+        /// <param name="points"></param>
+        public BuilderByPoints(MEPCurve baseMEPCurve, List<XYZ> points)
         {
-            this._Points = points;
+            _points = points;
+            _baseMEPCurve = baseMEPCurve;
+            _mEPElementsModel = new MEPElementsModel();
         }
 
-        private List<XYZ> _Points = new List<XYZ>();
-
-        public override MEPCurvesModel BuildMEPCurves()
+        /// <summary>
+        /// Build MEPSystem with elbows. 
+        /// Ducts will be aligned if system contains they.
+        /// </summary>
+        /// <returns>Returns created system.</returns>
+        /// <param name="transactionBuilder"></param>
+        public MEPCurvesModel BuildSystem(TransactionBuilder<Element> transactionBuilder)
         {
-            MEPCurveCreator mEPCurveCreator = new MEPCurveCreator(BaseMEPCurve, TransactionPrefix);
-            MEPCurve baseMEPCurve = BaseMEPCurve;
+            MEPCurvesModel mEPElementsModel = null;
 
-            for (int i = 0; i < _Points.Count - 1; i++)
+            transactionBuilder.Build(() => mEPElementsModel = BuildMEPCurves(), "Create MEPSystem by path");
+            transactionBuilder.Build(() => mEPElementsModel.RefineDucts(_baseMEPCurve), "Align ducts");
+            transactionBuilder.Build(() => mEPElementsModel = mEPElementsModel.WithElbows(), "Insert elbows by path");
+
+            return mEPElementsModel;
+        }
+
+        /// <summary>
+        /// Build MEPCurves by given points.
+        /// </summary>
+        /// <returns>Returns created MEPCurvesModel.</returns>
+        public MEPCurvesModel BuildMEPCurves()
+        {
+            var mEPCurveCreator = new MEPCurveCreator(_baseMEPCurve);
+            MEPCurve baseMEPCurve = _baseMEPCurve;
+
+            for (int i = 0; i < _points.Count - 1; i++)
             {
-                XYZ p1 = _Points[i];
-                XYZ p2 = _Points[i + 1];
+                XYZ p1 = _points[i];
+                XYZ p2 = _points[i + 1];
 
-                MEPCurve mEPCurve = mEPCurveCreator.CreateMEPCurveByPoints(p1, p2, baseMEPCurve);
-
-                RectangularFixing(baseMEPCurve, mEPCurve);
-
+                MEPCurve mEPCurve = mEPCurveCreator.Create(p1, p2, baseMEPCurve);
                 baseMEPCurve = mEPCurve;
 
-                MEPSystemModel.AllElements.Add(mEPCurve);
-                MEPSystemModel.MEPCurves.Add(mEPCurve);
+                _mEPElementsModel.AllElements.Add(mEPCurve);
+                _mEPElementsModel.MEPCurves.Add(mEPCurve);
             }
 
-            return new MEPCurvesModel(MEPSystemModel, Doc, TransactionPrefix, mEPCurveCreator.ErrorMessages);
+            return new MEPCurvesModel(_mEPElementsModel);
         }
-
-     
-
-        private void RectangularFixing(MEPCurve baseMEPCurve, MEPCurve mEPCurve)
-        {
-            if (baseMEPCurve is not null && baseMEPCurve.IsRectangular())
-                {
-                    RotationBuilder rotationBuilder = new RotationBuilder(baseMEPCurve, mEPCurve, TransactionPrefix);
-                    rotationBuilder.Rotate();
-
-                //Check if size of MEPCurve should be swapped.
-                if (!MEPCurveUtils.EqualOriented(baseMEPCurve, mEPCurve))
-                {
-                    MEPCurveCreator mEPCurveCreator = new MEPCurveCreator(mEPCurve, TransactionPrefix);
-                    mEPCurveCreator.SwapSize(mEPCurve);
-                }
-            }
-        }
-
     }
 }
