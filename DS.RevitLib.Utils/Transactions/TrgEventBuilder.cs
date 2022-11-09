@@ -16,11 +16,9 @@ namespace DS.RevitLib.Utils.Transactions
         private readonly Document _doc;
 
         /// <summary>
-        /// Create a new instance of object to wrap transactions actions into 
-        /// transaction group with <paramref name="taskEvent"/>.
+        /// Create a new instance of object to wrap transactions actions into transaction group with awaiting event.
         /// </summary>
         /// <param name="doc"></param>
-        /// <param name="taskEvent"><see cref="WindowTaskEvent"/> to create a new event task.</param>
         public TrgEventBuilder(Document doc)
         {
             _doc = doc;
@@ -30,6 +28,7 @@ namespace DS.RevitLib.Utils.Transactions
         /// Create a new transaction group and build a new task inside it with <paramref name="operation"/>. 
         /// </summary>
         /// <param name="operation">Transactions to perform.</param>
+        /// <param name="taskEvent">Task event object to complete.</param>
         /// <param name="revitAsync">Optional parameter to perform <paramref name="operation"/> outside of Revit API context.</param>
         /// <returns>Returns a new async Task to perform transaction group operations.</returns>
         public async Task BuildAsync(Action operation, TaskComplition taskEvent, bool revitAsync = false)
