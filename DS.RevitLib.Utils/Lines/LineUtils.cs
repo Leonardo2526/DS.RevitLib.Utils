@@ -85,18 +85,7 @@ namespace DS.RevitLib.Utils
             }
 
             return line;
-        }
-
-        /// <summary>
-        /// Create ModelCurve by given line.
-        /// </summary>
-        /// <param name="line"></param>
-        /// <param name="doc"></param>
-        public static void Show(this Line line, Document doc)
-        {
-            var creator = new ModelCurveCreator(doc);
-            creator.Create(line.GetEndPoint(0), line.GetEndPoint(1));
-        }
+        }      
 
         /// <summary>
         /// Create lines list from <paramref name="points"/>.
