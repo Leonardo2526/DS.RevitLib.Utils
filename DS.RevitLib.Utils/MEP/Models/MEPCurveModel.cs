@@ -16,6 +16,7 @@ namespace DS.RevitLib.Utils.MEP.Models
             (Width, Height) = MEPCurveUtils.GetWidthHeight(mEPCurve);
             Length = MEPCurveUtils.GetLength(mEPCurve);
             Area = MEPCurveUtils.GetCrossSectionArea(mEPCurve);
+            Id = mEPCurve.Id.IntegerValue;
         }
 
         #region Properties
@@ -66,7 +67,7 @@ namespace DS.RevitLib.Utils.MEP.Models
                 }
             }
         }
-
+        public int Id { get; }
 
         #endregion
 
