@@ -48,7 +48,7 @@ namespace DS.RevitLib.Utils.Points.Models
         /// Get MEPCurve for connection to current point.
         /// </summary>
         /// <returns></returns>
-        public MEPCurve GetConnectionMEPCurve(List<XYZ> path)
+        public MEPCurve GetConnectionMEPCurve(IEnumerable<ElementId> deletedIds)
         {
             if (Element is MEPCurve)
             {
@@ -62,33 +62,13 @@ namespace DS.RevitLib.Utils.Points.Models
 
             if (PartType == PartType.Elbow)
             {
-                XYZ nextDir = path[2] - path[1];
-                bool firstCollinerity = XYZUtils.Collinearity(nextDir, mParents.First().GetCenterLine().Direction);
-                return firstCollinerity ? mParents.First() : mParents.Last();
+                foreach (var item in mParents)
+                {
+                    if (!deletedIds.Contains(item.Id)) { return item; }
+                }
             }
+
             return parents.First() as MEPCurve;
-
-            if (child is null)
-            {
-                return mParents.First();
-            }
-            //get elements lines
-            //var parentLines = new List<Line>();
-            //parents.ForEach(p => parentLines.Add(p.GetCenterLine()));
-
-            var parentdbLine = parents.First().GetCenterLine();
-            var parentLine = Line.CreateUnbound(parentdbLine.Origin, parentdbLine.Direction);
-
-            var childbLine = child.GetCenterLine();
-            var childLine = Line.CreateUnbound(childbLine.Origin, childbLine.Direction);
-
-            XYZ parentProjectPoint = parentLine.Project(Point).XYZPoint;
-            XYZ childProjectPoint = childLine.Project(Point).XYZPoint;
-
-            var elem = (parentProjectPoint - childProjectPoint).IsZeroLength() ? child : mParents.First();
-
-            return elem as MEPCurve;
         }
-
     }
 }
