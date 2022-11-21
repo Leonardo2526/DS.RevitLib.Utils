@@ -26,8 +26,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>x64</PlatformTarget>
-    <DocumentationFile>
-    </DocumentationFile>
+    <DocumentationFile>bin\Debug\DS.RevitLib.Utils.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -118,7 +117,7 @@
     <Compile Include="MEP\Creator\Builders\BuilderByPoints.cs" />
     <Compile Include="MEP\Creator\FamInstCreator.cs" />
     <Compile Include="MEP\Creator\MEPCurveCreator.cs" />
-    <Compile Include="MEP\Models\MEPCurveModel.cs" />
+    <Compile Include="Elements\Models\MEPCurveModel.cs" />
     <Compile Include="MEP\SystemModels\MEPCurvesModel.cs" />
     <Compile Include="MEP\SystemTree\Relatives\FamInstRelationBuilder.cs" />
     <Compile Include="MEP\SystemTree\Relatives\NewElementRelationBuilder.cs" />
@@ -129,7 +128,7 @@
     <Compile Include="Lines\LineExtensions.cs" />
     <Compile Include="MEP\MEPCurveExtensions.cs" />
     <Compile Include="MEP\MEPCurveCutter.cs" />
-    <Compile Include="MEP\Models\MEPCurveGeometryModel.cs" />
+    <Compile Include="Elements\Models\MEPCurveGeometryModel.cs" />
     <Compile Include="PathFinders\SimplePathFinder.cs" />
     <Compile Include="Points\Models\MEPConnectionPoint.cs" />
     <Compile Include="Points\Models\IMEPConnectionPoint.cs" />

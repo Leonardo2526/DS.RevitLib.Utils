@@ -34,28 +34,16 @@ namespace DS.RevitLib.Utils.Lines
         {
             var points = new List<XYZ>();
 
-            XYZ startPoint = GetIntersection(_lines.First(), _lines.Last());
+            XYZ startPoint = LineUtils.GetIntersectionPoint(_lines.First(), _lines.Last());
             points.Add(startPoint);
             for (int i = 0; i < _lines.Count - 1; i++)
             {
-                XYZ point = GetIntersection(_lines[i], _lines[i + 1]);
+                XYZ point = LineUtils.GetIntersectionPoint(_lines[i], _lines[i + 1]);
                 points.Add(point);
             }
             points.Add(startPoint);
 
             return points.Where(obj => obj is not null).ToList();
-        }
-
-        private XYZ GetIntersection(Line line1, Line line2)
-        {
-            Line uLine1 = Line.CreateUnbound(line1.Origin, line1.Direction);
-            Line uLine2 = Line.CreateUnbound(line2.Origin, line2.Direction);
-
-            var intersect = uLine1.Intersect(uLine2, out IntersectionResultArray resultArray);
-
-            return resultArray is not null && resultArray.Size > 0 ?
-                resultArray.get_Item(0).XYZPoint :
-                null;
         }
     }
 }
