@@ -49,13 +49,8 @@ namespace DS.RevitLib.Utils
             T result = default;
             using (Transaction transNew = new(_doc, _transactionPrefix + transactionName))
             {
-                try
-                {
-                    transNew.Start();
-                    result = operation.Invoke();
-                }
-                catch (Exception e)
-                { TaskDialog.Show("RevitException", e.Message); ErrorMessages += e + "\n"; }
+                transNew.Start();
+                result = operation.Invoke();
 
                 _committer?.Commit(transNew);
                 ErrorMessages += _committer?.ErrorMessages;
@@ -73,13 +68,8 @@ namespace DS.RevitLib.Utils
         {
             using (Transaction transNew = new(_doc, _transactionPrefix + transactionName))
             {
-                try
-                {
-                    transNew.Start();
-                    operation.Invoke();
-                }
-                catch (Exception e)
-                { TaskDialog.Show("RevitException", e.Message); ErrorMessages += e + "\n"; }
+                transNew.Start();
+                operation.Invoke();
 
                 _committer?.Commit(transNew);
                 ErrorMessages += _committer?.ErrorMessages;
