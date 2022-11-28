@@ -3,6 +3,7 @@ using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.MEP.SystemTree.Relatives;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace DS.RevitLib.Utils.MEP.SystemTree
@@ -88,6 +89,7 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
 
         public List<Element> GetElements(Element elem1, Element elem2)
         {
+            if(!IsSystemValid()) { return null; }
             var elemsIds = Elements.Select(obj => obj.Id).ToList();
 
             int ind1 = elemsIds.IndexOf(elem1.Id);
@@ -232,6 +234,22 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
         public int FindIndex(Element element)
         {
             return Elements.FindIndex(obj => obj.Id == element.Id);
+        }
+
+        /// <summary>
+        /// Check if each one object in <see cref="Elements"/> is Valid.
+        /// </summary>
+        /// <returns>Returns true if all elements are valid.</returns>
+        public bool IsSystemValid()
+        {
+            if (Elements.TrueForAll(obj => obj.IsValidObject))
+            {
+                return true;
+            }
+            Debug.Fail("Element validity error!", 
+                $"Not valid elements count: {Elements.Where(obj => !obj.IsValidObject).Count()}");
+
+            return false;
         }
     }
 }

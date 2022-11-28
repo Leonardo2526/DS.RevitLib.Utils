@@ -9,7 +9,6 @@ namespace DS.RevitLib.Utils.TransactionCommitter
             if (transaction.HasStarted())
             {
                 transaction.Commit();
-                var name = transaction.GetName();
             }
         }
     }

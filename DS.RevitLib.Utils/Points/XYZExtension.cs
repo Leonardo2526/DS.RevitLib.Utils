@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using DS.ClassLib.VarUtils;
 using DS.RevitLib.Utils.ModelCurveUtils;
+using DS.RevitLib.Utils.Transactions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -167,9 +168,9 @@ namespace DS.RevitLib.Utils.Extensions
         /// <param name="transactionBuilder"></param>
         /// <param name="doc"></param>
         /// <param name="labelSize">Size of label's line to show.</param>
-        public static void Show(this XYZ point, Document doc, double labelSize = 0, TransactionBuilder<Element> transactionBuilder = null)
+        public static void Show(this XYZ point, Document doc, double labelSize = 0, AbstractTransactionBuilder transactionBuilder = null)
         {
-            transactionBuilder ??= new TransactionBuilder<Element>(doc);
+            transactionBuilder ??= new TransactionBuilder_v1<Element>(doc);
             labelSize = labelSize == 0 ? 100.mmToFyt2() : labelSize;
 
             Line line1 = Line.CreateBound(

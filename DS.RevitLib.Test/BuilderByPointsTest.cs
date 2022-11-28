@@ -30,7 +30,7 @@ namespace DS.RevitLib.Test
 
         public void Run()
         {
-            var transactionBuilder = new TransactionBuilder<Element>(_doc);
+            var transactionBuilder = new TransactionBuilder_v1<Element>(_doc);
 
             List<XYZ> points = GetMultiplePoints();
             //transactionBuilder.Build(() => ShowPath(points), "ShowPath");

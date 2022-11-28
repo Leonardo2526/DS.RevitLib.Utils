@@ -134,8 +134,10 @@
     <Compile Include="Points\Models\IMEPConnectionPoint.cs" />
     <Compile Include="SelectionFilters\FamilyInstanceSelectionFilter.cs" />
     <Compile Include="Transactions\Committers\ITransactionGroupCommitter.cs" />
-    <Compile Include="Transactions\TrgEventBuilder.cs" />
+    <Compile Include="Transactions\AbstractTransactionBuilder.cs" />
     <Compile Include="Transactions\TransactionBuilder.cs" />
+    <Compile Include="Transactions\TrgEventBuilder.cs" />
+    <Compile Include="Transactions\TransactionBuilder_v1.cs" />
     <Compile Include="Transforms\TransformBuilder.cs" />
     <Compile Include="Transforms\TransformModel.cs" />
     <Compile Include="Models\Basis.cs" />
@@ -205,9 +207,9 @@
     <Compile Include="Solids\SolidExtractor.cs" />
     <Compile Include="Solids\SolidPlacer.cs" />
     <Compile Include="Solids\SolidUtils.cs" />
-    <Compile Include="Transactions\Committer.cs" />
-    <Compile Include="Transactions\BaseCommitter.cs" />
-    <Compile Include="Transactions\RollBackCommitter.cs" />
+    <Compile Include="Transactions\Committers\Committer.cs" />
+    <Compile Include="Transactions\Committers\BaseCommitter.cs" />
+    <Compile Include="Transactions\Committers\RollBackCommitter.cs" />
     <Compile Include="Points\XYZAlgorithms\MaxDistance\MaxDistanceClient.cs" />
     <Compile Include="Points\XYZAlgorithms\MaxDistance\Strategies\MaxDistnaceStrategy.cs" />
     <Compile Include="Points\XYZAlgorithms\MaxDistance\Strategies\NaiveStrategy.cs" />

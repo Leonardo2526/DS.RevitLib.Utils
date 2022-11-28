@@ -2,6 +2,7 @@
 using DS.RevitLib.Utils.Connection.Strategies;
 using DS.RevitLib.Utils.MEP;
 using DS.RevitLib.Utils.MEP.Models;
+using System.Diagnostics;
 
 namespace DS.RevitLib.Utils.Connection
 {
@@ -34,8 +35,31 @@ namespace DS.RevitLib.Utils.Connection
         /// <inheritdoc/>
         public void Connect()
         {
+            Debug.IndentLevel = 0;
             var strategy = GetStrategy();
-            strategy.Connect();
+            if (strategy == null)
+            { 
+                Debug.WriteLine("Connection error! Unable to get connection strategy.", TraceLevel.Error.ToString()); 
+                return; 
+            }
+
+            try
+            {
+                strategy.Connect();
+                Debug.WriteLineIf(_mEPCurveModel3 is null, 
+                    $"MEPCurve {_mEPCurveModel1.MEPCurve.Id} and " +
+                    $"MEPCurve {_mEPCurveModel2.MEPCurve.Id} connected succefully.", 
+                    TraceLevel.Info.ToString());
+                Debug.WriteLineIf(_mEPCurveModel3 is not null,
+                    $"MEPCurve {_mEPCurveModel1.MEPCurve.Id}, " +
+                    $"MEPCurve {_mEPCurveModel2.MEPCurve.Id}  " +
+                    $"and MEPCurve {_mEPCurveModel3?.MEPCurve.Id} connected succefully.",
+                    TraceLevel.Info.ToString());
+            }
+            catch (System.Exception)
+            {
+                Debug.WriteLine("Connection error! Unable to connect MEPCurves.", TraceLevel.Error.ToString());
+            }
         }
 
         private MEPCurveConnectionStrategy GetStrategy()
