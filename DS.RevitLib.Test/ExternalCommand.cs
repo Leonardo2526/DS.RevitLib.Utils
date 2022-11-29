@@ -27,13 +27,13 @@ namespace DS.RevitLib.Test
             //var test = new BuilderByPointsTest(uidoc);
             //var test = new GetAssociatedParameterTest(uidoc);
 
-            //var client = new ConnectionFactoryClient(uidoc);
-            //client.Run();
+            var test = new SolidContainsPointTest(doc,  uidoc);
+            test.Run();
 
 
-            var pathFinderTest = new SimplePathFinderTest(uidoc, doc);
-            var path = pathFinderTest.RunTest2();
-            pathFinderTest.ShowPath(path);
+            //var pathFinderTest = new SimplePathFinderTest(uidoc, doc);
+            //var path = pathFinderTest.RunTest2();
+            //pathFinderTest.ShowPath(path);
             //SolidCollisionCheckerTest.RunWithLink(doc);
 
             //var selector = new SystemModelTest(uidoc, doc, uiapp);

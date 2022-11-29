@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.FamilyInstances;
+using DS.RevitLib.Utils.MEP;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -14,8 +15,8 @@ namespace DS.RevitLib.Utils.Points.Models
         /// <summary>
         /// Initiate a new object for element connection.
         /// </summary>
-        /// <param name="point"></param>
-        /// <param name="element"></param>
+        /// <param name="point">Connection point</param>
+        /// <param name="element">Base element</param>
         public MEPConnectionPoint(XYZ point, Element element)
         {
             Point = point;
@@ -28,12 +29,12 @@ namespace DS.RevitLib.Utils.Points.Models
         public XYZ Point { get; private set; }
 
         /// <summary>
-        /// Element to connect.
+        /// Reference base element.
         /// </summary>
-        public Element Element { get; private set; }
+        public Element Element { get; private set; }     
 
         /// <summary>
-        /// Element's partType.
+        /// <see cref="Element"/> partType.
         /// </summary>
         public PartType PartType
         {
@@ -69,6 +70,28 @@ namespace DS.RevitLib.Utils.Points.Models
             }
 
             return parents.First() as MEPCurve;
+        }
+
+        /// <summary>
+        /// Get real connection element.
+        /// </summary>
+        /// <returns>Reutrns element that contains <see cref="Point"/> inside its solid.</returns>
+        public Element GetElementByPoint()
+        {
+            var solid = ElementUtils.GetSolid(Element);
+            if (solid.Contains(Point))
+            { return Element; }
+
+            var connectedElements = ConnectorUtils.GetConnectedElements(Element);
+            foreach (var element in connectedElements)
+            {
+                solid = ElementUtils.GetSolid(element);
+
+                if (solid.Contains(Point))
+                { return element; }
+            }
+
+            return Element;
         }
     }
 }

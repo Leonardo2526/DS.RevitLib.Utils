@@ -46,6 +46,9 @@
     <Reference Include="Ivanov.RevitLib.Utils">
       <HintPath>..\..\VAR.RevitLib.Utils\Ivanov.RevitLib.Utils\bin\Release\Ivanov.RevitLib.Utils.dll</HintPath>
     </Reference>
+    <Reference Include="PathFinderLib">
+      <HintPath>..\..\Olimproekt\MEPAutoCoordination\OLMP.RevitLib.MEPAC\bin\Debug\PathFinderLib.dll</HintPath>
+    </Reference>
     <Reference Include="Revit.Async, Version=2.0.1.0, Culture=neutral, processorArchitecture=AMD64">
       <HintPath>..\packages\Revit.Async.2.0.1\lib\net45\Revit.Async.dll</HintPath>
     </Reference>
@@ -129,6 +132,7 @@
     <Compile Include="MEP\MEPCurveExtensions.cs" />
     <Compile Include="MEP\MEPCurveCutter.cs" />
     <Compile Include="Elements\Models\MEPCurveGeometryModel.cs" />
+    <Compile Include="PathFinders\IvanovPathFinder.cs" />
     <Compile Include="PathFinders\SimplePathFinder.cs" />
     <Compile Include="Points\Models\MEPConnectionPoint.cs" />
     <Compile Include="Points\Models\IMEPConnectionPoint.cs" />

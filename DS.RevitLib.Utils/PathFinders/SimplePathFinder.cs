@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace DS.RevitApp.Test.PathFinders
+namespace DS.RevitLib.Utils.PathFinders
 {
 
     /// <summary>
@@ -22,6 +22,8 @@ namespace DS.RevitApp.Test.PathFinders
         private readonly double _minZDist;
         private readonly double _angle;
         private readonly double _maxCutWidth;
+
+        public List<ElementId> ExceptionElements { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
         /// <summary>
         /// An object for path creation without collisions account.

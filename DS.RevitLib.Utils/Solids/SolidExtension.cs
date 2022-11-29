@@ -135,5 +135,22 @@ namespace DS.RevitLib.Utils.Extensions
             ds.SetShape(new GeometryObject[] { solid });
         }
 
+        /// <summary>
+        /// Check if <paramref name="solid"/> contains <paramref name="point"/>.
+        /// </summary>
+        /// <param name="solid"></param>
+        /// <param name="point"></param>
+        /// <returns>Returns true if <paramref name="point"/> is inside <paramref name="solid"/>.</returns>
+        public static bool Contains(this Solid solid, XYZ point)
+        {
+            var dir = XYZUtils.GenerateXYZ();
+            Line line = Line.CreateBound(point, dir.Multiply(100));
+            var options = new SolidCurveIntersectionOptions();
+            var intersecion = solid.IntersectWithCurve(line, options);
+            int segments = intersecion.SegmentCount;
+
+            return segments % 2 != 0;
+        }
+
     }
 }
