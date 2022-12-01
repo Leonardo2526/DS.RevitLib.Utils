@@ -23,7 +23,7 @@ namespace DS.RevitLib.Utils.PathFinders
         private readonly double _angle;
         private readonly double _maxCutWidth;
 
-        public List<ElementId> ExceptionElements { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public List<ElementId> ExceptionElements { get; set; }
 
         /// <summary>
         /// An object for path creation without collisions account.

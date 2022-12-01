@@ -95,6 +95,19 @@ namespace DS.RevitLib.Utils.MEP.Creator
             return mEPCurve;
         }
 
+        public MEPCurve Create(Connector c1, Connector c2, MEPCurve baseMEPCurve = null)
+        {
+            baseMEPCurve ??= _baseMEPCurve;
+            MEPCurve mEPCurve = ElementTypeName == "Pipe" ?
+                Pipe.Create(_doc, ElementTypeId, MEPLevelId, c1, c2) :
+                Duct.Create(_doc, ElementTypeId, MEPLevelId, c1, c2);
+
+            Insulation.Create(baseMEPCurve, mEPCurve);
+            ElementParameter.CopyAllParameters(baseMEPCurve, mEPCurve);
+
+            return mEPCurve;
+        }
+
         /// <summary>
         /// Swap MEPCurve's width and height.
         /// </summary>

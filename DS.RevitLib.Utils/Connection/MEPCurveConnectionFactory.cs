@@ -64,7 +64,8 @@ namespace DS.RevitLib.Utils.Connection
 
         private MEPCurveConnectionStrategy GetStrategy()
         {
-            var (elem1Con, elem2Con) = ConnectorUtils.GetNeighbourConnectors(_mEPCurveModel1.MainConnectors, _mEPCurveModel2.MainConnectors);
+            //var (elem1Con, elem2Con) = ConnectorUtils.GetNeighbourConnectors(_mEPCurveModel1.MainConnectors, _mEPCurveModel2.MainConnectors);
+            var (elem1Con, elem2Con) = ConnectorUtils.GetClosest(_mEPCurveModel1.MainConnectors, _mEPCurveModel2.MainConnectors);
             if (elem1Con is not null && elem2Con is not null && XYZUtils.Collinearity(_mEPCurveModel1.Direction, _mEPCurveModel2.Direction))
             {
                 return new ConnectorMEPCurveStrategy(_doc, _mEPCurveModel1, _mEPCurveModel2, _minLength, elem1Con, elem2Con);
