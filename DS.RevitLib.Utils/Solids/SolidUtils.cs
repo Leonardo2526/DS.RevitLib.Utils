@@ -23,7 +23,7 @@ namespace DS.RevitLib.Utils.Solids
             {
                 return null;
             }
-
+            solids = solids.Where(obj => obj is not null).ToList();
             double minVolumeCm = UnitUtils.ConvertToInternalUnits(minVolume, DisplayUnitType.DUT_CUBIC_CENTIMETERS);
 
             Solid initialSolid = solids.FirstOrDefault();

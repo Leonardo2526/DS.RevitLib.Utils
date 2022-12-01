@@ -137,6 +137,8 @@
     <Compile Include="Points\Models\MEPConnectionPoint.cs" />
     <Compile Include="Points\Models\IMEPConnectionPoint.cs" />
     <Compile Include="SelectionFilters\FamilyInstanceSelectionFilter.cs" />
+    <Compile Include="Transactions\Committers\CommitOnApply.cs" />
+    <Compile Include="Transactions\Committers\CommitOnClose.cs" />
     <Compile Include="Transactions\Committers\ITransactionGroupCommitter.cs" />
     <Compile Include="Transactions\AbstractTransactionBuilder.cs" />
     <Compile Include="Transactions\TransactionBuilder.cs" />
