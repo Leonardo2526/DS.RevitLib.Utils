@@ -170,7 +170,7 @@ namespace DS.RevitLib.Utils.Extensions
         /// <param name="labelSize">Size of label's line to show.</param>
         public static void Show(this XYZ point, Document doc, double labelSize = 0, AbstractTransactionBuilder transactionBuilder = null)
         {
-            transactionBuilder ??= new TransactionBuilder_v1<Element>(doc);
+            transactionBuilder ??= new TransactionBuilder(doc);
             labelSize = labelSize == 0 ? 100.mmToFyt2() : labelSize;
 
             Line line1 = Line.CreateBound(

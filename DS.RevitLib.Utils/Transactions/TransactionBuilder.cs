@@ -34,12 +34,12 @@ namespace DS.RevitLib.Utils
         /// <summary>
         /// Messages with errors prevented to commit transaction.
         /// </summary>
-        public string ErrorMessages { get; protected set; }
+        public string ErrorMessages { get; set; }
 
         /// <summary>
         /// Messages with warnings after committing transaction.
         /// </summary>
-        public string WarningMessages { get; protected set; }
+        public string WarningMessages { get; set; }
 
         /// <inheritdoc/>
         public override Element Build(Func<Element> operation, string transactionName)
@@ -55,7 +55,6 @@ namespace DS.RevitLib.Utils
                     result = operation.Invoke();
 
                     _committer.Commit(transNew);
-                    ErrorMessages += _committer?.ErrorMessages;
                 }
             }
             catch (Exception ex)
@@ -63,6 +62,7 @@ namespace DS.RevitLib.Utils
                 Debug.Fail(ex.Message);
                 Debug.WriteLine($"Transaction '{trName}' was canceled.");
             }
+            finally { ErrorMessages += _committer?.ErrorMessages; }
 
             return result;
         }
@@ -80,7 +80,6 @@ namespace DS.RevitLib.Utils
                     operation.Invoke();
 
                     _committer.Commit(transaction);
-                    ErrorMessages += _committer?.ErrorMessages;
                     Debug.WriteLine($"Transaction '{trName}' is committed successfully!");
                 }
             }
@@ -89,6 +88,7 @@ namespace DS.RevitLib.Utils
                 Debug.Fail(ex.Message);
                 Debug.WriteLine($"Transaction '{trName}' was canceled.");
             }
+            finally { ErrorMessages += _committer?.ErrorMessages; }
         }
 
     }

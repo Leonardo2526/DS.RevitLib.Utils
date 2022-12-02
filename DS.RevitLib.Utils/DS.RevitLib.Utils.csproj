@@ -72,10 +72,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BoundingBoxUtils.cs" />
     <Compile Include="AbstractCreator.cs" />
     <Compile Include="Collisions\Checkers\LinkCollisionChecker.cs" />
     <Compile Include="Collisions\CollisionStatus.cs" />
+    <Compile Include="Collisions\BBCollisionUtils.cs" />
     <Compile Include="Collisions\Models\Collision.cs" />
     <Compile Include="Collisions\Resolvers\CollisionResolver.cs" />
     <Compile Include="Collisions\Models\SolidElemCollision.cs" />
@@ -112,6 +112,7 @@
     <Compile Include="CollisionUtils.cs" />
     <Compile Include="Elements\ElementFilterUtils.cs" />
     <Compile Include="Elements\ElementExtension.cs" />
+    <Compile Include="Extensions\DocumentExtensions.cs" />
     <Compile Include="Lines\LinesConnector.cs" />
     <Compile Include="Extensions\MEPCurveExtension.cs" />
     <Compile Include="Extensions\SolidOffsetExtractor.cs" />

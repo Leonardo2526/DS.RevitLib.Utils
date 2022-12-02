@@ -28,7 +28,7 @@ namespace DS.RevitLib.Test
             //var test = new GetAssociatedParameterTest(uidoc);
 
             //var test = new SolidContainsPointTest(doc,  uidoc);
-            var test = new ConnectionFactoryClient( uidoc);
+            var test = new BBCollisionUtilsTest(doc, uidoc);
             test.Run();
 
 

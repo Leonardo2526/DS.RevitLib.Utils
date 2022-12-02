@@ -7,6 +7,7 @@ using DS.RevitLib.Utils.Solids;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Xml.Linq;
 
 namespace DS.RevitLib.Utils
 {
@@ -528,6 +529,34 @@ namespace DS.RevitLib.Utils
                 default:
                     break;
             }
+        }
+
+        /// <summary>
+        /// Get total <see cref="BoundingBoxXYZ"/> by all <paramref name="elements"/>.
+        /// </summary>
+        /// <param name="elements"></param>
+        /// <returns>Returns <see cref="BoundingBoxXYZ"/> with minPoint and maxPoint by min and max point of all boundingBoxes of elements. </returns>
+        public static BoundingBoxXYZ GetBoundingBox(List<Element> elements)
+        {
+
+            var points = new List<XYZ>();
+            foreach (var element in elements)
+            {
+                var bb = element.get_BoundingBox(null);
+                points.Add(bb.Min);
+                points.Add(bb.Max);
+            }
+
+            var minx = points.Min(x => x.X);
+            var miny = points.Min(x => x.Y);
+            var minz = points.Min(x => x.Z);
+            var maxx = points.Max(x => x.X);
+            var maxy = points.Max(x => x.Y);
+            var maxz = points.Max(x => x.Z);
+            var min = new XYZ(minx, miny, minz);
+            var max = new XYZ(maxx, maxy, maxz);
+
+            return new BoundingBoxXYZ() { Min = min, Max = max };
         }
     }
 }
