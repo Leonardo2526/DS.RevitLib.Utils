@@ -28,8 +28,8 @@ namespace DS.RevitLib.Test
             //var test = new GetAssociatedParameterTest(uidoc);
 
             //var test = new SolidContainsPointTest(doc,  uidoc);
-            var test = new BBCollisionUtilsTest(doc, uidoc);
-            test.Run();
+            var test = new ArcCreationTest(doc, uidoc);
+            test.RunByPoint();
 
 
             //var pathFinderTest = new SimplePathFinderTest(uidoc, doc);

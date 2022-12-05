@@ -40,7 +40,7 @@ namespace DS.RevitLib.Utils.MEP.Models
         {
             get
             {
-                return Insulation.GetThickness(MEPCurve);
+                return MEPCurve.GetInsulationThickness();
             }
         }
 

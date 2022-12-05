@@ -2,7 +2,9 @@
 using Autodesk.Revit.DB.Mechanical;
 using Autodesk.Revit.DB.Plumbing;
 using DS.RevitLib.Utils.Models;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace DS.RevitLib.Utils.MEP
 {
@@ -56,6 +58,35 @@ namespace DS.RevitLib.Utils.MEP
                 MechanicalUtils.BreakCurve(doc, mEPCurve.Id, point);
 
             return doc.GetElement(newCurveId) as MEPCurve;
+        }
+
+        /// <summary>
+        /// Get max size between width and height of <paramref name="mEPCurve"/>.
+        /// </summary>
+        /// <param name="mEPCurve"></param>
+        /// <returns></returns>
+        public static double  GetMaxSize(this MEPCurve mEPCurve)
+        {
+            (double width, double heigth) = MEPCurveUtils.GetWidthHeight(mEPCurve);
+            return Math.Max(width, heigth);
+        }
+
+        /// <summary>
+        /// Get mEPCurve's insulation thickness.
+        /// </summary>
+        /// <param name="mEPCurve"></param>
+        /// <returns>Return thickness.</returns>
+        public static double GetInsulationThickness(this MEPCurve mEPCurve)
+        {
+            var insulations = InsulationLiningBase.GetInsulationIds(mEPCurve.Document, mEPCurve.Id)
+                .Select(x => mEPCurve.Document.GetElement(x) as InsulationLiningBase).ToList();
+
+            if (insulations != null && insulations.Any())
+            {
+                return insulations.First().Thickness;
+            }
+
+            return 0;
         }
     }
 }

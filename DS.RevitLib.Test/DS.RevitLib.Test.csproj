@@ -66,6 +66,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AlignMEPCurvesTest.cs" />
+    <Compile Include="ArcCreationTest.cs" />
     <Compile Include="BBCollisionUtilsTest.cs" />
     <Compile Include="BuilderByPointsTest.cs" />
     <Compile Include="ConnectionFactoryClient.cs" />

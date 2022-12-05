@@ -2,6 +2,7 @@
 using DS.RevitLib.Utils.Connection.Strategies;
 using DS.RevitLib.Utils.MEP;
 using DS.RevitLib.Utils.MEP.Models;
+using System;
 using System.Diagnostics;
 
 namespace DS.RevitLib.Utils.Connection
@@ -38,9 +39,10 @@ namespace DS.RevitLib.Utils.Connection
             Debug.IndentLevel = 0;
             var strategy = GetStrategy();
             if (strategy == null)
-            { 
-                Debug.WriteLine("Connection error! Unable to get connection strategy.", TraceLevel.Error.ToString()); 
-                return; 
+            {
+                var errorMessage = "Connection error! Unable to get connection strategy.";
+                Debug.WriteLine(errorMessage, TraceLevel.Error.ToString()); 
+                throw new ArgumentNullException(errorMessage);
             }
 
             try
@@ -58,7 +60,9 @@ namespace DS.RevitLib.Utils.Connection
             }
             catch (System.Exception)
             {
-                Debug.WriteLine("Connection error! Unable to connect MEPCurves.", TraceLevel.Error.ToString());
+                var errorMessage = "Connection error! Unable to connect element.";
+                Debug.WriteLine(errorMessage, TraceLevel.Error.ToString());
+                throw new Exception(errorMessage);
             }
         }
 

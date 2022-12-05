@@ -59,7 +59,7 @@ namespace DS.RevitLib.Utils.MEP.Models
             {
                 if (Type.Name == "Pipe" || Type.Name == "Duct")
                 {
-                    return Insulation.GetThickness(MEPCurve);
+                    return MEPCurve.GetInsulationThickness();
                 }
                 else
                 {

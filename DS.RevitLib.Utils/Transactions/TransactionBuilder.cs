@@ -46,6 +46,24 @@ namespace DS.RevitLib.Utils
         {
             Element result = default;
             var trName = _transactionPrefix + transactionName;
+          
+                Debug.WriteLine($"Trying to commit transaction '{trName}'...");
+                using (Transaction transNew = new(_doc, _transactionPrefix + transactionName))
+                {
+                    transNew.Start();
+                    result = operation.Invoke();
+
+                    _committer.Commit(transNew);
+                }
+            ErrorMessages += _committer?.ErrorMessages;
+
+            return result;
+        }
+
+        public Element BuildCatch(Func<Element> operation, string transactionName)
+        {
+            Element result = default;
+            var trName = _transactionPrefix + transactionName;
             try
             {
                 Debug.WriteLine($"Trying to commit transaction '{trName}'...");
@@ -69,6 +87,22 @@ namespace DS.RevitLib.Utils
 
         /// <inheritdoc/>
         public override void Build(Action operation, string transactionName)
+        {
+            var trName = _transactionPrefix + transactionName;
+
+            Debug.WriteLine($"Trying to commit transaction '{trName}'...");
+            using (Transaction transaction = new(_doc, trName))
+            {
+                transaction.Start();
+                operation.Invoke();
+
+                _committer.Commit(transaction);
+                Debug.WriteLine($"Transaction '{trName}' is committed successfully!");
+            }
+            ErrorMessages += _committer?.ErrorMessages;
+        }
+
+        public void BuildCatch(Action operation, string transactionName)
         {
             var trName = _transactionPrefix + transactionName;
             try

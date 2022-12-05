@@ -113,6 +113,7 @@
     <Compile Include="Elements\ElementFilterUtils.cs" />
     <Compile Include="Elements\ElementExtension.cs" />
     <Compile Include="Extensions\DocumentExtensions.cs" />
+    <Compile Include="GeometryElementsUtils.cs" />
     <Compile Include="Lines\LinesConnector.cs" />
     <Compile Include="Extensions\MEPCurveExtension.cs" />
     <Compile Include="Extensions\SolidOffsetExtractor.cs" />

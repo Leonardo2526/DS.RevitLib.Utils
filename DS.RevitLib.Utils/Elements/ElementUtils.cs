@@ -547,16 +547,51 @@ namespace DS.RevitLib.Utils
                 points.Add(bb.Max);
             }
 
-            var minx = points.Min(x => x.X);
-            var miny = points.Min(x => x.Y);
-            var minz = points.Min(x => x.Z);
-            var maxx = points.Max(x => x.X);
-            var maxy = points.Max(x => x.Y);
-            var maxz = points.Max(x => x.Z);
-            var min = new XYZ(minx, miny, minz);
-            var max = new XYZ(maxx, maxy, maxz);
+            (XYZ minPoint, XYZ maxPoint) = XYZUtils.CreateMinMaxPoints(points);
 
-            return new BoundingBoxXYZ() { Min = min, Max = max };
+            return new BoundingBoxXYZ() { Min = minPoint, Max = maxPoint };
+        }
+
+        /// <summary>
+        /// Get total <see cref="BoundingBoxXYZ"/> by all <paramref name="points"/>.
+        /// </summary>
+        /// <param name="points"></param>
+        /// <param name="offset">Offset from each point from <paramref name="points"/>.</param>
+        /// <returns>Returns <see cref="BoundingBoxXYZ"/> with minPoint and maxPoint by min and max values from 
+        /// <paramref name="points"/> with <paramref name="offset"/>.</returns>
+        public static BoundingBoxXYZ GetBoundingBox(List<XYZ> points, double offset = 0)
+        {
+            //Get offset points
+            var lines = LineUtils.GetLines(points);
+            return GetBoundingBox(lines, offset);
+        }
+
+        /// <summary>
+        /// Get total <see cref="BoundingBoxXYZ"/> by all <paramref name="lines"/>.
+        /// </summary>
+        /// <param name="lines"></param>
+        /// <param name="offset">Offset from each point from <paramref name="lines"/>.</param>
+        /// <returns>Returns <see cref="BoundingBoxXYZ"/> with minPoint and maxPoint by min and max values from 
+        /// <paramref name="lines"/> with <paramref name="offset"/>.</returns>
+        public static BoundingBoxXYZ GetBoundingBox(List<Line> lines, double offset = 0)
+        {
+            //Get offset points
+            var offsetPoints = new List<XYZ>();
+            foreach (var line in lines)
+            {
+                XYZ dir = line.Direction;
+                XYZ p1 = line.GetEndPoint(0);
+                XYZ p2 = line.GetEndPoint(1);
+                Arc circle1 = GeometryElementsUtils.CreateCircle(p1, dir, offset);
+                Arc circle2 = GeometryElementsUtils.CreateCircle(p2, dir, offset);
+                var offsetPoints1 = circle1.Tessellate();
+                var offsetPoints2 = circle2.Tessellate();
+                offsetPoints.AddRange(offsetPoints1);
+                offsetPoints.AddRange(offsetPoints2);
+            }
+
+            (XYZ minPoint, XYZ maxPoint) = XYZUtils.CreateMinMaxPoints(offsetPoints);
+            return new BoundingBoxXYZ() { Min = minPoint, Max = maxPoint };
         }
     }
 }
