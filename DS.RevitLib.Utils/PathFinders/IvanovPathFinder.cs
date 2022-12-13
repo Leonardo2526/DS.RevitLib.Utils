@@ -21,6 +21,7 @@ namespace DS.RevitLib.Utils.PathFinders
         private readonly AbstractTransactionBuilder _transactionBuilder;
         private readonly double _elbowRadius;
         private readonly MEPSystemModel _sourceMEPModel;
+        private readonly CancellationToken _cancellationToken;
 
         /// <summary>
         /// Instantiate an object to find path.
@@ -30,12 +31,13 @@ namespace DS.RevitLib.Utils.PathFinders
         /// <param name="elbowRadius"></param>
         /// <param name="sourceMEPModel"></param>
         public IvanovPathFinder(Document doc, AbstractTransactionBuilder transactionBuilder,
-            double elbowRadius, MEPSystemModel sourceMEPModel)
+            double elbowRadius, MEPSystemModel sourceMEPModel, CancellationToken cancellationToken)
         {
             _doc = doc;
             _transactionBuilder = transactionBuilder;
             _elbowRadius = elbowRadius;
             _sourceMEPModel = sourceMEPModel;
+            _cancellationToken = cancellationToken;
         }
 
 
@@ -45,7 +47,9 @@ namespace DS.RevitLib.Utils.PathFinders
             var exceptions = ExceptionElements.Select(obj => obj.IntegerValue).ToList();
             var options = new FinderOptions(exceptions)
             {
-                ElbowWidth = _elbowRadius
+                ElbowWidth = _elbowRadius,
+                x_y_coef = 1, z_coef= 1
+                
             };
 
             //класс анализирует геометрию
@@ -64,7 +68,7 @@ namespace DS.RevitLib.Utils.PathFinders
             }, "pathFind").Wait();
 
             //ищем путь
-            Task<List<XYZ>> pathTask = finder.FindPath(new CancellationTokenSource().Token);
+            Task<List<XYZ>> pathTask = finder.FindPath(_cancellationToken);
             pathTask.Wait();
             List<XYZ> path = pathTask.Result;
 

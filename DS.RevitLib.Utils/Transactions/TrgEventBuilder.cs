@@ -47,8 +47,16 @@ namespace DS.RevitLib.Utils.Transactions
 
                 Task operationTask = CreateOperationTask(operation, completionEventTask, revitAsync);
                 await operationTask;
-
-                committer.Close(trg, taskEvent);
+                try
+                {
+                    committer.Close(trg, taskEvent);
+                }
+                catch (Exception)
+                {
+                    Debug.Indent();
+                    Debug.WriteLine($"{FailureSeverity.Error.ToString().ToUpper()}: Commit TransactionGroup {trg.GetName()} was failed.");
+                    Debug.Unindent();
+                }
             }
 
             Debug.Print($"task {completionEventTask.Id} to wait event complete status: {completionEventTask.IsCompleted}.");

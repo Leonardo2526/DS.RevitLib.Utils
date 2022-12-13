@@ -127,6 +127,7 @@
     <Compile Include="MEP\Creator\FamInstCreator.cs" />
     <Compile Include="MEP\Creator\MEPCurveCreator.cs" />
     <Compile Include="Elements\Models\MEPCurveModel.cs" />
+    <Compile Include="MEP\ElbowRadiusCalc.cs" />
     <Compile Include="MEP\SystemModels\MEPCurvesModel.cs" />
     <Compile Include="MEP\SystemTree\Relatives\FamInstRelationBuilder.cs" />
     <Compile Include="MEP\SystemTree\Relatives\NewElementRelationBuilder.cs" />
@@ -149,7 +150,6 @@
     <Compile Include="Transactions\AbstractTransactionBuilder.cs" />
     <Compile Include="Transactions\TransactionBuilder.cs" />
     <Compile Include="Transactions\TrgEventBuilder.cs" />
-    <Compile Include="Transactions\TransactionBuilder_v1.cs" />
     <Compile Include="Transforms\TransformBuilder.cs" />
     <Compile Include="Transforms\TransformModel.cs" />
     <Compile Include="Models\Basis.cs" />

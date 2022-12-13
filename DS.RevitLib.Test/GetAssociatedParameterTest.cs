@@ -32,7 +32,7 @@ namespace DS.RevitLib.Test
             Reference reference2 = _uidoc.Selection.PickObject(ObjectType.Element, "Select element2");
             var elem2 = _doc.GetElement(reference2) as FamilyInstance;
 
-            var transactionBuilder = new TransactionBuilder_v1<Element>(_doc);
+            var transactionBuilder = new TransactionBuilder(_doc);
             transactionBuilder.Build(() => ElementParameter.CopySizeParameters(elem1, elem2), "CopySizeParameters");
 
             //var pD = MEPElementUtils.GetAssociatedParameter(elem1, BuiltInParameter.CONNECTOR_DIAMETER);
