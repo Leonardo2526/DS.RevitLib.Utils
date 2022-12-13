@@ -73,6 +73,7 @@
     <Compile Include="ExternalCommand.cs" />
     <Compile Include="GetAssociatedParameterTest.cs" />
     <Compile Include="GetConnectedElementsTest.cs" />
+    <Compile Include="MEPSystemBuilderTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SimplePathFinderTest.cs" />
     <Compile Include="SolidCollisionCheckerTest.cs" />

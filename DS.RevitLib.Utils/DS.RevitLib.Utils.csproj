@@ -73,10 +73,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AbstractCreator.cs" />
+    <Compile Include="Collisions\Checkers\ElementLinkCollisionChecker.cs" />
     <Compile Include="Collisions\Checkers\LinkCollisionChecker.cs" />
+    <Compile Include="Collisions\Checkers\ElementCollisionChecker.cs" />
     <Compile Include="Collisions\CollisionStatus.cs" />
     <Compile Include="Collisions\BBCollisionUtils.cs" />
     <Compile Include="Collisions\Models\Collision.cs" />
+    <Compile Include="Collisions\Models\DummyCollision.cs" />
+    <Compile Include="Collisions\Models\ElementCollision.cs" />
     <Compile Include="Collisions\Resolvers\CollisionResolver.cs" />
     <Compile Include="Collisions\Models\SolidElemCollision.cs" />
     <Compile Include="Collisions\Models\ICollision.cs" />

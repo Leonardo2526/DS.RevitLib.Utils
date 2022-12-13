@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace DS.RevitLib.Utils.MEP.SystemTree
 {
@@ -103,15 +104,15 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
             var mEPCurveIds = Elements.OfType<MEPCurve>().Select(obj => obj.Id).ToList();
 
             //spud correction
-            (MEPCurve mePCurve, int ind) = GetSpudMEPCurveToInsert(elem1, rangeIds, mEPCurveIds);
-            if (mePCurve is not null)
+            (MEPCurve mePCurve1, int mepInd1) = GetSpudMEPCurveToInsert(elem1, rangeIds, mEPCurveIds);
+            if (mePCurve1 is not null)
             {
-                range.Insert(ind, mePCurve);
+                range.Insert(mepInd1, mePCurve1);
             }
-            (mePCurve, ind) = GetSpudMEPCurveToInsert(elem2, rangeIds, mEPCurveIds);
-            if (mePCurve is not null)
+            (MEPCurve mePCurve2, int mepInd2) = GetSpudMEPCurveToInsert(elem2, rangeIds, mEPCurveIds);
+            if (mePCurve2 is not null && mePCurve2.Id != mePCurve1.Id)
             {
-                range.Insert(ind, mePCurve);
+                range.Insert(mepInd2, mePCurve2);
             }
 
             return range;
@@ -129,7 +130,8 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
         {
             var partType = element is FamilyInstance ? ElementUtils.GetPartType(element as FamilyInstance) : PartType.Undefined;
 
-            if (partType == PartType.SpudPerpendicular)
+            if (partType == PartType.SpudPerpendicular || partType == PartType.SpudAdjustable ||
+                partType == PartType.TapPerpendicular || partType == PartType.TapAdjustable)
             {
                 var childIds = ChildrenNodes.Select(obj => obj.Element.Id).ToList();
                 if (!childIds.Contains(element.Id))
@@ -246,8 +248,10 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
             {
                 return true;
             }
-            Debug.Fail("Element validity error!", 
-                $"Not valid elements count: {Elements.Where(obj => !obj.IsValidObject).Count()}");
+            Debug.Indent();
+            Debug.WriteLine(FailureSeverity.Error.ToString().ToUpper() +
+                $": Not valid {Elements.Where(obj => !obj.IsValidObject).Count()} elements.");
+            Debug.Unindent();
 
             return false;
         }

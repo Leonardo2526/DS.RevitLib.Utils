@@ -45,6 +45,7 @@ namespace DS.RevitLib.Utils.MEP.SystemTree.Relatives
 
             foreach (var node in nodes)
             {
+                if (node.RelationElement is null) continue;
                 var builder = new ComponentBuilder(node.RelationElement);
                 var component = builder.Build();
 

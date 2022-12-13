@@ -28,8 +28,8 @@ namespace DS.RevitLib.Test
             //var test = new GetAssociatedParameterTest(uidoc);
 
             //var test = new SolidContainsPointTest(doc,  uidoc);
-            var test = new ArcCreationTest(doc, uidoc);
-            test.RunByPoint();
+            var test = new MEPSystemBuilderTest(doc, uidoc);
+            test.Run();
 
 
             //var pathFinderTest = new SimplePathFinderTest(uidoc, doc);

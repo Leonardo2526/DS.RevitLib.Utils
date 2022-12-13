@@ -129,10 +129,12 @@ namespace DS.RevitLib.Utils.Extensions
         /// </summary>
         /// <param name="solid"></param>
         /// <param name="doc"></param>
-        public static void ShowShape(this Solid solid, Document doc)
+        public static DirectShape ShowShape(this Solid solid, Document doc)
         {
             DirectShape ds = DirectShape.CreateElement(doc, new ElementId(BuiltInCategory.OST_GenericModel));
             ds.SetShape(new GeometryObject[] { solid });
+
+            return ds;
         }
 
         /// <summary>

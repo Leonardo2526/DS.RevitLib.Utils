@@ -1,23 +1,23 @@
 ﻿using Autodesk.Revit.DB;
 using DS.RevitLib.Utils.Collisions.Models;
-using DS.RevitLib.Utils.Solids.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace DS.RevitLib.Utils.Collisions.Checkers
 {
-    public class SolidCollisionChecker : CollisionChecker<SolidModelExt, Element>, ICollisionChecker
+    public class ElementCollisionChecker : CollisionChecker<Element, Element>, ICollisionChecker
     {
-        public SolidCollisionChecker(List<Element> checkedObjects2, List<Element> exludedObjects = null) :
+        public ElementCollisionChecker(List<Element> checkedObjects2, List<Element> exludedObjects = null) : 
             base(checkedObjects2, exludedObjects)
         {
         }
 
-        public SolidCollisionChecker(List<SolidModelExt> checkedObjects1, List<Element> checkedObjects2, List<Element> exludedObjects = null) :
-            base(checkedObjects1, checkedObjects2, exludedObjects)
-        {
-        }
+        //public ElementCollisionChecker(List<Element> checkedObjects1, List<Element> checkedObjects2, List<Element> exludedObjects = null) :
+        //    base(checkedObjects1, checkedObjects2, exludedObjects)
+        //{
+
+        //}
 
         protected override FilteredElementCollector Collector
         {
@@ -39,16 +39,17 @@ namespace DS.RevitLib.Utils.Collisions.Checkers
         }
 
         public List<ICollision> AllCollisions { get; private set; } = new List<ICollision>();
+
         protected override Document Document
         {
             get
             {
-                return CheckedObjects1.First().Element.Document;
+                return CheckedObjects1.First().Document;
             }
         }
 
 
-        private List<ICollision> GetObjectCollisions(SolidModelExt object1, List<ElementId> excludedIdsOption = null)
+        private List<ICollision> GetObjectCollisions(Element object1, List<ElementId> excludedIdsOption = null)
         {
             var excludedElementsIds = new List<ElementId>();
 
@@ -57,10 +58,10 @@ namespace DS.RevitLib.Utils.Collisions.Checkers
                 excludedElementsIds.AddRange(ExludedObjects.Select(obj => obj.Id).ToList());
             }
 
-            excludedElementsIds.Add(object1.Element.Id);
+            excludedElementsIds.Add(object1.Id);
             var exculdedFilter = excludedIdsOption is null ? new ExclusionFilter(excludedElementsIds) : new ExclusionFilter(excludedIdsOption);
 
-            List<Element> elements = Collector.WherePasses(new ElementIntersectsSolidFilter(object1.Solid)).
+            List<Element> elements = Collector.WherePasses(new ElementIntersectsElementFilter(object1)).
                 WherePasses(exculdedFilter).
                 ToElements().ToList();
 
@@ -86,7 +87,7 @@ namespace DS.RevitLib.Utils.Collisions.Checkers
             }
 
             AllCollisions = new List<ICollision>();
-            foreach (SolidModelExt object1 in CheckedObjects1)
+            foreach (Element object1 in CheckedObjects1)
             {
                 var collisions = GetObjectCollisions(object1);
                 if (collisions is null || !collisions.Any())
@@ -99,7 +100,7 @@ namespace DS.RevitLib.Utils.Collisions.Checkers
             return AllCollisions;
         }
 
-        public List<ICollision> GetCollisions(List<SolidModelExt> checkedObjects1, List<ElementId> excludedIdsOption = null)
+        public List<ICollision> GetCollisions(List<Element> checkedObjects1, List<ElementId> excludedIdsOption = null)
         {
             CheckedObjects1 = checkedObjects1;
             AllCollisions = new List<ICollision>();
@@ -112,7 +113,7 @@ namespace DS.RevitLib.Utils.Collisions.Checkers
                 throw new ArgumentNullException("Document or Collercor is null");
             }
 
-            foreach (SolidModelExt object1 in CheckedObjects1)
+            foreach (Element object1 in CheckedObjects1)
             {
                 var collisions = GetObjectCollisions(object1, excludedIdsOption);
                 if (collisions is null || !collisions.Any())
@@ -125,24 +126,24 @@ namespace DS.RevitLib.Utils.Collisions.Checkers
             return AllCollisions;
         }
 
-        public override List<ICollision> GetCollisions(List<SolidModelExt> checkedObjects1)
+        public override List<ICollision> GetCollisions(List<Element> checkedObjects1)
         {
             CheckedObjects1 = checkedObjects1;
             return GetCollisions();
         }
 
-        protected override ICollision BuildCollision(SolidModelExt object1, Element object2)
+        protected override ICollision BuildCollision(Element object1, Element object2)
         {
-            return new SolidElemCollision(object1, object2);
+            return new ElementCollision(object1, object2);
         }
 
         public bool CollisionExist(List<ICollision> collisions, ICollision collision)
         {
-            var sCollision = collision as SolidElemCollision;
-            foreach (SolidElemCollision existCollison in collisions.Cast<SolidElemCollision>())
+            var sCollision = collision as ElementCollision;
+            foreach (ElementCollision existCollison in collisions.Cast<ElementCollision>())
             {
-                if (sCollision.Object1.Element.Id == existCollison.Object2.Id &&
-                    existCollison.Object1.Element.Id == sCollision.Object2.Id)
+                if (sCollision.Object1.Id == existCollison.Object2.Id &&
+                    existCollison.Object1.Id == sCollision.Object2.Id)
                 {
                     return true;
                 }
