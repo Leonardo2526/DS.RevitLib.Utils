@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.FamilyInstances;
+using DS.RevitLib.Utils.MEP;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -14,8 +15,8 @@ namespace DS.RevitLib.Utils.Points.Models
         /// <summary>
         /// Initiate a new object for element connection.
         /// </summary>
-        /// <param name="point"></param>
-        /// <param name="element"></param>
+        /// <param name="point">Connection point</param>
+        /// <param name="element">Base element</param>
         public MEPConnectionPoint(XYZ point, Element element)
         {
             Point = point;
@@ -28,12 +29,12 @@ namespace DS.RevitLib.Utils.Points.Models
         public XYZ Point { get; private set; }
 
         /// <summary>
-        /// Element to connect.
+        /// Reference base element.
         /// </summary>
-        public Element Element { get; private set; }
+        public Element Element { get; private set; }     
 
         /// <summary>
-        /// Element's partType.
+        /// <see cref="Element"/> partType.
         /// </summary>
         public PartType PartType
         {
@@ -48,7 +49,7 @@ namespace DS.RevitLib.Utils.Points.Models
         /// Get MEPCurve for connection to current point.
         /// </summary>
         /// <returns></returns>
-        public MEPCurve GetConnectionMEPCurve(List<XYZ> path)
+        public MEPCurve GetConnectionMEPCurve(IEnumerable<ElementId> deletedIds)
         {
             if (Element is MEPCurve)
             {
@@ -62,33 +63,35 @@ namespace DS.RevitLib.Utils.Points.Models
 
             if (PartType == PartType.Elbow)
             {
-                XYZ nextDir = path[2] - path[1];
-                bool firstCollinerity = XYZUtils.Collinearity(nextDir, mParents.First().GetCenterLine().Direction);
-                return firstCollinerity ? mParents.First() : mParents.Last();
+                foreach (var item in mParents)
+                {
+                    if (!deletedIds.Contains(item.Id)) { return item; }
+                }
             }
+
             return parents.First() as MEPCurve;
-
-            if (child is null)
-            {
-                return mParents.First();
-            }
-            //get elements lines
-            //var parentLines = new List<Line>();
-            //parents.ForEach(p => parentLines.Add(p.GetCenterLine()));
-
-            var parentdbLine = parents.First().GetCenterLine();
-            var parentLine = Line.CreateUnbound(parentdbLine.Origin, parentdbLine.Direction);
-
-            var childbLine = child.GetCenterLine();
-            var childLine = Line.CreateUnbound(childbLine.Origin, childbLine.Direction);
-
-            XYZ parentProjectPoint = parentLine.Project(Point).XYZPoint;
-            XYZ childProjectPoint = childLine.Project(Point).XYZPoint;
-
-            var elem = (parentProjectPoint - childProjectPoint).IsZeroLength() ? child : mParents.First();
-
-            return elem as MEPCurve;
         }
 
+        /// <summary>
+        /// Get real connection element.
+        /// </summary>
+        /// <returns>Reutrns element that contains <see cref="Point"/> inside its solid.</returns>
+        public Element GetElementByPoint()
+        {
+            var solid = ElementUtils.GetSolid(Element);
+            if (solid.Contains(Point))
+            { return Element; }
+
+            var connectedElements = ConnectorUtils.GetConnectedElements(Element);
+            foreach (var element in connectedElements)
+            {
+                solid = ElementUtils.GetSolid(element);
+
+                if (solid.Contains(Point))
+                { return element; }
+            }
+
+            return Element;
+        }
     }
 }

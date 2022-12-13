@@ -1,7 +1,9 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Selection;
+using DS.RevitLib.Utils;
 using DS.RevitLib.Utils.Connection;
+using DS.RevitLib.Utils.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -43,7 +45,7 @@ namespace DS.RevitLib.Test
             { }
 
             var factory = GetFactory();
-            factory.Connect();
+            new TransactionBuilder(_doc).Build(() => factory.Connect(), "Connect");
         }
 
         private IConnectionFactory GetFactory()

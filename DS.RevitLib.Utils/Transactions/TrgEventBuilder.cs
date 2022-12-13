@@ -1,9 +1,11 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using DS.ClassLib.VarUtils.Events;
+using DS.RevitLib.Utils.Transactions.Committers;
 using Revit.Async;
 using System;
 using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.Transactions
@@ -16,11 +18,9 @@ namespace DS.RevitLib.Utils.Transactions
         private readonly Document _doc;
 
         /// <summary>
-        /// Create a new instance of object to wrap transactions actions into 
-        /// transaction group with <paramref name="taskEvent"/>.
+        /// Create a new instance of object to wrap transactions actions into transaction group with awaiting event.
         /// </summary>
         /// <param name="doc"></param>
-        /// <param name="taskEvent"><see cref="WindowTaskEvent"/> to create a new event task.</param>
         public TrgEventBuilder(Document doc)
         {
             _doc = doc;
@@ -30,33 +30,38 @@ namespace DS.RevitLib.Utils.Transactions
         /// Create a new transaction group and build a new task inside it with <paramref name="operation"/>. 
         /// </summary>
         /// <param name="operation">Transactions to perform.</param>
+        /// <param name="taskEvent">Task event object to complete.</param>
         /// <param name="revitAsync">Optional parameter to perform <paramref name="operation"/> outside of Revit API context.</param>
         /// <returns>Returns a new async Task to perform transaction group operations.</returns>
-        public async Task BuildAsync(Action operation, TaskComplition taskEvent, bool revitAsync = false)
+        public async Task BuildAsync(Action operation, ITransactionGroupCommitter committer, 
+            TaskComplition taskEvent, bool revitAsync = false, string trgName = "")
         {
             Task completionEventTask = taskEvent.Create();
 
-            Debug.Print($"task {completionEventTask.Id} to wait event created.");
-
-            using (var trg = new TransactionGroup(_doc, $"Trg {taskEvent.EventType}"))
+            Debug.Print($"task {completionEventTask.Id} to wait event created in thread {Thread.CurrentThread.ManagedThreadId}.");
+            trgName ??= $"Trg {taskEvent.EventType}";
+            using (var trg = new TransactionGroup(_doc, trgName))
             {
                 trg.Start();
-                Debug.Print($"\nTransactionGroup {trg.GetName()} started");
+                Debug.Print($"\nTransactionGroup {trg.GetName()} started in thread {Thread.CurrentThread.ManagedThreadId}");
 
                 Task operationTask = CreateOperationTask(operation, completionEventTask, revitAsync);
                 await operationTask;
 
-                TrgCommitter(trg, taskEvent);
+                committer.Close(trg, taskEvent);
             }
 
             Debug.Print($"task {completionEventTask.Id} to wait event complete status: {completionEventTask.IsCompleted}.");
-            Debug.Print($"BuildAsync executed.");
+            Debug.Print($"BuildAsync executed in thread {Thread.CurrentThread.ManagedThreadId}.");
         }
 
         private Task CreateOperationTask(Action operation, Task complitionTask, bool wrapRevitAsync = false)
         {
+           Debug.Print($"{nameof(CreateOperationTask)} started in thread {Thread.CurrentThread.ManagedThreadId}");
             Task task = Task.Run(() =>
             {
+                Debug.Print($"task event started in thread {Thread.CurrentThread.ManagedThreadId}");
+
                 while (true)
                 {
                     if (wrapRevitAsync)
@@ -68,38 +73,13 @@ namespace DS.RevitLib.Utils.Transactions
                         operation.Invoke();
                     }
 
+                    Debug.Print($"{nameof(complitionTask)} start waiting in thread {Thread.CurrentThread.ManagedThreadId}");
                     complitionTask.Wait();
+                    Debug.Print($"\n{nameof(complitionTask)} was waited in thread {Thread.CurrentThread.ManagedThreadId}");
                     break;
                 }
             });
             return task;
-        }
-
-        /// <summary>
-        /// Perform action to close transaction group.
-        /// </summary>
-        /// <param name="trg">Current opened transaction group.</param>
-        private void TrgCommitter(TransactionGroup trg, TaskComplition taskEvent)
-        {
-            if (trg.HasStarted() && taskEvent.EventType == EventType.Onward)
-            {
-                trg.RollBack();
-                Debug.Print($"TransactionGroup {trg.GetName()} rolled");
-            }
-            else if (trg.HasStarted() && taskEvent.EventType == EventType.Backward)
-            {
-                trg.RollBack();
-                Debug.Print($"TransactionGroup {trg.GetName()} rolled");
-            }
-            else if (trg.HasStarted() && taskEvent.EventType == EventType.Close)
-            {
-                trg.Commit();
-                Debug.Print($"TransactionGroup {trg.GetName()} committed");
-            }
-            else
-            {
-                TaskDialog.Show($"{GetType().Name}", "trg is not closed due to it hasn't been started.");
-            }
         }
     }
 }

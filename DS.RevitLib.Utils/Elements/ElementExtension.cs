@@ -1,7 +1,10 @@
 ﻿using Autodesk.Revit.DB;
 using DS.RevitLib.Utils.MEP;
+using DS.RevitLib.Utils.Transactions;
+using DS.RevitLib.Utils.Visualisators;
 using System.Collections.Generic;
 using System.Linq;
+using static System.Windows.Forms.LinkLabel;
 
 namespace DS.RevitLib.Utils.Extensions
 {
@@ -156,6 +159,11 @@ namespace DS.RevitLib.Utils.Extensions
             return null;
         }
 
+        /// <summary>
+        /// Check if element is geomety element.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <returns>Returns true if element has volume of solid.</returns>
         public static bool IsGeometryElement(this Element element)
         {
             var g = element.get_Geometry(new Options()
@@ -263,6 +271,52 @@ namespace DS.RevitLib.Utils.Extensions
             {
                 s.ShowEdges(doc);
             }
+        }
+
+        /// <summary>
+        /// Show <see cref="BoundingBoxXYZ"/> of <paramref name="element"/> in model.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <param name="transactionBuilder"></param>
+        public static void ShowBoundingBox(this Element element, AbstractTransactionBuilder transactionBuilder = null)
+        {
+            var doc = element.Document;
+            transactionBuilder ??= new TransactionBuilder(doc);
+
+            BoundingBoxXYZ boundingBox = element.get_BoundingBox(null);
+            transactionBuilder.Build(() =>
+            {
+                var visualizator = new BoundingBoxVisualisator(boundingBox, doc);
+                visualizator.Visualise();
+            }, "show BoundingBox");
+        }
+
+        /// <summary>
+        /// Show <see cref="BoundingBoxXYZ"/> of link <paramref name="element"/> in model.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <param name="revitLink"></param>
+        /// <param name="linkDoc">Link document containing <paramref name="element"/>.</param>
+        /// <param name="transactionBuilder"></param>
+        public static void ShowBoundingBox(this Element element, RevitLinkInstance revitLink,
+            AbstractTransactionBuilder transactionBuilder = null)
+        {
+            var doc = revitLink.Document;
+            transactionBuilder ??= new TransactionBuilder(doc);
+
+            Transform transform = revitLink.GetTotalTransform();
+
+            BoundingBoxXYZ boundingBox = element.get_BoundingBox(null);
+            var transformBoundingBox = new BoundingBoxXYZ()
+            {
+                Min = transform.OfPoint(boundingBox.Min),
+                Max = transform.OfPoint(boundingBox.Max)
+            };
+            transactionBuilder.Build(() =>
+            {
+                var visualizator = new BoundingBoxVisualisator(transformBoundingBox, doc);
+                visualizator.Visualise();
+            }, "show BoundingBox");
         }
     }
 }

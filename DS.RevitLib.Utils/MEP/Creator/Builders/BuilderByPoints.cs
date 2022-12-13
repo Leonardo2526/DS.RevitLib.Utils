@@ -1,5 +1,6 @@
 ﻿using Autodesk.Revit.DB;
 using DS.RevitLib.Utils.MEP.SystemTree;
+using DS.RevitLib.Utils.Transactions;
 using System.Collections.Generic;
 
 namespace DS.RevitLib.Utils.MEP.Creator
@@ -33,7 +34,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
         /// </summary>
         /// <returns>Returns created system.</returns>
         /// <param name="transactionBuilder"></param>
-        public MEPCurvesModel BuildSystem(TransactionBuilder<Element> transactionBuilder)
+        public MEPCurvesModel BuildSystem(AbstractTransactionBuilder transactionBuilder)
         {
             MEPCurvesModel mEPElementsModel = null;
 

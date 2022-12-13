@@ -85,18 +85,7 @@ namespace DS.RevitLib.Utils
             }
 
             return line;
-        }
-
-        /// <summary>
-        /// Create ModelCurve by given line.
-        /// </summary>
-        /// <param name="line"></param>
-        /// <param name="doc"></param>
-        public static void Show(this Line line, Document doc)
-        {
-            var creator = new ModelCurveCreator(doc);
-            creator.Create(line.GetEndPoint(0), line.GetEndPoint(1));
-        }
+        }      
 
         /// <summary>
         /// Create lines list from <paramref name="points"/>.
@@ -114,5 +103,23 @@ namespace DS.RevitLib.Utils
             return lines;
         }
 
+        /// <summary>
+        /// Get intersection point of two lines.
+        /// </summary>
+        /// <param name="line1"></param>
+        /// <param name="line2"></param>
+        /// <returns>Returns intersection point if unbound lines of
+        /// <paramref name="line1"/> and <paramref name="line2"/> have intersection.</returns>
+        public static XYZ GetIntersectionPoint(Line line1, Line line2)
+        {
+            Line uLine1 = Line.CreateUnbound(line1.Origin, line1.Direction);
+            Line uLine2 = Line.CreateUnbound(line2.Origin, line2.Direction);
+
+            var intersect = uLine1.Intersect(uLine2, out IntersectionResultArray resultArray);
+
+            return resultArray is not null && resultArray.Size > 0 ?
+                resultArray.get_Item(0).XYZPoint :
+                null;
+        }
     }
 }

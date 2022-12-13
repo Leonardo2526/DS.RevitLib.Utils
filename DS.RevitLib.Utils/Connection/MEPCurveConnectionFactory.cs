@@ -2,6 +2,8 @@
 using DS.RevitLib.Utils.Connection.Strategies;
 using DS.RevitLib.Utils.MEP;
 using DS.RevitLib.Utils.MEP.Models;
+using System;
+using System.Diagnostics;
 
 namespace DS.RevitLib.Utils.Connection
 {
@@ -34,13 +36,40 @@ namespace DS.RevitLib.Utils.Connection
         /// <inheritdoc/>
         public void Connect()
         {
+            Debug.IndentLevel = 0;
             var strategy = GetStrategy();
-            strategy.Connect();
+            if (strategy == null)
+            {
+                var errorMessage = "Connection error! Unable to get connection strategy.";
+                Debug.WriteLine(errorMessage, TraceLevel.Error.ToString()); 
+                throw new ArgumentNullException(errorMessage);
+            }
+
+            try
+            {
+                strategy.Connect();
+                Debug.WriteLineIf(_mEPCurveModel3 is null, 
+                    $"MEPCurve {_mEPCurveModel1.MEPCurve.Id} and " +
+                    $"MEPCurve {_mEPCurveModel2.MEPCurve.Id} connected succefully.", 
+                    TraceLevel.Info.ToString());
+                Debug.WriteLineIf(_mEPCurveModel3 is not null,
+                    $"MEPCurve {_mEPCurveModel1.MEPCurve.Id}, " +
+                    $"MEPCurve {_mEPCurveModel2.MEPCurve.Id}  " +
+                    $"and MEPCurve {_mEPCurveModel3?.MEPCurve.Id} connected succefully.",
+                    TraceLevel.Info.ToString());
+            }
+            catch (System.Exception)
+            {
+                var errorMessage = "Connection error! Unable to connect element.";
+                Debug.WriteLine(errorMessage, TraceLevel.Error.ToString());
+                throw new Exception(errorMessage);
+            }
         }
 
         private MEPCurveConnectionStrategy GetStrategy()
         {
-            var (elem1Con, elem2Con) = ConnectorUtils.GetNeighbourConnectors(_mEPCurveModel1.MainConnectors, _mEPCurveModel2.MainConnectors);
+            //var (elem1Con, elem2Con) = ConnectorUtils.GetNeighbourConnectors(_mEPCurveModel1.MainConnectors, _mEPCurveModel2.MainConnectors);
+            var (elem1Con, elem2Con) = ConnectorUtils.GetClosest(_mEPCurveModel1.MainConnectors, _mEPCurveModel2.MainConnectors);
             if (elem1Con is not null && elem2Con is not null && XYZUtils.Collinearity(_mEPCurveModel1.Direction, _mEPCurveModel2.Direction))
             {
                 return new ConnectorMEPCurveStrategy(_doc, _mEPCurveModel1, _mEPCurveModel2, _minLength, elem1Con, elem2Con);

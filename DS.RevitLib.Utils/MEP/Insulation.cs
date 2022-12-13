@@ -31,25 +31,5 @@ namespace DS.RevitLib.Utils.MEP
                 }
             }
         }
-
-        /// <summary>
-        /// Get mEPCurve's insulation thickness.
-        /// </summary>
-        /// <param name="mEPCurve"></param>
-        /// <returns>Return thickness.</returns>
-        public static double GetThickness(MEPCurve mEPCurve)
-        {
-            var insulations = InsulationLiningBase.GetInsulationIds(mEPCurve.Document, mEPCurve.Id)
-                .Select(x => mEPCurve.Document.GetElement(x) as InsulationLiningBase).ToList();
-
-            if (insulations != null && insulations.Any())
-            {
-                return insulations.First().Thickness;
-            }
-
-            return 0;
-        }
-
-
     }
 }

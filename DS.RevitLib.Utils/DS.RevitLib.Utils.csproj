@@ -26,8 +26,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>x64</PlatformTarget>
-    <DocumentationFile>
-    </DocumentationFile>
+    <DocumentationFile>bin\Debug\DS.RevitLib.Utils.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -46,6 +45,9 @@
     </Reference>
     <Reference Include="Ivanov.RevitLib.Utils">
       <HintPath>..\..\VAR.RevitLib.Utils\Ivanov.RevitLib.Utils\bin\Release\Ivanov.RevitLib.Utils.dll</HintPath>
+    </Reference>
+    <Reference Include="PathFinderLib">
+      <HintPath>..\..\Olimproekt\MEPAutoCoordination\OLMP.RevitLib.MEPAC\bin\Debug\PathFinderLib.dll</HintPath>
     </Reference>
     <Reference Include="Revit.Async, Version=2.0.1.0, Culture=neutral, processorArchitecture=AMD64">
       <HintPath>..\packages\Revit.Async.2.0.1\lib\net45\Revit.Async.dll</HintPath>
@@ -70,11 +72,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BoundingBoxUtils.cs" />
     <Compile Include="AbstractCreator.cs" />
+    <Compile Include="Collisions\Checkers\ElementLinkCollisionChecker.cs" />
     <Compile Include="Collisions\Checkers\LinkCollisionChecker.cs" />
+    <Compile Include="Collisions\Checkers\ElementCollisionChecker.cs" />
     <Compile Include="Collisions\CollisionStatus.cs" />
+    <Compile Include="Collisions\BBCollisionUtils.cs" />
     <Compile Include="Collisions\Models\Collision.cs" />
+    <Compile Include="Collisions\Models\DummyCollision.cs" />
+    <Compile Include="Collisions\Models\ElementCollision.cs" />
     <Compile Include="Collisions\Resolvers\CollisionResolver.cs" />
     <Compile Include="Collisions\Models\SolidElemCollision.cs" />
     <Compile Include="Collisions\Models\ICollision.cs" />
@@ -110,6 +116,8 @@
     <Compile Include="CollisionUtils.cs" />
     <Compile Include="Elements\ElementFilterUtils.cs" />
     <Compile Include="Elements\ElementExtension.cs" />
+    <Compile Include="Extensions\DocumentExtensions.cs" />
+    <Compile Include="GeometryElementsUtils.cs" />
     <Compile Include="Lines\LinesConnector.cs" />
     <Compile Include="Extensions\MEPCurveExtension.cs" />
     <Compile Include="Extensions\SolidOffsetExtractor.cs" />
@@ -118,7 +126,7 @@
     <Compile Include="MEP\Creator\Builders\BuilderByPoints.cs" />
     <Compile Include="MEP\Creator\FamInstCreator.cs" />
     <Compile Include="MEP\Creator\MEPCurveCreator.cs" />
-    <Compile Include="MEP\Models\MEPCurveModel.cs" />
+    <Compile Include="Elements\Models\MEPCurveModel.cs" />
     <Compile Include="MEP\SystemModels\MEPCurvesModel.cs" />
     <Compile Include="MEP\SystemTree\Relatives\FamInstRelationBuilder.cs" />
     <Compile Include="MEP\SystemTree\Relatives\NewElementRelationBuilder.cs" />
@@ -129,13 +137,19 @@
     <Compile Include="Lines\LineExtensions.cs" />
     <Compile Include="MEP\MEPCurveExtensions.cs" />
     <Compile Include="MEP\MEPCurveCutter.cs" />
-    <Compile Include="MEP\Models\MEPCurveGeometryModel.cs" />
+    <Compile Include="Elements\Models\MEPCurveGeometryModel.cs" />
+    <Compile Include="PathFinders\IvanovPathFinder.cs" />
     <Compile Include="PathFinders\SimplePathFinder.cs" />
     <Compile Include="Points\Models\MEPConnectionPoint.cs" />
     <Compile Include="Points\Models\IMEPConnectionPoint.cs" />
     <Compile Include="SelectionFilters\FamilyInstanceSelectionFilter.cs" />
-    <Compile Include="Transactions\TrgEventBuilder.cs" />
+    <Compile Include="Transactions\Committers\CommitOnApply.cs" />
+    <Compile Include="Transactions\Committers\CommitOnClose.cs" />
+    <Compile Include="Transactions\Committers\ITransactionGroupCommitter.cs" />
+    <Compile Include="Transactions\AbstractTransactionBuilder.cs" />
     <Compile Include="Transactions\TransactionBuilder.cs" />
+    <Compile Include="Transactions\TrgEventBuilder.cs" />
+    <Compile Include="Transactions\TransactionBuilder_v1.cs" />
     <Compile Include="Transforms\TransformBuilder.cs" />
     <Compile Include="Transforms\TransformModel.cs" />
     <Compile Include="Models\Basis.cs" />
@@ -205,9 +219,9 @@
     <Compile Include="Solids\SolidExtractor.cs" />
     <Compile Include="Solids\SolidPlacer.cs" />
     <Compile Include="Solids\SolidUtils.cs" />
-    <Compile Include="Transactions\Committer.cs" />
-    <Compile Include="Transactions\BaseCommitter.cs" />
-    <Compile Include="Transactions\RollBackCommitter.cs" />
+    <Compile Include="Transactions\Committers\Committer.cs" />
+    <Compile Include="Transactions\Committers\BaseCommitter.cs" />
+    <Compile Include="Transactions\Committers\RollBackCommitter.cs" />
     <Compile Include="Points\XYZAlgorithms\MaxDistance\MaxDistanceClient.cs" />
     <Compile Include="Points\XYZAlgorithms\MaxDistance\Strategies\MaxDistnaceStrategy.cs" />
     <Compile Include="Points\XYZAlgorithms\MaxDistance\Strategies\NaiveStrategy.cs" />

@@ -1,6 +1,8 @@
 ﻿using Autodesk.Revit.DB;
 using DS.RevitLib.Utils.Connection.Strategies;
 using DS.RevitLib.Utils.MEP;
+using System;
+using System.Diagnostics;
 
 namespace DS.RevitLib.Utils.Connection
 {
@@ -30,7 +32,23 @@ namespace DS.RevitLib.Utils.Connection
         public void Connect()
         {
             var strategy = GetStrategy();
-            strategy.Connect();
+            if (strategy == null)
+            {
+                var errorMessage = "Connection error! Unable to get connection strategy.";
+                Debug.WriteLine(errorMessage, TraceLevel.Error.ToString());
+                throw new ArgumentNullException(errorMessage);
+            }
+
+            try
+            {
+                strategy.Connect();
+            }
+            catch (System.Exception)
+            {
+                var errorMessage = "Connection error! Unable to connect element.";
+                Debug.WriteLine(errorMessage, TraceLevel.Error.ToString());
+                throw new Exception(errorMessage);
+            }
         }
 
         private ElementConnectionStrategy GetStrategy()

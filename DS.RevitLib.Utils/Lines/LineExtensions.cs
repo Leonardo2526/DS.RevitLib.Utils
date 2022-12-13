@@ -1,5 +1,6 @@
 ﻿using Autodesk.Revit.DB;
 using DS.RevitLib.Utils.Extensions;
+using DS.RevitLib.Utils.ModelCurveUtils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -91,6 +92,17 @@ namespace DS.RevitLib.Utils.Lines
             Line line2 = Line.CreateBound(points[2], points[3]);
 
             return (line1, line2);
+        }
+
+        /// <summary>
+        /// Create ModelCurve by given line.
+        /// </summary>
+        /// <param name="line"></param>
+        /// <param name="doc"></param>
+        public static void Show(this Line line, Document doc)
+        {
+            var creator = new ModelCurveCreator(doc);
+            creator.Create(line.GetEndPoint(0), line.GetEndPoint(1));
         }
     }
 }

@@ -7,6 +7,7 @@ using DS.RevitLib.Utils.Solids;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Xml.Linq;
 
 namespace DS.RevitLib.Utils
 {
@@ -528,6 +529,69 @@ namespace DS.RevitLib.Utils
                 default:
                     break;
             }
+        }
+
+        /// <summary>
+        /// Get total <see cref="BoundingBoxXYZ"/> by all <paramref name="elements"/>.
+        /// </summary>
+        /// <param name="elements"></param>
+        /// <returns>Returns <see cref="BoundingBoxXYZ"/> with minPoint and maxPoint by min and max point of all boundingBoxes of elements. </returns>
+        public static BoundingBoxXYZ GetBoundingBox(List<Element> elements)
+        {
+
+            var points = new List<XYZ>();
+            foreach (var element in elements)
+            {
+                var bb = element.get_BoundingBox(null);
+                points.Add(bb.Min);
+                points.Add(bb.Max);
+            }
+
+            (XYZ minPoint, XYZ maxPoint) = XYZUtils.CreateMinMaxPoints(points);
+
+            return new BoundingBoxXYZ() { Min = minPoint, Max = maxPoint };
+        }
+
+        /// <summary>
+        /// Get total <see cref="BoundingBoxXYZ"/> by all <paramref name="points"/>.
+        /// </summary>
+        /// <param name="points"></param>
+        /// <param name="offset">Offset from each point from <paramref name="points"/>.</param>
+        /// <returns>Returns <see cref="BoundingBoxXYZ"/> with minPoint and maxPoint by min and max values from 
+        /// <paramref name="points"/> with <paramref name="offset"/>.</returns>
+        public static BoundingBoxXYZ GetBoundingBox(List<XYZ> points, double offset = 0)
+        {
+            //Get offset points
+            var lines = LineUtils.GetLines(points);
+            return GetBoundingBox(lines, offset);
+        }
+
+        /// <summary>
+        /// Get total <see cref="BoundingBoxXYZ"/> by all <paramref name="lines"/>.
+        /// </summary>
+        /// <param name="lines"></param>
+        /// <param name="offset">Offset from each point from <paramref name="lines"/>.</param>
+        /// <returns>Returns <see cref="BoundingBoxXYZ"/> with minPoint and maxPoint by min and max values from 
+        /// <paramref name="lines"/> with <paramref name="offset"/>.</returns>
+        public static BoundingBoxXYZ GetBoundingBox(List<Line> lines, double offset = 0)
+        {
+            //Get offset points
+            var offsetPoints = new List<XYZ>();
+            foreach (var line in lines)
+            {
+                XYZ dir = line.Direction;
+                XYZ p1 = line.GetEndPoint(0);
+                XYZ p2 = line.GetEndPoint(1);
+                Arc circle1 = GeometryElementsUtils.CreateCircle(p1, dir, offset);
+                Arc circle2 = GeometryElementsUtils.CreateCircle(p2, dir, offset);
+                var offsetPoints1 = circle1.Tessellate();
+                var offsetPoints2 = circle2.Tessellate();
+                offsetPoints.AddRange(offsetPoints1);
+                offsetPoints.AddRange(offsetPoints2);
+            }
+
+            (XYZ minPoint, XYZ maxPoint) = XYZUtils.CreateMinMaxPoints(offsetPoints);
+            return new BoundingBoxXYZ() { Min = minPoint, Max = maxPoint };
         }
     }
 }

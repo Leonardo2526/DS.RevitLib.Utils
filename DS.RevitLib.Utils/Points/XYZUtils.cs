@@ -226,6 +226,26 @@ namespace DS.RevitLib.Utils
             double z = points.Select(p => p.Z).Average();
 
             return new XYZ(x, y, z);
+        }     
+
+        /// <summary>
+        /// Create new Min and Max points from <paramref name="points"/>.
+        /// </summary>
+        /// <param name="points"></param>
+        /// <returns></returns>
+        public static (XYZ minPoint, XYZ maxPoint) CreateMinMaxPoints(List<XYZ> points)
+        {
+            //get min max points
+            var minx = points.Min(x => x.X);
+            var miny = points.Min(x => x.Y);
+            var minz = points.Min(x => x.Z);
+            var maxx = points.Max(x => x.X);
+            var maxy = points.Max(x => x.Y);
+            var maxz = points.Max(x => x.Z);
+            var min = new XYZ(minx, miny, minz);
+            var max = new XYZ(maxx, maxy, maxz);
+
+            return (min, max); 
         }
 
         #endregion

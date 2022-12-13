@@ -7,15 +7,14 @@ using System.Linq;
 
 namespace DS.RevitLib.Utils.Collisions.Checkers
 {
-    public class LinkCollisionChecker : CollisionChecker<SolidModelExt, Element>, ICollisionChecker
+    public class ElementLinkCollisionChecker : CollisionChecker<Element, Element>, ICollisionChecker
     {
         RevitLinkInstance _revitLinkInstance;
 
-        public LinkCollisionChecker(List<Element> checkedObjects2, RevitLinkInstance revitLinkInstance, List<Element> exludedObjects = null) :
+        public ElementLinkCollisionChecker(List<Element> checkedObjects2, RevitLinkInstance revitLinkInstance, List<Element> exludedObjects = null) :
             base(checkedObjects2, exludedObjects)
         {
             _revitLinkInstance = revitLinkInstance;
-
         }
 
         protected override FilteredElementCollector Collector { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
@@ -30,7 +29,7 @@ namespace DS.RevitLib.Utils.Collisions.Checkers
         {
             get
             {
-                return CheckedObjects1.First().Element.Document;
+                return CheckedObjects1.First().Document;
             }
         }
 
@@ -48,14 +47,15 @@ namespace DS.RevitLib.Utils.Collisions.Checkers
             return collisions;
         }
 
-        private List<ICollision> GetObjectCollisions(SolidModelExt object1)
+        private List<ICollision> GetObjectCollisions(Element object1)
         {
             List<ICollision> collisions = new List<ICollision>();
 
             foreach (var linkObj in LinkSolidsExt)
             {
+                var solid = ElementUtils.GetSolid(object1);
                 var intersectionSolidsResult = BooleanOperationsUtils.
-                    ExecuteBooleanOperation(object1.Solid, linkObj.Solid, BooleanOperationsType.Intersect);
+                    ExecuteBooleanOperation(solid, linkObj.Solid, BooleanOperationsType.Intersect);
                 if (intersectionSolidsResult.Volume > 0)
                 {
                     var col = BuildCollision(object1, linkObj.Element);
@@ -66,7 +66,7 @@ namespace DS.RevitLib.Utils.Collisions.Checkers
             return collisions;
         }
 
-        public override List<ICollision> GetCollisions(List<SolidModelExt> checkedObjects1)
+        public override List<ICollision> GetCollisions(List<Element> checkedObjects1)
         {
             CheckedObjects1 = checkedObjects1;
             List<ICollision> collisions = new List<ICollision>();
@@ -95,9 +95,9 @@ namespace DS.RevitLib.Utils.Collisions.Checkers
             return collisions;
         }
 
-        protected override ICollision BuildCollision(SolidModelExt object1, Element object2)
+        protected override ICollision BuildCollision(Element object1, Element object2)
         {
-            var col = new SolidElemCollision(object1, object2);
+            var col = new ElementCollision(object1, object2);
             col.Transform2 = _revitLinkInstance.GetTotalTransform();
             return col;
         }

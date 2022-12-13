@@ -17,11 +17,11 @@ namespace DS.RevitLib.Utils
         /// <returns></returns>
         public static Plane GetPlane(this Curve curve, XYZ point = null)
         {
-            XYZ p1 = curve.GetEndPoint(0);
-            XYZ p2 = curve.GetEndPoint(1);
 
             if (curve is Line)
             {
+                XYZ p1 = curve.GetEndPoint(0);
+                XYZ p2 = curve.GetEndPoint(1);
                 point ??= XYZUtils.GenerateXYZ();
                 return Plane.CreateByThreePoints(p1, p2, point);
             }

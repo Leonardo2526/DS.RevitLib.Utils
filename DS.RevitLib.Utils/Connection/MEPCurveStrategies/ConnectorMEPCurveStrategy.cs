@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.DB;
+using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.MEP.Models;
 using System;
 
@@ -30,11 +31,17 @@ namespace DS.RevitLib.Utils.Connection.Strategies
         public override void Connect()
         {
             _elem1Con.ConnectTo(_elem2Con);
+            if (_elem1Con.Origin.DistanceTo(_elem2Con.Origin) > 0.001)
+            {
+                var line = _mEPCurve1.MEPCurve.GetCenterLine();
+                _mEPCurve1.MEPCurve.Location.Rotate(line, 2 * Math.PI);
+            }
         }
 
         public override bool IsConnectionAvailable()
         {
             throw new NotImplementedException();
         }
+
     }
 }

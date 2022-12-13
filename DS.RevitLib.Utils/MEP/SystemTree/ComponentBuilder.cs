@@ -68,20 +68,32 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
                     reversed = true;
                 }
 
-                Element exludedElement = GetExcluded(currentElement);
+                List<Element> connectedElements = ConnectorUtils.GetConnectedElements(currentElement);
+                var intersected = connectedElements.Select(x => x.Id).Intersect(Elements.Select(x => x.Id)).ToList();
+
+                if (intersected.Count > 1 || 
+                    currentElement.Category.Name.Contains("Equipment") || currentElement.Category.Name.Contains("Оборудование"))
+                {
+                    Elements.Add(currentElement);
+                    if (Stack.Any() && Stack.Peek().Id == currentElement.Id) Stack.Pop();
+                    continue;
+                }
+
+                Element exludedElement = intersected.Count == 0 ? null :
+                    element.Document.GetElement(intersected.First());
                 var builder = new ConnectedElementsBuilder(currentElement, exludedElement);
-                List<Element> connectedElements = builder.Build();
+                List<Element> newConnectedElements = builder.Build();
 
                 if (currentElement.Id == element.Id)
                 {
-                    _connectedToBase = connectedElements;
+                    _connectedToBase = newConnectedElements;
                 }
 
                 Elements.Add(currentElement);
 
-                if (connectedElements is not null && connectedElements.Any())
+                if (newConnectedElements is not null && newConnectedElements.Any())
                 {
-                    SortByRelation(connectedElements, Stack, currentElement);
+                    SortByRelation(newConnectedElements, Stack, currentElement);
                 }
             }
 
