@@ -38,12 +38,12 @@ namespace DS.RevitLib.Utils.Transactions
         {
             Task completionEventTask = taskEvent.Create();
 
-            Debug.Print($"task {completionEventTask.Id} to wait event created in thread {Thread.CurrentThread.ManagedThreadId}.");
+            //Debug.Print($"task {completionEventTask.Id} to wait event created in thread {Thread.CurrentThread.ManagedThreadId}.");
             trgName ??= $"Trg {taskEvent.EventType}";
             using (var trg = new TransactionGroup(_doc, trgName))
             {
                 trg.Start();
-                Debug.Print($"\nTransactionGroup {trg.GetName()} started in thread {Thread.CurrentThread.ManagedThreadId}");
+                //Debug.Print($"\nTransactionGroup {trg.GetName()} started in thread {Thread.CurrentThread.ManagedThreadId}");
 
                 Task operationTask = CreateOperationTask(operation, completionEventTask, revitAsync);
                 await operationTask;
@@ -59,16 +59,16 @@ namespace DS.RevitLib.Utils.Transactions
                 }
             }
 
-            Debug.Print($"task {completionEventTask.Id} to wait event complete status: {completionEventTask.IsCompleted}.");
-            Debug.Print($"BuildAsync executed in thread {Thread.CurrentThread.ManagedThreadId}.");
+            //Debug.Print($"task {completionEventTask.Id} to wait event complete status: {completionEventTask.IsCompleted}.");
+            //Debug.Print($"BuildAsync executed in thread {Thread.CurrentThread.ManagedThreadId}.");
         }
 
         private Task CreateOperationTask(Action operation, Task complitionTask, bool wrapRevitAsync = false)
         {
-           Debug.Print($"{nameof(CreateOperationTask)} started in thread {Thread.CurrentThread.ManagedThreadId}");
+           //Debug.Print($"{nameof(CreateOperationTask)} started in thread {Thread.CurrentThread.ManagedThreadId}");
             Task task = Task.Run(() =>
             {
-                Debug.Print($"task event started in thread {Thread.CurrentThread.ManagedThreadId}");
+                //Debug.Print($"task event started in thread {Thread.CurrentThread.ManagedThreadId}");
 
                 while (true)
                 {
@@ -81,9 +81,9 @@ namespace DS.RevitLib.Utils.Transactions
                         operation.Invoke();
                     }
 
-                    Debug.Print($"{nameof(complitionTask)} start waiting in thread {Thread.CurrentThread.ManagedThreadId}");
+                    //Debug.Print($"{nameof(complitionTask)} start waiting in thread {Thread.CurrentThread.ManagedThreadId}");
                     complitionTask.Wait();
-                    Debug.Print($"\n{nameof(complitionTask)} was waited in thread {Thread.CurrentThread.ManagedThreadId}");
+                    //Debug.Print($"\n{nameof(complitionTask)} was waited in thread {Thread.CurrentThread.ManagedThreadId}");
                     break;
                 }
             });

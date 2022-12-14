@@ -68,5 +68,16 @@ namespace DS.RevitLib.Utils.FamilyInstances
 
             return (parents, child);
         }
+
+        /// <summary>
+        /// Get <see cref="Autodesk.Revit.DB.PartType"/> of <see cref="Autodesk.Revit.DB.FamilyInstance"/>.
+        /// </summary>
+        /// <param name="familyInstance"></param>
+        /// <returns></returns>
+        public static PartType GetPartType(this FamilyInstance familyInstance)
+        {
+            Parameter partTypeParam = familyInstance.Symbol.Family.get_Parameter(BuiltInParameter.FAMILY_CONTENT_PART_TYPE);
+            return (PartType)partTypeParam.AsInteger();
+        }
     }
 }

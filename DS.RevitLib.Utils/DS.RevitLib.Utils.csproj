@@ -143,6 +143,7 @@
     <Compile Include="PathFinders\SimplePathFinder.cs" />
     <Compile Include="Points\Models\MEPConnectionPoint.cs" />
     <Compile Include="Points\Models\IMEPConnectionPoint.cs" />
+    <Compile Include="SectionBox.cs" />
     <Compile Include="SelectionFilters\FamilyInstanceSelectionFilter.cs" />
     <Compile Include="Transactions\Committers\CommitOnApply.cs" />
     <Compile Include="Transactions\Committers\CommitOnClose.cs" />
@@ -229,6 +230,7 @@
     <Compile Include="Visualisators\BoundingBoxVisualisator.cs" />
     <Compile Include="Visualisators\IVisualisator.cs" />
     <Compile Include="Visualisators\Visualisator.cs" />
+    <Compile Include="Zoomer.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
