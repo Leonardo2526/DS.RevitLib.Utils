@@ -27,14 +27,12 @@ namespace DS.RevitLib.Utils.PathFinders
         /// Instantiate an object to find path.
         /// </summary>
         /// <param name="doc"></param>
-        /// <param name="transactionBuilder"></param>
         /// <param name="elbowRadius"></param>
         /// <param name="sourceMEPModel"></param>
-        public IvanovPathFinder(Document doc, AbstractTransactionBuilder transactionBuilder,
-            double elbowRadius, MEPSystemModel sourceMEPModel, CancellationToken cancellationToken)
+        /// <param name="cancellationToken"></param>
+        public IvanovPathFinder(Document doc, double elbowRadius, MEPSystemModel sourceMEPModel, CancellationToken cancellationToken)
         {
             _doc = doc;
-            _transactionBuilder = transactionBuilder;
             _elbowRadius = elbowRadius;
             _sourceMEPModel = sourceMEPModel;
             _cancellationToken = cancellationToken;
@@ -45,11 +43,13 @@ namespace DS.RevitLib.Utils.PathFinders
         public List<XYZ> Find(XYZ point1, XYZ point2)
         {
             var exceptions = ExceptionElements.Select(obj => obj.IntegerValue).ToList();
-            var options = new FinderOptions(exceptions)
+            var mainOptions = new MainFinderOptions(exceptions);
+
+            var secondaryOptions = new SecondaryOptions()
             {
                 ElbowWidth = _elbowRadius,
-                x_y_coef = 1, z_coef= 1
-                
+                x_y_coef = 1,
+                z_coef = 1
             };
 
             //класс анализирует геометрию
@@ -57,15 +57,15 @@ namespace DS.RevitLib.Utils.PathFinders
             MEPCurve baseCurveForPath = _sourceMEPModel.Root.BaseElement as MEPCurve;
             GeometryDocuments geometryDocuments = null;
 
-            PathFinderToOnePoint finder = null;
-            _transactionBuilder.BuildRevitTask(() =>
-            {
-                geometryDocuments = GeometryDocuments.Create(_doc, options);
-                (double width, double heigth) = MEPCurveUtils.GetWidthHeight(baseCurveForPath);
-                //класс для поиска пути
-                finder = new PathFinderToOnePoint(point1, point2,
-                             width, heigth, geometryDocuments, options);
-            }, "pathFind").Wait();
+            PathFinderToOnePointDefault finder = null;
+            double offset = 0;
+            geometryDocuments = GeometryDocuments.Create(_doc, mainOptions);
+            geometryDocuments.UnsubscribeDocumentChangedEvent();
+            (double width, double heigth) = MEPCurveUtils.GetWidthHeight(baseCurveForPath);
+
+            //класс для поиска пути
+            finder = new PathFinderToOnePointDefault(point1, point2,
+                         heigth, width, offset, offset, geometryDocuments, mainOptions, secondaryOptions);
 
             //ищем путь
             Task<List<XYZ>> pathTask = finder.FindPath(_cancellationToken);
@@ -73,7 +73,7 @@ namespace DS.RevitLib.Utils.PathFinders
             List<XYZ> path = pathTask.Result;
 
             //объединяем прямые последовательные участки пути в один сегмент
-            path = Optimizer.MergeStraightSections(path, options);
+            path = Optimizer.MergeStraightSections(path, mainOptions);
 
             return path;
         }

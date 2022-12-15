@@ -36,7 +36,6 @@ namespace DS.RevitLib.Utils.Connection
         /// <inheritdoc/>
         public void Connect()
         {
-            Debug.IndentLevel = 0;
             var strategy = GetStrategy();
             if (strategy == null)
             {
@@ -48,15 +47,15 @@ namespace DS.RevitLib.Utils.Connection
             try
             {
                 strategy.Connect();
-                Debug.WriteLineIf(_mEPCurveModel3 is null, 
-                    $"MEPCurve {_mEPCurveModel1.MEPCurve.Id} and " +
-                    $"MEPCurve {_mEPCurveModel2.MEPCurve.Id} connected succefully.", 
-                    TraceLevel.Info.ToString());
-                Debug.WriteLineIf(_mEPCurveModel3 is not null,
-                    $"MEPCurve {_mEPCurveModel1.MEPCurve.Id}, " +
-                    $"MEPCurve {_mEPCurveModel2.MEPCurve.Id}  " +
-                    $"and MEPCurve {_mEPCurveModel3?.MEPCurve.Id} connected succefully.",
-                    TraceLevel.Info.ToString());
+                //Debug.WriteLineIf(_mEPCurveModel3 is null, 
+                //    $"MEPCurve {_mEPCurveModel1.MEPCurve.Id} and " +
+                //    $"MEPCurve {_mEPCurveModel2.MEPCurve.Id} connected succefully.", 
+                //    TraceLevel.Info.ToString());
+                //Debug.WriteLineIf(_mEPCurveModel3 is not null,
+                //    $"MEPCurve {_mEPCurveModel1.MEPCurve.Id}, " +
+                //    $"MEPCurve {_mEPCurveModel2.MEPCurve.Id}  " +
+                //    $"and MEPCurve {_mEPCurveModel3?.MEPCurve.Id} connected succefully.",
+                //    TraceLevel.Info.ToString());
             }
             catch (System.Exception)
             {

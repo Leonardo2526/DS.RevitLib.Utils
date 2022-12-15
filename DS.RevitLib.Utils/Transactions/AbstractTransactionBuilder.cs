@@ -16,7 +16,7 @@ namespace DS.RevitLib.Utils.Transactions
         /// <param name="operation"></param>
         /// <param name="transactionName"></param>
         /// <returns>Returns object of transacion.</returns>
-        public abstract Element Build(Func<Element> operation, string transactionName);
+        public abstract T Build<T>(Func<T> operation, string transactionName);
 
         /// <summary>
         /// Build transaction.

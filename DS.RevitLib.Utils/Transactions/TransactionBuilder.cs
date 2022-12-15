@@ -42,31 +42,31 @@ namespace DS.RevitLib.Utils
         public string WarningMessages { get; set; }
 
         /// <inheritdoc/>
-        public override Element Build(Func<Element> operation, string transactionName)
+        public override T Build<T>(Func<T> operation, string transactionName)
         {
-            Element result = default;
+            T result = default;
             var trName = _transactionPrefix + transactionName;
-          
-                Debug.WriteLine($"Trying to commit transaction '{trName}'...");
-                using (Transaction transNew = new(_doc, _transactionPrefix + transactionName))
-                {
-                    transNew.Start();
-                    result = operation.Invoke();
 
-                    _committer.Commit(transNew);
-                }
+            //Debug.WriteLine($"Trying to commit transaction '{trName}'...");
+            using (Transaction transNew = new(_doc, _transactionPrefix + transactionName))
+            {
+                transNew.Start();
+                result = operation.Invoke();
+
+                _committer.Commit(transNew);
+            }
             ErrorMessages += _committer?.ErrorMessages;
 
             return result;
         }
 
-        public Element BuildCatch(Func<Element> operation, string transactionName)
+        public T BuildCatch<T>(Func<T> operation, string transactionName)
         {
-            Element result = default;
+            T result = default;
             var trName = _transactionPrefix + transactionName;
             try
             {
-                Debug.WriteLine($"Trying to commit transaction '{trName}'...");
+                //Debug.WriteLine($"Trying to commit transaction '{trName}'...");
                 using (Transaction transNew = new(_doc, _transactionPrefix + transactionName))
                 {
                     transNew.Start();
@@ -90,14 +90,14 @@ namespace DS.RevitLib.Utils
         {
             var trName = _transactionPrefix + transactionName;
 
-            Debug.WriteLine($"Trying to commit transaction '{trName}'...");
+            //Debug.WriteLine($"Trying to commit transaction '{trName}'...");
             using (Transaction transaction = new(_doc, trName))
             {
                 transaction.Start();
                 operation.Invoke();
 
                 _committer.Commit(transaction);
-                Debug.WriteLine($"Transaction '{trName}' is committed successfully!");
+                //Debug.WriteLine($"Transaction '{trName}' is committed successfully!");
             }
             ErrorMessages += _committer?.ErrorMessages;
         }
