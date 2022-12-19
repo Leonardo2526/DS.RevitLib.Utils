@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Security.Cryptography;
+using DS.RevitLib.Test.TestedClasses;
 
 namespace DS.RevitLib.Test
 {
@@ -28,7 +29,7 @@ namespace DS.RevitLib.Test
             //var test = new GetAssociatedParameterTest(uidoc);
 
             //var test = new SolidContainsPointTest(doc,  uidoc);
-            var test = new SolidCreatorTest(doc, uidoc);
+            var test = new SolidElementFixedCollisionDetectorTest(doc, uidoc);
             test.Run();
 
 

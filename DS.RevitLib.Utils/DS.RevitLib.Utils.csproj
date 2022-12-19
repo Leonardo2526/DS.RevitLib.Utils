@@ -107,6 +107,7 @@
     <Compile Include="Elements\Alignments\IAlignment.cs" />
     <Compile Include="Elements\Alignments\Strategies\Solids\NormOrthSolidRotator.cs" />
     <Compile Include="Elements\Alignments\Strategies\Solids\CentralLineSolidRotator.cs" />
+    <Compile Include="Elements\ElementsExtractor.cs" />
     <Compile Include="Elements\Models\AbstractElementModel.cs" />
     <Compile Include="Elements\Parameters\CopyParameterOption.cs" />
     <Compile Include="Elements\Creators\ElementCreator.cs" />

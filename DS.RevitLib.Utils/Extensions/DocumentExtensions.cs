@@ -52,5 +52,29 @@ namespace DS.RevitLib.Utils.Extensions
             var geomModelElems = GetGeometryData(doc, exludedCathegories, tr);
             return geomModelElems.Select(obj => obj.Element).ToList();
         }
+
+        /// <summary>
+        /// Get all loaded links in <see cref="Document"/>.
+        /// </summary>
+        /// <param name="doc"></param>
+        /// <returns>Retruns null if no loaded links are in document.</returns>
+        public static List<RevitLinkInstance> GetLoadedLinks(this Document doc)
+        {
+            var allLinks = new FilteredElementCollector(doc).OfClass(typeof(RevitLinkInstance)).Cast<RevitLinkInstance>().ToList();
+            if (allLinks is null || !allLinks.Any()) return null;
+
+            var loadedLinks = new List<RevitLinkInstance>();
+            foreach (var link in allLinks)
+            {
+                RevitLinkType type = doc.GetElement(link.GetTypeId()) as RevitLinkType;
+                bool loaded = RevitLinkType.IsLoaded(doc, type.Id);
+                if (loaded)
+                {
+                    loadedLinks.Add(link);
+                }
+            }
+
+            return loadedLinks;
+        }
     }
 }
