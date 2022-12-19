@@ -65,24 +65,29 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AlignMEPCurvesTest.cs" />
-    <Compile Include="ArcCreationTest.cs" />
-    <Compile Include="BBCollisionUtilsTest.cs" />
-    <Compile Include="BuilderByPointsTest.cs" />
-    <Compile Include="ConnectionFactoryClient.cs" />
+    <Compile Include="TestedClasses\AlignMEPCurvesTest.cs" />
+    <Compile Include="TestedClasses\ArcCreationTest.cs" />
+    <Compile Include="TestedClasses\BBCollisionUtilsTest.cs" />
+    <Compile Include="TestedClasses\BuilderByPointsTest.cs" />
+    <Compile Include="TestedClasses\ConnectionFactoryClient.cs" />
     <Compile Include="ExternalCommand.cs" />
-    <Compile Include="GetAssociatedParameterTest.cs" />
-    <Compile Include="GetConnectedElementsTest.cs" />
-    <Compile Include="MEPSystemBuilderTest.cs" />
-    <Compile Include="ElbowRadiusCalcTest.cs" />
-    <Compile Include="PathFinderTest.cs" />
+    <Compile Include="TestedClasses\GetAssociatedParameterTest.cs" />
+    <Compile Include="TestedClasses\GetConnectedElementsTest.cs" />
+    <Compile Include="TestedClasses\MEPSystemBuilderTest.cs" />
+    <Compile Include="TestedClasses\ElbowRadiusCalcTest.cs" />
+    <Compile Include="TestedClasses\PathFinderTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SimplePathFinderTest.cs" />
-    <Compile Include="SolidCollisionCheckerTest.cs" />
-    <Compile Include="SolidContainsPointTest.cs" />
-    <Compile Include="ZoomTest.cs" />
+    <Compile Include="TestedClasses\SimplePathFinderTest.cs" />
+    <Compile Include="TestedClasses\SolidCollisionCheckerTest.cs" />
+    <Compile Include="TestedClasses\SolidContainsPointTest.cs" />
+    <Compile Include="TestedClasses\SolidCreatorTest.cs" />
+    <Compile Include="TestedClasses\ZoomTest.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\DS.RevitLib.Solids\DS.RevitLib.Solids.csproj">
+      <Project>{77EB48B3-BBB3-4CAD-80E9-052A66B9CF04}</Project>
+      <Name>DS.RevitLib.Solids</Name>
+    </ProjectReference>
     <ProjectReference Include="..\DS.RevitLib.Utils\DS.RevitLib.Utils.csproj">
       <Project>{9873f185-f630-4bb2-94a4-d9665f32b802}</Project>
       <Name>DS.RevitLib.Utils</Name>

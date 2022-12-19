@@ -7,6 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DS.RevitLib.Utils", "DS.Rev
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DS.RevitLib.Test", "DS.RevitLib.Test\DS.RevitLib.Test.csproj", "{D09A7AB1-033E-4247-BCAF-7A0D714F451E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DS.RevitLib.Collisions", "DS.RevitLib.Collisions\DS.RevitLib.Collisions.csproj", "{ABE6AE2B-0932-446A-8725-528108D59216}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DS.RevitLib.Solids", "DS.RevitLib.Solids\DS.RevitLib.Solids.csproj", "{77EB48B3-BBB3-4CAD-80E9-052A66B9CF04}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +25,14 @@ Global
 		{D09A7AB1-033E-4247-BCAF-7A0D714F451E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D09A7AB1-033E-4247-BCAF-7A0D714F451E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D09A7AB1-033E-4247-BCAF-7A0D714F451E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ABE6AE2B-0932-446A-8725-528108D59216}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ABE6AE2B-0932-446A-8725-528108D59216}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ABE6AE2B-0932-446A-8725-528108D59216}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ABE6AE2B-0932-446A-8725-528108D59216}.Release|Any CPU.Build.0 = Release|Any CPU
+		{77EB48B3-BBB3-4CAD-80E9-052A66B9CF04}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{77EB48B3-BBB3-4CAD-80E9-052A66B9CF04}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{77EB48B3-BBB3-4CAD-80E9-052A66B9CF04}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{77EB48B3-BBB3-4CAD-80E9-052A66B9CF04}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

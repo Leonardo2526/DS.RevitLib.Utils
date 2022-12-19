@@ -28,7 +28,7 @@ namespace DS.RevitLib.Test
             //var test = new GetAssociatedParameterTest(uidoc);
 
             //var test = new SolidContainsPointTest(doc,  uidoc);
-            var test = new PathFinderTest(doc, uidoc);
+            var test = new SolidCreatorTest(doc, uidoc);
             test.Run();
 
 
