@@ -1,14 +1,7 @@
 ﻿using Autodesk.Revit.DB;
-using DS.RevitLib.Utils.Collisions.Checkers;
-using DS.RevitLib.Utils.Collisions.Models;
 using DS.RevitLib.Utils.Extensions;
-using DS.RevitLib.Utils.Solids.Models;
-using iUtils;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.Elements
 {
@@ -74,7 +67,7 @@ namespace DS.RevitLib.Utils.Elements
             {
                 Document linkDoc = link.GetLinkDocument();
                 List<Element> geomlinkElems = linkDoc.GetElements(null, link.GetTotalTransform());
-                if(geomlinkElems is null || geomlinkElems.Count == 0) { continue; }
+                if (geomlinkElems is null || geomlinkElems.Count == 0) { continue; }
                 elements.Add(link, geomlinkElems);
             }
 

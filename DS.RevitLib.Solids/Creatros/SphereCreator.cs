@@ -1,14 +1,9 @@
 ﻿using Autodesk.Revit.DB;
 using DS.RevitLib.Utils;
 using DS.RevitLib.Utils.Extensions;
-using DS.RevitLib.Utils.GPExtractor;
-using DS.RevitLib.Utils.ModelCurveUtils;
 using DS.RevitLib.Utils.Transactions;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DS.RevitLib.Solids
 {
@@ -28,8 +23,8 @@ namespace DS.RevitLib.Solids
 
         public Solid CreateSolid()
         {
-            Profile = Arc.Create(_center - _radius * XYZ.BasisZ, 
-                _center + _radius * XYZ.BasisZ, 
+            Profile = Arc.Create(_center - _radius * XYZ.BasisZ,
+                _center + _radius * XYZ.BasisZ,
                 _center + _radius * XYZ.BasisX);
 
             Line line = Line.CreateBound(Profile.GetEndPoint(1), Profile.GetEndPoint(0));
