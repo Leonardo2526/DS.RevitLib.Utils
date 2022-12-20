@@ -55,10 +55,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Detectors\SolidElementCollisionDetectorFactory.cs" />
-    <Compile Include="Detectors\AbstractDetectors\DynamicCollisionDetector.cs" />
-    <Compile Include="Detectors\SolidElementStaticCollisionDetector.cs" />
+    <Compile Include="Detectors\SolidElementCollisionDetector.cs" />
+    <Compile Include="Detectors\CollisionDetectorFactory.cs" />
     <Compile Include="Models\BestCollision.cs" />
-    <Compile Include="Detectors\AbstractDetectors\StaticCollisionDetector.cs" />
     <Compile Include="Detectors\AbstractDetectors\CollisionDetector.cs" />
     <Compile Include="Detectors\AbstractDetectors\ICollisionDetector.cs" />
     <Compile Include="Models\IBestCollision.cs" />

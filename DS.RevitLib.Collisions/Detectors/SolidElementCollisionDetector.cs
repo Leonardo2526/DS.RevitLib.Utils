@@ -13,44 +13,29 @@ using System.Xml.Linq;
 namespace DS.RevitLib.Collisions
 {
     /// <inheritdoc/>
-    public class SolidElementStaticCollisionDetector : StaticCollisionDetector<Solid, Element>
+    public class SolidElementCollisionDetector : CollisionDetector<Solid, Element>
     {
-        private readonly ExclusionFilter _exculsionFilter;
+        /// <inheritdoc/>
+        public SolidElementCollisionDetector(Document doc, List<Element> checkObjects2) :
+            base(doc, checkObjects2)
+        { }
 
         /// <inheritdoc/>
-        public SolidElementStaticCollisionDetector(Document doc, List<Element> checkObjects2,
-            List<Element> checkObjects2ToExclude = null) :
-            base(doc, checkObjects2, checkObjects2ToExclude)
-        {
-            _exculsionFilter = GetExclusionFilter(checkObjects2ToExclude);
-        }
+        public SolidElementCollisionDetector(RevitLinkInstance revitLink,
+            List<Element> checkLinkObjects) :
+            base(revitLink, checkLinkObjects)
+        { }
 
         /// <inheritdoc/>
-        public SolidElementStaticCollisionDetector(RevitLinkInstance revitLink,
-            List<Element> checkLinkObjects, List<Element> exludedElementsInLink = null) :
-            base(revitLink, checkLinkObjects, exludedElementsInLink)
-        {
-            _exculsionFilter = GetExclusionFilter(exludedElementsInLink);
-        }
-
-        /// <inheritdoc/>
-        public override List<IBestCollision> GetCollision(Solid checkObject1)
+        public override List<IBestCollision> GetCollisions(Solid checkObject1, List<Element> exludedCheckObjects2 = null)
         {
             Solid checkSolid = GetCheckSolid(checkObject1);
 
-            List<Element> elements = GetIntersectedElements(checkSolid);
+            List<Element> elements = GetIntersectedElements(checkSolid, exludedCheckObjects2);
 
             var collisions = new List<IBestCollision>();
             elements.ForEach(obj => collisions.Add(new SolidElementCollision(checkSolid, obj)));
 
-            return collisions;
-        }
-
-        /// <inheritdoc/>
-        public override List<IBestCollision> GetCollisions(List<Solid> checkObjects1)
-        {
-            var collisions = new List<IBestCollision>();
-            checkObjects1.ForEach(obj => collisions.AddRange(GetCollision(obj)));
             return collisions;
         }
 
@@ -82,8 +67,9 @@ namespace DS.RevitLib.Collisions
         /// Get elements in checkObjects2 that intersect <paramref name="checkSolid"/>.
         /// </summary>
         /// <param name="checkSolid"></param>
+        /// <param name="exludedCheckObjects2"></param>
         /// <returns>Returns elements thst intersect <paramref name="checkSolid"/>.</returns>
-        private List<Element> GetIntersectedElements(Solid checkSolid)
+        private List<Element> GetIntersectedElements(Solid checkSolid, List<Element> exludedCheckObjects2 = null)
         {
             var collector = new FilteredElementCollector(_checkObjects2Doc, _checkObjects2.Select(el => el.Id).ToList());
 
@@ -91,10 +77,11 @@ namespace DS.RevitLib.Collisions
             BoundingBoxXYZ boxXYZ = checkSolid.GetBoundingBox();
             var transform = boxXYZ.Transform;
             var outline = new Outline(transform.OfPoint(boxXYZ.Min), transform.OfPoint(boxXYZ.Max));
-            collector = collector.WherePasses(new BoundingBoxIntersectsFilter(outline, 0));
+            collector.WherePasses(new BoundingBoxIntersectsFilter(outline, 0));
 
             //apply exculsionFilter filter.
-            if (_exculsionFilter is not null) { collector = collector.WherePasses(_exculsionFilter); };
+            if (exludedCheckObjects2 is not null && exludedCheckObjects2.Any())
+            { collector.WherePasses(GetExclusionFilter(exludedCheckObjects2)); };
 
             //apply slow filter
             return collector.WherePasses(new ElementIntersectsSolidFilter(checkSolid)).ToElements().ToList();

@@ -31,6 +31,7 @@ namespace DS.RevitLib.Test
             //var test = new SolidContainsPointTest(doc,  uidoc);
             var test = new SolidElementFixedCollisionDetectorTest(doc, uidoc);
             test.RunWithFactory();
+            test.RepeatRun();
 
 
             //var pathFinderTest = new SimplePathFinderTest(uidoc, doc);

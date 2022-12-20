@@ -18,6 +18,7 @@ namespace DS.RevitLib.Test.TestedClasses
     {
         private readonly Document _doc;
         private readonly UIDocument _uiDoc;
+        private SolidElementCollisionDetectorFactory _factory;
 
         public SolidElementFixedCollisionDetectorTest(Document doc, UIDocument uiDoc)
         {
@@ -49,8 +50,8 @@ namespace DS.RevitLib.Test.TestedClasses
 
             var checkObjects2ToExclude = new List<Element>() { element1 };
 
-            var detector = new SolidElementStaticCollisionDetector(_doc, checkObjects2, checkObjects2ToExclude);
-            var collisions = detector.GetCollision(solid1).Cast<SolidElementCollision>().ToList();
+            var detector = new SolidElementCollisionDetector(_doc, checkObjects2);
+            var collisions = detector.GetCollisions(solid1, checkObjects2ToExclude).Cast<SolidElementCollision>().ToList();
 
             var collisionElemIds = collisions.Select(obj => obj.Object2.Id).ToList();
             collisions.ForEach(collision => _uiDoc.Selection.SetElementIds(collisionElemIds));
@@ -60,10 +61,10 @@ namespace DS.RevitLib.Test.TestedClasses
             {
                 foreach (var item in linkElementsDict)
                 {
-                    var linkDetector = new SolidElementStaticCollisionDetector(item.Key, item.Value, checkObjects2ToExclude);
+                    var linkDetector = new SolidElementCollisionDetector(item.Key, item.Value);
                     //linkDetector.ShowLinkSolids();
                     //_uiDoc.RefreshActiveView();
-                    var linkCollisions = linkDetector.GetCollision(solid1).Cast<SolidElementCollision>().ToList();
+                    var linkCollisions = linkDetector.GetCollisions(solid1, checkObjects2ToExclude).Cast<SolidElementCollision>().ToList();
                     collisions.AddRange(linkCollisions);
                 }
             }
@@ -83,11 +84,28 @@ namespace DS.RevitLib.Test.TestedClasses
             Element element1 = _doc.GetElement(reference1);
             Solid solid1 = ElementUtils.GetSolid(element1);
 
-            var checkObjects1 = new List<Solid> { solid1};
             var checkObjects2ToExclude = new List<Element>() { element1 };
 
-            var factory = new SolidElementCollisionDetectorFactory(_doc);
-            var collisions = factory.GetCollisions(checkObjects1, checkObjects2ToExclude);
+            var (docElements, linkElementsDict) = new ElementsExtractor(_doc).GetAll();
+            _factory = new SolidElementCollisionDetectorFactory(_doc, docElements, linkElementsDict);
+            var collisions = _factory.GetCollisions(solid1, checkObjects2ToExclude).Cast<SolidElementCollision>().ToList();
+
+            //show collisions
+            //var collisionElemIds = collisions.Select(obj => obj.Object2.Id).ToList();
+            //collisions.ForEach(collision => SelectElementInLink(collision.Object2, factory._linkElementsDict.Keys.ToList()));
+            Debug.WriteLine($"\nCollisions count is {collisions.Count}");
+            Debug.WriteLine($"Collision objects ids:");
+            collisions.ForEach(obj => Debug.WriteLine($"{obj.Object2.Id}"));
+        }
+
+        public void RepeatRun()
+        {
+            Reference reference1 = _uiDoc.Selection.PickObject(ObjectType.Element, "Select element2");
+            Element element1 = _doc.GetElement(reference1);
+            Solid solid1 = ElementUtils.GetSolid(element1);
+
+            var checkObjects2ToExclude = new List<Element>() { element1 };
+            var collisions = _factory.GetCollisions(solid1, checkObjects2ToExclude).Cast<SolidElementCollision>().ToList();
 
             //show collisions
             //var collisionElemIds = collisions.Select(obj => obj.Object2.Id).ToList();
