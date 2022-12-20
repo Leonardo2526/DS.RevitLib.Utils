@@ -54,16 +54,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Detectors\FixedCollisionLinkDetector.cs" />
-    <Compile Include="Detectors\SolidElementFixedCollisionDetectorLink.cs" />
+    <Compile Include="Detectors\SolidElementCollisionDetectorFactory.cs" />
+    <Compile Include="Detectors\AbstractDetectors\DynamicCollisionDetector.cs" />
+    <Compile Include="Detectors\SolidElementStaticCollisionDetector.cs" />
     <Compile Include="Models\BestCollision.cs" />
-    <Compile Include="Detectors\FixedCollisionDetector.cs" />
-    <Compile Include="Detectors\CollisionDetector.cs" />
-    <Compile Include="Detectors\ICollisionDetector.cs" />
+    <Compile Include="Detectors\AbstractDetectors\StaticCollisionDetector.cs" />
+    <Compile Include="Detectors\AbstractDetectors\CollisionDetector.cs" />
+    <Compile Include="Detectors\AbstractDetectors\ICollisionDetector.cs" />
     <Compile Include="Models\IBestCollision.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Models\SolidElementCollision.cs" />
-    <Compile Include="Detectors\SolidElementFixedCollisionDetector.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DS.RevitLib.Utils\DS.RevitLib.Utils.csproj">

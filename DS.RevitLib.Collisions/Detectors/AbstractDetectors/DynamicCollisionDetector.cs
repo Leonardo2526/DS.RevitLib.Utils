@@ -1,28 +1,20 @@
-﻿using Autodesk.Revit.Creation;
+﻿using Autodesk.Revit.DB;
 using System.Collections.Generic;
 
 namespace DS.RevitLib.Collisions
 {
     /// <inheritdoc/>
-    public abstract class CollisionDetector<T, P> : ICollisionDetector
+    public abstract class DynamicCollisionDetector<T, P> : CollisionDetector
     {
-        /// <summary>
-        /// Current Revit document.
-        /// </summary>
-        protected readonly Document _doc;
-
-        /// <summary>
-        /// Create a new objects for collisions (intersections) detection between objects.
-        /// </summary>
-        /// <param name="doc"></param>
-        protected CollisionDetector(Document doc)
+        /// <inheritdoc/>
+        protected DynamicCollisionDetector(Document doc) : base(doc)
         {
-            _doc = doc;
         }
 
-
         /// <inheritdoc/>
-        public List<IBestCollision> Collisions { get; }
+        protected DynamicCollisionDetector(RevitLinkInstance revitLink) : base(revitLink)
+        {
+        }
 
         /// <summary>
         /// Get collisions between <paramref name="checkObjects1"/> and <paramref name="checkObjects2"/>.

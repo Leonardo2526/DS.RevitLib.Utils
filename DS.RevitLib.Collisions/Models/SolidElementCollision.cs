@@ -9,8 +9,5 @@ namespace DS.RevitLib.Collisions
         public SolidElementCollision(Solid object1, Element object2) : base(object1, object2)
         {
         }
-
-        public Transform Transform1 { get; set; }
-        public Transform Transform2 { get; set; }
     }
 }
