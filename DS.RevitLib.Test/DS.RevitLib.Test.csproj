@@ -81,7 +81,8 @@
     <Compile Include="TestedClasses\SolidCollisionCheckerTest.cs" />
     <Compile Include="TestedClasses\SolidContainsPointTest.cs" />
     <Compile Include="TestedClasses\SolidCreatorTest.cs" />
-    <Compile Include="TestedClasses\SolidElementFixedCollisionDetectorTest.cs" />
+    <Compile Include="TestedClasses\SolidElementCollisionDetectorTest.cs" />
+    <Compile Include="TestedClasses\ElementCollisionDetectorTest.cs" />
     <Compile Include="TestedClasses\ZoomTest.cs" />
   </ItemGroup>
   <ItemGroup>

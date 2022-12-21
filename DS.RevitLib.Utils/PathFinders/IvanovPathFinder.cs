@@ -30,12 +30,15 @@ namespace DS.RevitLib.Utils.PathFinders
         /// <param name="elbowRadius"></param>
         /// <param name="sourceMEPModel"></param>
         /// <param name="cancellationToken"></param>
-        public IvanovPathFinder(Document doc, double elbowRadius, MEPSystemModel sourceMEPModel, CancellationToken cancellationToken)
+        /// <param name="transactionBuilder"></param>
+        public IvanovPathFinder(Document doc, double elbowRadius, MEPSystemModel sourceMEPModel, CancellationToken cancellationToken, 
+            AbstractTransactionBuilder transactionBuilder = null)
         {
             _doc = doc;
             _elbowRadius = elbowRadius;
             _sourceMEPModel = sourceMEPModel;
             _cancellationToken = cancellationToken;
+            _transactionBuilder = transactionBuilder;
         }
 
 
@@ -59,8 +62,12 @@ namespace DS.RevitLib.Utils.PathFinders
 
             PathFinderToOnePointDefault finder = null;
             double offset = 0;
-            geometryDocuments = GeometryDocuments.Create(_doc, mainOptions);
-            geometryDocuments.UnsubscribeDocumentChangedEvent();
+            _transactionBuilder.BuildRevitTask(() =>
+            {
+                geometryDocuments = GeometryDocuments.Create(_doc, mainOptions);
+                geometryDocuments.UnsubscribeDocumentChangedEvent();
+
+            }, "create GeometryDocuments").Wait();
             (double width, double heigth) = MEPCurveUtils.GetWidthHeight(baseCurveForPath);
 
             //класс для поиска пути

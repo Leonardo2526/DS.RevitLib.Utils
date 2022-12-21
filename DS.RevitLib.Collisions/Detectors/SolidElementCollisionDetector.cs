@@ -31,19 +31,13 @@ namespace DS.RevitLib.Collisions
         {
             Solid checkSolid = GetCheckSolid(checkObject1);
 
-            List<Element> elements = GetIntersectedElements(checkSolid, exludedCheckObjects2);
+            List<Element> elements = new ElementsIntersection(_checkObjects2, _checkObjects2Doc).
+                GetIntersectedElements(checkSolid, exludedCheckObjects2);
 
             var collisions = new List<IBestCollision>();
             elements.ForEach(obj => collisions.Add(new SolidElementCollision(checkSolid, obj)));
 
             return collisions;
-        }
-
-        private ExclusionFilter GetExclusionFilter(List<Element> excludedElements)
-        {
-            var excludedElementsIds = excludedElements?.Select(el => el.Id).ToList();
-            return excludedElementsIds is null || !excludedElementsIds.Any() ?
-                 null : new ExclusionFilter(excludedElementsIds);
         }
 
         /// <summary>
@@ -63,28 +57,5 @@ namespace DS.RevitLib.Collisions
             return solid;
         }
 
-        /// <summary>
-        /// Get elements in checkObjects2 that intersect <paramref name="checkSolid"/>.
-        /// </summary>
-        /// <param name="checkSolid"></param>
-        /// <param name="exludedCheckObjects2"></param>
-        /// <returns>Returns elements thst intersect <paramref name="checkSolid"/>.</returns>
-        private List<Element> GetIntersectedElements(Solid checkSolid, List<Element> exludedCheckObjects2 = null)
-        {
-            var collector = new FilteredElementCollector(_checkObjects2Doc, _checkObjects2.Select(el => el.Id).ToList());
-
-            //apply quick filter.
-            BoundingBoxXYZ boxXYZ = checkSolid.GetBoundingBox();
-            var transform = boxXYZ.Transform;
-            var outline = new Outline(transform.OfPoint(boxXYZ.Min), transform.OfPoint(boxXYZ.Max));
-            collector.WherePasses(new BoundingBoxIntersectsFilter(outline, 0));
-
-            //apply exculsionFilter filter.
-            if (exludedCheckObjects2 is not null && exludedCheckObjects2.Any())
-            { collector.WherePasses(GetExclusionFilter(exludedCheckObjects2)); };
-
-            //apply slow filter
-            return collector.WherePasses(new ElementIntersectsSolidFilter(checkSolid)).ToElements().ToList();
-        }
     }
 }

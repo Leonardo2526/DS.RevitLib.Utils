@@ -14,13 +14,13 @@ using System.Threading.Tasks;
 
 namespace DS.RevitLib.Test.TestedClasses
 {
-    internal class SolidElementFixedCollisionDetectorTest
+    internal class SolidElementCollisionDetectorTest
     {
         private readonly Document _doc;
         private readonly UIDocument _uiDoc;
         private SolidElementCollisionDetectorFactory _factory;
 
-        public SolidElementFixedCollisionDetectorTest(Document doc, UIDocument uiDoc)
+        public SolidElementCollisionDetectorTest(Document doc, UIDocument uiDoc)
         {
             _doc = doc;
             _uiDoc = uiDoc;
