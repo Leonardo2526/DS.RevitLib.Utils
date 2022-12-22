@@ -53,7 +53,7 @@ namespace DS.RevitLib.Utils.Elements
         /// <returns></returns>
         public List<Element> GetFromDoc()
         {
-            return _doc.GetElements(_exludedCathegories);
+            return _doc.GetGeometryElements(_exludedCathegories);
         }
 
         /// <summary>
@@ -69,7 +69,7 @@ namespace DS.RevitLib.Utils.Elements
             foreach (var link in allLinks)
             {
                 Document linkDoc = link.GetLinkDocument();
-                List<Element> geomlinkElems = linkDoc.GetElements(_exludedCathegories, link.GetTotalTransform());
+                List<Element> geomlinkElems = linkDoc.GetGeometryElements(_exludedCathegories);
                 if (geomlinkElems is null || geomlinkElems.Count == 0) { continue; }
                 elements.Add(link, geomlinkElems);
             }

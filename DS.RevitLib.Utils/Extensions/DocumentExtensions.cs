@@ -44,16 +44,30 @@ namespace DS.RevitLib.Utils.Extensions
         }
 
         /// <summary>
-        /// Get all geometry elements from <paramref name="doc"/>.
+        /// Get all <see cref="Autodesk.Revit.DB.Element"/>'s with geometry from <paramref name="doc"/>.
         /// </summary>
         /// <param name="doc">Current <see cref="Document"/>.</param>
-        /// /// <param name="exludedCathegories">Excluded elements list of <see cref="Autodesk.Revit.DB.BuiltInCategory"/>.</param>
-        /// <param name="tr"></param>
-        /// <returns>Returns all elements with solid volume.</returns>
-        public static List<Element> GetElements(this Document doc, List<BuiltInCategory> exludedCathegories = null, Transform tr = null)
+        /// <param name="exludedCathegories">Excluded elements list of <see cref="Autodesk.Revit.DB.BuiltInCategory"/>.</param>
+        /// <returns></returns>
+        public static List<Element> GetGeometryElements(this Document doc, List<BuiltInCategory> exludedCathegories = null)
         {
-            var geomModelElems = GetGeometryData(doc, exludedCathegories, tr);
-            return geomModelElems.Select(obj => obj.Element).ToList();
+            if (doc == null || !doc.IsValidObject)
+                return new List<Element>();
+
+            var exludedCategoriesIds = exludedCathegories?.Select(obj => (int)obj);
+            var categories = doc.Settings.Categories.Cast<Category>().
+                Where(x => x.CategoryType == CategoryType.Model).
+                Select(x => x.Id).
+                Where(x => !exludedCategoriesIds.Contains(x.IntegerValue)).
+                ToList();
+
+            var filter = new ElementMulticategoryFilter(categories);
+            var geomModelElems = new FilteredElementCollector(doc).
+                WhereElementIsNotElementType().
+                WherePasses(filter).
+                Where(x => x.IsGeometryElement());
+
+            return geomModelElems.ToList();
         }
 
         /// <summary>

@@ -54,7 +54,7 @@ namespace DS.RevitLib.Test
 
             var allElements = new List<Element>();
 
-            var currneDocElements = _doc.GetElements();
+            var currneDocElements = _doc.GetGeometryElements();
             allElements.AddRange(currneDocElements);
 
             List<RevitLinkInstance> allLinks = new List<RevitLinkInstance>();
@@ -64,7 +64,7 @@ namespace DS.RevitLib.Test
             {
                 var lDoc = link.GetLinkDocument();
                 var tr = link.GetTotalTransform();
-                currneDocElements = lDoc.GetElements(null, null);
+                currneDocElements = lDoc.GetGeometryElements(null);
                 allElements.AddRange(currneDocElements);
 
                 //show bb
