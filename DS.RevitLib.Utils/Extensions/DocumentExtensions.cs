@@ -20,22 +20,25 @@ namespace DS.RevitLib.Utils.Extensions
         /// <param name="exludedCathegories">Excluded elements list of <see cref="Autodesk.Revit.DB.BuiltInCategory"/>.</param>
         /// <param name="tr"></param>
         /// <returns></returns>
-        public static List<GeometryData> GetGeometryData(this Document doc, List<BuiltInCategory> exludedCathegories = null, Transform tr = null)
+        public static List<GeometryData> GetGeometryData(this Document doc, 
+            List<BuiltInCategory> exludedCathegories = null, Transform tr = null)
         {
             if (doc == null || !doc.IsValidObject)
                 return new List<GeometryData>();
-            var categories = doc.Settings.Categories.Cast<Category>().Where(x => x.CategoryType == CategoryType.Model).Select(x => x.Id)
-                .Where(x => !x.IntegerValue.Equals((int)BuiltInCategory.OST_Materials)).ToList();
-            var filter = new ElementMulticategoryFilter(categories);
-            var geomModelElems = new FilteredElementCollector(doc).WhereElementIsNotElementType()
-                    .WherePasses(filter).Where(x => x.IsGeometryElement())
-                    .Select(x => new GeometryData(x, tr, false));
 
-            exludedCathegories ??= new List<BuiltInCategory>() { BuiltInCategory.OST_TelephoneDevices };
-            foreach (var category in exludedCathegories)
-            {
-                geomModelElems = geomModelElems.Where(x => x.Element.Category.GetBuiltInCategory() != category);
-            }
+            var exludedCategoriesIds = exludedCathegories?.Select(obj => (int)obj);
+            var categories = doc.Settings.Categories.Cast<Category>().
+                Where(x => x.CategoryType == CategoryType.Model).
+                Select(x => x.Id).
+                Where(x => !exludedCategoriesIds.Contains(x.IntegerValue)).
+                ToList();
+
+            var filter = new ElementMulticategoryFilter(categories);
+            var geomModelElems = new FilteredElementCollector(doc).
+                WhereElementIsNotElementType().
+                WherePasses(filter).
+                Where(x => x.IsGeometryElement()).
+                Select(x => new GeometryData(x, tr, false));
 
             return geomModelElems.ToList();
         }

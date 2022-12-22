@@ -71,6 +71,7 @@
     <Compile Include="TestedClasses\BuilderByPointsTest.cs" />
     <Compile Include="TestedClasses\ConnectionFactoryClient.cs" />
     <Compile Include="ExternalCommand.cs" />
+    <Compile Include="TestedClasses\ElementsExtractorTest.cs" />
     <Compile Include="TestedClasses\GetAssociatedParameterTest.cs" />
     <Compile Include="TestedClasses\GetConnectedElementsTest.cs" />
     <Compile Include="TestedClasses\MEPSystemBuilderTest.cs" />

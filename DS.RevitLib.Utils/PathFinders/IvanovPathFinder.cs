@@ -22,6 +22,7 @@ namespace DS.RevitLib.Utils.PathFinders
         private readonly double _elbowRadius;
         private readonly MEPSystemModel _sourceMEPModel;
         private readonly CancellationToken _cancellationToken;
+        private readonly double _offset;
 
         /// <summary>
         /// Instantiate an object to find path.
@@ -30,14 +31,16 @@ namespace DS.RevitLib.Utils.PathFinders
         /// <param name="elbowRadius"></param>
         /// <param name="sourceMEPModel"></param>
         /// <param name="cancellationToken"></param>
+        /// <param name="offset">Offset from element</param>
         /// <param name="transactionBuilder"></param>
-        public IvanovPathFinder(Document doc, double elbowRadius, MEPSystemModel sourceMEPModel, CancellationToken cancellationToken, 
+        public IvanovPathFinder(Document doc, double elbowRadius, MEPSystemModel sourceMEPModel, CancellationToken cancellationToken, double offset =0,
             AbstractTransactionBuilder transactionBuilder = null)
         {
             _doc = doc;
             _elbowRadius = elbowRadius;
             _sourceMEPModel = sourceMEPModel;
             _cancellationToken = cancellationToken;
+            _offset = offset;
             _transactionBuilder = transactionBuilder;
         }
 
@@ -54,14 +57,13 @@ namespace DS.RevitLib.Utils.PathFinders
                 x_y_coef = 1,
                 z_coef = 1
             };
-
+          
             //класс анализирует геометрию
             //Task<List<XYZ>> pathTask = null;
             MEPCurve baseCurveForPath = _sourceMEPModel.Root.BaseElement as MEPCurve;
             GeometryDocuments geometryDocuments = null;
 
             PathFinderToOnePointDefault finder = null;
-            double offset = 0;
             _transactionBuilder.BuildRevitTask(() =>
             {
                 geometryDocuments = GeometryDocuments.Create(_doc, mainOptions);
@@ -72,7 +74,7 @@ namespace DS.RevitLib.Utils.PathFinders
 
             //класс для поиска пути
             finder = new PathFinderToOnePointDefault(point1, point2,
-                         heigth, width, offset, offset, geometryDocuments, mainOptions, secondaryOptions);
+                         heigth, width, _offset, _offset, geometryDocuments, mainOptions, secondaryOptions);
 
             //ищем путь
             Task<List<XYZ>> pathTask = finder.FindPath(_cancellationToken);

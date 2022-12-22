@@ -29,8 +29,8 @@ namespace DS.RevitLib.Test
             //var test = new GetAssociatedParameterTest(uidoc);
 
             //var test = new SolidContainsPointTest(doc,  uidoc);
-            var test = new SolidElementCollisionDetectorTest(doc, uidoc);
-            test.RunWithFactory();
+            var test = new ElementsExtractorTest(doc, uidoc);
+            test.Run();
             //test.RepeatRun();
 
 

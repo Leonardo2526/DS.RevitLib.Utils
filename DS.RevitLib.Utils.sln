@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DS.RevitLib.Collisions", "D
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DS.RevitLib.Solids", "DS.RevitLib.Solids\DS.RevitLib.Solids.csproj", "{77EB48B3-BBB3-4CAD-80E9-052A66B9CF04}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DS.RevitLib.UtilsUnitTests", "DS.RevitLib.UtilsUnitTests\DS.RevitLib.UtilsUnitTests.csproj", "{B1FBB53B-E5CB-4F84-A94C-D2BE25148377}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{77EB48B3-BBB3-4CAD-80E9-052A66B9CF04}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{77EB48B3-BBB3-4CAD-80E9-052A66B9CF04}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{77EB48B3-BBB3-4CAD-80E9-052A66B9CF04}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B1FBB53B-E5CB-4F84-A94C-D2BE25148377}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B1FBB53B-E5CB-4F84-A94C-D2BE25148377}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B1FBB53B-E5CB-4F84-A94C-D2BE25148377}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B1FBB53B-E5CB-4F84-A94C-D2BE25148377}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
