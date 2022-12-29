@@ -7,10 +7,17 @@ using System.Collections.Generic;
 
 namespace DS.RevitLib.Solids
 {
-    public class SphereCreator : ISolidCreator
+    /// <summary>
+    /// An object to create sphere.
+    /// </summary>
+    public class SphereCreator : SolidCreatorBase
     {
         private readonly double _radius;
         private readonly XYZ _center;
+
+        /// <summary>
+        /// Instantiate an object to create sphere.
+        /// </summary>
         public SphereCreator(double radius, XYZ center)
 
         {
@@ -18,10 +25,13 @@ namespace DS.RevitLib.Solids
             _center = center;
         }
 
+        /// <summary>
+        /// Profile to create <see cref="Solid"/>.
+        /// </summary>
         public Arc Profile { get; private set; }
-        public Solid Solid { get; private set; }
 
-        public Solid CreateSolid()
+        /// <inheritdoc/>
+        public override Solid CreateSolid()
         {
             Profile = Arc.Create(_center - _radius * XYZ.BasisZ,
                 _center + _radius * XYZ.BasisZ,
@@ -37,15 +47,6 @@ namespace DS.RevitLib.Solids
             var frame = new Frame(_center, XYZ.BasisX, XYZ.BasisY, XYZ.BasisZ);
 
             return Solid = GeometryCreationUtilities.CreateRevolvedGeometry(frame, loop, 0, Math.PI * 2);
-        }
-
-        public void ShowSolid(Document doc, AbstractTransactionBuilder transactionBuilder = null)
-        {
-            transactionBuilder ??= new TransactionBuilder(doc);
-            transactionBuilder.Build(() =>
-                {
-                    Solid.ShowShape(doc);
-                }, "Show Solid");
-        }
+        }       
     }
 }

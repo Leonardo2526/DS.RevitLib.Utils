@@ -88,5 +88,54 @@ namespace DS.RevitLib.Utils.MEP
 
             return 0;
         }
+
+        /// <summary>
+        /// Get outer sizes of MEPCurve.
+        /// </summary>
+        /// <param name="mEPCurve"></param>
+        /// <returns>Returns actual width and height of recrangle and diameter of round profile.</returns>
+        public static (double width, double heigth) GetOuterWidthHeight(this MEPCurve mEPCurve)
+        {
+            double width = 0;
+            double heigth = 0;
+
+            ConnectorProfileType connectorProfileType = mEPCurve.GetProfileType();
+            switch (connectorProfileType)
+            {
+                case ConnectorProfileType.Invalid:
+                    break;
+                case ConnectorProfileType.Round:
+                    {
+                        Parameter diameter = mEPCurve.get_Parameter(BuiltInParameter.RBS_PIPE_OUTER_DIAMETER);
+                        width = diameter.AsDouble();
+                        heigth = width;
+                    }
+                    break;
+                case ConnectorProfileType.Rectangular:
+                    {
+                        width = mEPCurve.Width;
+                        heigth = mEPCurve.Height;
+                    }
+                    break;
+                case ConnectorProfileType.Oval:
+                    break;
+                default:
+                    break;
+            }
+
+            return (width, heigth);
+        }
+
+        /// <summary>
+        /// Get <see cref="MEPCurve"/> profile type.
+        /// </summary>
+        /// <param name="mEPCurve"></param>
+        /// <returns></returns>
+        public static ConnectorProfileType GetProfileType(this MEPCurve mEPCurve)
+        {
+            var doc = mEPCurve.Document;
+            var type = doc.GetElement(mEPCurve.GetTypeId()) as MEPCurveType;
+            return type.Shape;
+        }
     }
 }

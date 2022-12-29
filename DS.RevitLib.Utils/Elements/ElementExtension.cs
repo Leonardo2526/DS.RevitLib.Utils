@@ -3,6 +3,7 @@ using DS.RevitLib.Utils.MEP;
 using DS.RevitLib.Utils.Transactions;
 using DS.RevitLib.Utils.Visualisators;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using static System.Windows.Forms.LinkLabel;
 
@@ -317,6 +318,41 @@ namespace DS.RevitLib.Utils.Extensions
                 var visualizator = new BoundingBoxVisualisator(transformBoundingBox, doc);
                 visualizator.Visualise();
             }, "show BoundingBox");
+        }
+
+        /// <summary>
+        /// Check if current <paramref name="element"/> is conform given <paramref name="categoriesDict"/>.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <param name="categoriesDict"></param>
+        /// <returns>Returns true if it is conform both <paramref name="categoriesDict"/> key and value or 
+        /// only key if <see cref="Autodesk.Revit.DB.PartType"/> value is undefined. 
+        /// <para>Returns true if <paramref name="categoriesDict"/> is null or empty.</para>
+        /// <para>Returns false if element is not <see cref="Autodesk.Revit.DB.FamilyInstance"/>.</para>
+        /// </returns>
+        public static bool IsCategoryElement(this Element element, Dictionary<BuiltInCategory, List<PartType>> categoriesDict)
+        {
+            if (categoriesDict is null || !categoriesDict.Any()) { return true; }
+            if (element is not FamilyInstance) { return false; }
+
+            var builtCat = CategoryExtension.GetBuiltInCategory(element.Category);
+            var partType = ElementUtils.GetPartType(element as FamilyInstance);
+
+            var dictBuilCat = categoriesDict.Keys.FirstOrDefault(c => (int)c == (int)builtCat);
+            if (dictBuilCat is not 0)
+            {
+                categoriesDict.TryGetValue(dictBuilCat, out var dictPartTypes);
+                foreach (var item in dictPartTypes)
+                {
+                    if (item == PartType.Undefined || partType == item)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+
+            return false;
         }
     }
 }

@@ -89,7 +89,7 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
 
         public List<Element> GetElements(Element elem1, Element elem2)
         {
-            if(!IsSystemValid()) { return null; }
+            if (!IsSystemValid()) { return null; }
             var elemsIds = Elements.Select(obj => obj.Id).ToList();
 
             int ind1 = elemsIds.IndexOf(elem1.Id);
@@ -253,6 +253,27 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
             Debug.Unindent();
 
             return false;
+        }
+
+        /// <summary>
+        /// Try to find <paramref name="element"/> in <see cref="ChildrenNodes"/> and <see cref="ParentNodes"/>.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <returns>Returns <see cref="NodeElement"/> if it was found. Otherwise returns null.</returns>
+        public NodeElement FindNode(Element element)
+        {
+            NodeElement nodeElement = null;
+            if (ChildrenNodes is not null || ChildrenNodes.Any())
+            {
+                nodeElement = ChildrenNodes.First(node => node.Element.Id == element.Id);
+                if (nodeElement is not null) { return nodeElement; }
+            }
+            if (ParentNodes is not null || ParentNodes.Any())
+            {
+                nodeElement = ParentNodes.First(node => node.Element.Id == element.Id);
+                if (nodeElement is not null) { return nodeElement; }
+            }
+            return nodeElement;
         }
     }
 }

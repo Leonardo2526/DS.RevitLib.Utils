@@ -104,5 +104,18 @@ namespace DS.RevitLib.Utils.Lines
             var creator = new ModelCurveCreator(doc);
             creator.Create(line.GetEndPoint(0), line.GetEndPoint(1));
         }
+
+        /// <summary>
+        /// Get normal <see cref="Autodesk.Revit.DB.XYZ"/> vector to <paramref name="line"/> at <paramref name="point"/>.
+        /// </summary>
+        /// <param name="line"></param>
+        /// <param name="point"></param>
+        /// <returns>Returns normal from <see cref="Autodesk.Revit.DB.Plane"/> built by <paramref name="line"/> and <paramref name="point"/>.
+        /// <para>Returns normal from random <see cref="Autodesk.Revit.DB.Plane"/> built by <paramref name="line"/> if point is <see langword="null."></see></para>
+        /// </returns>
+        public static XYZ GetNormal(this Line line, XYZ point = null)
+        {
+            return line.GetPlane(point).Normal;
+        }
     }
 }
