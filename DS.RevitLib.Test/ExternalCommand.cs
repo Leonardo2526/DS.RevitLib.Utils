@@ -29,7 +29,7 @@ namespace DS.RevitLib.Test
             //var test = new GetAssociatedParameterTest(uidoc);
 
             //var test = new SolidContainsPointTest(doc,  uidoc);
-            var test = new MEPCurveSolidCreatorTest(doc, uidoc);
+            var test = new ConnectionFactoryClient(uidoc);
             test.Run();
             //test.RepeatRun();
 

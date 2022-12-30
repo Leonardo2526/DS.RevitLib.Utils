@@ -6,7 +6,7 @@ using System;
 namespace DS.RevitLib.Solids
 {
     /// <summary>
-    /// An object to create <see cref="Solid"/> to check collisions.
+    /// An object to create <see cref="Solid"/> to check collisions at point.
     /// </summary>
     public class MEPCurveSolidCreator : SolidCreatorBase
     {
@@ -18,7 +18,7 @@ namespace DS.RevitLib.Solids
         private readonly double _elementClearance;
 
         /// <summary>
-        /// Instantiate an object to create <see cref="Solid"/> to check collisions.
+        /// Instantiate an object to create <see cref="Solid"/> to check collisions at point.
         /// </summary>
         public MEPCurveSolidCreator(MEPCurve baseMEPCurve, MEPCurve connectedMEPCurve = null, double elementClearance = 0)
         {

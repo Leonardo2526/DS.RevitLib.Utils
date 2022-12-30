@@ -263,12 +263,12 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
         public NodeElement FindNode(Element element)
         {
             NodeElement nodeElement = null;
-            if (ChildrenNodes is not null || ChildrenNodes.Any())
+            if (ChildrenNodes is not null && ChildrenNodes.Any())
             {
                 nodeElement = ChildrenNodes.First(node => node.Element.Id == element.Id);
                 if (nodeElement is not null) { return nodeElement; }
             }
-            if (ParentNodes is not null || ParentNodes.Any())
+            if (ParentNodes is not null && ParentNodes.Any())
             {
                 nodeElement = ParentNodes.First(node => node.Element.Id == element.Id);
                 if (nodeElement is not null) { return nodeElement; }

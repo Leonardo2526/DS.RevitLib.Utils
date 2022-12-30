@@ -56,12 +56,13 @@ namespace DS.RevitLib.Utils.Extensions
 
             var exludedCategoriesIds = exludedCathegories?.Select(obj => (int)obj);
             var categories = doc.Settings.Categories.Cast<Category>().
-                Where(x => x.CategoryType == CategoryType.Model).
-                Select(x => x.Id).
-                Where(x => !exludedCategoriesIds.Contains(x.IntegerValue)).
-                ToList();
+                Where(x => x.CategoryType == CategoryType.Model).Select(x => x.Id);
+            if (exludedCategoriesIds is not null && exludedCategoriesIds.Any())
+            {
+                categories = categories.Where(x => !exludedCategoriesIds.Contains(x.IntegerValue));
+            }
 
-            var filter = new ElementMulticategoryFilter(categories);
+            var filter = new ElementMulticategoryFilter(categories.ToList());
             var geomModelElems = new FilteredElementCollector(doc).
                 WhereElementIsNotElementType().
                 WherePasses(filter).
