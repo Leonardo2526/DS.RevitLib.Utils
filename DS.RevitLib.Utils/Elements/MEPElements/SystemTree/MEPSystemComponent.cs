@@ -265,12 +265,12 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
             NodeElement nodeElement = null;
             if (ChildrenNodes is not null && ChildrenNodes.Any())
             {
-                nodeElement = ChildrenNodes.First(node => node.Element.Id == element.Id);
+                nodeElement = ChildrenNodes.FirstOrDefault(node => node.Element.Id == element.Id);
                 if (nodeElement is not null) { return nodeElement; }
             }
             if (ParentNodes is not null && ParentNodes.Any())
             {
-                nodeElement = ParentNodes.First(node => node.Element.Id == element.Id);
+                nodeElement = ParentNodes.FirstOrDefault(node => node.Element.Id == element.Id);
                 if (nodeElement is not null) { return nodeElement; }
             }
             return nodeElement;
