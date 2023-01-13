@@ -3,9 +3,9 @@ using DS.RevitLib.Utils.Solids.Models;
 
 namespace DS.RevitLib.Utils.Collisions.Models
 {
-    public class SolidElemCollision : Collision<SolidModelExt, Element>
+    public class SolidElemTransformCollision : Collision<SolidModelExt, Element>
     {
-        public SolidElemCollision(SolidModelExt object1, Element object2) : base(object1, object2)
+        public SolidElemTransformCollision(SolidModelExt object1, Element object2) : base(object1, object2)
         {
         }
 

@@ -10,7 +10,7 @@ namespace DS.RevitLib.Utils.Extensions
     /// <summary>
     /// Various extecnsion methods
     /// </summary>
-    public static class VarExtensions
+    public static class ConvertationExtensions
     {
         /// <summary>
         /// Convert feets to millimeters

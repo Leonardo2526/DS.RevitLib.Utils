@@ -88,14 +88,6 @@
     <Compile Include="TestedClasses\ZoomTest.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\DS.RevitLib.Collisions\DS.RevitLib.Collisions.csproj">
-      <Project>{ABE6AE2B-0932-446A-8725-528108D59216}</Project>
-      <Name>DS.RevitLib.Collisions</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\DS.RevitLib.Solids\DS.RevitLib.Solids.csproj">
-      <Project>{77EB48B3-BBB3-4CAD-80E9-052A66B9CF04}</Project>
-      <Name>DS.RevitLib.Solids</Name>
-    </ProjectReference>
     <ProjectReference Include="..\DS.RevitLib.Utils\DS.RevitLib.Utils.csproj">
       <Project>{9873f185-f630-4bb2-94a4-d9665f32b802}</Project>
       <Name>DS.RevitLib.Utils</Name>
