@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DS.RevitLib.Collisions2
+namespace DS.RevitLib.Utils.Collisions.Models
 {
     internal class ElementsIntersection
     {

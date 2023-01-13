@@ -1,7 +1,8 @@
 ﻿using Autodesk.Revit.DB;
+using DS.RevitLib.Utils.Collisions.Models;
 using System.Collections.Generic;
 
-namespace DS.RevitLib.Collisions2
+namespace DS.RevitLib.Utils.Collisions.Detectors
 {
     /// <inheritdoc/>
     public abstract class CollisionDetector<T,P>: ICollisionDetector
@@ -60,15 +61,17 @@ namespace DS.RevitLib.Collisions2
 
 
         /// <inheritdoc/>
-        public List<IBestCollision> Collisions { get; }
+        public List<ICollision> Collisions { get; }
+
+        List<ICollision> ICollisionDetector.Collisions => throw new System.NotImplementedException();
 
         /// <summary>
         /// Get collisions between <paramref name="checkObjects1"/> and checkObjects2/>.
         /// </summary>
         /// <param name="checkObjects1"></param>
         /// <param name="checkObjects2ToExclude"></param>
-        /// <returns>Return <see cref="IBestCollision"/> if it exitst. Returns null if collision wasn't found between objects.</returns>
-        public abstract List<IBestCollision> GetCollisions(T checkObjects1, List<P> checkObjects2ToExclude = null);
+        /// <returns>Return <see cref="ICollision"/> if it exitst. Returns null if collision wasn't found between objects.</returns>
+        public abstract List<ICollision> GetCollisions(T checkObjects1, List<P> checkObjects2ToExclude = null);
 
     }
 }

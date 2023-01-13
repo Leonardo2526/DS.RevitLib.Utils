@@ -1,8 +1,9 @@
 ﻿using Autodesk.Revit.DB;
 using DS.RevitLib.Utils;
+using DS.RevitLib.Utils.Collisions.Models;
 using System.Collections.Generic;
 
-namespace DS.RevitLib.Collisions2
+namespace DS.RevitLib.Utils.Collisions.Detectors
 {
     /// <inheritdoc/>
     public class ElementCollisionDetector : CollisionDetector<Element, Element>
@@ -19,7 +20,7 @@ namespace DS.RevitLib.Collisions2
         { }
 
         /// <inheritdoc/>
-        public override List<IBestCollision> GetCollisions(Element checkObject1, List<Element> exludedCheckObjects2 = null)
+        public override List<ICollision> GetCollisions(Element checkObject1, List<Element> exludedCheckObjects2 = null)
         {
             Solid checkTransformedSolid = GetCheckSolid(checkObject1);
 
@@ -29,7 +30,7 @@ namespace DS.RevitLib.Collisions2
                 intersection.GetIntersectedElements(checkObject1, exludedCheckObjects2) :
                 intersection.GetIntersectedElements(checkTransformedSolid, exludedCheckObjects2);
 
-            var collisions = new List<IBestCollision>();
+            var collisions = new List<ICollision>();
             elements.ForEach(obj => collisions.Add(new ElementCollision(checkObject1, obj)));
 
             return collisions;

@@ -1,6 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using DS.RevitLib.Utils.Collisions.Models;
+using System.Collections.Generic;
 
-namespace DS.RevitLib.Collisions2
+namespace DS.RevitLib.Utils.Collisions.Detectors
 {
     /// <summary>
     /// The interface used to create objects for collisions (intersections) detection between objects in Revit model.
@@ -10,6 +11,6 @@ namespace DS.RevitLib.Collisions2
         /// <summary>
         /// Detected collisions between objects in Revit model.
         /// </summary>
-        List<IBestCollision> Collisions { get; }
+        List<ICollision> Collisions { get; }
     }
 }

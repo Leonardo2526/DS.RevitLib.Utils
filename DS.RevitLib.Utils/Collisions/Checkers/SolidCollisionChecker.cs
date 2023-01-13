@@ -133,13 +133,13 @@ namespace DS.RevitLib.Utils.Collisions.Checkers
 
         protected override ICollision BuildCollision(SolidModelExt object1, Element object2)
         {
-            return new SolidElemCollision(object1, object2);
+            return new SolidElemTransformCollision(object1, object2);
         }
 
         public bool CollisionExist(List<ICollision> collisions, ICollision collision)
         {
-            var sCollision = collision as SolidElemCollision;
-            foreach (SolidElemCollision existCollison in collisions.Cast<SolidElemCollision>())
+            var sCollision = collision as SolidElemTransformCollision;
+            foreach (SolidElemTransformCollision existCollison in collisions.Cast<SolidElemTransformCollision>())
             {
                 if (sCollision.Object1.Element.Id == existCollison.Object2.Id &&
                     existCollison.Object1.Element.Id == sCollision.Object2.Id)

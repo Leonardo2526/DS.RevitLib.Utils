@@ -134,13 +134,13 @@ namespace DS.RevitLib.Utils.Collisions.Checkers
 
         protected override ICollision BuildCollision(Element object1, Element object2)
         {
-            return new ElementCollision(object1, object2);
+            return new ElementTransformCollision(object1, object2);
         }
 
         public bool CollisionExist(List<ICollision> collisions, ICollision collision)
         {
-            var sCollision = collision as ElementCollision;
-            foreach (ElementCollision existCollison in collisions.Cast<ElementCollision>())
+            var sCollision = collision as ElementTransformCollision;
+            foreach (ElementTransformCollision existCollison in collisions.Cast<ElementTransformCollision>())
             {
                 if (sCollision.Object1.Id == existCollison.Object2.Id &&
                     existCollison.Object1.Id == sCollision.Object2.Id)

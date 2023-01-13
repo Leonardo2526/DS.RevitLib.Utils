@@ -73,29 +73,25 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Creation\AbstractCreator.cs" />
-    <Compile Include="Collisions2\Detectors\AbstractDetectors\CollisionDetector.cs" />
-    <Compile Include="Collisions2\Detectors\AbstractDetectors\CollisionDetectorFactory.cs" />
-    <Compile Include="Collisions2\Detectors\AbstractDetectors\ICollisionDetector.cs" />
-    <Compile Include="Collisions2\Detectors\ElementCollisionDetector.cs" />
-    <Compile Include="Collisions2\Detectors\ElementCollisionDetectorFactory.cs" />
-    <Compile Include="Collisions2\Detectors\SolidElementCollisionDetector.cs" />
-    <Compile Include="Collisions2\Detectors\SolidElementCollisionDetectorFactory.cs" />
-    <Compile Include="Collisions2\ElementsIntersection.cs" />
-    <Compile Include="Collisions2\Models\BestCollision.cs" />
-    <Compile Include="Collisions2\Models\ElementCollision.cs" />
-    <Compile Include="Collisions2\Models\IBestCollision.cs" />
-    <Compile Include="Collisions2\Models\SolidElementCollision.cs" />
+    <Compile Include="Collisions\Detectors\AbstractDetectors\CollisionDetector.cs" />
+    <Compile Include="Collisions\Detectors\AbstractDetectors\CollisionDetectorFactory.cs" />
+    <Compile Include="Collisions\Detectors\AbstractDetectors\ICollisionDetector.cs" />
+    <Compile Include="Collisions\Detectors\ElementCollisionDetector.cs" />
+    <Compile Include="Collisions\Detectors\ElementCollisionDetectorFactory.cs" />
+    <Compile Include="Collisions\Detectors\SolidElementCollisionDetector.cs" />
+    <Compile Include="Collisions\Detectors\SolidElementCollisionDetectorFactory.cs" />
+    <Compile Include="Collisions\ElementsIntersection.cs" />
+    <Compile Include="Collisions\Models\Collision.cs" />
+    <Compile Include="Collisions\Models\ElementCollision.cs" />
+    <Compile Include="Collisions\Models\ICollision.cs" />
+    <Compile Include="Collisions\Models\SolidElementCollision.cs" />
     <Compile Include="Collisions\Checkers\ElementLinkCollisionChecker.cs" />
     <Compile Include="Collisions\Checkers\LinkCollisionChecker.cs" />
     <Compile Include="Collisions\Checkers\ElementCollisionChecker.cs" />
-    <Compile Include="Collisions\CollisionStatus.cs" />
     <Compile Include="Collisions\BBCollisionUtils.cs" />
-    <Compile Include="Collisions\Models\Collision.cs" />
     <Compile Include="Collisions\Models\DummyCollision.cs" />
-    <Compile Include="Collisions\Models\ElementCollision.cs" />
-    <Compile Include="Collisions\Resolvers\CollisionResolver.cs" />
-    <Compile Include="Collisions\Models\SolidElemCollision.cs" />
-    <Compile Include="Collisions\Models\ICollision.cs" />
+    <Compile Include="Collisions\Models\ElementTransformCollision.cs" />
+    <Compile Include="Collisions\Models\SolidElemTransformCollision.cs" />
     <Compile Include="Collisions\Checkers\CollisionChecker.cs" />
     <Compile Include="Collisions\Checkers\ICollisionChecker.cs" />
     <Compile Include="Collisions\Checkers\SolidCollisionChecker.cs" />
@@ -155,8 +151,6 @@
     <Compile Include="Elements\Models\MEPCurveGeometryModel.cs" />
     <Compile Include="PathFinders\IvanovPathFinder.cs" />
     <Compile Include="PathFinders\SimplePathFinder.cs" />
-    <Compile Include="Geometry\Points\Models\MEPConnectionPoint.cs" />
-    <Compile Include="Geometry\Points\Models\IMEPConnectionPoint.cs" />
     <Compile Include="Various\SectionBox.cs" />
     <Compile Include="Various\FamilyInstanceSelectionFilter.cs" />
     <Compile Include="Geometry\Solids\Creatros\MEPCurveSolidCreator.cs" />
@@ -251,6 +245,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Collisions\Resolvers\" />
+    <Folder Include="Geometry\Points\Models\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

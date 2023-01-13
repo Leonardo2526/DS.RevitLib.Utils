@@ -97,7 +97,7 @@ namespace DS.RevitLib.Utils.Collisions.Checkers
 
         protected override ICollision BuildCollision(SolidModelExt object1, Element object2)
         {
-            var col = new SolidElemCollision(object1, object2);
+            var col = new SolidElemTransformCollision(object1, object2);
             col.Transform2 = _revitLinkInstance.GetTotalTransform();
             return col;
         }

@@ -1,7 +1,8 @@
 ﻿using Autodesk.Revit.DB;
+using DS.RevitLib.Utils.Collisions.Models;
 using System.Collections.Generic;
 
-namespace DS.RevitLib.Collisions2
+namespace DS.RevitLib.Utils.Collisions.Detectors
 {
     /// <summary>
     /// The interface used to create factories to detect collisions.
@@ -12,7 +13,7 @@ namespace DS.RevitLib.Collisions2
     {
 
         /// <inheritdoc/>
-        public List<IBestCollision> Collisions { get; protected set; }
+        public List<ICollision> Collisions { get; protected set; }
 
         /// <summary>
         /// Get collisions with <paramref name="checkObject1"/>.
@@ -20,6 +21,6 @@ namespace DS.RevitLib.Collisions2
         /// <param name="checkObject1"></param>
         /// <param name="checkObjects2ToExclude"></param>
         /// <returns></returns>
-        public abstract List<IBestCollision> GetCollisions(T checkObject1, List<P> checkObjects2ToExclude = null);
+        public abstract List<ICollision> GetCollisions(T checkObject1, List<P> checkObjects2ToExclude = null);
     }
 }

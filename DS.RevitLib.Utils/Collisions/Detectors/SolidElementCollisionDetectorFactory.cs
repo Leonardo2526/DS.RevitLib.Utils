@@ -1,9 +1,10 @@
 ﻿using Autodesk.Revit.DB;
+using DS.RevitLib.Utils.Collisions.Models;
 using DS.RevitLib.Utils.Elements;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace DS.RevitLib.Collisions2
+namespace DS.RevitLib.Utils.Collisions.Detectors
 {
     /// <summary>
     /// An object to detect collisions (intersections) between <see cref="Solid"/>'s 
@@ -34,9 +35,9 @@ namespace DS.RevitLib.Collisions2
         /// <param name="checkObject1"></param>
         /// <param name="checkObjects2ToExclude"></param>
         /// <returns>Returns collisions list. Returns empty list if no collisions were detected.</returns>
-        public override List<IBestCollision> GetCollisions(Solid checkObject1, List<Element> checkObjects2ToExclude = null)
+        public override List<ICollision> GetCollisions(Solid checkObject1, List<Element> checkObjects2ToExclude = null)
         {
-            Collisions = new List<IBestCollision>();
+            Collisions = new List<ICollision>();
 
             //get colliisons in model
             var modelCollisions = _modelDetector.GetCollisions(checkObject1, checkObjects2ToExclude).Cast<SolidElementCollision>().ToList();
