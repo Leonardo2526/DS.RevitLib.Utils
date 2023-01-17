@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -82,6 +83,17 @@ namespace DS.RevitLib.Utils.Collisions.Models
         private ExclusionFilter GetExclusionFilter(List<Element> excludedElements)
         {
             var excludedElementsIds = excludedElements?.Select(el => el.Id).ToList();
+
+            Document doc = excludedElements.First().Document;
+            var excludedElementsInsulationIds = new List<ElementId>();
+                excludedElements.ForEach(obj =>
+            {
+                Element insulation = InsulationLiningBase.GetInsulationIds(doc, obj.Id)?
+                  .Select(x => doc.GetElement(x)).FirstOrDefault();
+                if (insulation != null) { excludedElementsInsulationIds.Add(insulation.Id); }
+            });
+            excludedElementsIds.AddRange(excludedElementsInsulationIds);
+
             return excludedElementsIds is null || !excludedElementsIds.Any() ?
                  null : new ExclusionFilter(excludedElementsIds);
         }

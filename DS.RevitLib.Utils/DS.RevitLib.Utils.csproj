@@ -72,6 +72,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Collisions\Resolvers\CollisionResolverBase.cs" />
+    <Compile Include="Collisions\Resolvers\ICollisionResolver.cs" />
+    <Compile Include="Collisions\Resolvers\MoveTransformStrategy.cs" />
+    <Compile Include="Collisions\Solutions\ISolution.cs" />
     <Compile Include="Creation\AbstractCreator.cs" />
     <Compile Include="Collisions\Detectors\AbstractDetectors\CollisionDetector.cs" />
     <Compile Include="Collisions\Detectors\AbstractDetectors\CollisionDetectorFactory.cs" />
@@ -247,7 +251,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Collisions\Resolvers\" />
     <Folder Include="Geometry\Points\Models\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
