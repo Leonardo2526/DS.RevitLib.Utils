@@ -40,9 +40,9 @@ namespace DS.RevitLib.Test
             }
 
             string outString = null;
-            foreach (SolidElemCollision col in collisions)
+            foreach (SolidElementCollision col in collisions)
             {
-                outString += col.Object1.Element.Id + " - " + col.Object2.Id + "\n";
+                outString += col.Object2.Id + "\n";
             }
 
             TaskDialog.Show("Collisions: ", collisions.Count.ToString() + "\n" + outString);
@@ -83,9 +83,9 @@ namespace DS.RevitLib.Test
             //}
 
             string outString = null;
-            foreach (SolidElemCollision col in collisions)
+            foreach (SolidElementCollision col in collisions)
             {
-                outString += col.Object1.Element.Id + " - " + col.Object2.Id + "\n";
+                outString += col.Object2.Id + "\n";
             }
 
             TaskDialog.Show("Collisions: ", collisions.Count.ToString() + "\n" + outString);

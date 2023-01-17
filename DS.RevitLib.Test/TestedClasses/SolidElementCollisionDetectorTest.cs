@@ -1,7 +1,8 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Selection;
-using DS.RevitLib.Collisions2;
+using DS.RevitLib.Utils.Collisions.Detectors;
+
 using DS.RevitLib.Utils;
 using DS.RevitLib.Utils.Elements;
 using iUtils.SelctionFilters;
@@ -11,6 +12,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DS.RevitLib.Utils.Collisions.Models;
 
 namespace DS.RevitLib.Test.TestedClasses
 {
