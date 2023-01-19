@@ -1,4 +1,6 @@
 ﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.Mechanical;
+using Autodesk.Revit.DB.Plumbing;
 using Autodesk.Revit.UI;
 using DS.RevitLib.Utils.Extensions;
 using Ivanov.RevitLib.Utils;
@@ -208,6 +210,51 @@ namespace DS.RevitLib.Utils.MEP
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Get <see cref="MEPSystemType"/> by type of <paramref name="baseMEPCurve"/>.
+        /// </summary>
+        /// <param name="baseMEPCurve"></param>
+        /// <returns>Returns first <see cref="MEPSystemType"/> that match to type of <paramref name="baseMEPCurve"/>.</returns>
+        public static MEPSystemType GetDefaultMepSystemType(MEPCurve baseMEPCurve)
+        {
+            string elementTypeName = baseMEPCurve.GetType().Name;
+            var collector = new FilteredElementCollector(baseMEPCurve.Document).OfClass(typeof(ElementType));
+
+            ElementClassFilter systemFilter = null;
+            if(elementTypeName == "Pipe") { systemFilter = new ElementClassFilter(typeof(PipingSystemType)); }
+            else if (elementTypeName == "Duct") { systemFilter = new ElementClassFilter(typeof(MechanicalSystemType)); }
+
+            var systems = collector.WherePasses(systemFilter).ToElements().Cast<MEPSystemType>();
+            return systems.FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Get <see cref="MEPSystem"/> of <paramref name="baseMEPCurve"/>.
+        /// </summary>
+        /// <param name="baseMEPCurve"></param>
+        /// <returns>Returns first <see cref="MEPSystem"/> that match to type of <paramref name="baseMEPCurve"/></returns>
+        public static MEPSystem GetDefaultMepSystem(MEPCurve baseMEPCurve)
+        {
+            string elementTypeName = baseMEPCurve.GetType().Name;
+            var systemCollector = new FilteredElementCollector(baseMEPCurve.Document).OfClass(typeof(MEPSystem));
+            IEnumerable<MEPSystem> desirableSystems = systemCollector.Cast<MEPSystem>();
+
+            foreach (MEPSystem system in desirableSystems)
+            {
+                var systemType = system.GetType();
+                if (elementTypeName == "Pipe" && systemType == typeof(PipingSystem))
+                {
+                    return system;
+                }
+                if (elementTypeName == "Duct" && systemType == typeof(MechanicalSystem))
+                {
+                    return system;
+                }
+            }
+
+            return null;
         }
     }
 }

@@ -562,5 +562,27 @@ namespace DS.RevitLib.Utils.MEP
 
             return (null, null);
         }
+
+        /// <summary>
+        /// Get common not connected connectors between two elements
+        /// </summary>
+        /// <param name="element1"></param>
+        /// <param name="element2"></param>
+        /// <returns>Reruns two connecors with the same origin poin.</returns>
+        public static (Connector con1, Connector con2) GetCommonNotConnectedConnectors(Element element1, Element element2)
+        {
+            var cons1 = GetConnectors(element1);
+            var cons2 = GetConnectors(element2);
+
+            foreach (var c1 in cons1)
+            {
+                foreach (var c2 in cons2)
+                {
+                    if ((c1.Origin - c2.Origin).IsZeroLength()) { return (c1, c2); }
+                }
+            }
+
+            return (null, null);
+        }
     }
 }

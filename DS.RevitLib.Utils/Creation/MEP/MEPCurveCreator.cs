@@ -38,6 +38,10 @@ namespace DS.RevitLib.Utils.MEP.Creator
             get
             {
                 MEPCurve mEPCurve = _baseMEPCurve as MEPCurve;
+                if (mEPCurve.MEPSystem is null)
+                {
+                    return MEPElementUtils.GetDefaultMepSystemType(mEPCurve).Id;
+                }
                 return mEPCurve.MEPSystem.GetTypeId();
             }
         }

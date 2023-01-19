@@ -6,6 +6,8 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
 {
     public class MEPSystemModel
     {
+        private readonly List<MEPSystemComponent> _allComponents;
+
         public Composite Composite { get; set; }
 
         public MEPSystemModel(Composite composite)
@@ -26,7 +28,8 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
         {
             get
             {
-                return GetAllComponents();
+                if (_allComponents == null) { return GetAllComponents(); }
+                else { return _allComponents; }
             }
         }
 
@@ -54,6 +57,14 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
             }
         }
 
+        /// <summary>
+        /// Update <see cref="Root"/> component in current <see cref="MEPSystemModel"/>.
+        /// </summary>
+        /// <returns>Returns updated <see cref="Root"/> component.</returns>
+        public MEPSystemComponent UpdateRoot()
+        {            
+            return (MEPSystemComponent)(Composite.Root = new ComponentBuilder(Root.BaseElement).Build());
+        }
 
         #region Methods
 

@@ -48,8 +48,18 @@ namespace DS.RevitLib.Utils.PathFinders
         /// <inheritdoc/>
         public List<XYZ> Find(XYZ point1, XYZ point2)
         {
-            var exceptions = ExceptionElements.Select(obj => obj.IntegerValue).ToList();
-            var mainOptions = new MainFinderOptions(exceptions);
+            var excludedElements = ExceptionElements.Select(obj => obj.IntegerValue).ToList();
+
+            var excludedElementsInsulationIds = new List<ElementId>();
+            ExceptionElements.ForEach(obj =>
+            {
+                Element insulation = InsulationLiningBase.GetInsulationIds(_doc, obj)?
+                  .Select(x => _doc.GetElement(x)).FirstOrDefault();
+                if (insulation != null && insulation.IsValidObject) { excludedElementsInsulationIds.Add(insulation.Id); }
+            });
+            excludedElements.AddRange(excludedElementsInsulationIds.Select(obj => obj.IntegerValue).ToList());
+
+            var mainOptions = new MainFinderOptions(excludedElements);
 
             var secondaryOptions = new SecondaryOptions()
             {
