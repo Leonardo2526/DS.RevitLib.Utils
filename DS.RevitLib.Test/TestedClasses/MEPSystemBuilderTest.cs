@@ -47,5 +47,25 @@ namespace DS.RevitLib.Test
             Debug.WriteLineIf(duplicate> 0, "Duplicates occured: " + duplicate);
         }
 
+        public void ComponentTest()
+        {
+            Reference reference = _uidoc.Selection.PickObject(ObjectType.Element, "Select base element");
+            var baseElement = _doc.GetElement(reference);
+
+            var mEPSystemBuilder = new SimpleMEPSystemBuilder(baseElement);
+            var sourceMEPModel = mEPSystemBuilder.Build();
+
+            Reference reference1 = _uidoc.Selection.PickObject(ObjectType.Element, "Select element1");
+            var element1 = _doc.GetElement(reference1);
+
+            Reference reference2 = _uidoc.Selection.PickObject(ObjectType.Element, "Select element2");
+            var element2 = _doc.GetElement(reference2);
+
+            var rootElem = sourceMEPModel.GetRootElements(element1, element2);
+            //var rootElem = sourceMEPModel.FindRootElem(element1);
+
+            _uidoc.Selection.SetElementIds(rootElem.Select(obj => obj.Id).ToList());
+        }
+
     }
 }

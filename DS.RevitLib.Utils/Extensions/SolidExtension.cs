@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.DB;
+using DS.RevitLib.Utils.Lines;
 using DS.RevitLib.Utils.Visualisators;
 using System.Collections.Generic;
 using System.Linq;
@@ -145,14 +146,17 @@ namespace DS.RevitLib.Utils.Extensions
         /// <returns>Returns true if <paramref name="point"/> is inside <paramref name="solid"/>.</returns>
         public static bool Contains(this Solid solid, XYZ point)
         {
-            var dir = XYZUtils.GenerateXYZ();
-            Line line = Line.CreateBound(point, dir.Multiply(100));
-            var options = new SolidCurveIntersectionOptions();
-            var intersecion = solid.IntersectWithCurve(line, options);
-            int segments = intersecion.SegmentCount;
+            double multiplicator = 100;
+            Line line1 = Line.CreateBound(point, point + XYZUtils.GenerateXYZ().Multiply(multiplicator));
+            Line line2 = Line.CreateBound(point, point + XYZUtils.GenerateXYZ().Multiply(multiplicator));
 
-            return segments % 2 != 0;
+            var options = new SolidCurveIntersectionOptions()
+            { ResultType = SolidCurveIntersectionMode.CurveSegmentsInside };
+            var intersecion1 = solid.IntersectWithCurve(line1, options);
+            var intersecion2 = solid.IntersectWithCurve(line2, options);
+            int segments = intersecion1.SegmentCount + intersecion2.SegmentCount;
+
+            return segments > 0 && segments % 2 == 0;
         }
-
     }
 }

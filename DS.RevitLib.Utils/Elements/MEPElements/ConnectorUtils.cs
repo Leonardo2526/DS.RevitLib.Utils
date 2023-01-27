@@ -38,11 +38,11 @@ namespace DS.RevitLib.Utils.MEP
         /// <summary>
         /// Get all sysytem elements connected to current element. 
         /// </summary>
-        public static List<Element> GetAllConnectedElements(Element element, Document Doc)
+        public static List<Element> GetAllConnectedElements(Element element, Document Doc, List<Element> exculdedElements = null)
         {
             INeighbourSearch neighbourSearch = new Search();
             NeighbourElement neighbourElement = new NeighbourElement(neighbourSearch);
-            return neighbourElement.GetAllNeighbours(new List<Element>() { element }, new List<Element>(), Doc);
+            return neighbourElement.GetAllNeighbours(new List<Element>() { element }, exculdedElements ?? new List<Element>(), Doc);
         }
 
         /// <summary>

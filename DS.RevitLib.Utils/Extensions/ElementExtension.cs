@@ -364,7 +364,7 @@ namespace DS.RevitLib.Utils.Extensions
             for (int i = 0; i < elements.Count - 1; i++)
             {
                 (Connector con1, Connector con2) = ConnectorUtils.GetCommonNotConnectedConnectors(elements[i], elements[i + 1]);
-                if (con1 is not null && con2 is not null) { con1.ConnectTo(con2); };
+                if (con1 is not null && con2 is not null && !con1.IsConnectedTo(con2)) { con1.ConnectTo(con2); };
             }
         }
     }

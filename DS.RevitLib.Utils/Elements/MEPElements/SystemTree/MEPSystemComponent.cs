@@ -87,7 +87,14 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
             return range.ToList();
         }
 
-        public List<Element> GetElements(Element elem1, Element elem2)
+        /// <summary>
+        /// Get elements span of current component.
+        /// </summary>
+        /// <param name="elem1"></param>
+        /// <param name="elem2"></param>
+        /// <param name="includeEdge">Check if include or not <paramref name="elem1"/> and <paramref name="elem2"/> to result.</param>
+        /// <returns>Returns list of elements from <paramref name="elem1"/> to <paramref name="elem2"/>.</returns>
+        public List<Element> GetElements(Element elem1, Element elem2, bool includeEdge = true)
         {
             if (!IsSystemValid()) { return null; }
             var elemsIds = Elements.Select(obj => obj.Id).ToList();
@@ -98,7 +105,9 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
             int minInd = Math.Min(ind1, ind2);
             int maxInd = Math.Max(ind1, ind2);
 
-            var range = Elements.FindAll(x => Elements.IndexOf(x) >= minInd && Elements.IndexOf(x) <= maxInd);
+            var range = includeEdge ?
+                Elements.FindAll(x => Elements.IndexOf(x) >= minInd && Elements.IndexOf(x) <= maxInd) :
+                Elements.FindAll(x => Elements.IndexOf(x) > minInd && Elements.IndexOf(x) < maxInd);
             List<ElementId> rangeIds = range.Select(obj => obj.Id).ToList();
             var mEPCurveIds = Elements.OfType<MEPCurve>().Select(obj => obj.Id).ToList();
 
@@ -109,7 +118,7 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
                 range.Insert(mepInd1, mePCurve1);
             }
             (MEPCurve mePCurve2, int mepInd2) = GetSpudMEPCurveToInsert(elem2, rangeIds, mEPCurveIds);
-            if (mePCurve2 is not null && mePCurve2.Id != mePCurve1.Id)
+            if (mePCurve2 is not null && mePCurve2.Id != mePCurve1?.Id)
             {
                 range.Insert(mepInd2, mePCurve2);
             }
@@ -274,6 +283,13 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
                 if (nodeElement is not null) { return nodeElement; }
             }
             return nodeElement;
+        }
+
+        /// <inheritdoc/>
+        public override bool Equals(object obj)
+        {
+            return obj is MEPSystemComponent component &&
+                   EqualityComparer<ElementId>.Default.Equals(BaseElement.Id, component.BaseElement.Id);
         }
     }
 }
