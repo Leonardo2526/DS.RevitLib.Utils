@@ -28,9 +28,9 @@ namespace DS.RevitLib.Test
             //var test = new BuilderByPointsTest(uidoc);
             //var test = new GetAssociatedParameterTest(uidoc);
 
-            var test = new MEPSystemBuilderTest(doc, uidoc);
-            //var test = new ConnectionFactoryClient(uidoc);
-            test.ComponentTest();
+            //var test = new MEPSystemBuilderTest(doc, uidoc);
+            var test = new ConnectionFactoryClient(uidoc);
+            test.Run();
             //test.RepeatRun();
 
 

@@ -106,7 +106,7 @@
     <Compile Include="Collisions\Checkers\ICollisionChecker.cs" />
     <Compile Include="Collisions\Checkers\SolidCollisionChecker.cs" />
     <Compile Include="Elements\MEPElements\Connection\ElementConnectionFactory.cs" />
-    <Compile Include="Elements\MEPElements\Connection\ElementStrategies\ConnectorElementStrategy.cs" />
+    <Compile Include="Elements\MEPElements\Connection\ElementStrategies\ConnectWithMEPCurve.cs" />
     <Compile Include="Elements\MEPElements\Connection\ElementStrategies\ElbowElementStrategy.cs" />
     <Compile Include="Elements\MEPElements\Connection\ElementStrategies\ElementConnectionStrategy.cs" />
     <Compile Include="Elements\MEPElements\Connection\ElementStrategies\TeeElementStrategy.cs" />

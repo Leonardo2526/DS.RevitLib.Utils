@@ -1,14 +1,20 @@
 ﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.Plumbing;
 using DS.RevitLib.Utils.Connection.Strategies;
 using DS.RevitLib.Utils.MEP;
+using DS.RevitLib.Utils.MEP.Creator;
+using DS.RevitLib.Utils.MEP.Models;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Xml.Linq;
 
 namespace DS.RevitLib.Utils.Connection
 {
     public class ElementConnectionFactory : IConnectionFactory
     {
         private readonly Document _doc;
+        private readonly MEPCurve _baseMEPCurve;
         private readonly Element _element1;
         private readonly Element _element2;
         private readonly Element _element3;
@@ -20,18 +26,22 @@ namespace DS.RevitLib.Utils.Connection
         /// <param name="element1"></param>
         /// <param name="element2"></param>
         /// <param name="element3">Second parent element for tee. Optional parameter.</param>
-        public ElementConnectionFactory(Document doc, Element element1, Element element2, Element element3 = null)
+        public ElementConnectionFactory(Document doc, MEPCurve baseMEPCurve, Element element1, Element element2, Element element3 = null)
         {
             _doc = doc;
+            _baseMEPCurve = baseMEPCurve;
             _element1 = element1;
             _element2 = element2;
             _element3 = element3;
         }
 
+
+        public TransactionBuilder Trb { get; set; }
+
         /// <inheritdoc/>
         public void Connect()
         {
-            var strategy = GetStrategy();
+            var strategy = _element3 is null ? GetTwoElementsStrategy() : null;
             if (strategy == null)
             {
                 var errorMessage = "Connection error! Unable to get connection strategy.";
@@ -52,19 +62,25 @@ namespace DS.RevitLib.Utils.Connection
             }
         }
 
-        private ElementConnectionStrategy GetStrategy()
+        private ElementConnectionStrategy GetTwoElementsStrategy()
         {
             var cons1 = ConnectorUtils.GetConnectors(_element1);
             var cons2 = ConnectorUtils.GetConnectors(_element2);
 
-            var (commonCon1, commonCon2) = ConnectorUtils.GetNeighbourConnectors(cons1, cons2);
+            var (elem1Con, elem2Con) = ConnectorUtils.GetClosest(cons1, cons2);
             var dir1 = ElementUtils.GetMainDirection(_element1);
             var dir2 = ElementUtils.GetMainDirection(_element2);
 
-            if (commonCon1 is not null && commonCon2 is not null)
+            //if points coincidence
+            if ((elem1Con.Origin - elem2Con.Origin).IsZeroLength())
             {
-                return new ConnectorElementStrategy(_doc, commonCon1, commonCon2);
+                if (XYZUtils.Collinearity(dir1, dir2)) { elem1Con.ConnectTo(elem2Con); }
+                else { return null; }
             }
+
+            return new ConnectWithMEPCurve(_doc, elem1Con, elem2Con, _baseMEPCurve, Trb ?? new TransactionBuilder(_doc));
+
+           
             return null;
             //return _element3 is null ? 
             //    new ElbowElementStrategy(_doc, cons1, cons2) : 

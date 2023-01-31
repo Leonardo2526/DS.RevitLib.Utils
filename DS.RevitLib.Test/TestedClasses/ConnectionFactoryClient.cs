@@ -21,6 +21,7 @@ namespace DS.RevitLib.Test
         private Element _element1;
         private Element _element2;
         private Element _element3;
+        private MEPCurve _baseMEPCurve;
 
         public ConnectionFactoryClient(UIDocument uidoc)
         {
@@ -30,6 +31,9 @@ namespace DS.RevitLib.Test
 
         public void Run()
         {
+            Reference referenceMC = _uidoc.Selection.PickObject(ObjectType.Element, "Select baseMEPCurve");
+            _baseMEPCurve= _doc.GetElement(referenceMC) as MEPCurve;
+
             Reference reference = _uidoc.Selection.PickObject(ObjectType.Element, "Select element1");
             _element1 = _doc.GetElement(reference);
 
@@ -45,6 +49,7 @@ namespace DS.RevitLib.Test
             { }
 
             var factory = GetFactory();
+            //factory.Connect();
             new TransactionBuilder(_doc).Build(() => factory.Connect(), "Connect");
         }
 
@@ -53,7 +58,7 @@ namespace DS.RevitLib.Test
             MEPCurve mEPCurve3 = _element3 is not null && _element3 is MEPCurve ? _element3 as MEPCurve : null;
             IConnectionFactory factory = _element1 is MEPCurve && _element2 is MEPCurve ?
                 new MEPCurveConnectionFactory(_doc, _element1 as MEPCurve, _element2 as MEPCurve, mEPCurve3) :
-                new ElementConnectionFactory(_doc, _element1, _element2, _element3);
+                new ElementConnectionFactory(_doc, _baseMEPCurve, _element1, _element2, _element3);
 
             return factory;
         }
