@@ -2,10 +2,14 @@
 using Autodesk.Revit.DB.Mechanical;
 using Autodesk.Revit.DB.Plumbing;
 using DS.RevitLib.Utils.Extensions;
+using DS.RevitLib.Utils.MEP.Creator;
 using DS.RevitLib.Utils.Models;
+using DS.RevitLib.Utils.Transactions;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 
 namespace DS.RevitLib.Utils.MEP
 {
@@ -44,6 +48,38 @@ namespace DS.RevitLib.Utils.MEP
         }
 
         /// <summary>
+        /// Swap MEPCurve's width and height.
+        /// </summary>
+        /// <param name="mEPCurve"></param>
+        /// <param name="trb"></param>
+        /// <returns>Returns MEPCurve with swaped parameters.</returns>
+        public static MEPCurve SwapSize(this MEPCurve mEPCurve, AbstractTransactionBuilder trb = null)
+        {
+            Document doc = mEPCurve.Document;
+            void action()
+            {
+                double width = mEPCurve.Width;
+                double height = mEPCurve.Height;
+
+                Parameter widthParam = mEPCurve.get_Parameter(BuiltInParameter.RBS_CURVE_WIDTH_PARAM);
+                Parameter heightParam = mEPCurve.get_Parameter(BuiltInParameter.RBS_CURVE_HEIGHT_PARAM);
+
+                widthParam.Set(height);
+                heightParam.Set(width);
+            }
+
+            if (!doc.IsModifiable)
+            {
+                trb ??= new TransactionBuilder(doc);
+                trb.Build(action, "FixOrientation");
+            }
+            else
+            { action(); }
+
+            return mEPCurve;
+        }
+
+        /// <summary>
         /// Split given <paramref name="mEPCurve"/> in <paramref name="point"/>.
         /// </summary>
         /// <param name="mEPCurve"></param>
@@ -66,7 +102,7 @@ namespace DS.RevitLib.Utils.MEP
         /// </summary>
         /// <param name="mEPCurve"></param>
         /// <returns></returns>
-        public static double  GetMaxSize(this MEPCurve mEPCurve)
+        public static double GetMaxSize(this MEPCurve mEPCurve)
         {
             (double width, double heigth) = MEPCurveUtils.GetWidthHeight(mEPCurve);
             return Math.Max(width, heigth);
@@ -225,6 +261,56 @@ namespace DS.RevitLib.Utils.MEP
         public static Solid GetOffsetSolid(this MEPCurve mEPCurve, double offset, XYZ startPoint, XYZ endPoint)
         {
             return new SolidOffsetExtractor(mEPCurve, offset, startPoint, endPoint).Extract();
+        }
+
+        /// <summary>
+        /// Specify if <paramref name="mEPCurve"/> has valid sizes.
+        /// </summary>
+        /// <remarks>If <paramref name="mEPCurve"/> is not rectangular or has equal width and height </remarks>
+        /// <param name="mEPCurve"></param>
+        /// <returns>Returns <see langword="true"></see> if <paramref name="mEPCurve"/>'s size by <see cref="Autodesk.Revit.DB.XYZ.Z"/>
+        /// is equal to <paramref name="mEPCurve"/>'s height property. Otherwize returns <see langword="false"></see>.
+        /// <para>Returns <see langword="true"></see> if <paramref name="mEPCurve"/> is not rectangular or has equal width and height.</para>
+        /// <para>Returns <see langword="true"></see> if zOrth of <paramref name="mEPCurve"/> is null.</para>
+        /// </returns>
+        public static bool HasValidOrientation(this MEPCurve mEPCurve)
+        {
+            if (mEPCurve.GetProfileType() != ConnectorProfileType.Rectangular || mEPCurve.Height == mEPCurve.Width)
+            { return true; }
+
+            var orths = ElementUtils.GetOrthoNormVectors(mEPCurve);
+            var zOrth = orths.FirstOrDefault(obj => XYZUtils.Collinearity(XYZ.BasisZ, obj));
+            if(zOrth == null) 
+            { Debug.WriteLine($"Warning: failed to check MEPCurve {mEPCurve.Id} orientation."); return true; }
+
+            var height = mEPCurve.GetSizeByVector(zOrth) * 2;
+
+            return Math.Round(height, 3) == Math.Round(mEPCurve.Height, 3);
+        }
+
+        /// <summary>
+        /// Fix <paramref name="mEPCurve"/> if it has not valid orientation.
+        /// </summary>
+        /// <param name="mEPCurve"></param>
+        /// <param name="trb"></param>
+        public static void FixNotValidOrientation(this MEPCurve mEPCurve, AbstractTransactionBuilder trb = null)
+        {
+            if(mEPCurve.HasValidOrientation()) { return; }
+
+            Document doc = mEPCurve.Document;
+            void action()
+            {
+                ElementTransformUtils.RotateElement(doc, mEPCurve.Id, mEPCurve.GetCenterLine(), Math.PI / 2);
+                mEPCurve.SwapSize(trb);
+            }
+
+            if (!doc.IsModifiable)
+            {
+                trb ??= new TransactionBuilder(doc);
+                trb.Build(action, "FixOrientation");
+            }
+            else
+            { action(); }
         }
     }
 }

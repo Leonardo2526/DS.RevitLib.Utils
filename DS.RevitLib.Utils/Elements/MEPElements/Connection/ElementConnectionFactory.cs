@@ -11,28 +11,40 @@ using System.Xml.Linq;
 
 namespace DS.RevitLib.Utils.Connection
 {
+    /// <summary>
+    /// An object that represents connection factory for Elements.
+    /// </summary>
     public class ElementConnectionFactory : IConnectionFactory
     {
         private readonly Document _doc;
         private readonly MEPCurve _baseMEPCurve;
         private readonly Element _element1;
         private readonly Element _element2;
-        private readonly Element _element3;
+        private readonly Connector _elem1Con;
+        private readonly Connector _elem2Con;
+        private readonly XYZ _dir1;
+        private readonly XYZ _dir2;
 
         /// <summary>
         /// Initiate factory object to connect Elements
         /// </summary>
         /// <param name="doc"></param>
+        /// <param name="baseMEPCurve"></param>
         /// <param name="element1"></param>
         /// <param name="element2"></param>
-        /// <param name="element3">Second parent element for tee. Optional parameter.</param>
-        public ElementConnectionFactory(Document doc, MEPCurve baseMEPCurve, Element element1, Element element2, Element element3 = null)
+        public ElementConnectionFactory(Document doc, MEPCurve baseMEPCurve, Element element1, Element element2)
         {
             _doc = doc;
             _baseMEPCurve = baseMEPCurve;
             _element1 = element1;
             _element2 = element2;
-            _element3 = element3;
+
+            var cons1 = ConnectorUtils.GetConnectors(_element1);
+            var cons2 = ConnectorUtils.GetConnectors(_element2);
+
+            (_elem1Con, _elem2Con) = ConnectorUtils.GetClosest(cons1, cons2);
+            _dir1 = ElementUtils.GetMainDirection(_element1);
+            _dir2 = ElementUtils.GetMainDirection(_element2);
         }
 
 
@@ -41,15 +53,15 @@ namespace DS.RevitLib.Utils.Connection
         /// <inheritdoc/>
         public void Connect()
         {
-            var strategy = _element3 is null ? GetTwoElementsStrategy() : null;
+            var strategy = GetStrategy(XYZUtils.Collinearity(_dir1, _dir2), 
+                (_elem1Con.Origin - _elem2Con.Origin).IsZeroLength());
+
             if (strategy == null)
             {
                 var errorMessage = "Connection error! Unable to get connection strategy.";
                 Debug.WriteLine(errorMessage, TraceLevel.Error.ToString());
                 return;
-                //throw new ArgumentNullException(errorMessage);
             }
-
             try
             {
                 strategy.Connect();
@@ -58,33 +70,39 @@ namespace DS.RevitLib.Utils.Connection
             {
                 var errorMessage = "Connection error! Unable to connect element.";
                 Debug.WriteLine(errorMessage, TraceLevel.Error.ToString());
-                //throw new Exception(errorMessage);
             }
         }
-
-        private ElementConnectionStrategy GetTwoElementsStrategy()
-        {
-            var cons1 = ConnectorUtils.GetConnectors(_element1);
-            var cons2 = ConnectorUtils.GetConnectors(_element2);
-
-            var (elem1Con, elem2Con) = ConnectorUtils.GetClosest(cons1, cons2);
-            var dir1 = ElementUtils.GetMainDirection(_element1);
-            var dir2 = ElementUtils.GetMainDirection(_element2);
-
-            //if points coincidence
-            if ((elem1Con.Origin - elem2Con.Origin).IsZeroLength())
+        private ElementConnectionStrategy GetStrategy(bool dirParallel, bool consCoincidense) =>
+            (dirParallel, consCoincidense) switch
             {
-                if (XYZUtils.Collinearity(dir1, dir2)) { elem1Con.ConnectTo(elem2Con); }
-                else { return null; }
-            }
+                (true, true) => new ConnectWithMEPCurve(_doc, _elem1Con, _elem2Con, _baseMEPCurve, 
+                    Trb ?? new TransactionBuilder(_doc)),
+                (false, _) => new ElbowElementStrategy(_doc, _elem1Con, _elem2Con, _baseMEPCurve),
+                _ => null
+            };
 
-            return new ConnectWithMEPCurve(_doc, elem1Con, elem2Con, _baseMEPCurve, Trb ?? new TransactionBuilder(_doc));
+        //private ElementConnectionStrategy GetTwoElementsStrategy()
+        //{
 
-           
-            return null;
-            //return _element3 is null ? 
-            //    new ElbowElementStrategy(_doc, cons1, cons2) : 
-            //    new TeeElementStrategy(_doc, cons1, cons2, ConnectorUtils.GetConnectors(_element3));
-        }
+        //    if (XYZUtils.Collinearity(_dir1, _dir2))
+        //    {
+        //        if ((_elem1Con.Origin - _elem2Con.Origin).IsZeroLength())
+        //        {
+        //            _elem1Con.ConnectTo(_elem2Con);
+        //        }
+        //        else
+        //        {
+        //            return new ConnectWithMEPCurve(_doc, _elem1Con, _elem2Con, _baseMEPCurve, Trb ?? new TransactionBuilder(_doc));
+        //        }
+        //    }
+        //    else
+        //    {
+        //        return new ElbowElementStrategy(_doc, _elem1Con, _elem2Con, _baseMEPCurve);
+        //    }
+
+        //    return null;
+        //}
+
+
     }
 }

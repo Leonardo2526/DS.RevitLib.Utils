@@ -9,7 +9,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
     /// Class for create and modify MEPCurves. 
     /// Transactions are not provided, so methods should be wrapped to transacion.
     /// </summary>
-    internal class MEPCurveCreator
+    public class MEPCurveCreator
     {
         private readonly Document _doc;
         private readonly MEPCurve _baseMEPCurve;
@@ -110,25 +110,6 @@ namespace DS.RevitLib.Utils.MEP.Creator
             ElementParameter.CopyAllParameters(baseMEPCurve, mEPCurve);
 
             return mEPCurve;
-        }
-
-        /// <summary>
-        /// Swap MEPCurve's width and height.
-        /// </summary>
-        /// <param name="mEPCurve"></param>
-        /// <returns>Return MEPCurve with swaped parameters.</returns>
-        public MEPCurve SwapSize(MEPCurve mEPCurve)
-        {
-            double width = mEPCurve.Width;
-            double height = mEPCurve.Height;
-
-            Parameter widthParam = mEPCurve.get_Parameter(BuiltInParameter.RBS_CURVE_WIDTH_PARAM);
-            Parameter heightParam = mEPCurve.get_Parameter(BuiltInParameter.RBS_CURVE_HEIGHT_PARAM);
-
-            widthParam.Set(height);
-            heightParam.Set(width);
-
-            return mEPCurve;
-        }
+        }       
     }
 }

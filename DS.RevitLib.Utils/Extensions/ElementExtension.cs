@@ -367,5 +367,37 @@ namespace DS.RevitLib.Utils.Extensions
                 if (con1 is not null && con2 is not null && !con1.IsConnectedTo(con2)) { con1.ConnectTo(con2); };
             }
         }
+
+        /// <summary>
+        /// Get element's size by vector of element's center point.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <param name="normVector"></param>
+        /// <returns>Return distance between element's center point and intersection point between vector and element's solid.</returns>
+        public static double GetSizeByVector(this Element element, XYZ normVector)
+        {
+            List<Solid> elemSolids = ElementUtils.GetSolids(element);
+            Solid elemSolid = elemSolids.First();
+
+            XYZ centerPoint = GetLocationPoint(element);
+            Line centerLine = element.GetCenterLine();
+
+            Line intersectLine = Line.CreateBound(centerPoint, centerPoint + normVector.Multiply(100));
+
+            var intersectOptions = new SolidCurveIntersectionOptions();
+            SolidCurveIntersection intersection = elemSolid.IntersectWithCurve(intersectLine, intersectOptions);
+
+            XYZ intersectionPoint = null;
+            if (intersection.SegmentCount != 0)
+            {
+                XYZ p1 = intersection.GetCurveSegment(0).GetEndPoint(0);
+                XYZ p2 = intersection.GetCurveSegment(0).GetEndPoint(1);
+
+                (XYZ minPoint, XYZ maxPoint) = XYZUtils.GetMinMaxPoints(new List<XYZ> { p1, p2 }, centerLine);
+                intersectionPoint = maxPoint;
+            }
+
+            return centerLine.Distance(intersectionPoint);
+        }
     }
 }

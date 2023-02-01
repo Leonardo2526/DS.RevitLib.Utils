@@ -30,7 +30,7 @@ namespace DS.RevitLib.Test
 
             //var test = new MEPSystemBuilderTest(doc, uidoc);
             var test = new ConnectionFactoryClient(uidoc);
-            test.Run();
+            test.Run2();
             //test.RepeatRun();
 
 

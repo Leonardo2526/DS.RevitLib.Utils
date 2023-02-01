@@ -40,8 +40,8 @@ namespace DS.RevitLib.Utils.Connection
             if (strategy == null)
             {
                 var errorMessage = "Connection error! Unable to get connection strategy.";
-                Debug.WriteLine(errorMessage, TraceLevel.Error.ToString()); 
-                throw new ArgumentNullException(errorMessage);
+                Debug.WriteLine(errorMessage, TraceLevel.Error.ToString());
+                //throw new ArgumentNullException(errorMessage);
             }
 
             try

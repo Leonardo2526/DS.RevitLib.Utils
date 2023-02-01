@@ -109,7 +109,6 @@
     <Compile Include="Elements\MEPElements\Connection\ElementStrategies\ConnectWithMEPCurve.cs" />
     <Compile Include="Elements\MEPElements\Connection\ElementStrategies\ElbowElementStrategy.cs" />
     <Compile Include="Elements\MEPElements\Connection\ElementStrategies\ElementConnectionStrategy.cs" />
-    <Compile Include="Elements\MEPElements\Connection\ElementStrategies\TeeElementStrategy.cs" />
     <Compile Include="Elements\MEPElements\Connection\IConnectionFactory.cs" />
     <Compile Include="Elements\MEPElements\Connection\MEPCurveStrategies\ConnectorMEPCurveStrategy.cs" />
     <Compile Include="Elements\MEPElements\Connection\IConnectionStrategy.cs" />
