@@ -24,13 +24,14 @@ namespace DS.RevitLib.Test
             UIDocument uidoc = uiapp.ActiveUIDocument;
             Document doc = uiapp.ActiveUIDocument.Document;
 
-            //var test = new AlignMEPCurvesTest(uidoc);
+            var test = new SolidContainsPointTest( doc, uidoc);
             //var test = new BuilderByPointsTest(uidoc);
             //var test = new GetAssociatedParameterTest(uidoc);
 
             //var test = new MEPSystemBuilderTest(doc, uidoc);
-            var test = new ConnectionFactoryClient(uidoc);
-            test.Run2();
+            //var test = new ConnectionFactoryClient(uidoc);
+            test.RunMultiple();
+            //test.Run();
             //test.RepeatRun();
 
 

@@ -148,15 +148,16 @@ namespace DS.RevitLib.Utils.Extensions
         {
             double multiplicator = 100;
             Line line1 = Line.CreateBound(point, point + XYZUtils.GenerateXYZ().Multiply(multiplicator));
-            Line line2 = Line.CreateBound(point, point + XYZUtils.GenerateXYZ().Multiply(multiplicator));
 
-            var options = new SolidCurveIntersectionOptions()
-            { ResultType = SolidCurveIntersectionMode.CurveSegmentsInside };
-            var intersecion1 = solid.IntersectWithCurve(line1, options);
-            var intersecion2 = solid.IntersectWithCurve(line2, options);
-            int segments = intersecion1.SegmentCount + intersecion2.SegmentCount;
+            var faces = solid.Faces;
+            int intersectionCount = 0;
+            foreach (Face face in faces)
+            {
+                if (face.Intersect(line1) == SetComparisonResult.Overlap)
+                { intersectionCount++; }
+            }
 
-            return segments > 0 && segments % 2 == 0;
+            return intersectionCount % 2 != 0;
         }
     }
 }

@@ -27,6 +27,7 @@ namespace DS.RevitLib.Test
             _doc = doc;
         }
 
+
         public void Run()
         {
             Reference reference = _uidoc.Selection.PickObject(ObjectType.Element, "Select element1");
@@ -44,8 +45,7 @@ namespace DS.RevitLib.Test
             var intersect = IsIntersect(solid1, points);
             Debug.WriteLine(intersect);
         }
-
-        public void Run1()
+        public void RunMultiple()
         {
             MEPCurve mEPCurve1 = _doc.GetElement(new ElementId(709096)) as MEPCurve;
             var mEPSystem1 = new SimpleMEPSystemBuilder(mEPCurve1).Build();
@@ -62,6 +62,7 @@ namespace DS.RevitLib.Test
                         if (elem.Id.IntegerValue == 709096)
                         {
                             count++;
+                            Debug.WriteLine($"Step: {count} is valid.");
                             continue;
                         }
                         else

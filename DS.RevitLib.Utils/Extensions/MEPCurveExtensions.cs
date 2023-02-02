@@ -281,7 +281,7 @@ namespace DS.RevitLib.Utils.MEP
             var orths = ElementUtils.GetOrthoNormVectors(mEPCurve);
             var zOrth = orths.FirstOrDefault(obj => XYZUtils.Collinearity(XYZ.BasisZ, obj));
             if(zOrth == null) 
-            { Debug.WriteLine($"Warning: failed to check MEPCurve {mEPCurve.Id} orientation."); return true; }
+            { /*Debug.WriteLine($"Warning: failed to check MEPCurve {mEPCurve.Id} orientation."); */ return true; }
 
             var height = mEPCurve.GetSizeByVector(zOrth) * 2;
 
