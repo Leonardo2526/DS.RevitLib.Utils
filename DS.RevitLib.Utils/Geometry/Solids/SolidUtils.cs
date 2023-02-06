@@ -2,6 +2,7 @@
 using DS.RevitLib.Utils.MEP;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace DS.RevitLib.Utils.Solids
@@ -39,7 +40,7 @@ namespace DS.RevitLib.Utils.Solids
                 }
                 catch (Exception ex)
                 {
-                    //TaskDialog.Show("Error", "Failed to find unite the solids. \n" + ex.Message);
+                    Debug.WriteLine("Exception message: Failed to unite the solids");   
                     continue;
                 }
             }

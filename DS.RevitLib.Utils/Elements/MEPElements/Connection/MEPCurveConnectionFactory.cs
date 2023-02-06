@@ -41,6 +41,7 @@ namespace DS.RevitLib.Utils.Connection
             {
                 var errorMessage = "Connection error! Unable to get connection strategy.";
                 Debug.WriteLine(errorMessage, TraceLevel.Error.ToString());
+                return;
                 //throw new ArgumentNullException(errorMessage);
             }
 

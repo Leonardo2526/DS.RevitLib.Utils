@@ -94,5 +94,21 @@ namespace DS.RevitLib.Utils.Extensions
 
             return loadedLinks;
         }
+
+
+        /// <summary>
+        /// Get all <paramref name="doc"/> MEPSystems of <typeparamref name="T"/> type.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="doc"></param>
+        /// <returns>Returns list of <see cref="MEPSystem"/>'s of <paramref name="doc"/>.
+        /// <para>
+        /// Returns <see langword="null"/> if no systems of <typeparamref name="T"/> type was found.
+        /// </para>
+        /// </returns>
+        public static List<T> GetMEPSystems<T>(this Document doc) where T : MEPSystem
+        {
+            return new FilteredElementCollector(doc).OfClass(typeof(T))?.Cast<T>().ToList();
+        }
     }
 }

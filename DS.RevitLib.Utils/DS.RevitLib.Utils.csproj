@@ -137,6 +137,7 @@
     <Compile Include="Extensions\ElementExtension.cs" />
     <Compile Include="Extensions\DocumentExtensions.cs" />
     <Compile Include="Extensions\ConvertationExtensions.cs" />
+    <Compile Include="Extensions\MEPSystemExtensions.cs" />
     <Compile Include="Geometry\GeometryElementsUtils.cs" />
     <Compile Include="Geometry\Lines\LinesConnector.cs" />
     <Compile Include="Geometry\Solids\SolidOffsetExtractor.cs" />
@@ -160,6 +161,7 @@
     <Compile Include="Elements\Models\MEPCurveGeometryModel.cs" />
     <Compile Include="PathFinders\IvanovPathFinder.cs" />
     <Compile Include="PathFinders\SimplePathFinder.cs" />
+    <Compile Include="Tests\ITestModel.cs" />
     <Compile Include="Various\SectionBox.cs" />
     <Compile Include="Various\FamilyInstanceSelectionFilter.cs" />
     <Compile Include="Geometry\Solids\Creatros\MEPCurveSolidCreator.cs" />
