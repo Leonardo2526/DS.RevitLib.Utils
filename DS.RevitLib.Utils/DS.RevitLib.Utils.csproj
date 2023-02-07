@@ -162,6 +162,7 @@
     <Compile Include="PathFinders\IvanovPathFinder.cs" />
     <Compile Include="PathFinders\SimplePathFinder.cs" />
     <Compile Include="Tests\ITestModel.cs" />
+    <Compile Include="Various\ElementSelector.cs" />
     <Compile Include="Various\SectionBox.cs" />
     <Compile Include="Various\FamilyInstanceSelectionFilter.cs" />
     <Compile Include="Geometry\Solids\Creatros\MEPCurveSolidCreator.cs" />
@@ -173,6 +174,7 @@
     <Compile Include="Creation\Transactions\AbstractTransactionBuilder.cs" />
     <Compile Include="Creation\Transactions\TransactionBuilder.cs" />
     <Compile Include="Creation\Transactions\TrgEventBuilder.cs" />
+    <Compile Include="Various\SelectorBase.cs" />
     <Compile Include="Various\Transforms\TransformBuilder.cs" />
     <Compile Include="Various\Transforms\TransformModel.cs" />
     <Compile Include="Various\Basisis\Basis.cs" />
