@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.ApplicationServices;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
+using DS.RevitLib.Utils.Various;
 using System.Collections.Generic;
 
 namespace DS.RevitLib.Utils.GPExtractor
@@ -22,8 +23,7 @@ namespace DS.RevitLib.Utils.GPExtractor
 
         public void Create()
         {
-            PickedElement pickedElement = new PickedElement(Uidoc, Doc);
-            Element element = pickedElement.GetElement();
+            Element element = new ElementSelector(Uidoc).Pick();
 
             List<Solid> solids = ElementUtils.GetSolids(element);
             List<XYZ> points = GPExtractor.GetGeneralPoints(solids);

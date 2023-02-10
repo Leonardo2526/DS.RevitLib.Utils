@@ -24,13 +24,13 @@ namespace DS.RevitLib.Test
             UIDocument uidoc = uiapp.ActiveUIDocument;
             Document doc = uiapp.ActiveUIDocument.Document;
 
-            var test = new SolidContainsPointTest( doc, uidoc);
+            //var test = new SolidContainsPointTest( doc, uidoc);
             //var test = new BuilderByPointsTest(uidoc);
             //var test = new GetAssociatedParameterTest(uidoc);
 
             //var test = new MEPSystemBuilderTest(doc, uidoc);
             //var test = new ConnectionFactoryClient(uidoc);
-            test.RunMultiple();
+            //test.RunMultiple();
             //test.Run();
             //test.RepeatRun();
 
@@ -43,8 +43,9 @@ namespace DS.RevitLib.Test
             //var selector = new SystemModelTest(uidoc, doc, uiapp);
             //selector.RunTest();
 
-            //var test = new SolidPlacerTest(uidoc, doc, uiapp);
-            //test.Run();
+            var test = new SelectionTest(uidoc);
+            //test.SelectInLink();
+            test.Run();
 
             return Autodesk.Revit.UI.Result.Succeeded;
         }

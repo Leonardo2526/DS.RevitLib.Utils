@@ -162,9 +162,12 @@
     <Compile Include="PathFinders\IvanovPathFinder.cs" />
     <Compile Include="PathFinders\SimplePathFinder.cs" />
     <Compile Include="Tests\ITestModel.cs" />
-    <Compile Include="Various\ElementSelector.cs" />
+    <Compile Include="Various\Selections\Filters\ElementInLinkSelectionFilter.cs" />
+    <Compile Include="Various\Selections\Filters\IAdvancedSelectionFilter.cs" />
+    <Compile Include="Various\Selections\MEPCurveSelector.cs" />
+    <Compile Include="Various\Selections\ElementSelector.cs" />
     <Compile Include="Various\SectionBox.cs" />
-    <Compile Include="Various\FamilyInstanceSelectionFilter.cs" />
+    <Compile Include="Various\Selections\Filters\ElementSelectionFilter.cs" />
     <Compile Include="Geometry\Solids\Creatros\MEPCurveSolidCreator.cs" />
     <Compile Include="Geometry\Solids\Creatros\SolidCreatorBase.cs" />
     <Compile Include="Geometry\Solids\Creatros\SphereCreator.cs" />
@@ -174,7 +177,7 @@
     <Compile Include="Creation\Transactions\AbstractTransactionBuilder.cs" />
     <Compile Include="Creation\Transactions\TransactionBuilder.cs" />
     <Compile Include="Creation\Transactions\TrgEventBuilder.cs" />
-    <Compile Include="Various\SelectorBase.cs" />
+    <Compile Include="Various\Selections\SelectorBase.cs" />
     <Compile Include="Various\Transforms\TransformBuilder.cs" />
     <Compile Include="Various\Transforms\TransformModel.cs" />
     <Compile Include="Various\Basisis\Basis.cs" />
@@ -223,7 +226,6 @@
     <Compile Include="Extensions\CategoryExtension.cs" />
     <Compile Include="Geometry\Points\GPExtractor\GPCreator.cs" />
     <Compile Include="Geometry\Points\GPExtractor\GPExtractor.cs" />
-    <Compile Include="Elements\IElement.cs" />
     <Compile Include="Geometry\Points\GPExtractor\VisiblePointsCreator.cs" />
     <Compile Include="Creation\MEP\MEPCurveTransactions.cs" />
     <Compile Include="Creation\MEP\FamInstTransactions.cs" />
@@ -239,7 +241,6 @@
     <Compile Include="Geometry\Solids\Models\SolidModel.cs" />
     <Compile Include="Geometry\Solids\Models\SolidModelExt.cs" />
     <Compile Include="Geometry\Solids\SolidByCollector.cs" />
-    <Compile Include="Elements\PickedElement.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Geometry\Solids\SolidExtractor.cs" />
     <Compile Include="Geometry\Solids\SolidPlacer.cs" />

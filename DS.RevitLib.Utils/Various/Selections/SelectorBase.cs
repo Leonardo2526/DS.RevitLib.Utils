@@ -1,5 +1,6 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
+using Autodesk.Revit.UI.Selection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,8 +17,6 @@ namespace DS.RevitLib.Utils.Various
     {
         protected readonly UIDocument _uiDoc;
         protected readonly Document _doc;
-        protected readonly Type _type;
-        protected string _defaultStatusPrompt;
 
         /// <summary>
         /// Instantiate an object to retrieve the currently selected <typeparamref name="T"/> in Autodesk Revit.
@@ -27,16 +26,38 @@ namespace DS.RevitLib.Utils.Various
         {
             _uiDoc = uiDoc;
             _doc = uiDoc.Document;
-            _defaultStatusPrompt = $"Select {typeof(T).Name}";
         }
 
+
         /// <summary>
-        /// Inititate object selection in Autodesk Revit model.
+        /// Specify if it's allowed to select <see cref="RevitLinkInstance"/>.
+        /// </summary>
+        public bool AllowLink { get; set; } = true;
+
+        /// <summary>
+        /// Filter for picking elements.
+        /// </summary>
+        protected abstract ISelectionFilter Filter { get; }
+
+        /// <summary>
+        /// Filter for picking elements in link.
+        /// </summary>
+        protected abstract ISelectionFilter FilterInLink { get; }
+
+        /// <summary>
+        /// Inititate object selection by picking in Autodesk Revit model.
         /// </summary>
         /// <param name="statusPrompt"></param>
         /// <param name="promptSuffix"></param>
         /// <returns>Returns an <typeparamref name="T"/> that represents the active selection.</returns>
-        public abstract T Select(string statusPrompt = null, string promptSuffix = null);
+        public abstract T Pick(string statusPrompt = null, string promptSuffix = null);
+
+        /// <summary>
+        /// Set selection by <paramref name="elements"/>. 
+        /// </summary>
+        /// <param name="elements"></param>
+        public abstract void Set(List<T> elements);
+
 
         /// <summary>
         /// Build string for status prompt.
@@ -47,10 +68,22 @@ namespace DS.RevitLib.Utils.Various
         protected string GetStatusPrompt(string statusPrompt = null, string promptSuffix = null)
         {
             var stringBuilder = new StringBuilder();
-            stringBuilder.AppendLine(statusPrompt ?? _defaultStatusPrompt);
+            stringBuilder.AppendLine(statusPrompt ?? $"Select {typeof(T).Name}");
             stringBuilder.AppendLine(promptSuffix is null ? null : promptSuffix);
 
             return stringBuilder.ToString();
+        }
+
+        /// <summary>
+        /// Inititate element selection in <paramref name="link"/> by picking it in Autodesk Revit model.
+        /// </summary>
+        /// <param name="link"></param>
+        /// <returns>Returns element in <paramref name="link"/>.</returns>
+        protected Element PickInLink(RevitLinkInstance link)
+        {
+            Reference refElemLinked = 
+                _uiDoc.Selection.PickObject(ObjectType.LinkedElement, FilterInLink, $"Please pick an element in link: {link.Name}");
+            return link.GetLinkDocument().GetElement(refElemLinked.LinkedElementId);
         }
     }
 }
