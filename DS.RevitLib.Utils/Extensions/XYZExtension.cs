@@ -108,14 +108,16 @@ namespace DS.RevitLib.Utils.Extensions
         /// <summary>
         /// Check if current point lies inside segment between point1 and point2.
         /// </summary>
+        /// <param name="point"></param>
         /// <param name="point1"></param>
         /// <param name="point2"></param>
+        /// <param name="tolerance">Tolerance in degrees.</param>
         /// <returns></returns>
-        public static bool IsBetweenPoints(this XYZ point, XYZ point1, XYZ point2)
+        public static bool IsBetweenPoints(this XYZ point, XYZ point1, XYZ point2, double tolerance = 3)
         {
             var v1 = (point - point1).Normalize();
             var v2 = (point - point2).Normalize();
-            if (v1.IsAlmostEqualTo(v2.Negate(), 3.DegToRad()))
+            if (v1.IsAlmostEqualTo(v2.Negate(), tolerance.DegToRad()))
             {
                 return true;
             }

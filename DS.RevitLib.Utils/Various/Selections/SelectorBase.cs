@@ -53,13 +53,6 @@ namespace DS.RevitLib.Utils.Various
         public abstract T Pick(string statusPrompt = null, string promptSuffix = null);
 
         /// <summary>
-        /// Set selection by <paramref name="elements"/>. 
-        /// </summary>
-        /// <param name="elements"></param>
-        public abstract void Set(List<T> elements);
-
-
-        /// <summary>
         /// Build string for status prompt.
         /// </summary>
         /// <param name="statusPrompt"></param>

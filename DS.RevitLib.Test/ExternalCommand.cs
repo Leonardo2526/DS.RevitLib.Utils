@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Security.Cryptography;
 using DS.RevitLib.Test.TestedClasses;
+using DS.RevitLib.Utils;
 
 namespace DS.RevitLib.Test
 {
@@ -44,8 +45,13 @@ namespace DS.RevitLib.Test
             //selector.RunTest();
 
             var test = new SelectionTest(uidoc);
+            //var elem = test.PickElement();
             //test.SelectInLink();
-            test.Run();
+            try
+            { var elem = test.CenterPoint(); }
+            catch (Exception ex)
+            { var elem = test.PickPoint(); }
+
 
             return Autodesk.Revit.UI.Result.Succeeded;
         }

@@ -35,11 +35,6 @@ namespace DS.RevitLib.Utils.Various
                 PickInLink(element as RevitLinkInstance) as MEPCurve : 
                 element as MEPCurve;
         }
-
-        /// <inheritdoc/>
-        public override void Set(List<MEPCurve> elements)
-        {
-            _uiDoc.Selection.SetElementIds(elements.Select(obj => obj.Id).ToList());
-        }
+      
     }
 }

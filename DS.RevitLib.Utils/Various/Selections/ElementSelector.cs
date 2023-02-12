@@ -35,11 +35,5 @@ namespace DS.RevitLib.Utils.Various
                 PickInLink(element as RevitLinkInstance) : 
                 element;
         }
-
-        /// <inheritdoc/>
-        public override void Set(List<Element> elements)
-        {
-            _uiDoc.Selection.SetElementIds(elements.Select(obj => obj.Id).ToList());
-        }
     }
 }

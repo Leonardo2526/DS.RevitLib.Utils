@@ -536,6 +536,7 @@ namespace DS.RevitLib.Utils.MEP
 
             if (element is FamilyInstance)
             {
+                if(connectors.Count ==2) { return (connectors[0], connectors[1]); }
                 for (int i = 0; i < connectors.Count - 1; i++)
                 {
                     for (int j = i + 1; j < connectors.Count; j++)
