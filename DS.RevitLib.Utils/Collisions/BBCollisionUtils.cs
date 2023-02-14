@@ -56,10 +56,12 @@ namespace DS.RevitLib.Utils.Collisions
             List<Element> allElementsInOutline = new List<Element>();
 
             //get elements by outline in current Document
-            List<Element> docElements = Collector.WherePasses(new BoundingBoxIntersectsFilter(outline, tolerance)).
+            List<Element> docElements = Collector?.WherePasses(new BoundingBoxIntersectsFilter(outline, tolerance)).
                 WherePasses(exclusionFilter).
                    ToElements().ToList();
-            allElementsInOutline.AddRange(docElements);
+            if(docElements!= null && docElements.Any()) { allElementsInOutline.AddRange(docElements); }
+            else { return allElementsInOutline; }
+            
 
 
             //get elements by outline in all links

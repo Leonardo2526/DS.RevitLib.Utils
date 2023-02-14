@@ -20,7 +20,7 @@ namespace DS.RevitLib.Utils.Various
         }
 
         /// <inheritdoc/>
-        protected override ISelectionFilter Filter => new ElementSelectionFilter<Element>();
+        protected override ISelectionFilter Filter => new ElementSelectionFilter<Element>() { AllowLink = AllowLink};
 
         /// <inheritdoc/>
         protected override ISelectionFilter FilterInLink => new ElementInLinkSelectionFilter<MEPCurve>(_doc);
