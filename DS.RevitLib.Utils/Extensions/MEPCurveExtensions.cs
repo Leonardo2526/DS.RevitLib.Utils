@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.Electrical;
 using Autodesk.Revit.DB.Mechanical;
 using Autodesk.Revit.DB.Plumbing;
 using DS.RevitLib.Utils.Extensions;
@@ -109,12 +110,16 @@ namespace DS.RevitLib.Utils.MEP
         }
 
         /// <summary>
-        /// Get mEPCurve's insulation thickness.
+        /// Get <paramref name="mEPCurve"/>'s insulation thickness.
         /// </summary>
         /// <param name="mEPCurve"></param>
-        /// <returns>Return thickness.</returns>
+        /// <returns>Return <paramref name="mEPCurve"/>'s insulation thickness if it's applicable.
+        /// Otherwize returns 0.</returns>
         public static double GetInsulationThickness(this MEPCurve mEPCurve)
         {
+            if (mEPCurve.GetType() == typeof(CableTray) || mEPCurve.GetType() == typeof(CableTray))
+            { return 0; }
+
             var insulations = InsulationLiningBase.GetInsulationIds(mEPCurve.Document, mEPCurve.Id)
                 .Select(x => mEPCurve.Document.GetElement(x) as InsulationLiningBase).ToList();
 
@@ -134,7 +139,7 @@ namespace DS.RevitLib.Utils.MEP
         public static (double width, double heigth) GetOuterWidthHeight(this MEPCurve mEPCurve)
         {
             double width = 0;
-            double heigth = 0;
+            double height = 0;
 
             ConnectorProfileType connectorProfileType = mEPCurve.GetProfileType();
             switch (connectorProfileType)
@@ -145,13 +150,13 @@ namespace DS.RevitLib.Utils.MEP
                     {
                         Parameter diameter = mEPCurve.get_Parameter(BuiltInParameter.RBS_PIPE_OUTER_DIAMETER);
                         width = diameter.AsDouble();
-                        heigth = width;
+                        height = width;
                     }
                     break;
                 case ConnectorProfileType.Rectangular:
                     {
                         width = mEPCurve.Width;
-                        heigth = mEPCurve.Height;
+                        height = mEPCurve.Height;
                     }
                     break;
                 case ConnectorProfileType.Oval:
@@ -160,7 +165,96 @@ namespace DS.RevitLib.Utils.MEP
                     break;
             }
 
-            return (width, heigth);
+            return (width, height);
+        }
+
+        /// <summary>
+        /// Get outer width of MEPCurve.
+        /// </summary>
+        /// <param name="mEPCurve"></param>
+        /// <returns>Returns actual width if <paramref name="mEPCurve"/>'s profile type is rectangle. 
+        /// If profile type is round returns outer diameter.</returns>
+        public static double GetOuterWidth(this MEPCurve mEPCurve)
+        {
+            ConnectorProfileType connectorProfileType = mEPCurve.GetProfileType();
+            switch (connectorProfileType)
+            {
+                case ConnectorProfileType.Invalid:
+                    break;
+                case ConnectorProfileType.Round:
+                    {
+                        Parameter diameter = mEPCurve.get_Parameter(BuiltInParameter.RBS_PIPE_OUTER_DIAMETER);
+                        return diameter.AsDouble();
+                    }
+                case ConnectorProfileType.Rectangular:
+                    {
+                        return mEPCurve.Width;
+                    }
+                case ConnectorProfileType.Oval:
+                    break;
+                default:
+                    break;
+            }
+
+            return 0;
+        }
+
+        /// <summary>
+        /// Get outer height of MEPCurve.
+        /// </summary>
+        /// <param name="mEPCurve"></param>
+        /// <returns>Returns actual height if <paramref name="mEPCurve"/>'s profile type is rectangle. 
+        /// If profile type is round returns outer diameter.</returns>
+        public static double GetOuterHeight(this MEPCurve mEPCurve)
+        {
+            ConnectorProfileType connectorProfileType = mEPCurve.GetProfileType();
+            switch (connectorProfileType)
+            {
+                case ConnectorProfileType.Invalid:
+                case ConnectorProfileType.Round:
+                    {
+                        Parameter diameter = mEPCurve.get_Parameter(BuiltInParameter.RBS_PIPE_OUTER_DIAMETER);
+                        return diameter.AsDouble();
+                    }
+                case ConnectorProfileType.Rectangular:
+                    {
+                        return mEPCurve.Height;
+                    }
+                case ConnectorProfileType.Oval:
+                    break;
+                default:
+                    break;
+            }
+
+            return 0;
+        }
+
+
+        /// <summary>
+        /// Get outer cross section <paramref name="mEPCurve"/> area.
+        /// </summary>
+        /// <param name="mEPCurve"></param>
+        /// <returns>Returns calculated area.</returns>
+        public static double GetOuterArea(this MEPCurve mEPCurve)
+        {
+            (double width, double height) = GetOuterWidthHeight(mEPCurve);
+
+            var type = mEPCurve.Document.GetElement(mEPCurve.GetTypeId()) as MEPCurveType;
+            var shape = type.Shape;
+
+            switch (shape)
+            {
+                case ConnectorProfileType.Invalid:
+                    break;
+                case ConnectorProfileType.Round:                 
+                    return Math.PI * Math.Pow(width, 2) / 4;
+                case ConnectorProfileType.Rectangular:
+                    return width * height;
+                case ConnectorProfileType.Oval:
+                    break;
+            }
+
+            return 0;
         }
 
         /// <summary>

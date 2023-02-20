@@ -69,6 +69,7 @@
     <Compile Include="TestedClasses\ArcCreationTest.cs" />
     <Compile Include="TestedClasses\BBCollisionUtilsTest.cs" />
     <Compile Include="TestedClasses\BuilderByPointsTest.cs" />
+    <Compile Include="TestedClasses\CableTrayTest.cs" />
     <Compile Include="TestedClasses\ConnectionFactoryClient.cs" />
     <Compile Include="ExternalCommand.cs" />
     <Compile Include="TestedClasses\ElementsExtractorTest.cs" />

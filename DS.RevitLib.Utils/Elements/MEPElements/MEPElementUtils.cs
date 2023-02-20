@@ -3,6 +3,7 @@ using Autodesk.Revit.DB.Mechanical;
 using Autodesk.Revit.DB.Plumbing;
 using Autodesk.Revit.UI;
 using DS.RevitLib.Utils.Extensions;
+using DS.RevitLib.Utils.MEP.Models;
 using Ivanov.RevitLib.Utils;
 using System;
 using System.Collections.Generic;
@@ -210,6 +211,20 @@ namespace DS.RevitLib.Utils.MEP
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Connect <paramref name="element1"/> with <paramref name="element2"/> if they have common connector.
+        /// </summary>
+        /// <param name="element1"></param>
+        /// <param name="element2"></param>
+        public static void Connect(Element element1, Element element2)
+        {          
+            var (elem1Con, elem2Con) = ConnectorUtils.GetCommonNotConnectedConnectors(element1, element2);
+            if(elem1Con is null || elem2Con is null) { return; }
+            if(elem1Con.IsConnectedTo(elem2Con)) { return; }
+            else
+            {elem1Con.ConnectTo(elem2Con);}
         }
 
         /// <summary>

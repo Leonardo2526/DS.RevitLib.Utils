@@ -26,13 +26,17 @@ namespace DS.RevitLib.Test
             Document doc = uiapp.ActiveUIDocument.Document;
 
             //var test = new SolidContainsPointTest( doc, uidoc);
-            var test = new BuilderByPointsTest(uidoc);
+            //var test = new BuilderByPointsTest(uidoc);
             //var test = new GetAssociatedParameterTest(uidoc);
 
             //var test = new MEPSystemBuilderTest(doc, uidoc);
-            //var test = new ConnectionFactoryClient(uidoc);
-            //test.RunMultiple();
+
+            var test = new ConnectionFactoryClient(uidoc);
             test.Run();
+
+            //var test = new CableTrayTest(uidoc);
+            //test.Break();
+            //test.RunMultiple();
             //test.RepeatRun();
 
 

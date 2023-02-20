@@ -48,15 +48,6 @@ namespace DS.RevitLib.Utils.Connection
             try
             {
                 strategy.Connect();
-                //Debug.WriteLineIf(_mEPCurveModel3 is null, 
-                //    $"MEPCurve {_mEPCurveModel1.MEPCurve.Id} and " +
-                //    $"MEPCurve {_mEPCurveModel2.MEPCurve.Id} connected succefully.", 
-                //    TraceLevel.Info.ToString());
-                //Debug.WriteLineIf(_mEPCurveModel3 is not null,
-                //    $"MEPCurve {_mEPCurveModel1.MEPCurve.Id}, " +
-                //    $"MEPCurve {_mEPCurveModel2.MEPCurve.Id}  " +
-                //    $"and MEPCurve {_mEPCurveModel3?.MEPCurve.Id} connected succefully.",
-                //    TraceLevel.Info.ToString());
             }
             catch (System.Exception)
             {
@@ -100,7 +91,7 @@ namespace DS.RevitLib.Utils.Connection
             }
 
             var routePrefManager = _mEPCurveModel1.MEPCurveType.RoutingPreferenceManager;
-            switch (routePrefManager.PreferredJunctionType)
+            switch (routePrefManager?.PreferredJunctionType)
             {
                 case PreferredJunctionType.Tee:
                     {
@@ -113,11 +104,10 @@ namespace DS.RevitLib.Utils.Connection
                         return new SpudMEPCurveStrategy(_doc, _mEPCurveModel1, _mEPCurveModel2, _minLength, curve1Con);
                     }
                 default:
-                    break;
+                    return _mEPCurveModel3 is null ?
+                             new TeeWithCutMEPCurveStrategy(_doc, _mEPCurveModel1, _mEPCurveModel2, _minLength, curve1Con) :
+                             new TeeMEPCurveStrategy(_doc, _mEPCurveModel1, _mEPCurveModel2, _mEPCurveModel3, curve1Con, _minLength);
             }
-
-            return null;
-
         }
     }
 }
