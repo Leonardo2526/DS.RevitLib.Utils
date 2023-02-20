@@ -1,7 +1,11 @@
 ﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.Electrical;
 using Autodesk.Revit.DB.Mechanical;
 using Autodesk.Revit.DB.Plumbing;
 using DS.RevitLib.Utils.Elements;
+using System;
+using System.Collections.Generic;
+using System.Security.Cryptography;
 
 namespace DS.RevitLib.Utils.MEP.Creator
 {
@@ -52,10 +56,11 @@ namespace DS.RevitLib.Utils.MEP.Creator
                 return _baseMEPCurve.GetTypeId();
             }
         }
-        private string ElementTypeName
+        private Type ElemType
         {
-            get { return _baseMEPCurve.GetType().Name; }
+            get { return _baseMEPCurve.GetType(); }
         }
+
         private ElementId MEPLevelId
         {
             get
@@ -63,6 +68,8 @@ namespace DS.RevitLib.Utils.MEP.Creator
                 return _baseMEPCurve.ReferenceLevel.Id;
             }
         }
+
+
 
         #endregion
 
@@ -76,9 +83,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
         public MEPCurve Create(XYZ p1, XYZ p2, MEPCurve baseMEPCurve = null)
         {
             baseMEPCurve ??= _baseMEPCurve;
-            MEPCurve mEPCurve = ElementTypeName == "Pipe" ?
-                Pipe.Create(_doc, MEPSystemTypeId, ElementTypeId, MEPLevelId, p1, p2) :
-                Duct.Create(_doc, MEPSystemTypeId, ElementTypeId, MEPLevelId, p1, p2);
+            MEPCurve mEPCurve = CreateMEPCurve(p1, p2);
 
             Insulation.Create(baseMEPCurve, mEPCurve);
             ElementParameter.CopyAllParameters(baseMEPCurve, mEPCurve);
@@ -89,7 +94,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
         public MEPCurve Create(Connector c1, XYZ p2, MEPCurve baseMEPCurve = null)
         {
             baseMEPCurve ??= _baseMEPCurve;
-            MEPCurve mEPCurve = ElementTypeName == "Pipe" ?
+            MEPCurve mEPCurve = ElemType == typeof(Pipe) ?
                 Pipe.Create(_doc, ElementTypeId, MEPLevelId, c1, p2) :
                 Duct.Create(_doc, ElementTypeId, MEPLevelId, c1, p2);
 
@@ -102,7 +107,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
         public MEPCurve Create(Connector c1, Connector c2, MEPCurve baseMEPCurve = null)
         {
             baseMEPCurve ??= _baseMEPCurve;
-            MEPCurve mEPCurve = ElementTypeName == "Pipe" ?
+            MEPCurve mEPCurve = ElemType == typeof(Pipe) ?
                 Pipe.Create(_doc, ElementTypeId, MEPLevelId, c1, c2) :
                 Duct.Create(_doc, ElementTypeId, MEPLevelId, c1, c2);
 
@@ -110,6 +115,19 @@ namespace DS.RevitLib.Utils.MEP.Creator
             ElementParameter.CopyAllParameters(baseMEPCurve, mEPCurve);
 
             return mEPCurve;
-        }       
+        }
+
+        private MEPCurve CreateMEPCurve(XYZ p1, XYZ p2)
+        {
+            var @switch = new Dictionary<Type, Func<MEPCurve>>
+            {
+                { typeof(Pipe), () => Pipe.Create(_doc, MEPSystemTypeId, ElementTypeId, MEPLevelId, p1, p2) },
+                { typeof(Duct), () => Duct.Create(_doc, MEPSystemTypeId, ElementTypeId, MEPLevelId, p1, p2) },
+                { typeof(CableTray), () => CableTray.Create(_doc, ElementTypeId, p1, p2, MEPLevelId) }
+            };
+            @switch.TryGetValue(ElemType, out Func<MEPCurve> func);
+
+            return func();
+        }
     }
 }
