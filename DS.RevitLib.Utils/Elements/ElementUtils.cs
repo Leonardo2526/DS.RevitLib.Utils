@@ -158,22 +158,6 @@ namespace DS.RevitLib.Utils
         }
 
         /// <summary>
-        /// Check if element subtype is MEPCurve
-        /// </summary>
-        /// <param name="element"></param>
-        /// <returns></returns>
-        public static bool IsElementMEPCurve(Element element)
-        {
-            if (element.GetType().Name == "Pipe"
-                  || element.GetType().Name == "Duct"
-                  || element.GetType().Name == "Cable")
-            {
-                return true;
-            }
-            return false;
-        }
-
-        /// <summary>
         /// Check if checkingCategory coincidence with list of BuiltInCategories
         /// </summary>
         /// <param name="checkingCategory"></param>

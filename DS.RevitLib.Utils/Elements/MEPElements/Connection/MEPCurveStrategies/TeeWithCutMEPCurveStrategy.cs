@@ -1,10 +1,13 @@
 ﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.Electrical;
 using Autodesk.Revit.DB.Mechanical;
 using Autodesk.Revit.DB.Plumbing;
+using DS.RevitLib.Utils.Creation.MEP;
 using DS.RevitLib.Utils.MEP;
 using DS.RevitLib.Utils.MEP.Models;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 
 namespace DS.RevitLib.Utils.Connection.Strategies
 {
@@ -30,12 +33,7 @@ namespace DS.RevitLib.Utils.Connection.Strategies
         public override void Connect()
         {
             XYZ cutPoint = _mEPCurve2.Line.Project(_elem1Con.Origin).XYZPoint;
-            MEPCurve newMEPCurve = null;
-
-            ElementId newId = _mEPCurve2.MEPCurve.GetType().Name == "Pipe" ?
-                PlumbingUtils.BreakCurve(_doc, _mEPCurve2.MEPCurve.Id, cutPoint) :
-                MechanicalUtils.BreakCurve(_doc, _mEPCurve2.MEPCurve.Id, cutPoint);
-            newMEPCurve = (MEPCurve)_doc.GetElement(newId);
+            MEPCurve newMEPCurve = GetBreakedMEPCurve(cutPoint);
 
             (Connector con1, Connector con2) = ConnectorUtils.GetMainConnectors(newMEPCurve);
             var (c1, c2) = ConnectorUtils.GetNeighbourConnectors(_mEPCurve2.Connectors, new List<Connector> { con1, con2 });
@@ -48,6 +46,20 @@ namespace DS.RevitLib.Utils.Connection.Strategies
         public override bool IsConnectionAvailable()
         {
             throw new NotImplementedException();
+        }
+
+        private MEPCurve GetBreakedMEPCurve(XYZ cutPoint)
+        {
+            var type = _mEPCurve2.MEPCurve.GetType();
+            var @switch = new Dictionary<Type, Func<ElementId>>
+            {
+                { typeof(Pipe), () => PlumbingUtils.BreakCurve(_doc, _mEPCurve2.MEPCurve.Id, cutPoint) },
+                { typeof(Duct), () =>  MechanicalUtils.BreakCurve(_doc, _mEPCurve2.MEPCurve.Id, cutPoint) },
+                { typeof(CableTray), () =>  MEPCurveBreaker.Break(_mEPCurve2.MEPCurve, cutPoint, false).Id }
+            };
+            @switch.TryGetValue(type, out Func<ElementId> func);
+
+            return _doc.GetElement(func()) as MEPCurve;
         }
     }
 }

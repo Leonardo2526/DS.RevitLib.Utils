@@ -30,9 +30,13 @@ namespace DS.RevitLib.Test
             //var test = new GetAssociatedParameterTest(uidoc);
 
             //var test = new MEPSystemBuilderTest(doc, uidoc);
+
             //var test = new ConnectionFactoryClient(uidoc);
-            //test.RunMultiple();
             //test.Run();
+
+            var test = new CableTrayTest(uidoc);
+            test.Break();
+            //test.RunMultiple();
             //test.RepeatRun();
 
 
@@ -44,13 +48,13 @@ namespace DS.RevitLib.Test
             //var selector = new SystemModelTest(uidoc, doc, uiapp);
             //selector.RunTest();
 
-            var test = new SelectionTest(uidoc);
+            //var test = new SelectionTest(uidoc);
             //var elem = test.PickElement();
             //test.SelectInLink();
-            try
-            { var elem = test.CenterPoint(); }
-            catch (Exception ex)
-            { var elem = test.PickPoint(); }
+            //try
+            //{ var elem = test.CenterPoint(); }
+            //catch (Exception ex)
+            //{ var elem = test.PickPoint(); }
 
 
             return Autodesk.Revit.UI.Result.Succeeded;

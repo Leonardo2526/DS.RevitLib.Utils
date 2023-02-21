@@ -32,12 +32,13 @@ namespace DS.RevitLib.Test
         {
             var transactionBuilder = new TransactionBuilder(_doc);
 
-            List<XYZ> points = GetMultiplePoints();
+            List<XYZ> points = GetVerticalPoints();
             //transactionBuilder.Build(() => ShowPath(points), "ShowPath");
 
             Reference reference = _uidoc.Selection.PickObject(ObjectType.Element, "Select element1");
             _mc1 = _doc.GetElement(reference) as MEPCurve;
-
+            var mc = _doc.GetElement(reference);
+        
             var builder = new BuilderByPoints(_mc1, points);
             builder.BuildSystem(transactionBuilder);
 
@@ -49,16 +50,32 @@ namespace DS.RevitLib.Test
             //transactionBuilder.Build(() => mEPElementsModel = mEPElementsModel.WithElbows(), "Insert elbows by path");
         }
 
-        private List<XYZ> GetMultiplePoints()
+        private List<XYZ> GetHorisontalPoints()
         {
             double step = 3;
 
             var points = new List<XYZ>() { new XYZ(0, 0, 0) };
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 10; i++)
             {
                 XYZ point1 = new(points.Last().X + step, 0, 0);
                 points.Add(point1);
                 XYZ point2 = new(points.Last().X + step, points.Last().Y + step, 0);
+                points.Add(point2);
+            }
+
+            return points;
+        }
+
+        private List<XYZ> GetVerticalPoints()
+        {
+            double step = 3;
+
+            var points = new List<XYZ>() { new XYZ(0, 0, 0) };
+            for (int i = 0; i < 10; i++)
+            {
+                XYZ point1 = new(0, 0, points.Last().Z + step);
+                points.Add(point1);
+                XYZ point2 = new(points.Last().X + step, 0, points.Last().Z + step);
                 points.Add(point2);
             }
 

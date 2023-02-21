@@ -37,11 +37,12 @@ namespace DS.RevitLib.Test
 
         public void Run()
         {
-            Reference referenceMC = _uidoc.Selection.PickObject(ObjectType.Element, "Select baseMEPCurve");
-            _baseMEPCurve= _doc.GetElement(referenceMC) as MEPCurve;
+            //Reference referenceMC = _uidoc.Selection.PickObject(ObjectType.Element, "Select baseMEPCurve");
+            //_baseMEPCurve= _doc.GetElement(referenceMC) as MEPCurve;
 
             Reference reference = _uidoc.Selection.PickObject(ObjectType.Element, "Select element1");
             _element1 = _doc.GetElement(reference);
+            _baseMEPCurve = _element1 as MEPCurve;
 
             reference = _uidoc.Selection.PickObject(ObjectType.Element, "Select element2");
             _element2 = _doc.GetElement(reference);
@@ -53,6 +54,9 @@ namespace DS.RevitLib.Test
             }
             catch (Exception)
             { }
+
+            //var model = new MEPCurveGeometryModel(_baseMEPCurve);
+            //var pf = model.ProfileType;
 
             var factory = GetFactory();
             //factory.Connect();

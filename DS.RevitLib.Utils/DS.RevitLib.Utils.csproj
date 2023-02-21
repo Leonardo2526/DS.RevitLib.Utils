@@ -105,6 +105,7 @@
     <Compile Include="Collisions\Checkers\CollisionChecker.cs" />
     <Compile Include="Collisions\Checkers\ICollisionChecker.cs" />
     <Compile Include="Collisions\Checkers\SolidCollisionChecker.cs" />
+    <Compile Include="Creation\MEP\MEPCurveBreaker.cs" />
     <Compile Include="Elements\MEPElements\Connection\ElementConnectionFactory.cs" />
     <Compile Include="Elements\MEPElements\Connection\ElementStrategies\ConnectWithMEPCurve.cs" />
     <Compile Include="Elements\MEPElements\Connection\ElementStrategies\ElbowElementStrategy.cs" />
@@ -157,7 +158,7 @@
     <Compile Include="PathFinders\IPathFinder.cs" />
     <Compile Include="Extensions\LineExtensions.cs" />
     <Compile Include="Extensions\MEPCurveExtensions.cs" />
-    <Compile Include="Elements\MEPElements\MEPCurveCutter.cs" />
+    <Compile Include="Creation\MEP\MEPCurveCutter.cs" />
     <Compile Include="Elements\Models\MEPCurveGeometryModel.cs" />
     <Compile Include="PathFinders\IvanovPathFinder.cs" />
     <Compile Include="PathFinders\SimplePathFinder.cs" />

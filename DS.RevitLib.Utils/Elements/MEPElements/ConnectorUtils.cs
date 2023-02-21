@@ -187,7 +187,7 @@ namespace DS.RevitLib.Utils.MEP
                 //Get connector set of MEPModel
                 return mepModel.ConnectorManager.Connectors;
             }
-            else if (ElementUtils.IsElementMEPCurve(element))
+            else if (element is MEPCurve)
             {
                 MEPCurve mepCurve = element as MEPCurve;
 
