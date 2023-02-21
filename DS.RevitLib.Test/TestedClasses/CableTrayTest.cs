@@ -4,6 +4,7 @@ using Autodesk.Revit.UI.Selection;
 using DS.RevitLib.Utils;
 using DS.RevitLib.Utils.Creation.MEP;
 using DS.RevitLib.Utils.Extensions;
+using DS.RevitLib.Utils.MEP;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,36 +35,8 @@ namespace DS.RevitLib.Test.TestedClasses
             _mEPCurve = SelectMEPCurve();
             XYZ point = _mEPCurve.GetCenterPoint();
 
-            _trb.Build(() => MEPCurveBreaker.Break(_mEPCurve, point, true),"Break tray");
+            _trb.Build(() => _mEPCurve.Split(point), "Break tray");
         }
-
-        public static ElementId BreakConduit(Document doc, ElementId conduitId, XYZ breakPoint)
-        {
-            var conduit = doc.GetElement(conduitId);
-            //copy mepCurveToOptimize as newPipe and move to brkPoint
-            var location = conduit.Location as LocationCurve;
-            var start = location.Curve.GetEndPoint(0);
-            var end = location.Curve.GetEndPoint(1);
-            var copiedEls = ElementTransformUtils.CopyElement(doc, conduit.Id, breakPoint - start);
-            var newId = copiedEls.First();
-
-            //shorten mepCurveToOptimize and newPipe (adjust endpoints)
-            AdjustMepCurve(conduit, start, breakPoint, false);
-            AdjustMepCurve(doc.GetElement(newId), breakPoint, end, false);
-
-            return newId;
-        }
-
-        public static void AdjustMepCurve(Element mepCurve, XYZ p1, XYZ p2, bool disconnect)
-        {
-            //if (disconnect)
-            //    Disconnect(mepCurve);
-
-            var location = mepCurve.Location as LocationCurve;
-
-            location.Curve = Line.CreateBound(p1, p2);
-        }
-
 
         private MEPCurve SelectMEPCurve()
         {

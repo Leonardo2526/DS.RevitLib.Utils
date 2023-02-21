@@ -25,7 +25,7 @@ namespace DS.RevitLib.Utils.MEP.SystemTree.ConnectedBuilders
 
         private IConnectedBuilder GetBuilder(Element element)
         {
-            if (ElementUtils.IsElementMEPCurve(element))
+            if (element is MEPCurve)
             {
                 MEPCurve mEPCurve = element as MEPCurve;
                 return new OrderedConnectedBuilder(mEPCurve);

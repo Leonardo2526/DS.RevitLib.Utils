@@ -1,4 +1,6 @@
 ﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.Mechanical;
+using Autodesk.Revit.DB.Plumbing;
 using DS.RevitLib.Utils.MEP;
 using DS.RevitLib.Utils.MEP.SystemTree;
 using DS.RevitLib.Utils.Transactions;
@@ -53,9 +55,12 @@ namespace DS.RevitLib.Utils.PathFinders
             var excludedElementsInsulationIds = new List<ElementId>();
             ExceptionElements.ForEach(obj =>
             {
-                Element insulation = InsulationLiningBase.GetInsulationIds(_doc, obj)?
+                if (_doc.GetElement(obj) is Pipe || _doc.GetElement(obj) is Duct)
+                {
+                    Element insulation = InsulationLiningBase.GetInsulationIds(_doc, obj)?
                   .Select(x => _doc.GetElement(x)).FirstOrDefault();
                 if (insulation != null && insulation.IsValidObject) { excludedElementsInsulationIds.Add(insulation.Id); }
+                }
             });
             excludedElements.AddRange(excludedElementsInsulationIds.Select(obj => obj.IntegerValue).ToList());
 

@@ -13,7 +13,6 @@ namespace DS.RevitLib.Utils.Creation.MEP
         /// <summary>
         /// Break <paramref name="mEPCurve"/> at <paramref name="point"/>.
         /// </summary>
-        /// <param name="doc"></param>
         /// <param name="mEPCurve">MEPCurve to break.</param>
         /// <param name="point">Break point.</param>
         /// <param name="connect"></param>
@@ -21,6 +20,8 @@ namespace DS.RevitLib.Utils.Creation.MEP
         public static MEPCurve Break(MEPCurve mEPCurve, XYZ point, bool connect = false)
         {
             Document doc = mEPCurve.Document;
+            var connectedElements = ConnectorUtils.GetConnectedElements(mEPCurve);
+            MEPElementUtils.Disconnect(mEPCurve);
 
             //copy mepCurveToOptimize as newPipe and move to brkPoint
             var location = mEPCurve.Location as LocationCurve;
@@ -33,6 +34,9 @@ namespace DS.RevitLib.Utils.Creation.MEP
             AdjustMepCurve(mEPCurve, start, point);
             var newMEPCurve = doc.GetElement(newId) as MEPCurve;
             AdjustMepCurve(newMEPCurve, point, end);
+
+            connectedElements.ForEach(obj => MEPElementUtils.Connect(mEPCurve, obj));
+            connectedElements.ForEach(obj => MEPElementUtils.Connect(newMEPCurve, obj));
 
             if (connect) 
             {

@@ -24,7 +24,7 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
         {
             get
             {
-                return Elements.Where(x => ElementUtils.IsElementMEPCurve(x)).
+                return Elements.Where(x => x is MEPCurve).
                     Select(x => x as MEPCurve).ToList();
             }
         }

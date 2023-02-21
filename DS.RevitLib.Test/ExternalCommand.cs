@@ -31,11 +31,11 @@ namespace DS.RevitLib.Test
 
             //var test = new MEPSystemBuilderTest(doc, uidoc);
 
-            var test = new ConnectionFactoryClient(uidoc);
-            test.Run();
+            //var test = new ConnectionFactoryClient(uidoc);
+            //test.Run();
 
-            //var test = new CableTrayTest(uidoc);
-            //test.Break();
+            var test = new CableTrayTest(uidoc);
+            test.Break();
             //test.RunMultiple();
             //test.RepeatRun();
 

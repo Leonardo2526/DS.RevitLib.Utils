@@ -158,7 +158,7 @@
     <Compile Include="PathFinders\IPathFinder.cs" />
     <Compile Include="Extensions\LineExtensions.cs" />
     <Compile Include="Extensions\MEPCurveExtensions.cs" />
-    <Compile Include="Elements\MEPElements\MEPCurveCutter.cs" />
+    <Compile Include="Creation\MEP\MEPCurveCutter.cs" />
     <Compile Include="Elements\Models\MEPCurveGeometryModel.cs" />
     <Compile Include="PathFinders\IvanovPathFinder.cs" />
     <Compile Include="PathFinders\SimplePathFinder.cs" />

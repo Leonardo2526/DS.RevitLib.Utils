@@ -18,7 +18,7 @@ namespace DS.RevitLib.Utils.MEP
             BuiltInCategory familyInstanceCategory = CategoryExtension.GetBuiltInCategory(familyInstance.Category);
 
             List<BuiltInCategory> builtInCategories = new List<BuiltInCategory>
-            { BuiltInCategory.OST_PipeFitting, BuiltInCategory.OST_DuctFitting};
+            { BuiltInCategory.OST_PipeFitting, BuiltInCategory.OST_DuctFitting, BuiltInCategory.OST_CableTrayFitting};
 
             if (!ElementUtils.CheckCategory(familyInstanceCategory, builtInCategories))
             {

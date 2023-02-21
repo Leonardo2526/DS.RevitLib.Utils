@@ -2,6 +2,7 @@
 using Autodesk.Revit.DB.Electrical;
 using Autodesk.Revit.DB.Mechanical;
 using Autodesk.Revit.DB.Plumbing;
+using DS.RevitLib.Utils.Creation.MEP;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.MEP.Creator;
 using DS.RevitLib.Utils.Models;
@@ -90,12 +91,16 @@ namespace DS.RevitLib.Utils.MEP
         {
             Document doc = mEPCurve.Document;
 
-            var elementTypeName = mEPCurve.GetType().Name;
-            ElementId newCurveId = elementTypeName == "Pipe" ?
-                PlumbingUtils.BreakCurve(doc, mEPCurve.Id, point) :
-                MechanicalUtils.BreakCurve(doc, mEPCurve.Id, point);
+            var type = mEPCurve.GetType();
+            var @switch = new Dictionary<Type, Func<ElementId>>
+            {
+                { typeof(Pipe), () => PlumbingUtils.BreakCurve(doc, mEPCurve.Id, point) },
+                { typeof(Duct), () =>  MechanicalUtils.BreakCurve(doc, mEPCurve.Id, point) },
+                { typeof(CableTray), () =>  MEPCurveBreaker.Break(mEPCurve, point, true).Id }
+            };
+            @switch.TryGetValue(type, out Func<ElementId> func);
 
-            return doc.GetElement(newCurveId) as MEPCurve;
+            return doc.GetElement(func()) as MEPCurve;
         }
 
         /// <summary>

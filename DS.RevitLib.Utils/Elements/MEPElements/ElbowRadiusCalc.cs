@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.Electrical;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.MEP.Creator;
 using DS.RevitLib.Utils.MEP.Models;
@@ -70,13 +71,22 @@ namespace DS.RevitLib.Utils.MEP
         private Element GetFamilySymbol()
         {
             Document doc = _MEPCurve.Document;
+            var elementType = _MEPCurve.GetElementType2();
+            MEPCurveType mEPCurveType = elementType as MEPCurveType;
+            CableTrayType cableTrayType = elementType as CableTrayType;
+            if (cableTrayType != null)
+            {
+                var mEPPartId = cableTrayType.Elbow.Id;
+                return doc.GetElement(mEPPartId) as Element;
+            }
+            else
+            {
+                RoutingPreferenceManager rpm = mEPCurveType.RoutingPreferenceManager;
+                RoutingPreferenceRule rule = rpm.GetRule(RoutingPreferenceRuleGroupType.Elbows, 0);
 
-            MEPCurveType mEPCurveType = _MEPCurve.GetMEPCurveType();
+                return doc.GetElement(rule.MEPPartId) as Element;
+            }
 
-            RoutingPreferenceManager rpm = mEPCurveType.RoutingPreferenceManager;
-            RoutingPreferenceRule rule = rpm.GetRule(RoutingPreferenceRuleGroupType.Elbows, 0);
-
-            return doc.GetElement(rule.MEPPartId) as Element;
         }
 
         private double GetLength(FamilyInstance elbowInst)
