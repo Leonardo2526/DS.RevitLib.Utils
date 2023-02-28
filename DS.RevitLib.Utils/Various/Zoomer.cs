@@ -3,7 +3,7 @@ using Autodesk.Revit.UI;
 using DS.RevitLib.Utils;
 using System.Collections.Generic;
 
-namespace OLMP.RevitLib.MEPAC
+namespace DS.RevitLib.Utils
 {
     /// <summary>
     /// An object to zoom in model.
