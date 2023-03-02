@@ -80,6 +80,7 @@
   <ItemGroup>
     <Compile Include="Collisions\Resolvers\CollisionResolverBase.cs" />
     <Compile Include="Collisions\Resolvers\ICollisionResolver.cs" />
+    <Compile Include="Collisions\Resolvers\IResolver.cs" />
     <Compile Include="Collisions\Resolvers\MoveTransformStrategy.cs" />
     <Compile Include="Collisions\Solutions\ISolution.cs" />
     <Compile Include="Creation\AbstractCreator.cs" />
@@ -155,13 +156,13 @@
     <Compile Include="Elements\MEPElements\SystemTree\Relatives\SpudRelationBuilder.cs" />
     <Compile Include="Elements\MEPElements\SystemTree\Relatives\TeeRelationBuilder.cs" />
     <Compile Include="Creation\ModelCurveUtils\ModelCurveTransaction.cs" />
-    <Compile Include="PathFinders\IPathFinder.cs" />
+    <Compile Include="PathCreators\IPathCreator.cs" />
     <Compile Include="Extensions\LineExtensions.cs" />
     <Compile Include="Extensions\MEPCurveExtensions.cs" />
     <Compile Include="Creation\MEP\MEPCurveCutter.cs" />
     <Compile Include="Elements\Models\MEPCurveGeometryModel.cs" />
-    <Compile Include="PathFinders\IvanovPathFinder.cs" />
-    <Compile Include="PathFinders\SimplePathFinder.cs" />
+    <Compile Include="PathCreators\PathFindCreator.cs" />
+    <Compile Include="PathCreators\PathCreator.cs" />
     <Compile Include="Tests\ITestModel.cs" />
     <Compile Include="Various\Selections\Filters\ElementInLinkSelectionFilter.cs" />
     <Compile Include="Various\Selections\Filters\PointSelectionFilter.cs" />

@@ -4,7 +4,7 @@ using Autodesk.Revit.UI.Selection;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.MEP;
 using DS.RevitLib.Utils.ModelCurveUtils;
-using DS.RevitLib.Utils.PathFinders;
+using DS.RevitLib.Utils.PathCreators;
 using System;
 using System.Collections.Generic;
 using System.Linq;

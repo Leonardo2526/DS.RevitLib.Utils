@@ -12,19 +12,19 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace DS.RevitLib.Utils.PathFinders
+namespace DS.RevitLib.Utils.PathCreators
 {
     /// <summary>
     /// An object that represents finder to get path.
     /// </summary>
-    public class IvanovPathFinder : IPathFinder
+    public class PathFindCreator : IPathCreator
     {
-        private readonly Document _doc;
-        private readonly AbstractTransactionBuilder _transactionBuilder;
-        private readonly double _elbowRadius;
-        private readonly MEPSystemModel _sourceMEPModel;
-        private readonly CancellationToken _cancellationToken;
-        private readonly double _offset;
+        private  Document _doc;
+        private  AbstractTransactionBuilder _transactionBuilder;
+        private  double _elbowRadius;
+        private MEPSystemModel _sourceMEPModel;
+        private CancellationToken _cancellationToken;
+        private double _offset;
 
         /// <summary>
         /// Instantiate an object to find path.
@@ -35,7 +35,7 @@ namespace DS.RevitLib.Utils.PathFinders
         /// <param name="cancellationToken"></param>
         /// <param name="offset">Offset from element</param>
         /// <param name="transactionBuilder"></param>
-        public IvanovPathFinder(Document doc, double elbowRadius, MEPSystemModel sourceMEPModel, CancellationToken cancellationToken, double offset =0,
+        public PathFindCreator Create(Document doc, double elbowRadius, MEPSystemModel sourceMEPModel, CancellationToken cancellationToken, double offset = 0,
             AbstractTransactionBuilder transactionBuilder = null)
         {
             _doc = doc;
@@ -44,11 +44,11 @@ namespace DS.RevitLib.Utils.PathFinders
             _cancellationToken = cancellationToken;
             _offset = offset;
             _transactionBuilder = transactionBuilder;
+            return this;
         }
 
-
         /// <inheritdoc/>
-        public List<XYZ> Find(XYZ point1, XYZ point2)
+        public List<XYZ> Create(XYZ point1, XYZ point2)
         {
             var excludedElements = ExceptionElements.Select(obj => obj.IntegerValue).ToList();
 

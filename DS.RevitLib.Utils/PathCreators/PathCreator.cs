@@ -1,34 +1,30 @@
 ﻿using Autodesk.Revit.DB;
 using DS.ClassLib.VarUtils;
 using DS.RevitLib.Utils;
-using DS.RevitLib.Utils.PathFinders;
+using DS.RevitLib.Utils.PathCreators;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace DS.RevitLib.Utils.PathFinders
+namespace DS.RevitLib.Utils.PathCreators
 {
 
     /// <summary>
-    ///  Object representing a tool to build path points.
+    ///  Object representing a tool to create path between points without collisions account.
     /// </summary>
-    public class SimplePathFinder : IPathFinder
+    public class PathCreator : IPathCreator
     {
         private XYZ _point1;
         private XYZ _point2;
         private Line _baseLine1;
-        private readonly Line _baseLine2;
-        private readonly double _minPointDist;
-        private readonly double _minZDist;
-        private readonly double _angle;
-        private readonly double _maxCutWidth;
+        private  Line _baseLine2;
+        private double _minPointDist;
+        private double _minZDist;
+        private double _angle;
+        private double _maxCutWidth;
 
-        public List<ElementId> ExceptionElements { get; set; }
-
-        /// <summary>
-        /// An object for path creation without collisions account.
-        /// </summary>
-        public SimplePathFinder(Line baseLine1, Line baseLine2 = null,
+        /// <inheritdoc/>
+        public IPathCreator Create(Line baseLine1, Line baseLine2 = null,
             double minPointDist = 0, double maxCutWidth = 0, double angle = 90, double minZDist = 0)
         {
             if (minZDist != 0 && minZDist < minPointDist)
@@ -42,7 +38,10 @@ namespace DS.RevitLib.Utils.PathFinders
             _maxCutWidth = maxCutWidth;
             _minZDist = minZDist;
             _angle = angle;
+
+            return this;
         }
+
 
         /// <summary>
         /// Create path between two points.
@@ -50,7 +49,7 @@ namespace DS.RevitLib.Utils.PathFinders
         /// <param name="point1"></param>
         /// <param name="point2"></param>
         /// <returns>Returns path's coordinates.</returns>
-        public List<XYZ> Find(XYZ point1, XYZ point2)
+        public List<XYZ> Create(XYZ point1, XYZ point2)
         {
             _point1 = point1;
             _point2 = point2;
