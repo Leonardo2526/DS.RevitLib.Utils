@@ -5,6 +5,7 @@ using DS.RevitLib.Utils.MEP.Creator;
 using DS.RevitLib.Utils.MEP.Models;
 using DS.RevitLib.Utils.Transactions;
 using System;
+using System.Diagnostics;
 using System.Linq;
 
 namespace DS.RevitLib.Utils.MEP
@@ -40,6 +41,7 @@ namespace DS.RevitLib.Utils.MEP
         public double GetRadius(double angle)
         {
             FamilySymbol elbow = GetFamilySymbol() as FamilySymbol;
+            if(elbow == null) { return 0; }
 
             ElementId id = elbow.GetTypeId();
             FamilySymbol familySymbol = _doc.GetElement(id) as FamilySymbol;
@@ -82,7 +84,13 @@ namespace DS.RevitLib.Utils.MEP
             else
             {
                 RoutingPreferenceManager rpm = mEPCurveType.RoutingPreferenceManager;
-                RoutingPreferenceRule rule = rpm.GetRule(RoutingPreferenceRuleGroupType.Elbows, 0);
+                if (rpm.GetNumberOfRules(RoutingPreferenceRuleGroupType.Elbows) == 0) 
+                {
+                    Debug.Fail("Не загружено семейство отводов для данной системы.");
+                    return null; 
+                }
+
+                var rule = rpm.GetRule(RoutingPreferenceRuleGroupType.Elbows, 0);
 
                 return doc.GetElement(rule.MEPPartId) as Element;
             }
