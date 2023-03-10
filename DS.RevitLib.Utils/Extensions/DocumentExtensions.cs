@@ -110,5 +110,26 @@ namespace DS.RevitLib.Utils.Extensions
         {
             return new FilteredElementCollector(doc).OfClass(typeof(T))?.Cast<T>().ToList();
         }
+
+        /// <summary>
+        /// Specifies whether current <see cref="Document"/>'s state is in Revit context.
+        /// </summary>
+        /// <param name="doc"></param>
+        /// <returns>Returns <see langword="true"/> if transactions are available. Otherwise returns <see langword="false"/>.</returns>
+        public static bool IsRevitContext(this Document doc)
+        {
+            try
+            {
+                var tr = new Transaction(doc, "CheckContext");
+                var st = tr.GetStatus();
+                tr.Start();
+                tr.RollBack();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
     }
 }

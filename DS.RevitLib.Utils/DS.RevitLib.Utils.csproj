@@ -164,6 +164,7 @@
     <Compile Include="PathCreators\PathFindCreator.cs" />
     <Compile Include="PathCreators\PathCreator.cs" />
     <Compile Include="Tests\ITestModel.cs" />
+    <Compile Include="Various\IRevitContext.cs" />
     <Compile Include="Various\Selections\Filters\ElementInLinkSelectionFilter.cs" />
     <Compile Include="Various\Selections\Filters\PointSelectionFilter.cs" />
     <Compile Include="Various\Selections\Filters\IAdvancedSelectionFilter.cs" />
