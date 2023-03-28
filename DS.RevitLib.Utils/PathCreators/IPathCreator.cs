@@ -1,5 +1,6 @@
 ﻿using Autodesk.Revit.DB;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.PathCreators
 {
@@ -14,6 +15,6 @@ namespace DS.RevitLib.Utils.PathCreators
         /// <param name="point1"></param>
         /// <param name="point2"></param>
         /// <returns>Returns path coordinates.</returns>
-        public List<XYZ> Create(XYZ point1, XYZ point2);
+        public Task<List<XYZ>> CreateAsync(XYZ point1, XYZ point2);
     }
 }

@@ -5,6 +5,7 @@ using DS.RevitLib.Utils.PathCreators;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.PathCreators
 {
@@ -49,7 +50,7 @@ namespace DS.RevitLib.Utils.PathCreators
         /// <param name="point1"></param>
         /// <param name="point2"></param>
         /// <returns>Returns path's coordinates.</returns>
-        public List<XYZ> Create(XYZ point1, XYZ point2)
+        public Task<List<XYZ>> CreateAsync(XYZ point1, XYZ point2)
         {
             _point1 = point1;
             _point2 = point2;
@@ -84,7 +85,7 @@ namespace DS.RevitLib.Utils.PathCreators
 
             result = CutAngles(result);
 
-            return result;
+            return Task.FromResult(result);
         }
 
 

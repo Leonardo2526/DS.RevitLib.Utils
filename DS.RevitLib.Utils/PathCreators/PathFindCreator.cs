@@ -1,10 +1,13 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Mechanical;
 using Autodesk.Revit.DB.Plumbing;
+using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.MEP;
 using DS.RevitLib.Utils.MEP.SystemTree;
 using DS.RevitLib.Utils.Transactions;
+using DS.RevitLib.Utils.Various;
 using PathFinderLib;
+using Revit.Async;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -48,7 +51,7 @@ namespace DS.RevitLib.Utils.PathCreators
         }
 
         /// <inheritdoc/>
-        public List<XYZ> Create(XYZ point1, XYZ point2)
+        public async Task<List<XYZ>> CreateAsync(XYZ point1, XYZ point2)
         {
             var excludedElements = ExceptionElements.Select(obj => obj.IntegerValue).ToList();
 
@@ -79,12 +82,18 @@ namespace DS.RevitLib.Utils.PathCreators
             GeometryDocuments geometryDocuments = null;
 
             PathFinderToOnePointDefault finder = null;
-            _transactionBuilder.BuildRevitTask(() =>
-            {
-                geometryDocuments = GeometryDocuments.Create(_doc, mainOptions);
-                geometryDocuments.UnsubscribeDocumentChangedEvent();
 
-            }, "create GeometryDocuments").Wait();
+            var action = () =>
+            {
+                _transactionBuilder.Build(() =>
+                {
+                    geometryDocuments = GeometryDocuments.Create(_doc, mainOptions);
+                    geometryDocuments.UnsubscribeDocumentChangedEvent();
+                }, "create GeometryDocuments");
+            };
+            if (_doc.IsRevitContext()) { action(); }
+            else { await RevitTask.RunAsync(() => action()); }
+            
             (double width, double heigth) = MEPCurveUtils.GetWidthHeight(baseCurveForPath);
 
             //класс для поиска пути
@@ -92,14 +101,15 @@ namespace DS.RevitLib.Utils.PathCreators
                          heigth, width, _offset, _offset, geometryDocuments, mainOptions, secondaryOptions);
 
             //ищем путь
-            Task<List<XYZ>> pathTask = finder.FindPath(_cancellationToken);
-            pathTask.Wait();
-            List<XYZ> path = pathTask.Result;
+            List<XYZ> path = await finder.FindPath(_cancellationToken);
 
             //объединяем прямые последовательные участки пути в один сегмент
             path = Optimizer.MergeStraightSections(path, mainOptions);
 
-            return path;
+            var zigzag = new ZigZagCleaner(path, mainOptions, secondaryOptions);
+            var cleanPath = zigzag.Clear(geometryDocuments, heigth, width, _offset, _offset);
+
+            return cleanPath;
         }
 
         /// <inheritdoc/>

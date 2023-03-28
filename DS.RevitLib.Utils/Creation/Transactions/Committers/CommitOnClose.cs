@@ -37,6 +37,10 @@ namespace DS.RevitLib.Utils.TransactionCommitter
                     transactionGroup.RollBack();
                     Debug.WriteLine($"{trgName} was rolled");
                     break;
+                case EventType.Rollback:
+                    transactionGroup.RollBack();
+                    Debug.WriteLine($"{trgName} was rolled");
+                    break;
                 case EventType.Apply:
                     transactionGroup.Assimilate();
                     Debug.WriteLine($"{trgName} was committed");

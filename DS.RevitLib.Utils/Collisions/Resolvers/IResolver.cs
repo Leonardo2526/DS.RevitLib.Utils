@@ -1,5 +1,6 @@
 ﻿using DS.RevitLib.Utils.Collisions.Solutions;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.Collisions.Resolvers
 {
@@ -13,6 +14,12 @@ namespace DS.RevitLib.Utils.Collisions.Resolvers
         /// </summary>
         /// <returns>Returns solution for collision.</returns>
         ISolution Resolve();
+
+        /// <summary>
+        /// Resolve collision asynchronously.
+        /// </summary>
+        /// <returns>Returns solution for collision.</returns>
+        Task<ISolution> ResolveAsync();
 
         /// <summary>
         /// All solutions for collision.
