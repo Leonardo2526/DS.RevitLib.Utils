@@ -121,6 +121,7 @@
     <Compile Include="Elements\MEPElements\Connection\MEPCurveStrategies\TeeMEPCurveStrategy.cs" />
     <Compile Include="Elements\MEPElements\Connection\MEPCurveStrategies\TeeWithCutMEPCurveStrategy.cs" />
     <Compile Include="Creation\CreatorExtensions.cs" />
+    <Compile Include="Elements\MEPElements\MEPSystemElement.cs" />
     <Compile Include="Extensions\CurveExtensions.cs" />
     <Compile Include="Elements\Alignments\SolidAngleAlignment.cs" />
     <Compile Include="Elements\Alignments\AngleAlignment.cs" />

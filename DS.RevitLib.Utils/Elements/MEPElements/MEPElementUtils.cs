@@ -2,6 +2,7 @@
 using Autodesk.Revit.DB.Mechanical;
 using Autodesk.Revit.DB.Plumbing;
 using Autodesk.Revit.UI;
+using DS.RevitLib.Utils.Elements.MEPElements;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.MEP.Models;
 using Ivanov.RevitLib.Utils;
@@ -271,5 +272,16 @@ namespace DS.RevitLib.Utils.MEP
 
             return null;
         }
+
+        /// <summary>
+        /// Get elements of <see cref="MEPSystem"/> with <paramref name="strMEPSysName"/> name.
+        /// </summary>
+        /// <param name="doc"></param>
+        /// <param name="strMEPSysName"></param>
+        /// <param name="canContain">Specify whether system name should match exactly with <paramref name="strMEPSysName"/>,</param>
+        /// <returns>Returns all elements in first <see cref="MEPSystem"/> with <paramref name="strMEPSysName"/>.</returns>
+        public static List<Element> GetSystemElements(Document doc, string strMEPSysName,bool canContain = false) => 
+            new MEPSystemElement(doc).GetSystemElements(strMEPSysName, canContain);
+        
     }
 }

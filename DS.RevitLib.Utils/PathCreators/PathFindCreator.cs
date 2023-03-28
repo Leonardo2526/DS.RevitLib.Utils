@@ -68,12 +68,14 @@ namespace DS.RevitLib.Utils.PathCreators
             excludedElements.AddRange(excludedElementsInsulationIds.Select(obj => obj.IntegerValue).ToList());
 
             var mainOptions = new MainFinderOptions(excludedElements);
-
+            var baseMEPCurve = _sourceMEPModel.Root.BaseElement as MEPCurve;
+            var dir = MEPCurveUtils.GetDirection(baseMEPCurve).Normalize();
             var secondaryOptions = new SecondaryOptions()
             {
                 ElbowWidth = _elbowRadius,
                 x_y_coef = 1,
-                z_coef = 1
+                z_coef = 1,
+                XVector = dir
             };
           
             //класс анализирует геометрию
