@@ -120,8 +120,8 @@ namespace DS.RevitLib.Test
             var mc2 = _doc.GetElement(reference) as MEPCurve;
             var (con21, con22) = ConnectorUtils.GetMainConnectors(mc2);
             double midDistPoints = 500.mmToFyt2();
-            var finder = new SimplePathFinder(_mc1.GetCenterLine(), mc2.GetCenterLine(), midDistPoints, midDistPoints * 5, 90, midDistPoints * 3);
-            return finder.Find(con11.Origin, con21.Origin);
+            var finder = new PathCreator().Create(_mc1.GetCenterLine(), mc2.GetCenterLine(), midDistPoints, midDistPoints * 5, 90, midDistPoints * 3);
+            return finder.CreateAsync(con11.Origin, con21.Origin).Result;
         }
 
         public void ShowPath(List<XYZ> path)

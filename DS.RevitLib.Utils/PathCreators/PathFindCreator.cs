@@ -25,27 +25,33 @@ namespace DS.RevitLib.Utils.PathCreators
         private  Document _doc;
         private  AbstractTransactionBuilder _transactionBuilder;
         private  double _elbowRadius;
-        private MEPSystemModel _sourceMEPModel;
         private CancellationToken _cancellationToken;
+        private XYZ _xVector;
         private double _offset;
+        private double _width;
+        private double _height;
 
         /// <summary>
         /// Instantiate an object to find path.
         /// </summary>
         /// <param name="doc"></param>
         /// <param name="elbowRadius"></param>
-        /// <param name="sourceMEPModel"></param>
+        /// <param name="xVector">Align vector for path in XY plane.</param>
         /// <param name="cancellationToken"></param>
+        /// <param name="width"></param>
+        /// <param name="height"></param>
         /// <param name="offset">Offset from element</param>
         /// <param name="transactionBuilder"></param>
-        public PathFindCreator Create(Document doc, double elbowRadius, MEPSystemModel sourceMEPModel, CancellationToken cancellationToken, double offset = 0,
+        public PathFindCreator Create(Document doc, double elbowRadius, XYZ xVector, CancellationToken cancellationToken, double width, double height, double offset = 0,
             AbstractTransactionBuilder transactionBuilder = null)
         {
             _doc = doc;
             _elbowRadius = elbowRadius;
-            _sourceMEPModel = sourceMEPModel;
             _cancellationToken = cancellationToken;
+            _xVector = xVector;
             _offset = offset;
+            _width = width;
+            _height = height;
             _transactionBuilder = transactionBuilder;
             return this;
         }
@@ -68,19 +74,15 @@ namespace DS.RevitLib.Utils.PathCreators
             excludedElements.AddRange(excludedElementsInsulationIds.Select(obj => obj.IntegerValue).ToList());
 
             var mainOptions = new MainFinderOptions(excludedElements);
-            var baseMEPCurve = _sourceMEPModel.Root.BaseElement as MEPCurve;
-            var dir = MEPCurveUtils.GetDirection(baseMEPCurve).Normalize();
             var secondaryOptions = new SecondaryOptions()
             {
                 ElbowWidth = _elbowRadius,
                 x_y_coef = 1,
                 z_coef = 1,
-                XVector = dir
+                XVector = _xVector
             };
           
             //класс анализирует геометрию
-            //Task<List<XYZ>> pathTask = null;
-            MEPCurve baseCurveForPath = _sourceMEPModel.Root.BaseElement as MEPCurve;
             GeometryDocuments geometryDocuments = null;
 
             PathFinderToOnePointDefault finder = null;
@@ -95,12 +97,10 @@ namespace DS.RevitLib.Utils.PathCreators
             };
             if (_doc.IsRevitContext()) { action(); }
             else { await RevitTask.RunAsync(() => action()); }
-            
-            (double width, double heigth) = MEPCurveUtils.GetWidthHeight(baseCurveForPath);
 
             //класс для поиска пути
             finder = new PathFinderToOnePointDefault(point1, point2,
-                         heigth, width, _offset, _offset, geometryDocuments, mainOptions, secondaryOptions);
+                         _height, _width, _offset, _offset, geometryDocuments, mainOptions, secondaryOptions);
 
             //ищем путь
             List<XYZ> path = await finder.FindPath(_cancellationToken);
@@ -109,7 +109,7 @@ namespace DS.RevitLib.Utils.PathCreators
             path = Optimizer.MergeStraightSections(path, mainOptions);
 
             var zigzag = new ZigZagCleaner(path, mainOptions, secondaryOptions);
-            var cleanPath = zigzag.Clear(geometryDocuments, heigth, width, _offset, _offset);
+            var cleanPath = zigzag.Clear(geometryDocuments, _height, _width, _offset, _offset);
 
             return cleanPath;
         }

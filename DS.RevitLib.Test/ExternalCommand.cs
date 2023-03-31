@@ -34,8 +34,8 @@ namespace DS.RevitLib.Test
             //var test = new ConnectionFactoryClient(uidoc);
             //test.Run();
 
-            var test = new CableTrayTest(uidoc);
-            test.Break();
+            var test = new GetBasisVectorOnPlaneTest(uidoc);
+            test.Run();
             //test.RunMultiple();
             //test.RepeatRun();
 
