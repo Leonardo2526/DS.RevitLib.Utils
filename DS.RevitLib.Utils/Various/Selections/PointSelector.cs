@@ -30,10 +30,17 @@ namespace DS.RevitLib.Utils.Various.Selections
         /// <inheritdoc/>
         public override Element Pick(string statusPrompt = null, string promptSuffix = null)
         {
-            Reference reference = _uiDoc.Selection.
-                PickObject(ObjectType.PointOnElement, Filter, GetStatusPrompt(statusPrompt, promptSuffix));
-            Point = reference.GlobalPoint;
-            var element = _doc.GetElement(reference);
+            Element element;
+            try
+            {
+                Reference reference = _uiDoc.Selection.
+                    PickObject(ObjectType.PointOnElement, Filter, GetStatusPrompt(statusPrompt, promptSuffix));
+                Point = reference.GlobalPoint;
+                element = _doc.GetElement(reference);
+            }
+            catch (OperationCanceledException)
+            {return null;}
+
             return element is RevitLinkInstance ?
                 PickInLink(element as RevitLinkInstance) :
                 element;

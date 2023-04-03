@@ -1,17 +1,9 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Mechanical;
 using Autodesk.Revit.DB.Plumbing;
-using DS.RevitLib.Utils.Extensions;
-using DS.RevitLib.Utils.MEP;
-using DS.RevitLib.Utils.MEP.SystemTree;
-using DS.RevitLib.Utils.Transactions;
-using DS.RevitLib.Utils.Various;
 using PathFinderLib;
-using Revit.Async;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -22,9 +14,8 @@ namespace DS.RevitLib.Utils.PathCreators
     /// </summary>
     public class PathFindCreator : IPathCreator
     {
-        private  Document _doc;
-        private  AbstractTransactionBuilder _transactionBuilder;
-        private  double _elbowRadius;
+        private Document _doc;
+        private double _elbowRadius;
         private CancellationToken _cancellationToken;
         private XYZ _xVector;
         private double _offset;
@@ -42,8 +33,8 @@ namespace DS.RevitLib.Utils.PathCreators
         /// <param name="height"></param>
         /// <param name="offset">Offset from element</param>
         /// <param name="transactionBuilder"></param>
-        public PathFindCreator Create(Document doc, double elbowRadius, XYZ xVector, CancellationToken cancellationToken, double width, double height, double offset = 0,
-            AbstractTransactionBuilder transactionBuilder = null)
+        public PathFindCreator Create(Document doc, double elbowRadius, XYZ xVector, CancellationToken cancellationToken,
+            double width, double height, double offset = 0)
         {
             _doc = doc;
             _elbowRadius = elbowRadius;
@@ -52,9 +43,9 @@ namespace DS.RevitLib.Utils.PathCreators
             _offset = offset;
             _width = width;
             _height = height;
-            _transactionBuilder = transactionBuilder;
             return this;
         }
+
 
         /// <inheritdoc/>
         public async Task<List<XYZ>> CreateAsync(XYZ point1, XYZ point2)
@@ -68,7 +59,7 @@ namespace DS.RevitLib.Utils.PathCreators
                 {
                     Element insulation = InsulationLiningBase.GetInsulationIds(_doc, obj)?
                   .Select(x => _doc.GetElement(x)).FirstOrDefault();
-                if (insulation != null && insulation.IsValidObject) { excludedElementsInsulationIds.Add(insulation.Id); }
+                    if (insulation != null && insulation.IsValidObject) { excludedElementsInsulationIds.Add(insulation.Id); }
                 }
             });
             excludedElements.AddRange(excludedElementsInsulationIds.Select(obj => obj.IntegerValue).ToList());
@@ -81,27 +72,13 @@ namespace DS.RevitLib.Utils.PathCreators
                 z_coef = 1,
                 XVector = _xVector
             };
-          
+
             //класс анализирует геометрию
-            GeometryDocuments geometryDocuments = null;
-
-            PathFinderToOnePointDefault finder = null;
-
-            var action = () =>
-            {
-                _transactionBuilder.Build(() =>
-                {
-                    geometryDocuments = GeometryDocuments.Create(_doc, mainOptions);
-                    geometryDocuments.UnsubscribeDocumentChangedEvent();
-                }, "create GeometryDocuments");
-            };
-            if (_doc.IsRevitContext()) { action(); }
-            else { await RevitTask.RunAsync(() => action()); }
+            var geometryDocuments = GeometryDocuments.Create(_doc, mainOptions, false);
 
             //класс для поиска пути
-            finder = new PathFinderToOnePointDefault(point1, point2,
-                         _height, _width, _offset, _offset, geometryDocuments, mainOptions, secondaryOptions);
-
+            var finder = new PathFinderToOnePointDefault(point1, point2,
+                          _height, _width, _offset, _offset, geometryDocuments, mainOptions, secondaryOptions);
             //ищем путь
             List<XYZ> path = await finder.FindPath(_cancellationToken);
 
