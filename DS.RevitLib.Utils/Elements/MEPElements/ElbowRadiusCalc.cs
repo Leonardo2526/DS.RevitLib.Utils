@@ -86,7 +86,7 @@ namespace DS.RevitLib.Utils.MEP
                 RoutingPreferenceManager rpm = mEPCurveType.RoutingPreferenceManager;
                 if (rpm.GetNumberOfRules(RoutingPreferenceRuleGroupType.Elbows) == 0) 
                 {
-                    Debug.Fail("Не загружено семейство отводов для данной системы.");
+                    Debug.WriteLine("Не загружено семейство отводов для данной системы.");
                     return null; 
                 }
 
