@@ -10,6 +10,9 @@ using System.Threading.Tasks;
 using System.Security.Cryptography;
 using DS.RevitLib.Test.TestedClasses;
 using DS.RevitLib.Utils;
+using DS.RevitLib.Utils.Various;
+using DS.RevitLib.Utils.Extensions;
+using Autodesk.Revit.UI.Selection;
 
 namespace DS.RevitLib.Test
 {
@@ -25,6 +28,12 @@ namespace DS.RevitLib.Test
             UIDocument uidoc = uiapp.ActiveUIDocument;
             Document doc = uiapp.ActiveUIDocument.Document;
 
+
+
+            var selector = new ElementSelector(uidoc) { AllowLink = true };
+            var element = selector.Pick();
+            var insulation = element.GetInsulation();
+
             //var test = new SolidContainsPointTest( doc, uidoc);
             //var test = new BuilderByPointsTest(uidoc);
             //var test = new GetAssociatedParameterTest(uidoc);
@@ -34,8 +43,8 @@ namespace DS.RevitLib.Test
             //var test = new ConnectionFactoryClient(uidoc);
             //test.Run();
 
-            var test = new GetBasisVectorOnPlaneTest(uidoc);
-            test.Run();
+            //var test = new GetBasisVectorOnPlaneTest(uidoc);
+            //test.Run();
             //test.RunMultiple();
             //test.RepeatRun();
 

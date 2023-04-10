@@ -40,7 +40,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
 
             transactionBuilder.Build(() => mEPElementsModel = BuildMEPCurves(), "Create MEPSystem by path");
             transactionBuilder.Build(() => mEPElementsModel.RefineDucts(_baseMEPCurve), "Align ducts");
-            transactionBuilder.Build(() => mEPElementsModel = mEPElementsModel.WithElbows(), "Insert elbows by path");
+            transactionBuilder.Build(() => mEPElementsModel = mEPElementsModel.WithElbows(_baseMEPCurve), "Insert elbows by path");
 
             return mEPElementsModel;
         }
@@ -55,7 +55,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
             MEPCurvesModel mEPElementsModel = BuildMEPCurves();
             _baseMEPCurve.Document.Regenerate();
             mEPElementsModel.RefineDucts(_baseMEPCurve);
-            mEPElementsModel = mEPElementsModel.WithElbows();
+            mEPElementsModel = mEPElementsModel.WithElbows(_baseMEPCurve);
 
             return mEPElementsModel;
         }
