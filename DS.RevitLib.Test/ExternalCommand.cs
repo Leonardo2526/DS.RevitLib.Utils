@@ -24,47 +24,9 @@ namespace DS.RevitLib.Test
         {
             UIApplication uiapp = commandData.Application;
             Autodesk.Revit.ApplicationServices.Application application = uiapp.Application;
-
             UIDocument uidoc = uiapp.ActiveUIDocument;
-            Document doc = uiapp.ActiveUIDocument.Document;
 
-
-
-            var selector = new ElementSelector(uidoc) { AllowLink = true };
-            var element = selector.Pick();
-            var insulation = element.GetInsulation();
-
-            //var test = new SolidContainsPointTest( doc, uidoc);
-            //var test = new BuilderByPointsTest(uidoc);
-            //var test = new GetAssociatedParameterTest(uidoc);
-
-            //var test = new MEPSystemBuilderTest(doc, uidoc);
-
-            //var test = new ConnectionFactoryClient(uidoc);
-            //test.Run();
-
-            //var test = new GetBasisVectorOnPlaneTest(uidoc);
-            //test.Run();
-            //test.RunMultiple();
-            //test.RepeatRun();
-
-
-            //var pathFinderTest = new SimplePathFinderTest(uidoc, doc);
-            //var path = pathFinderTest.RunTest2();
-            //pathFinderTest.ShowPath(path);
-            //SolidCollisionCheckerTest.RunWithLink(doc);
-
-            //var selector = new SystemModelTest(uidoc, doc, uiapp);
-            //selector.RunTest();
-
-            //var test = new SelectionTest(uidoc);
-            //var elem = test.PickElement();
-            //test.SelectInLink();
-            //try
-            //{ var elem = test.CenterPoint(); }
-            //catch (Exception ex)
-            //{ var elem = test.PickPoint(); }
-
+            new CalcTest(uidoc);
 
             return Autodesk.Revit.UI.Result.Succeeded;
         }

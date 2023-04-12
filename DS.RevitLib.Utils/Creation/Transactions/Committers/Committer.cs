@@ -6,6 +6,12 @@ namespace DS.RevitLib.Utils.TransactionCommitter
     {
         public string ErrorMessages { get; protected set; }
         public string WarningMessages { get; protected set; }
-        public abstract void Commit(Transaction transaction);
+
+        /// <summary>
+        /// Perform commit.
+        /// </summary>
+        /// <param name="transaction"></param>
+        /// <param name="commitTransaction">Specify whether commit started transaction or rollback.</param>
+        public abstract void Commit(Transaction transaction, bool commitTransaction = true);
     }
 }

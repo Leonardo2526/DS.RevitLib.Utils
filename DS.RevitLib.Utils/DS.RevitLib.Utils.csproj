@@ -107,6 +107,7 @@
     <Compile Include="Collisions\Checkers\ICollisionChecker.cs" />
     <Compile Include="Collisions\Checkers\SolidCollisionChecker.cs" />
     <Compile Include="Creation\MEP\MEPCurveBreaker.cs" />
+    <Compile Include="DocumentModels\IDocModel.cs" />
     <Compile Include="Elements\MEPElements\Connection\ElementConnectionFactory.cs" />
     <Compile Include="Elements\MEPElements\Connection\ElementStrategies\ConnectWithMEPCurve.cs" />
     <Compile Include="Elements\MEPElements\Connection\ElementStrategies\ElbowElementStrategy.cs" />
@@ -121,7 +122,10 @@
     <Compile Include="Elements\MEPElements\Connection\MEPCurveStrategies\TeeMEPCurveStrategy.cs" />
     <Compile Include="Elements\MEPElements\Connection\MEPCurveStrategies\TeeWithCutMEPCurveStrategy.cs" />
     <Compile Include="Creation\CreatorExtensions.cs" />
+    <Compile Include="Elements\MEPElements\TeeCalc.cs" />
+    <Compile Include="Elements\MEPElements\ITraceSettings.cs" />
     <Compile Include="Elements\MEPElements\MEPSystemElement.cs" />
+    <Compile Include="Elements\MEPElements\TraceSettings.cs" />
     <Compile Include="Extensions\CurveExtensions.cs" />
     <Compile Include="Elements\Alignments\SolidAngleAlignment.cs" />
     <Compile Include="Elements\Alignments\AngleAlignment.cs" />
@@ -141,6 +145,7 @@
     <Compile Include="Extensions\DocumentExtensions.cs" />
     <Compile Include="Extensions\ConvertationExtensions.cs" />
     <Compile Include="Extensions\MEPSystemExtensions.cs" />
+    <Compile Include="Extensions\ConnectorExtensions.cs" />
     <Compile Include="Geometry\GeometryElementsUtils.cs" />
     <Compile Include="Geometry\Lines\LinesConnector.cs" />
     <Compile Include="Geometry\Solids\SolidOffsetExtractor.cs" />

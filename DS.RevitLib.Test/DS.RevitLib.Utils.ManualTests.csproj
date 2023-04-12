@@ -78,7 +78,7 @@
     <Compile Include="TestedClasses\GetConnectedElementsTest.cs" />
     <Compile Include="TestedClasses\MEPCurveSolidCreatorTest.cs" />
     <Compile Include="TestedClasses\MEPSystemBuilderTest.cs" />
-    <Compile Include="TestedClasses\ElbowRadiusCalcTest.cs" />
+    <Compile Include="TestedClasses\CalcTest.cs" />
     <Compile Include="TestedClasses\PathFinderTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestedClasses\SelectionTest.cs" />
