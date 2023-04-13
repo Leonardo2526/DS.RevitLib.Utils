@@ -24,7 +24,7 @@ namespace DS.RevitLib.Utils.MEP
         private readonly MEPCurve _childMEPCurve;
         private readonly Document _doc;
 
-        private double _lenth;
+        private double _length;
         private double _height;
 
         /// <summary>
@@ -47,13 +47,12 @@ namespace DS.RevitLib.Utils.MEP
         /// <summary>
         /// Tee length. Specifies distance between main connectors.
         /// </summary>
-        public double Length => _lenth;
+        public double Length => _length;
 
         /// <summary>
         /// Tee height. 
         /// </summary>
-        public double Heigth => _height;
-
+        public double Height => _height;
 
         /// <summary>
         /// Get tee sizes.
@@ -71,7 +70,7 @@ namespace DS.RevitLib.Utils.MEP
                 junctionInst = FamInstCreator.Create(familySymbol, new XYZ(0, 0, 0), _parentMEPCurve.ReferenceLevel);
                 CopyConnectorsParameters(junctionInst);
                 _doc.Regenerate();
-                _lenth = GetLength(junctionInst);
+                _length = GetLength(junctionInst);
                 _height = GetHeight(junctionInst);
             }, "GetSizes", false);
 
