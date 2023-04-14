@@ -33,27 +33,21 @@ namespace DS.RevitLib.Test
         {
             _uidoc = uidoc;
             _doc = uidoc.Document;
+            InitiateSelection();
+            Run();
         }
 
-        public void Run()
+        private void Run()
+        {
+            var action = () => _element1.Connect(_element2, _element3);
+            new TransactionBuilder(_doc).Build(action.Invoke, "Connect");
+        }
+
+        public void Run3()
         {
             //Reference referenceMC = _uidoc.Selection.PickObject(ObjectType.Element, "Select baseMEPCurve");
             //_baseMEPCurve= _doc.GetElement(referenceMC) as MEPCurve;
 
-            Reference reference = _uidoc.Selection.PickObject(ObjectType.Element, "Select element1");
-            _element1 = _doc.GetElement(reference);
-            _baseMEPCurve = _element1 as MEPCurve;
-
-            reference = _uidoc.Selection.PickObject(ObjectType.Element, "Select element2");
-            _element2 = _doc.GetElement(reference);
-
-            try
-            {
-                reference = _uidoc.Selection.PickObject(ObjectType.Element, "Select element3");
-                _element3 = reference is null ? null : _doc.GetElement(reference);
-            }
-            catch (Exception)
-            { }
 
             //var model = new MEPCurveGeometryModel(_baseMEPCurve);
             //var pf = model.ProfileType;
@@ -78,6 +72,25 @@ namespace DS.RevitLib.Test
                 _baseMEPCurve.FixNotValidOrientation(trb);
             },
             "Rotate");
+        }
+
+        private void InitiateSelection()
+        {
+
+            Reference reference = _uidoc.Selection.PickObject(ObjectType.Element, "Select element1");
+            _element1 = _doc.GetElement(reference);
+            _baseMEPCurve = _element1 as MEPCurve;
+
+            reference = _uidoc.Selection.PickObject(ObjectType.Element, "Select element2");
+            _element2 = _doc.GetElement(reference);
+
+            try
+            {
+                reference = _uidoc.Selection.PickObject(ObjectType.Element, "Select element3");
+                _element3 = reference is null ? null : _doc.GetElement(reference);
+            }
+            catch (Exception)
+            { }
         }
 
         private IConnectionFactory GetFactory()

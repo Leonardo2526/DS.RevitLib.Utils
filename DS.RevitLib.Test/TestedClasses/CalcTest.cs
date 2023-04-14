@@ -46,7 +46,7 @@ namespace DS.RevitLib.Test
             //var elbowRadius = new ElbowRadiusCalc(model, new TransactionBuilder(_doc)).GetRadius(90.DegToRad());
 
             Debug.WriteLine("Length is " + Math.Round(tee.Length.FytTomm2()));
-            Debug.WriteLine("Height is " + Math.Round(tee.Heigth.FytTomm2()));
+            Debug.WriteLine("Height is " + Math.Round(tee.Height.FytTomm2()));
         }
 
     }

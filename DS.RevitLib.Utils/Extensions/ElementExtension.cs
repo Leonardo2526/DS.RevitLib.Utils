@@ -1,11 +1,13 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Electrical;
+using DS.RevitLib.Utils.Connection;
 using DS.RevitLib.Utils.MEP;
 using DS.RevitLib.Utils.Transactions;
 using DS.RevitLib.Utils.Visualisators;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Xml.Linq;
 using static System.Windows.Forms.LinkLabel;
 
 namespace DS.RevitLib.Utils.Extensions
@@ -367,6 +369,36 @@ namespace DS.RevitLib.Utils.Extensions
                 (Connector con1, Connector con2) = ConnectorUtils.GetCommonNotConnectedConnectors(elements[i], elements[i + 1]);
                 if (con1 is not null && con2 is not null && !con1.IsConnectedTo(con2)) { con1.ConnectTo(con2); };
             }
+        }
+
+        /// <summary>
+        /// Connect <paramref name="element"/> to <paramref name="element1"/> and <paramref name="element2"/>.
+        /// <para>
+        /// Set <paramref name="element2"/> as child in case of tee connection.
+        /// </para>
+        /// </summary>
+        /// <param name="element"></param>
+        /// <param name="element1"></param>
+        /// <param name="element2"></param>
+        public static void Connect(this Element element, Element element1, Element element2 = null)
+        {
+            List<Element> elements = new List<Element>() { element, element1 };
+            if(element2 != null) { elements.Add(element2); }
+
+            Document doc = element.Document;
+            MEPCurve mEPCurve = element as MEPCurve;
+            MEPCurve mEPCurve1 = element1 as MEPCurve;
+            MEPCurve mEPCurve2 = element2 as MEPCurve;
+
+            if (mEPCurve is not null && mEPCurve1 is not null)
+            {
+                IConnectionFactory factory = new MEPCurveConnectionFactory(doc, mEPCurve, mEPCurve1, mEPCurve2);
+                factory.Connect();
+            }
+            else
+            {
+                elements.Connect();
+            }          
         }
 
         /// <summary>

@@ -16,7 +16,7 @@ namespace DS.RevitLib.Utils.Connection
         private readonly double _minLength;
 
         /// <summary>
-        /// Initiate factory object to connect two MEPCurves
+        /// Initiate factory object to connect MEPCurves
         /// </summary>
         /// <param name="doc"></param>
         /// <param name="mEPCurve1"></param>
