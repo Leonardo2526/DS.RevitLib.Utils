@@ -34,8 +34,9 @@ namespace DS.RevitLib.Utils.MEP
         /// Get Basis from MEPCurve.
         /// </summary>
         /// <param name="mEPCurve"></param>
+        /// <param name="basePoint"></param>
         /// <returns>Returns basis in centerPoint of MEPCurve.</returns>
-        public static Basis GetBasis(this MEPCurve mEPCurve)
+        public static Basis GetBasis(this MEPCurve mEPCurve, XYZ basePoint = null)
         {
             Line line = MEPCurveUtils.GetLine(mEPCurve);
 
@@ -43,7 +44,8 @@ namespace DS.RevitLib.Utils.MEP
             var orths = ElementUtils.GetOrthoNormVectors(mEPCurve);
             var basisY = ElementUtils.GetMaxSizeOrth(mEPCurve, orths);
             var basisZ = basisX.CrossProduct(basisY);
-            Basis basis = new Basis(basisX, basisY, basisZ, line.GetCenter());
+            basePoint ??= line.GetCenter();
+            Basis basis = new Basis(basisX, basisY, basisZ, basePoint);
             basis.Round();
 
             return basis;
