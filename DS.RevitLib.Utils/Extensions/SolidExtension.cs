@@ -133,7 +133,7 @@ namespace DS.RevitLib.Utils.Extensions
         public static DirectShape ShowShape(this Solid solid, Document doc)
         {
             DirectShape ds = DirectShape.CreateElement(doc, new ElementId(BuiltInCategory.OST_GenericModel));
-            ds.SetShape(new GeometryObject[] { solid });
+            ds.SetShape(new GeometryObject[] { solid });           
 
             return ds;
         }

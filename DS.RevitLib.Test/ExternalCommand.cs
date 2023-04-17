@@ -26,7 +26,7 @@ namespace DS.RevitLib.Test
             Autodesk.Revit.ApplicationServices.Application application = uiapp.Application;
             UIDocument uidoc = uiapp.ActiveUIDocument;
 
-            new ConnectionFactoryClient(uidoc);
+            new CollisionDetectorByTraceTest(uidoc);
 
             return Autodesk.Revit.UI.Result.Succeeded;
         }

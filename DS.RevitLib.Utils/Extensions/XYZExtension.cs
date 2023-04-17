@@ -5,6 +5,7 @@ using DS.RevitLib.Utils.Transactions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Media.Media3D;
 
 namespace DS.RevitLib.Utils.Extensions
 {
@@ -194,6 +195,16 @@ namespace DS.RevitLib.Utils.Extensions
                 creator.Create(line2);
                 creator.Create(line3);
             }, "ShowPoint");
+        }
+
+        /// <summary>
+        /// Convert <paramref name="point"/> to <see cref="Point3D"/>.
+        /// </summary>
+        /// <param name="point"></param>
+        /// <returns>Returns a new <see cref="Point3D"/> built by <paramref name="point"/> coordinates.</returns>
+        public static Point3D ToPoint3D(this XYZ point)
+        {
+            return new Point3D(point.X , point.Y, point.Z);
         }
 
     }

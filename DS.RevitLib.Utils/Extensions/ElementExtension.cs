@@ -447,5 +447,53 @@ namespace DS.RevitLib.Utils.Extensions
             return InsulationLiningBase.GetInsulationIds(element.Document, element.Id)
                .Select(x => element.Document.GetElement(x) as InsulationLiningBase).FirstOrDefault();
         }
+
+        /// <summary>
+        /// Check if <paramref name="element"/> contains <paramref name="point"/>.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <param name="point"></param>
+        /// <returns>Returns true if <paramref name="point"/> is inside <paramref name="element"/>.</returns>
+        public static bool Contains(this Element element, XYZ point)
+        {
+            double multiplicator = 100;
+            Line line1 = Line.CreateBound(point, point + XYZUtils.GenerateXYZ().Multiply(multiplicator));
+
+            var faces = element.Solid().Faces;
+            int intersectionCount = 0;
+            foreach (Face face in faces)
+            {
+                if (face.Intersect(line1) == SetComparisonResult.Overlap)
+                { intersectionCount++; }
+            }
+
+            return intersectionCount % 2 != 0;
+        }
+
+        /// <summary>
+        /// Get <paramref name="element"/>'s solid.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <returns></returns>
+        public static Solid Solid(this Element element) => ElementUtils.GetSolid(element);
+
+        /// <summary>
+        /// Get connected elements to <paramref name="element"/>.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <returns>Returns connected elements by one from each <paramref name="element"/>'s connector.</returns>
+        public static List<Element> GetConnected(this Element element) => ConnectorUtils.GetConnectedElements(element);
+
+        /// <summary>
+        /// Get main connectors of element. 
+        /// </summary>
+        /// <param name="element"></param>
+        /// <returns>If element is <see cref="Autodesk.Revit.DB.MEPCurve"/> type returns two connectors of it with max distance between them.
+        /// <para>        
+        /// If element is <see cref="Autodesk.Revit.DB.FamilyInstance"/> type returns two connectors on line through <paramref name="element"/>'s location point.
+        /// </para>
+        /// </returns>
+        public static (Connector con1, Connector con2) GetMainConnectors(this Element element) => 
+            ConnectorUtils.GetMainConnectors(element);
     }
 }

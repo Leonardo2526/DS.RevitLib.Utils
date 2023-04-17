@@ -46,6 +46,7 @@
     <Reference Include="Nito.Collections.Deque, Version=1.1.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Nito.Collections.Deque.1.1.1\lib\net461\Nito.Collections.Deque.dll</HintPath>
     </Reference>
+    <Reference Include="PresentationCore" />
     <Reference Include="RevitAPI">
       <HintPath>C:\Program Files\Autodesk\Revit 2020\RevitAPI.dll</HintPath>
       <Private>False</Private>
@@ -69,6 +70,7 @@
     <Compile Include="TestedClasses\ArcCreationTest.cs" />
     <Compile Include="TestedClasses\BBCollisionUtilsTest.cs" />
     <Compile Include="TestedClasses\BuilderByPointsTest.cs" />
+    <Compile Include="TestedClasses\CollisionDetectorByTraceTest.cs" />
     <Compile Include="TestedClasses\GetBasisVectorOnPlaneTest.cs" />
     <Compile Include="TestedClasses\CableTrayTest.cs" />
     <Compile Include="TestedClasses\ConnectionFactoryClient.cs" />

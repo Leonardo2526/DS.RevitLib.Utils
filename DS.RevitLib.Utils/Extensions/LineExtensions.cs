@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.ModelCurveUtils;
+using DS.RevitLib.Utils.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -116,6 +117,27 @@ namespace DS.RevitLib.Utils.Lines
         public static XYZ GetNormal(this Line line, XYZ point = null)
         {
             return line.GetPlane(point).Normal;
+        }
+
+        /// <summary>
+        /// Get <see cref="Basis"/> from <paramref name="line"/>.
+        /// <para>
+        /// If <paramref name="basisY"/> is null random <see cref="Autodesk.Revit.DB.XYZ"/> perpendicular to <paramref name="line"/> direction will be set.
+        /// If <paramref name="basePoint"/> is null <paramref name="line"/>'s origin will be set.
+        /// </para>
+        /// </summary>
+        /// <param name="line"></param>
+        /// <param name="basePoint"></param>
+        /// <param name="basisY"></param>
+        /// <returns>Returns <see cref="Basis"/> from <paramref name="line"/>. 
+        /// </returns>
+        public static Basis GetBasis(this Line line, XYZ basePoint = null, XYZ basisY = null)
+        {
+            XYZ basisX = line.Direction;            
+            basisY ??= basisX.GetRandomPerpendicular();
+            XYZ basisZ = basisX.CrossProduct(basisY);
+            basePoint ??= line.Origin;
+            return new Basis(basisX, basisY, basisZ, basePoint);
         }
     }
 }

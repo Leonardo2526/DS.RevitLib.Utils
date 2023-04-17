@@ -102,6 +102,11 @@ namespace DS.RevitLib.Utils
             return SolidExtractor.GetSolids(element);
         }
 
+        /// <summary>
+        /// Get <paramref name="element"/>'s solid.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <returns></returns>
         public static Solid GetSolid(Element element)
         {
             var solids = SolidExtractor.GetSolids(element);
@@ -577,5 +582,8 @@ namespace DS.RevitLib.Utils
             (XYZ minPoint, XYZ maxPoint) = XYZUtils.CreateMinMaxPoints(offsetPoints);
             return new BoundingBoxXYZ() { Min = minPoint, Max = maxPoint };
         }
+
+      
+
     }
 }
