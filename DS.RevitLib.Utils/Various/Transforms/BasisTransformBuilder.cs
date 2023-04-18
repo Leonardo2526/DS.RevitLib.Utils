@@ -12,7 +12,7 @@ using System.Linq;
 
 namespace DS.RevitLib.Utils.Transforms
 {
-    internal class BasisTransformBuilder : TransformBuilder
+    public class BasisTransformBuilder : TransformBuilder
     {
         private readonly Basis _operationObject;
 

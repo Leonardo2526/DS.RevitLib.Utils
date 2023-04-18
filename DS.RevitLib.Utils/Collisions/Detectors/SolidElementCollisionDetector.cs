@@ -36,8 +36,15 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
                 GetIntersectedElements(checkSolid, exludedCheckObjects2);
 
             var collisions = new List<ICollision>();
-            elements.ForEach(obj => collisions.Add(new SolidElementCollision(checkSolid, obj)));
+            foreach (Element element in elements)
+            {
+                var collision = new SolidElementCollision(checkSolid, element);
 
+                //intersection solid can be null due to invalid ExecuteBooleanOperation
+                //means that intersection volume has very little value.
+                if (collision.IntersectionSolid == null) { continue; }
+                else { collisions.Add(collision); }
+            }
             return collisions;
         }
 

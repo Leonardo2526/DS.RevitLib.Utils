@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.UI;
 using DS.RevitLib.Utils.MEP;
 using System;
 using System.Collections.Generic;
@@ -106,6 +107,7 @@ namespace DS.RevitLib.Utils.Solids
                 }
                 catch (Exception ex)
                 {
+                    //Debug.WriteLine(ex);
                     //TaskDialog.Show("Error", "Failed to find intersection between solids. \n" + ex.Message); 
                 }
             }

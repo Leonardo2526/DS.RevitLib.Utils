@@ -192,8 +192,6 @@
     <Compile Include="Creation\Transactions\TrgEventBuilder.cs" />
     <Compile Include="Various\Selections\PointSelector.cs" />
     <Compile Include="Various\Selections\SelectorBase.cs" />
-    <Compile Include="Various\Transforms\BasisLineTransformBuilder.cs" />
-    <Compile Include="Various\Transforms\BasisLineTransformModel.cs" />
     <Compile Include="Various\Transforms\BasisTransformBuilder.cs" />
     <Compile Include="Various\Transforms\BasisTransformModel.cs" />
     <Compile Include="Various\Transforms\TransformBuilder.cs" />
