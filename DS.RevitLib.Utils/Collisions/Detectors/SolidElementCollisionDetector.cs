@@ -27,6 +27,9 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
             base(revitLink, checkLinkObjects)
         { }
 
+
+
+
         /// <inheritdoc/>
         public override List<ICollision> GetCollisions(Solid checkObject1, List<Element> exludedCheckObjects2 = null)
         {
@@ -38,12 +41,16 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
             var collisions = new List<ICollision>();
             foreach (Element element in elements)
             {
+                //var s = ElementUtils.GetSolid(element);
+                //new TransactionBuilder(_doc).Build(() => s.ShowShape(element.Document),"show solid");
                 var collision = new SolidElementCollision(checkSolid, element);
-
-                //intersection solid can be null due to invalid ExecuteBooleanOperation
-                //means that intersection volume has very little value.
-                if (collision.IntersectionSolid == null) { continue; }
-                else { collisions.Add(collision); }
+                if (MinVolume != 0)
+                {
+                    collision.MinVolume = MinVolume;
+                    if (collision.IntersectionSolid != null)
+                    { collisions.Add(collision); }
+                }
+                else collisions.Add(collision);
             }
             return collisions;
         }

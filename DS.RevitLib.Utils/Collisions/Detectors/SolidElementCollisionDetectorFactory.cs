@@ -26,7 +26,7 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
             _doc = doc;
             _modelDetector = new SolidElementCollisionDetector(_doc, docElements);
             _linkDetectors = linkElementsDict is null ? null : GetLinkDetectors(linkElementsDict);
-        }
+        }       
 
         /// <summary>
         /// Get collisions between <paramref name="checkObject1"/> and objects in 
@@ -38,7 +38,7 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
         public override List<ICollision> GetCollisions(Solid checkObject1, List<Element> checkObjects2ToExclude = null)
         {
             Collisions = new List<ICollision>();
-
+            _modelDetector.MinVolume = MinVolume;
             //get colliisons in model
             var modelCollisions = _modelDetector.GetCollisions(checkObject1, checkObjects2ToExclude).Cast<SolidElementCollision>().ToList();
             Collisions.AddRange(modelCollisions);
@@ -48,6 +48,7 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
             { 
                 foreach (var linkDetector in _linkDetectors)
                 {
+                    linkDetector.MinVolume = MinVolume;
                     var linkCollisions = linkDetector.GetCollisions(checkObject1, checkObjects2ToExclude).Cast<SolidElementCollision>().ToList();
                     Collisions.AddRange(linkCollisions);
                 }            

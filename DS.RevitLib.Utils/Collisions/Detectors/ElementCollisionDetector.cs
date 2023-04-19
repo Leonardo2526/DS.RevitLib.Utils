@@ -35,11 +35,13 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
             foreach (Element element in elements)
             {
                 var collision = new ElementCollision(checkObject1, element);
-
-                //intersection solid can be null due to invalid ExecuteBooleanOperation
-                //means that intersection volume has very little value.
-                if (collision.IntersectionSolid == null) { continue; }
-                else { collisions.Add(collision); }
+                if (MinVolume != 0)
+                {
+                    collision.MinVolume = MinVolume;
+                    if (collision.IntersectionSolid != null)
+                    { collisions.Add(collision); }
+                }
+                else collisions.Add(collision);
             }
 
             return collisions;

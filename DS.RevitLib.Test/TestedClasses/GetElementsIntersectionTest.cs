@@ -27,20 +27,23 @@ namespace DS.RevitLib.Test.TestedClasses
 
         private void Run()
         {
-            MEPCurve mEPCurve1 = new ElementSelector(_uiDoc).Pick() as MEPCurve;
-            MEPCurve mEPCurve2 = new ElementSelector(_uiDoc).Pick() as MEPCurve;
+            var elem1 = new ElementSelector(_uiDoc).Pick();
+            var elem2 = new ElementSelector(_uiDoc).Pick();
 
-            Solid solid1 = ElementUtils.GetSolid(mEPCurve1);
-            Solid solid2 = ElementUtils.GetSolid(mEPCurve2);
+            Solid solid1 = ElementUtils.GetSolid(elem1);
+            Solid solid2 = ElementUtils.GetSolid(elem2);
 
             var (elements, linkElementsDict) = new ElementsExtractor(_doc).GetAll();
 
-            var detector = new SolidElementCollisionDetectorFactory(_doc, elements, linkElementsDict);
-            var collisions = detector.GetCollisions(solid1, new List<Element> { mEPCurve1});
+            var detector = new SolidElementCollisionDetectorFactory(_doc, elements, linkElementsDict)
+            {
+                MinVolume = 0
+            };
+            var collisions = detector.GetCollisions(solid1, new List<Element> { elem1});
             Debug.WriteLine($"Collisions count is: {collisions.Count}");
 
-            Solid intersectionSolid =  DS.RevitLib.Utils.Solids.SolidUtils.GetIntersection(solid1, solid2,1);
-            Debug.WriteLineIf(collisions.Count >0,$"Intersection solid volume is: {intersectionSolid?.Volume}");
+            Solid intersectionSolid =  DS.RevitLib.Utils.Solids.SolidUtils.GetIntersection(solid1, solid2);
+            Debug.WriteLineIf(collisions.Count >0 && intersectionSolid is not null, $"Intersection solid volume is: {intersectionSolid?.Volume}");
         }
     }
 }

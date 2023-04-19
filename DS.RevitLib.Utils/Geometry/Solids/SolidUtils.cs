@@ -107,8 +107,9 @@ namespace DS.RevitLib.Utils.Solids
                 }
                 catch (Exception ex)
                 {
+                    Debug.WriteLine("Failed to find intersection between solids");
                     //Debug.WriteLine(ex);
-                    //TaskDialog.Show("Error", "Failed to find intersection between solids. \n" + ex.Message); 
+                    //Debug.WriteLine("Failed to find intersection between solids. \n" + ex.Message);
                 }
             }
 
