@@ -91,7 +91,7 @@ namespace DS.RevitLib.Utils.MEP
         {
             Type type = element.GetType();
 
-            if (type.Name.Contains("System") | type.Name.Contains("Insulation"))
+            if (type.Name.Contains("System") | type.Name.Contains("Insulation") | type.Name.Contains("Connector"))
             {
                 return false;
             }
@@ -110,6 +110,34 @@ namespace DS.RevitLib.Utils.MEP
             var connectors = ConnectorUtils.GetConnectors(famInst);
 
             var connectorInfo = (MEPFamilyConnectorInfo)connectors.First().GetMEPConnectorInfo();
+
+            var associatedFamilyParameterId = connectorInfo.GetAssociateFamilyParameterId(new ElementId(connectorParameter));
+
+            if (associatedFamilyParameterId == ElementId.InvalidElementId)
+                return null;
+
+            var document = famInst.Document;
+
+            var parameterElement = document.GetElement(associatedFamilyParameterId) as ParameterElement;
+
+            if (parameterElement == null)
+                return null;
+
+            var paramterDefinition = parameterElement.GetDefinition();
+
+            return famInst.get_Parameter(paramterDefinition);
+        }
+
+        /// <summary>
+        /// Get <paramref name="famInst"/>'s <paramref name="connector"/> parameter associated with parameter connectors.
+        /// </summary>
+        /// <param name="famInst"></param>
+        /// <param name="connector"></param>
+        /// <param name="connectorParameter"></param>
+        /// <returns>Return assiciated parameter.</returns>
+        public static Parameter GetAssociatedParameter(FamilyInstance famInst, Connector connector, BuiltInParameter connectorParameter)
+        {          
+            var connectorInfo = (MEPFamilyConnectorInfo)connector.GetMEPConnectorInfo();
 
             var associatedFamilyParameterId = connectorInfo.GetAssociateFamilyParameterId(new ElementId(connectorParameter));
 

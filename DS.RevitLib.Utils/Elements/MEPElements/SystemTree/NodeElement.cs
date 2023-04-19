@@ -10,8 +10,17 @@ namespace DS.RevitLib.Utils.MEP.SystemTree.Relatives
             SystemRelation = relation;
         }
 
+        /// <summary>
+        /// Tee or spud element of node.
+        /// </summary>
         public FamilyInstance Element { get; }
+
+        /// <summary>
+        /// Element connected to tee or spud of node.
+        /// </summary>
         public Element RelationElement { get; set; }
+
+
         public Relation SystemRelation { get; set; }
     }
 }

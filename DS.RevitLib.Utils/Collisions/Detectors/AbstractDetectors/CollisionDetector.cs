@@ -34,6 +34,11 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
 
 
         /// <summary>
+        /// Minimum intersection volume in <see cref="Autodesk.Revit.DB.DisplayUnitType.DUT_CUBIC_CENTIMETERS"/>.
+        /// </summary>
+        public double MinVolume { get; set; }
+
+        /// <summary>
         /// Create a new object for collisions (intersections) detection with objects in <see cref="Document"/>.
         /// </summary>
         /// <param name="doc"></param>

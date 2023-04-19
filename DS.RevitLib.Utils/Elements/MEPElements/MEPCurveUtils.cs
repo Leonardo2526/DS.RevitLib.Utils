@@ -1,7 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using DS.RevitLib.Utils.Extensions;
+using DS.RevitLib.Utils.Lines;
 using DS.RevitLib.Utils.Models;
-using Ivanov.RevitLib.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -463,6 +463,41 @@ namespace DS.RevitLib.Utils.MEP
             //align
 
             ElementTransformUtils.RotateElement(sourceMEPCurve.Document, operationMEPCurve.Id, axis, angle);
+        }
+
+
+        /// <summary>
+        /// Align <see cref="Basis"/>.Y of <paramref name="sourceMEPCurve"/> with 
+        /// <paramref name="targetBasis"/> <see cref="Basis"/>.Y.
+        /// </summary>
+        /// <param name="sourceMEPCurve"></param>
+        /// <param name="targetBasis"></param>
+        /// <returns>Returns rotation <see cref="Transform"/> to align Y <see cref="Basis"/>'s. </returns>
+        public static Transform GetAlignTransform(MEPCurve sourceMEPCurve, Basis targetBasis)
+        {
+            if (!sourceMEPCurve.IsRectangular())
+                return null;
+
+            //Check if rect is needed to align
+            Basis sourceBasis = sourceMEPCurve.GetBasis();
+            if (XYZUtils.Collinearity(sourceBasis.Y, targetBasis.Y) || XYZUtils.Collinearity(sourceBasis.Z, targetBasis.Z))
+            { return null;}
+
+            //get align options
+            XYZ cross = sourceBasis.X.CrossProduct(targetBasis.X).Normalize();
+            XYZ crossY = sourceBasis.Y.CrossProduct(targetBasis.Y).Normalize();
+            (XYZ sourceAlignBasis, XYZ targetBasisToAlign) = XYZUtils.Collinearity(targetBasis.Y, cross) ?
+                 (sourceBasis.Y, targetBasis.Y) :
+                 (sourceBasis.Z, targetBasis.Z);
+            double angle = sourceBasis.Y.AngleOnPlaneTo(targetBasis.Y, crossY);
+            //double angle = sourceAlignBasis.AngleTo(targetBasisToAlign);
+            var basis = new Basis(targetBasis.X, sourceAlignBasis, targetBasisToAlign, targetBasis.Point);
+
+            BasisOrientation orientation = basis.GetOrientaion();
+            angle = orientation == BasisOrientation.Left ? angle : -angle;
+
+            //align
+            return Transform.CreateRotationAtPoint(basis.X, angle, basis.Point);
         }
     }
 

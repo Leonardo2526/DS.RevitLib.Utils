@@ -52,6 +52,7 @@
     <Reference Include="PathFinderLib">
       <HintPath>..\..\VAR.RevitLib.Utils\Ivanov.RevitLib.Utils\Assemblies\PathFinderLib.dll</HintPath>
     </Reference>
+    <Reference Include="PresentationCore" />
     <Reference Include="Revit.Async, Version=2.0.1.0, Culture=neutral, processorArchitecture=AMD64">
       <HintPath>..\packages\Revit.Async.2.0.1\lib\net45\Revit.Async.dll</HintPath>
     </Reference>
@@ -78,6 +79,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Collisions\Detectors\CollisionDetectorByTrace.cs" />
     <Compile Include="Collisions\Resolvers\CollisionResolverBase.cs" />
     <Compile Include="Collisions\Resolvers\ICollisionResolver.cs" />
     <Compile Include="Collisions\Resolvers\IResolver.cs" />
@@ -121,7 +123,10 @@
     <Compile Include="Elements\MEPElements\Connection\MEPCurveStrategies\TeeMEPCurveStrategy.cs" />
     <Compile Include="Elements\MEPElements\Connection\MEPCurveStrategies\TeeWithCutMEPCurveStrategy.cs" />
     <Compile Include="Creation\CreatorExtensions.cs" />
+    <Compile Include="Elements\MEPElements\TeeCalc.cs" />
+    <Compile Include="Elements\MEPElements\ITraceSettings.cs" />
     <Compile Include="Elements\MEPElements\MEPSystemElement.cs" />
+    <Compile Include="Elements\MEPElements\TraceSettings.cs" />
     <Compile Include="Extensions\CurveExtensions.cs" />
     <Compile Include="Elements\Alignments\SolidAngleAlignment.cs" />
     <Compile Include="Elements\Alignments\AngleAlignment.cs" />
@@ -140,7 +145,9 @@
     <Compile Include="Extensions\ElementExtension.cs" />
     <Compile Include="Extensions\DocumentExtensions.cs" />
     <Compile Include="Extensions\ConvertationExtensions.cs" />
+    <Compile Include="Extensions\FaceExtensions.cs" />
     <Compile Include="Extensions\MEPSystemExtensions.cs" />
+    <Compile Include="Extensions\ConnectorExtensions.cs" />
     <Compile Include="Geometry\GeometryElementsUtils.cs" />
     <Compile Include="Geometry\Lines\LinesConnector.cs" />
     <Compile Include="Geometry\Solids\SolidOffsetExtractor.cs" />
@@ -165,6 +172,7 @@
     <Compile Include="PathCreators\PathFindCreator.cs" />
     <Compile Include="PathCreators\PathCreator.cs" />
     <Compile Include="Tests\ITestModel.cs" />
+    <Compile Include="Various\IPointConverter.cs" />
     <Compile Include="Various\IRevitContext.cs" />
     <Compile Include="Various\Selections\Filters\ElementInLinkSelectionFilter.cs" />
     <Compile Include="Various\Selections\Filters\PointSelectionFilter.cs" />
@@ -184,6 +192,8 @@
     <Compile Include="Creation\Transactions\TrgEventBuilder.cs" />
     <Compile Include="Various\Selections\PointSelector.cs" />
     <Compile Include="Various\Selections\SelectorBase.cs" />
+    <Compile Include="Various\Transforms\BasisTransformBuilder.cs" />
+    <Compile Include="Various\Transforms\BasisTransformModel.cs" />
     <Compile Include="Various\Transforms\TransformBuilder.cs" />
     <Compile Include="Various\Transforms\TransformModel.cs" />
     <Compile Include="Various\Basisis\Basis.cs" />
@@ -261,6 +271,7 @@
     <Compile Include="Creation\Visualisators\BoundingBoxVisualisator.cs" />
     <Compile Include="Creation\Visualisators\IVisualisator.cs" />
     <Compile Include="Creation\Visualisators\Visualisator.cs" />
+    <Compile Include="Various\PointConverter.cs" />
     <Compile Include="Various\Zoomer.cs" />
   </ItemGroup>
   <ItemGroup>

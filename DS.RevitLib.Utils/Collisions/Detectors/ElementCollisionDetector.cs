@@ -31,7 +31,18 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
                 intersection.GetIntersectedElements(checkTransformedSolid, exludedCheckObjects2);
 
             var collisions = new List<ICollision>();
-            elements.ForEach(obj => collisions.Add(new ElementCollision(checkObject1, obj)));
+
+            foreach (Element element in elements)
+            {
+                var collision = new ElementCollision(checkObject1, element);
+                if (MinVolume != 0)
+                {
+                    collision.MinVolume = MinVolume;
+                    if (collision.IntersectionSolid != null)
+                    { collisions.Add(collision); }
+                }
+                else collisions.Add(collision);
+            }
 
             return collisions;
         }

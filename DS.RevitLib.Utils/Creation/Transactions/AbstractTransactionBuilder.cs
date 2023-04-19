@@ -16,14 +16,14 @@ namespace DS.RevitLib.Utils.Transactions
         /// <param name="operation"></param>
         /// <param name="transactionName"></param>
         /// <returns>Returns object of transacion.</returns>
-        public abstract T Build<T>(Func<T> operation, string transactionName);
+        public abstract T Build<T>(Func<T> operation, string transactionName, bool commitTransaction = true);
 
         /// <summary>
         /// Build transaction.
         /// </summary>
         /// <param name="operation"></param>
         /// <param name="transactionName"></param>
-        public abstract void Build(Action operation, string transactionName);
+        public abstract void Build(Action operation, string transactionName, bool commitTransaction = true);
 
         /// <summary>
         /// Build transaction asynchronously with <see cref="RevitTask"/>.
@@ -31,7 +31,7 @@ namespace DS.RevitLib.Utils.Transactions
         /// <param name="operation">Transaction action.</param>
         /// <param name="transactionName"></param>
         /// <returns></returns>
-        public async Task BuildRevitTask(Action operation, string transactionName)
+        public async Task BuildRevitTask(Action operation, string transactionName, bool commitTransaction = true)
         {
             await RevitTask.RunAsync(() => Build(operation, transactionName));
         }

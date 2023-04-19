@@ -112,7 +112,7 @@ namespace DS.RevitLib.Test
 
             double elbowRadius = new ElbowRadiusCalc(mEPCurveModel, _trb).GetRadius(90.DegToRad());
            
-            var pathFinder = new PathFindCreator().Create(_doc, elbowRadius, XYZ.BasisX, new CancellationTokenSource().Token,
+            var pathFinder = new PathFindCreator().Create(_doc, elbowRadius, XYZ.BasisX,
                 mEPCurve1.Height, mEPCurve1.Width);
 
             var elementsToDelete = new List<Element>() { mEPCurve1, mEPCurve2 };

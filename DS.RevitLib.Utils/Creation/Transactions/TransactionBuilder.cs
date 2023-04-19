@@ -42,7 +42,7 @@ namespace DS.RevitLib.Utils
         public string WarningMessages { get; set; }
 
         /// <inheritdoc/>
-        public override T Build<T>(Func<T> operation, string transactionName)
+        public override T Build<T>(Func<T> operation, string transactionName, bool commitTransaction = true)
         {
             T result = default;
             var trName = _transactionPrefix + transactionName;
@@ -53,14 +53,14 @@ namespace DS.RevitLib.Utils
                 transNew.Start();
                 result = operation.Invoke();
 
-                _committer.Commit(transNew);
+                _committer.Commit(transNew, commitTransaction);
             }
             ErrorMessages += _committer?.ErrorMessages;
 
             return result;
         }
 
-        public T BuildCatch<T>(Func<T> operation, string transactionName)
+        public T BuildCatch<T>(Func<T> operation, string transactionName, bool commitTransaction = true)
         {
             T result = default;
             var trName = _transactionPrefix + transactionName;
@@ -72,7 +72,7 @@ namespace DS.RevitLib.Utils
                     transNew.Start();
                     result = operation.Invoke();
 
-                    _committer.Commit(transNew);
+                    _committer.Commit(transNew, commitTransaction);
                 }
             }
             catch (Exception ex)
@@ -86,7 +86,7 @@ namespace DS.RevitLib.Utils
         }
 
         /// <inheritdoc/>
-        public override void Build(Action operation, string transactionName)
+        public override void Build(Action operation, string transactionName, bool commitTransaction = true)
         {
             var trName = _transactionPrefix + transactionName;
 
@@ -96,13 +96,13 @@ namespace DS.RevitLib.Utils
                 transaction.Start();
                 operation.Invoke();
 
-                _committer.Commit(transaction);
+                _committer.Commit(transaction, commitTransaction);
                 //Debug.WriteLine($"Transaction '{trName}' is committed successfully!");
             }
             ErrorMessages += _committer?.ErrorMessages;
         }
 
-        public void BuildCatch(Action operation, string transactionName)
+        public void BuildCatch(Action operation, string transactionName, bool commitTransaction = true)
         {
             var trName = _transactionPrefix + transactionName;
             try
@@ -113,7 +113,7 @@ namespace DS.RevitLib.Utils
                     transaction.Start();
                     operation.Invoke();
 
-                    _committer.Commit(transaction);
+                    _committer.Commit(transaction, commitTransaction);
                     Debug.WriteLine($"Transaction '{trName}' is committed successfully!");
                 }
             }

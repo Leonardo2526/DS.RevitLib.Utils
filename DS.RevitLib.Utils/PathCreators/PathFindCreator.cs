@@ -16,11 +16,11 @@ namespace DS.RevitLib.Utils.PathCreators
     {
         private Document _doc;
         private double _elbowRadius;
-        private CancellationToken _cancellationToken;
         private XYZ _xVector;
         private double _offset;
         private double _width;
         private double _height;
+        private CancellationToken _cancellationToken = CancellationToken.None;
 
         /// <summary>
         /// Instantiate an object to find path.
@@ -28,17 +28,14 @@ namespace DS.RevitLib.Utils.PathCreators
         /// <param name="doc"></param>
         /// <param name="elbowRadius"></param>
         /// <param name="xVector">Align vector for path in XY plane.</param>
-        /// <param name="cancellationToken"></param>
         /// <param name="width"></param>
         /// <param name="height"></param>
         /// <param name="offset">Offset from element</param>
-        /// <param name="transactionBuilder"></param>
-        public PathFindCreator Create(Document doc, double elbowRadius, XYZ xVector, CancellationToken cancellationToken,
+        public PathFindCreator Create(Document doc, double elbowRadius, XYZ xVector,
             double width, double height, double offset = 0)
         {
             _doc = doc;
             _elbowRadius = elbowRadius;
-            _cancellationToken = cancellationToken;
             _xVector = xVector;
             _offset = offset;
             _width = width;
@@ -46,6 +43,7 @@ namespace DS.RevitLib.Utils.PathCreators
             return this;
         }
 
+        public CancellationToken CancellationToken { get => _cancellationToken; set => _cancellationToken = value; }
 
         /// <inheritdoc/>
         public async Task<List<XYZ>> CreateAsync(XYZ point1, XYZ point2)

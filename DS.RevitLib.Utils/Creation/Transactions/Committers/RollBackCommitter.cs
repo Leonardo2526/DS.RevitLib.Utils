@@ -4,11 +4,13 @@ namespace DS.RevitLib.Utils.TransactionCommitter
 {
     public class RollBackCommitter : Committer
     {
-        public override void Commit(Transaction transaction)
+        public override void Commit(Transaction transaction, bool commitTransaction = true)
         {
             if (transaction.HasStarted())
             {
-                transaction.Commit();
+                if (commitTransaction) { transaction.Commit(); }
+                else { transaction.RollBack(); }
+
                 var name = transaction.GetName();
                 if (name.Contains("RolledBack"))
                 {

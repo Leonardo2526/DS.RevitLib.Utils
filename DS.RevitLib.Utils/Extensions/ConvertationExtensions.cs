@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Media.Media3D;
 
 namespace DS.RevitLib.Utils.Extensions
 {
@@ -54,5 +55,14 @@ namespace DS.RevitLib.Utils.Extensions
             return doubleValue.MMToFeet();
         }
 
+        /// <summary>
+        /// Convert <paramref name="point"/> to <see cref="Autodesk.Revit.DB.XYZ"/>.
+        /// </summary>
+        /// <param name="point"></param>
+        /// <returns>Returns a new <see cref="Autodesk.Revit.DB.XYZ"/> built by <paramref name="point"/> coordinates.</returns>
+        public static XYZ ToXYZ(this Point3D point)
+        {
+            return new XYZ(point.X, point.Y, point.Z);
+        }
     }
 }
