@@ -499,6 +499,31 @@ namespace DS.RevitLib.Utils.MEP
             //align
             return Transform.CreateRotationAtPoint(basis.X, angle, basis.Point);
         }
+
+        /// <summary>
+        /// Get <see cref="Autodesk.Revit.DB.FamilyInstance"/> between 
+        /// <paramref name="mEPCurve1"/> and <paramref name="mEPCurve2"/>.
+        /// </summary>
+        /// <param name="mEPCurve1"></param>
+        /// <param name="mEPCurve2"></param>
+        /// <returns>Returns <see cref="Autodesk.Revit.DB.FamilyInstance"/> 
+        /// if it's connected both to <paramref name="mEPCurve1"/> and <paramref name="mEPCurve2"/>.
+        /// Otherwise returns <see langword="null"/>.
+        /// </returns>
+        public static FamilyInstance GetJunction(MEPCurve mEPCurve1, MEPCurve mEPCurve2)
+        {
+            if(mEPCurve1.Id == mEPCurve2.Id) { return null; }
+
+            var elems1 = ConnectorUtils.GetConnectedElements(mEPCurve1);
+            var elems2 = ConnectorUtils.GetConnectedElements(mEPCurve2);
+            ElementId intersectionElementId =  elems1.Select(obj => obj.Id).
+                Intersect(elems2.Select(obj => obj.Id)).
+                FirstOrDefault();
+
+            return intersectionElementId is null ? 
+                null : 
+                mEPCurve1.Document.GetElement(intersectionElementId) as FamilyInstance;
+        }
     }
 
 }

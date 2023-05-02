@@ -14,6 +14,8 @@ namespace DS.RevitLib.Utils.MEP
         /// <summary>
         /// Get elements connected to current element. 
         /// </summary>
+        /// <returns>Returns list of connected elements. 
+        /// Returns empty list if no connected elements was found </returns>
         public static List<Element> GetConnectedElements(Element element)
         {
             List<Connector> connectors = GetConnectors(element);

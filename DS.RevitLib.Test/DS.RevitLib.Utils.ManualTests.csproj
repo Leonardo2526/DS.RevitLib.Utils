@@ -79,6 +79,7 @@
     <Compile Include="TestedClasses\GetAssociatedParameterTest.cs" />
     <Compile Include="TestedClasses\GetConnectedElementsTest.cs" />
     <Compile Include="TestedClasses\GetElementsIntersectionTest.cs" />
+    <Compile Include="TestedClasses\GetJunctionTest.cs" />
     <Compile Include="TestedClasses\MEPCurveSolidCreatorTest.cs" />
     <Compile Include="TestedClasses\MEPSystemBuilderTest.cs" />
     <Compile Include="TestedClasses\CalcTest.cs" />

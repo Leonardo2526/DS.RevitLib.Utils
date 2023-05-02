@@ -43,21 +43,22 @@ namespace DS.RevitLib.Utils.Extensions
         /// Order elements list by base point.
         /// </summary>
         /// <param name="basePoint"></param>
-        /// <returns>Return ordered elements by descending distances from location points to base point.</returns>
+        /// <param name="elements"></param>
+        /// <returns>Return ordered elements by descending distances from location points to base point.</returns>       
         public static List<Element> OrderByPoint(this List<Element> elements, XYZ basePoint)
         {
-            var distances = new Dictionary<double, Element>();
+            var distances = new Dictionary<Element, double>();
 
             foreach (var elem in elements)
             {
                 XYZ point = ElementUtils.GetLocationPoint(elem);
                 double distance = basePoint.DistanceTo(point);
-                distances.Add(distance, elem);
+                distances.Add(elem, distance);
             }
 
-            distances = distances.OrderByDescending(x => x.Key).ToDictionary(x => x.Key, x => x.Value);
+            distances = distances.OrderByDescending(x => x.Value).ToDictionary(x => x.Key, x => x.Value);
 
-            return distances.Values.ToList();
+            return distances.Keys.ToList();
         }
 
         /// <summary>
