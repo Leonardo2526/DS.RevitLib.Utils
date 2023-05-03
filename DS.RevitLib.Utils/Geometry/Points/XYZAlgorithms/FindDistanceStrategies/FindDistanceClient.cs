@@ -1,15 +1,15 @@
 ﻿using Autodesk.Revit.DB;
-using DS.RevitLib.Utils.Points.XYZAlgorithms.MaxDistance.Strategies;
+using DS.RevitLib.Utils.Points.XYZAlgorithms.Strategies;
 using System.Collections.Generic;
 
 namespace DS.RevitLib.Utils.Points.XYZAlgorithms.MaxDistance
 {
-    internal class MaxDistanceClient
+    internal class FindDistanceClient
     {
         private readonly List<XYZ> _points;
-        private readonly MaxDistnaceStrategy _strategy;
+        private readonly StrategyToFindDist _strategy;
 
-        public MaxDistanceClient(List<XYZ> points, MaxDistnaceStrategy strategy)
+        public FindDistanceClient(List<XYZ> points, StrategyToFindDist strategy)
         {
             _points = points;
             _strategy = strategy;
@@ -18,13 +18,13 @@ namespace DS.RevitLib.Utils.Points.XYZAlgorithms.MaxDistance
         public XYZ Point1 { get; private set; }
         public XYZ Point2 { get; private set; }
 
-        public double GetMaxDistance()
+        public double GetDistance()
         {
-            var max = _strategy.AlgorithmInterface(_points);
+            var dist = _strategy.AlgorithmInterface(_points);
             Point1 = _strategy.Point1;
             Point2 = _strategy.Point2;
 
-            return max;
+            return dist;
         }
     }
 }

@@ -150,6 +150,7 @@
     <Compile Include="Extensions\ConnectorExtensions.cs" />
     <Compile Include="Geometry\GeometryElementsUtils.cs" />
     <Compile Include="Geometry\Lines\LinesConnector.cs" />
+    <Compile Include="Geometry\Points\XYZAlgorithms\FindDistanceStrategies\Strategies\StrategyToFindMinDist.cs" />
     <Compile Include="Geometry\Solids\SolidOffsetExtractor.cs" />
     <Compile Include="Creation\FailedTransaction.cs" />
     <Compile Include="Extensions\FamilyInstanceExtensions.cs" />
@@ -264,9 +265,9 @@
     <Compile Include="Creation\Transactions\Committers\Committer.cs" />
     <Compile Include="Creation\Transactions\Committers\BaseCommitter.cs" />
     <Compile Include="Creation\Transactions\Committers\RollBackCommitter.cs" />
-    <Compile Include="Geometry\Points\XYZAlgorithms\MaxDistance\MaxDistanceClient.cs" />
-    <Compile Include="Geometry\Points\XYZAlgorithms\MaxDistance\Strategies\MaxDistnaceStrategy.cs" />
-    <Compile Include="Geometry\Points\XYZAlgorithms\MaxDistance\Strategies\NaiveStrategy.cs" />
+    <Compile Include="Geometry\Points\XYZAlgorithms\FindDistanceStrategies\FindDistanceClient.cs" />
+    <Compile Include="Geometry\Points\XYZAlgorithms\FindDistanceStrategies\Strategies\StrategyToFindDist.cs" />
+    <Compile Include="Geometry\Points\XYZAlgorithms\FindDistanceStrategies\Strategies\StrategyToFindMaxDist.cs" />
     <Compile Include="Geometry\Points\XYZUtils.cs" />
     <Compile Include="Creation\Visualisators\BoundingBoxVisualisator.cs" />
     <Compile Include="Creation\Visualisators\IVisualisator.cs" />

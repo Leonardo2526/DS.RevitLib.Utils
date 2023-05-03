@@ -4,6 +4,7 @@ using DS.RevitLib.Utils.Lines;
 using DS.RevitLib.Utils.Models;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace DS.RevitLib.Utils.MEP
@@ -523,6 +524,40 @@ namespace DS.RevitLib.Utils.MEP
             return intersectionElementId is null ? 
                 null : 
                 mEPCurve1.Document.GetElement(intersectionElementId) as FamilyInstance;
+        }
+
+        /// <summary>
+        /// Get parent/child relation between <paramref name="mc1"/> and <paramref name="mc2"/>.
+        /// </summary>
+        /// <param name="mc1"></param>
+        /// <param name="mc2"></param>
+        /// <param name="inverted"></param>       
+        /// <returns>Returns <paramref name="mc1"/> as parent and <paramref name="mc2"/> as child 
+        /// if intersection point (real or virtual) lies on center line of <paramref name="mc1"/>.
+        /// <para>
+        /// Parameter <paramref name="inverted"/> returns <see langword="false"/> in this case.    
+        /// </para>     
+        /// Returns <paramref name="mc2"/> as parent and <paramref name="mc1"/> as child
+        /// if intersection point (real or virtual) lies on center line of <paramref name="mc2"/>.
+        /// <para>
+        /// Parameter <paramref name="inverted"/> returns <see langword="true"/> in this case.
+        /// </para>
+        ///  <para>
+        /// Returns (<see langword="null"/>, <see langword="null"/>) if no intersections between <see cref="MEPCurve"/>'s center lines was found
+        /// or unable to detect relation.
+        /// </para>
+        /// </returns>
+        public static (MEPCurve parentMC, MEPCurve childMC) GetRelation(MEPCurve mc1, MEPCurve mc2, out bool inverted)
+        {
+            var line1 = mc1.GetCurve() as Line;
+            var line2 = mc2.GetCurve() as Line;
+
+            var (parentLine, childLine) = LineUtils.GetRelation(line1, line2, out inverted);
+
+            if (parentLine == null && childLine == null)
+            {  return (null, null);}
+
+            return inverted ? (mc2,mc1): (mc1,mc2);
         }
     }
 

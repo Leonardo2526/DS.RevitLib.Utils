@@ -97,6 +97,24 @@ namespace DS.RevitLib.Utils.Extensions
             return false;
         }
 
+        /// <summary>
+        /// Specifies if <paramref name="point"/> lies on <paramref name="line"/>.
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="line"></param>
+        /// <param name="canCoinsidence"></param>
+        ///  /// <remarks>
+        /// Parameter <paramref name="canCoinsidence"/> specifies if <paramref name="point"/> can coinsidence with <paramref name="line"/>'s end points.
+        /// </remarks>
+        /// <returns>Reruns <see langword="true"/> if <paramref name="point"/> lies inside <paramref name="line"/> segment.
+        /// Otherwise returns <see langword="false"/>. 
+        /// </returns>
+        public static bool OnLine(this XYZ point, Line line, bool canCoinsidence = true)
+        {
+            var p1 = line.GetEndPoint(0); var p2 = line.GetEndPoint(1);
+            return point.IsBetweenPoints(p1, p2, 3, canCoinsidence);
+        }
+
         public static XYZ RoundVector(this XYZ vector, int value = 3)
         {
             double x = Math.Round(vector.X, value);
@@ -113,11 +131,22 @@ namespace DS.RevitLib.Utils.Extensions
         /// <param name="point1"></param>
         /// <param name="point2"></param>
         /// <param name="tolerance">Tolerance in degrees.</param>
-        /// <returns></returns>
-        public static bool IsBetweenPoints(this XYZ point, XYZ point1, XYZ point2, double tolerance = 3)
+        /// <param name="canCoinsidence"></param>
+        /// <remarks>
+        /// Parameter <paramref name="canCoinsidence"/> specifies if <paramref name="point"/> can coinsidence with <paramref name="point1"/> and <paramref name="point2"/>.
+        /// </remarks>
+        /// <returns>
+        /// Returns <see langword="true"/> if <paramref name="point"/> is between <paramref name="point1"/> and <paramref name="point2"/>.
+        /// <para>
+        /// Returns <see langword="false"/> if <paramref name="canCoinsidence"/> is <see langword="false"/> and one of points lies on <paramref name="point"/>.
+        /// </para>
+        /// </returns>
+        public static bool IsBetweenPoints(this XYZ point, XYZ point1, XYZ point2, double tolerance = 3, bool canCoinsidence = true)
         {
             var v1 = (point - point1).Normalize();
+            if(!canCoinsidence && v1.IsZeroLength()) { return false; }
             var v2 = (point - point2).Normalize();
+            if (!canCoinsidence && v2.IsZeroLength()) { return false; }
             if (v1.IsAlmostEqualTo(v2.Negate(), tolerance.DegToRad()))
             {
                 return true;

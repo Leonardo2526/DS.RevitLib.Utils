@@ -1,13 +1,14 @@
 ﻿using Autodesk.Revit.DB;
+using System;
 using System.Collections.Generic;
 
-namespace DS.RevitLib.Utils.Points.XYZAlgorithms.MaxDistance.Strategies
+namespace DS.RevitLib.Utils.Points.XYZAlgorithms.Strategies
 {
-    public class NaiveStrategy : MaxDistnaceStrategy
+    public class StrategyToFindMinDist : StrategyToFindDist
     {
         public override double AlgorithmInterface(List<XYZ> points)
         {
-            double max = 0;
+            double min = Double.MaxValue;
 
             for (int i = 0; i < points.Count - 1; i++)
             {
@@ -15,16 +16,16 @@ namespace DS.RevitLib.Utils.Points.XYZAlgorithms.MaxDistance.Strategies
                 {
                     double dist = points[i].DistanceTo(points[j]);
 
-                    if (dist > max)
+                    if (dist < min)
                     {
-                        max = dist;
+                        min = dist;
                         Point1 = points[i];
                         Point2 = points[j];
                     }
                 }
             }
 
-            return max;
+            return min;
         }
     }
 }

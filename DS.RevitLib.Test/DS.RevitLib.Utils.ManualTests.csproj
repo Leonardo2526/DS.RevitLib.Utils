@@ -70,6 +70,8 @@
     <Compile Include="TestedClasses\ArcCreationTest.cs" />
     <Compile Include="TestedClasses\BBCollisionUtilsTest.cs" />
     <Compile Include="TestedClasses\BuilderByPointsTest.cs" />
+    <Compile Include="TestedClasses\GetRelationTest.cs" />
+    <Compile Include="TestedClasses\LinesCoplanarityTest.cs" />
     <Compile Include="TestedClasses\CollisionDetectorByTraceTest.cs" />
     <Compile Include="TestedClasses\GetBasisVectorOnPlaneTest.cs" />
     <Compile Include="TestedClasses\CableTrayTest.cs" />
