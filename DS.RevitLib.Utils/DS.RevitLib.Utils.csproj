@@ -149,6 +149,7 @@
     <Compile Include="Extensions\MEPSystemExtensions.cs" />
     <Compile Include="Extensions\ConnectorExtensions.cs" />
     <Compile Include="Geometry\GeometryElementsUtils.cs" />
+    <Compile Include="Geometry\Lines\LineOverlapResult.cs" />
     <Compile Include="Geometry\Lines\LinesConnector.cs" />
     <Compile Include="Geometry\Points\XYZAlgorithms\FindDistanceStrategies\Strategies\StrategyToFindMinDist.cs" />
     <Compile Include="Geometry\Solids\SolidOffsetExtractor.cs" />

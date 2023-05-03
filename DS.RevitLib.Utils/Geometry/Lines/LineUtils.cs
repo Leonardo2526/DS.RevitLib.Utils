@@ -1,5 +1,6 @@
 ﻿using Autodesk.Revit.DB;
 using DS.RevitLib.Utils.Extensions;
+using DS.RevitLib.Utils.Geometry.Lines;
 using DS.RevitLib.Utils.ModelCurveUtils;
 using System;
 using System.Collections.Generic;
@@ -135,21 +136,61 @@ namespace DS.RevitLib.Utils
                 Line.CreateUnbound(line2.Origin, line2.Direction) : line2;
 
             var intersect = uLine1.Intersect(uLine2, out IntersectionResultArray resultArray);
-
+       
             return resultArray is not null && resultArray.Size > 0 ?
                 resultArray.get_Item(0).XYZPoint :
                 null;
         }
 
         /// <summary>
-        /// Specifies if <paramref name="line1"/> and <paramref name="line2"/> lie on the same plane (coplanar lines).
+        /// Get <see cref="LineOverlapResult"/> between two lines intersection.
         /// </summary>
         /// <param name="line1"></param>
         /// <param name="line2"></param>
-        /// <returns>Returns <see langword="true"/> if <paramref name="line1"/> and <paramref name="line2"/> are coplanar. 
-        /// Otherwise returns <see langword="false"/>.        
+        /// <param name="enableVirtual1"></param>
+        /// <param name="enableVirtual2"></param>
+        /// <remarks>
+        /// Parameter <paramref name="enableVirtual1"/> specifies if virtual intersection is 
+        /// enable between <paramref name="line1"/> and <paramref name="line2"/>.
+        /// <para>
+        /// Parameter <paramref name="enableVirtual2"/> specifies if virtual intersection is 
+        /// enable between <paramref name="line2"/> and <paramref name="line1"/>.      
+        /// </para>
+        /// </remarks>
+        /// <returns>Returns <see cref="LineOverlapResult"/> if lines have <see cref="SetComparisonResult.Overlap"/> intersection.
+        /// <para>
+        /// Otherwise returns <see cref="LineOverlapResult.None"/>.    
+        /// </para>
         /// </returns>
-        public static bool Coplanarity(Line line1, Line line2)
+        public static LineOverlapResult GetOverlapResult(Line line1, Line line2, bool enableVirtual1 = true, bool enableVirtual2 = true)
+        {
+            Line uLine1 = enableVirtual1 ?
+             Line.CreateUnbound(line1.Origin, line1.Direction) : line1;
+            Line uLine2 = enableVirtual2 ?
+                Line.CreateUnbound(line2.Origin, line2.Direction) : line2;
+
+            //check unbound intersection
+            var uIntersect = uLine1.Intersect(uLine2, out IntersectionResultArray resultArray);
+            if (uIntersect != SetComparisonResult.Overlap) { return LineOverlapResult.None; }
+
+            var point = resultArray.get_Item(0).XYZPoint;
+            if (point.OnLine(line1, false) && point.OnLine(line2, false))
+            { return LineOverlapResult.SegementOverlap; }
+            else if (point.OnLine(line1, false) | point.OnLine(line2, false))
+            { return LineOverlapResult.SegmentPointOverlap; }
+            else
+            { return LineOverlapResult.PointOverlap; }
+        }
+
+            /// <summary>
+            /// Specifies if <paramref name="line1"/> and <paramref name="line2"/> lie on the same plane (coplanar lines).
+            /// </summary>
+            /// <param name="line1"></param>
+            /// <param name="line2"></param>
+            /// <returns>Returns <see langword="true"/> if <paramref name="line1"/> and <paramref name="line2"/> are coplanar. 
+            /// Otherwise returns <see langword="false"/>.        
+            /// </returns>
+            public static bool Coplanarity(Line line1, Line line2)
         {
             var v1 = line1.Direction; var v2 = line2.Direction;
             var v3 = (line1.Origin - line2.Origin).Normalize();
@@ -199,5 +240,6 @@ namespace DS.RevitLib.Utils
 
             return (null, null);
         }
+      
     }
 }
