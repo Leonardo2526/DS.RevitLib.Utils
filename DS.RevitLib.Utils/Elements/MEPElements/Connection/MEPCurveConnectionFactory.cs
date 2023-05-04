@@ -53,7 +53,7 @@ namespace DS.RevitLib.Utils.Connection
             {
                 var errorMessage = "Connection error! Unable to connect element.";
                 Debug.WriteLine(errorMessage, TraceLevel.Error.ToString());
-                throw new Exception(errorMessage);
+                //throw new Exception(errorMessage);
             }
         }
 

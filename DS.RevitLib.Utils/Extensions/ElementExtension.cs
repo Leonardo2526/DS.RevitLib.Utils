@@ -375,7 +375,7 @@ namespace DS.RevitLib.Utils.Extensions
         /// <summary>
         /// Connect <paramref name="element"/> to <paramref name="element1"/> and <paramref name="element2"/>.
         /// <para>
-        /// Set <paramref name="element2"/> as child in case of tee connection.
+        /// Set <paramref name="element2"/> as parent in case of tee connection.
         /// </para>
         /// </summary>
         /// <param name="element"></param>

@@ -87,12 +87,12 @@ namespace DS.RevitLib.Utils.Collisions.Models
         private ExclusionFilter GetExclusionFilter(List<Element> excludedElements)
         {
             var excludedElementsIds = excludedElements?.Select(el => el.Id).ToList();          
-            Document doc = excludedElements.First().Document;
             var excludedElementsInsulationIds = new List<ElementId>();
                 excludedElements.ForEach(obj =>
             {
                 if (obj is Pipe || obj is Duct)
                 {
+                    Document doc = obj.Document;
                     Element insulation = InsulationLiningBase.GetInsulationIds(doc, obj.Id)?
                       .Select(x => doc.GetElement(x)).FirstOrDefault();
                     if (insulation != null) { excludedElementsInsulationIds.Add(insulation.Id); }
