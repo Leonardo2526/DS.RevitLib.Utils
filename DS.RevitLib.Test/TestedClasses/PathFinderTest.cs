@@ -110,7 +110,7 @@ namespace DS.RevitLib.Test
 
             var mEPCurveModel = new MEPCurveModel(mEPCurve1, new SolidModel(ElementUtils.GetSolid(mEPCurve1)));
 
-            double elbowRadius = new ElbowRadiusCalc(mEPCurveModel, _trb).GetRadius(90.DegToRad());
+            double elbowRadius = new ElbowRadiusCalc(mEPCurveModel, _trb).GetRadius(90.DegToRad()).Result;
            
             var pathFinder = new PathFindCreator().Create(_doc, elbowRadius, XYZ.BasisX,
                 mEPCurve1.Height, mEPCurve1.Width);

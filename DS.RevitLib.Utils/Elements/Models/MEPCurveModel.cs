@@ -1,8 +1,13 @@
 ﻿using Autodesk.Revit.DB;
 using DS.RevitLib.Utils.Elements.Models;
 using DS.RevitLib.Utils.Solids.Models;
+using DS.RevitLib.Utils.Transactions;
+using DS.RevitLib.Utils.Various;
+using Revit.Async;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.MEP.Models
 {
@@ -55,12 +60,20 @@ namespace DS.RevitLib.Utils.MEP.Models
 
         public int Id { get; }
 
+        public double ElbowRadius { get; private set; }
+
         #endregion
 
 
         public override double GetSizeByVector(XYZ orth)
         {
             return SolidModel.GetSizeByVector(orth, SolidModel.Center);
+        }
+
+        public async Task<double> GetElbowRadius(double elbowAngle, TransactionBuilder transactionBuilder = null)
+        {
+            transactionBuilder ??= new TransactionBuilder(MEPCurve.Document);
+            return ElbowRadius = await new ElbowRadiusCalc(this, transactionBuilder).GetRadius(elbowAngle);
         }
 
     }

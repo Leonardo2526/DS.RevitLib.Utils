@@ -7,6 +7,7 @@ using DS.RevitLib.Utils.Transactions;
 using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.MEP
 {
@@ -16,7 +17,7 @@ namespace DS.RevitLib.Utils.MEP
     public class ElbowRadiusCalc
     {
         private MEPCurveModel _mEPCurveModel;
-        private readonly AbstractTransactionBuilder _transactionBuilder;
+        private readonly TransactionBuilder _transactionBuilder;
         private MEPCurve _MEPCurve;
         private readonly Document _doc;
 
@@ -25,7 +26,7 @@ namespace DS.RevitLib.Utils.MEP
         /// </summary>
         /// <param name="mEPCurve"></param>
         /// <param name="transactionBuilder"></param>
-        public ElbowRadiusCalc(MEPCurveModel mEPCurve, AbstractTransactionBuilder transactionBuilder = null)
+        public ElbowRadiusCalc(MEPCurveModel mEPCurve, TransactionBuilder transactionBuilder = null)
         {
             _mEPCurveModel = mEPCurve;
             _MEPCurve = mEPCurve.MEPCurve;
@@ -38,36 +39,23 @@ namespace DS.RevitLib.Utils.MEP
         /// </summary>
         /// <param name="angle">Elbow angle</param>
         /// <returns></returns>
-        public double GetRadius(double angle)
+        public async Task<double> GetRadius(double angle)
         {
             FamilySymbol elbow = GetFamilySymbol() as FamilySymbol;
-            if(elbow == null) { return 0; }
+            if (elbow == null) { return 0; }
 
             ElementId id = elbow.GetTypeId();
             FamilySymbol familySymbol = _doc.GetElement(id) as FamilySymbol;
 
-            FamilyInstance elbowInst = null;
-            double elbowRad = 0;
-            using (var trg = new TransactionGroup(_doc, "GetElbowRadius"))
+            double getElbowLength()
             {
-                trg.Start();
-
-                _transactionBuilder.Build(() =>
-                {
-                    elbowInst = FamInstCreator.Create(elbow, new XYZ(0, 0, 0), _MEPCurve.ReferenceLevel);
-                    CopyConnectorsParameters(elbowInst, angle);
-                }, "GetRadius_CreateElbow.");
-
-                elbowRad = GetLength(elbowInst);
-
-                if (trg.HasStarted())
-                {
-                    var st = trg.RollBack();
-                    //var st = trg.Commit();
-                }
+                FamilyInstance elbowInst = FamInstCreator.Create(elbow, new XYZ(0, 0, 0), _MEPCurve.ReferenceLevel);
+                CopyConnectorsParameters(elbowInst, angle);
+                _doc.Regenerate();
+                return GetLength(elbowInst);
             }
 
-            return elbowRad;
+            return await _transactionBuilder.BuilAsync(getElbowLength, "GetRadius_CreateElbow.", false);
         }
 
         private Element GetFamilySymbol()
@@ -84,10 +72,10 @@ namespace DS.RevitLib.Utils.MEP
             else
             {
                 RoutingPreferenceManager rpm = mEPCurveType.RoutingPreferenceManager;
-                if (rpm.GetNumberOfRules(RoutingPreferenceRuleGroupType.Elbows) == 0) 
+                if (rpm.GetNumberOfRules(RoutingPreferenceRuleGroupType.Elbows) == 0)
                 {
                     Debug.WriteLine("Не загружено семейство отводов для данной системы.");
-                    return null; 
+                    return null;
                 }
 
                 var rule = rpm.GetRule(RoutingPreferenceRuleGroupType.Elbows, 0);
@@ -118,7 +106,7 @@ namespace DS.RevitLib.Utils.MEP
                     {
                         Parameter d = MEPElementUtils.GetAssociatedParameter(elbowInst, BuiltInParameter.CONNECTOR_DIAMETER);
                         Parameter r = MEPElementUtils.GetAssociatedParameter(elbowInst, BuiltInParameter.CONNECTOR_RADIUS);
-                        bool set = d is not null ? d.Set(_mEPCurveModel.Width) : r.Set(_mEPCurveModel.Width / 2);
+                        bool set = d is not null ? d.Set(_mEPCurveModel.MEPCurve.Diameter) : r.Set(_mEPCurveModel.MEPCurve.Diameter / 2);
                     }
                     break;
                 case ConnectorProfileType.Rectangular:

@@ -9,36 +9,33 @@ using System.Windows.Media.Media3D;
 
 namespace DS.RevitLib.Utils.Various
 {
-    public class PointConverter : IPointConverter
+    public class VectorPointConverter : IPointConverter
     {
         private readonly Point3D _uCS1BasePoint;
         private readonly Point3D _uCS2BasePoint;
-        private readonly double _convertCoefficient;
+        private readonly Vector3D _stepVector;
 
-        public PointConverter(Point3D uCS1basePoint, Point3D uCS2basePoint,
-            double convertCoefficient)
+        public VectorPointConverter(Point3D uCS1basePoint, Point3D uCS2basePoint,
+            Vector3D stepVector)
         {
             _uCS1BasePoint = uCS1basePoint;
             _uCS2BasePoint = uCS2basePoint;
-            _convertCoefficient = convertCoefficient;
+            _stepVector = stepVector;
         }
 
         public Point3D ConvertToUSC1(Point3D uCS2Point)
         {
             Vector3D vector =  uCS2Point - _uCS2BasePoint;
-            return _uCS1BasePoint + vector.Multiply(_convertCoefficient);
+            var multiVector = new Vector3D(vector.X * _stepVector.X , vector.Y * _stepVector.Y, vector.Z * _stepVector.Z);
+            return _uCS1BasePoint + multiVector;
         }
 
 
         public Point3D ConvertToUSC2(Point3D uCS1Point)
         {
             Vector3D vector = uCS1Point - _uCS1BasePoint;
-            return _uCS2BasePoint + vector.Multiply(1/ _convertCoefficient);
-        }
-
-        public Point3D Round(Point3D point)
-        {
-            return new Point3D((int)Math.Round(point.X), (int)Math.Round(point.Y), (int)Math.Round(point.Z));
+            var multiVector = new Vector3D(vector.X / _stepVector.X, vector.Y / _stepVector.Y,vector.Z / _stepVector.Z);
+            return _uCS2BasePoint + multiVector;
         }
 
     }

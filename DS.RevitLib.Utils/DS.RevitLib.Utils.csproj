@@ -176,6 +176,7 @@
     <Compile Include="Tests\ITestModel.cs" />
     <Compile Include="Various\IPointConverter.cs" />
     <Compile Include="Various\IRevitContext.cs" />
+    <Compile Include="Various\VectorPointConverter.cs" />
     <Compile Include="Various\Selections\Filters\ElementInLinkSelectionFilter.cs" />
     <Compile Include="Various\Selections\Filters\PointSelectionFilter.cs" />
     <Compile Include="Various\Selections\Filters\IAdvancedSelectionFilter.cs" />
