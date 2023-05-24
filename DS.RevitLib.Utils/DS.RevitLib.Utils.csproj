@@ -80,8 +80,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Collisions\Detectors\CollisionDetectorByTrace.cs" />
-    <Compile Include="Collisions\Resolvers\CollisionResolverBase.cs" />
-    <Compile Include="Collisions\Resolvers\ICollisionResolver.cs" />
     <Compile Include="Collisions\Resolvers\IResolver.cs" />
     <Compile Include="Collisions\Resolvers\MoveTransformStrategy.cs" />
     <Compile Include="Collisions\Solutions\ISolution.cs" />
