@@ -1,7 +1,8 @@
 ﻿using Autodesk.Revit.DB;
 using DS.RevitLib.Utils;
-using DS.RevitLib.Utils.Collisions.Models;
+using DS.ClassLib.VarUtils.Collisions;
 using System.Collections.Generic;
+using DS.RevitLib.Utils.Collisions.Models;
 
 namespace DS.RevitLib.Utils.Collisions.Detectors
 {

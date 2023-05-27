@@ -1,4 +1,4 @@
-﻿using DS.RevitLib.Utils.Collisions.Models;
+﻿using DS.ClassLib.VarUtils.Collisions;
 using DS.RevitLib.Utils.Collisions.Solutions;
 using System.Collections.Generic;
 using System.Threading.Tasks;

@@ -94,7 +94,6 @@
     <Compile Include="Collisions\ElementsIntersection.cs" />
     <Compile Include="Collisions\Models\Collision.cs" />
     <Compile Include="Collisions\Models\ElementCollision.cs" />
-    <Compile Include="Collisions\Models\ICollision.cs" />
     <Compile Include="Collisions\Models\SolidElementCollision.cs" />
     <Compile Include="Collisions\Checkers\ElementLinkCollisionChecker.cs" />
     <Compile Include="Collisions\Checkers\LinkCollisionChecker.cs" />
@@ -172,7 +171,6 @@
     <Compile Include="PathCreators\PathFindCreator.cs" />
     <Compile Include="PathCreators\PathCreator.cs" />
     <Compile Include="Tests\ITestModel.cs" />
-    <Compile Include="Various\IPointConverter.cs" />
     <Compile Include="Various\IRevitContext.cs" />
     <Compile Include="Various\VectorPointConverter.cs" />
     <Compile Include="Various\Selections\Filters\ElementInLinkSelectionFilter.cs" />
