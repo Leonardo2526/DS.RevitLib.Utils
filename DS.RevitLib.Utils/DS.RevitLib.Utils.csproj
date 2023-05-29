@@ -49,6 +49,9 @@
     <Reference Include="MoreLinq, Version=3.3.2.0, Culture=neutral, PublicKeyToken=384d532d7e88985d, processorArchitecture=MSIL">
       <HintPath>..\..\Olimproekt\MEPAutoCoordination\DS.RevitLib.SystemConnection\packages\morelinq.3.3.2\lib\net451\MoreLinq.dll</HintPath>
     </Reference>
+    <Reference Include="Nito.Collections.Deque, Version=1.1.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\Olimproekt\MEPAutoCoordination\OLMP.MEPAC.Entities.SystemConnection\packages\Nito.Collections.Deque.1.1.1\lib\net461\Nito.Collections.Deque.dll</HintPath>
+    </Reference>
     <Reference Include="PathFinderLib">
       <HintPath>..\..\VAR.RevitLib.Utils\Ivanov.RevitLib.Utils\Assemblies\PathFinderLib.dll</HintPath>
     </Reference>
@@ -65,6 +68,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
@@ -83,6 +87,10 @@
     <Compile Include="Collisions\Resolvers\IResolver.cs" />
     <Compile Include="Collisions\Resolvers\MoveTransformStrategy.cs" />
     <Compile Include="Collisions\Solutions\ISolution.cs" />
+    <Compile Include="Connections\PointModels\BestMEPCurveConnectionPoint.cs" />
+    <Compile Include="Connections\PointModels\ConnectionPoint.cs" />
+    <Compile Include="Connections\PointModels\ConnectionPointValidator.cs" />
+    <Compile Include="Connections\PointModels\IConnectionPoint.cs" />
     <Compile Include="Creation\AbstractCreator.cs" />
     <Compile Include="Collisions\Detectors\AbstractDetectors\CollisionDetector.cs" />
     <Compile Include="Collisions\Detectors\AbstractDetectors\CollisionDetectorFactory.cs" />
@@ -124,6 +132,29 @@
     <Compile Include="Elements\MEPElements\ITraceSettings.cs" />
     <Compile Include="Elements\MEPElements\MEPSystemElement.cs" />
     <Compile Include="Elements\MEPElements\TraceSettings.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\AvailableModels\AbstractAvailableCurveService.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\AvailableModels\AvailableLineService.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\AvailableModels\AvailableMEPCurveService.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\ElementsTransferFactoryBase.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\IElementsTransferFactory.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\LineModel.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\LineModelBuilder.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\PlacementOption.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\PlacementPoint.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\PositionFinder.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\Resolvers\AroundCenterLineRotateResolver.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\Resolvers\CollisionResolver.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\Resolvers\MoveResolver.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\Resolvers\RotateCenterLineResolver.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\SolidCollisionClient.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\TargetModelBuilder.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\TargetPlacementModel.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\TransformBuilders\BasisLineTransformBuilder.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\TransformBuilders\FamToLineMultipleBuilder.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\TransformBuilders\FamToLineTransformBuilder.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\TransformConvert.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\TransformModels\BasisLineTransformModel.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\TransformModels\FamToLineTransformModel.cs" />
     <Compile Include="Extensions\CurveExtensions.cs" />
     <Compile Include="Elements\Alignments\SolidAngleAlignment.cs" />
     <Compile Include="Elements\Alignments\AngleAlignment.cs" />
