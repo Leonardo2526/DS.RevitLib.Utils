@@ -1,4 +1,6 @@
 ﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.UI;
+using DS.RevitLib.Utils.Various;
 using MoreLinq;
 using System.Collections.Generic;
 using System.Linq;
@@ -64,7 +66,7 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
         /// </summary>
         /// <returns>Returns updated <see cref="Root"/> component.</returns>
         public MEPSystemComponent UpdateRoot()
-        {            
+        {
             return (MEPSystemComponent)(Composite.Root = new ComponentBuilder(Root.BaseElement).Build());
         }
 
@@ -134,14 +136,14 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
         {
 
             if (Root.Elements.Select(obj => obj.Id).Contains(element.Id)) { return element; }
-           
+
             var components = GetComponents(element).Where(c => !c.Equals(currentComponent));
             foreach (var comp in components)
             {
                 var nodes = comp.ParentNodes.Concat(comp.ChildrenNodes);
                 foreach (var node in nodes)
                 {
-                    if(FindRootElem(node.Element, comp) is not null) { return node.Element; }
+                    if (FindRootElem(node.Element, comp) is not null) { return node.Element; }
                 }
             }
 
@@ -162,6 +164,24 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
             var rootElem2 = FindRootElem(element2);
 
             return Root.GetElements(rootElem1, rootElem2, includeEdge);
+        }
+
+        /// <summary>
+        /// Select all elements in document.
+        /// </summary>
+        /// <param name="uiDoc"></param>
+        public void SelectAll(UIDocument uiDoc)
+        {
+            uiDoc.Selection.SetElementIds(AllElements.Select(obj => obj.Id).ToList());
+        }
+
+        /// <summary>
+        /// Select all elements in document.
+        /// </summary>
+        /// <param name="uiDoc"></param>
+        public void DeselectAll(UIDocument uiDoc)
+        {
+            uiDoc.Selection.ClearSelection2();
         }
 
         #endregion
