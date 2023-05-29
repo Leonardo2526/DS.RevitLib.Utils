@@ -14,17 +14,15 @@ namespace DS.RevitLib.Utils.Elements.Transfer
 {
     internal class LineModelBuilder
     {
+        private readonly MEPCurve _startMEPCurve;
         private readonly List<XYZ> _path;
         private readonly double _elbowRadius;
-        private readonly List<Element> _elementsToDelete;
-        private readonly ConnectionPoint _connectionPoint;
 
-        public LineModelBuilder(List<XYZ> path, ConnectionPoint connectionPoint, double elbowRadius, List<Element> elementsToDelete)
+        public LineModelBuilder(MEPCurve startMEPCurve, List<XYZ> path, double elbowRadius)
         {
+            _startMEPCurve = startMEPCurve;
             _path = path;
             _elbowRadius = elbowRadius;
-            _elementsToDelete = elementsToDelete;
-            _connectionPoint = connectionPoint;
         }
 
         public List<Line> Lines { get; private set; } = new List<Line>();
@@ -82,9 +80,8 @@ namespace DS.RevitLib.Utils.Elements.Transfer
 
         private LineModel GetStartLineModel()
         {
-            MEPCurve startMEPCurve = _elementsToDelete.FirstOrDefault(obj => obj is MEPCurve) as MEPCurve;
-            BaseMEPCurveModel = new MEPCurveModel(startMEPCurve, new SolidModel(ElementUtils.GetSolid(startMEPCurve)));
-            return new LineModel(startMEPCurve);
+            BaseMEPCurveModel = new MEPCurveModel(_startMEPCurve, new SolidModel(ElementUtils.GetSolid(_startMEPCurve)));
+            return new LineModel(_startMEPCurve);
         }
 
     }

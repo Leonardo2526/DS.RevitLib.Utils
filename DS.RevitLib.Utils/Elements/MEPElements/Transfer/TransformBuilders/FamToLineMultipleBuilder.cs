@@ -88,6 +88,7 @@ namespace DS.RevitLib.Utils.Elements.Transfer.TransformBuilders
                 if (lineModel is null)
                 {
                     string errors = $"No available MEPCurves exist for family insatance id ({sObj.Element.Id}) placement.";
+                    Debug.WriteLine(errors) ;
                     return null;
                 }
 

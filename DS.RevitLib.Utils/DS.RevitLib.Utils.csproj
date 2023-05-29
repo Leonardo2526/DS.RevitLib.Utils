@@ -135,7 +135,8 @@
     <Compile Include="Elements\MEPElements\Transfer\AvailableModels\AbstractAvailableCurveService.cs" />
     <Compile Include="Elements\MEPElements\Transfer\AvailableModels\AvailableLineService.cs" />
     <Compile Include="Elements\MEPElements\Transfer\AvailableModels\AvailableMEPCurveService.cs" />
-    <Compile Include="Elements\MEPElements\Transfer\ElementsTransferFactoryBase.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\CollisionCheckerBuilder.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\FamilyInstTransferFactory.cs" />
     <Compile Include="Elements\MEPElements\Transfer\IElementsTransferFactory.cs" />
     <Compile Include="Elements\MEPElements\Transfer\LineModel.cs" />
     <Compile Include="Elements\MEPElements\Transfer\LineModelBuilder.cs" />
