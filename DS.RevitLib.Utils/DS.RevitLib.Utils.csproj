@@ -177,6 +177,7 @@
     <Compile Include="Extensions\FaceExtensions.cs" />
     <Compile Include="Extensions\MEPSystemExtensions.cs" />
     <Compile Include="Extensions\ConnectorExtensions.cs" />
+    <Compile Include="Extensions\BoxXYZExtensions.cs" />
     <Compile Include="Geometry\GeometryElementsUtils.cs" />
     <Compile Include="Geometry\Lines\LineOverlapResult.cs" />
     <Compile Include="Geometry\Lines\LinesConnector.cs" />
@@ -195,6 +196,7 @@
     <Compile Include="Elements\MEPElements\SystemTree\Relatives\SpudRelationBuilder.cs" />
     <Compile Include="Elements\MEPElements\SystemTree\Relatives\TeeRelationBuilder.cs" />
     <Compile Include="Creation\ModelCurveUtils\ModelCurveTransaction.cs" />
+    <Compile Include="Extensions\VariousExtensions.cs" />
     <Compile Include="PathCreators\IPathCreator.cs" />
     <Compile Include="Extensions\LineExtensions.cs" />
     <Compile Include="Extensions\MEPCurveExtensions.cs" />

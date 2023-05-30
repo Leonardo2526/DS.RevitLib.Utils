@@ -1,7 +1,9 @@
 ﻿using Autodesk.Revit.DB;
 using DS.RevitLib.Utils.Collisions;
 using DS.RevitLib.Utils.Collisions.Checkers;
+using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.MEP;
+using DS.RevitLib.Utils.Visualisators;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,7 +24,7 @@ namespace DS.RevitLib.Utils.Elements.MEPElements.Transfer
         /// <summary>
         /// Instantiate an object to check collisions in bounding box built by <paramref name="pointsForBB"/> with specified <paramref name="offset"/>. 
         /// </summary>
-        public CollisionCheckerBuilder(List<Element> docElements, Dictionary<RevitLinkInstance, List<Element>> LinksElements, 
+        public CollisionCheckerBuilder(List<Element> docElements, Dictionary<RevitLinkInstance, List<Element>> LinksElements,
             List<XYZ> pointsForBB, double offset, List<Element> excludedElements)
         {
             _doc = docElements.FirstOrDefault().Document;
@@ -41,6 +43,8 @@ namespace DS.RevitLib.Utils.Elements.MEPElements.Transfer
 
         private List<ICollisionChecker> GetCollisionCheckers(BoundingBoxXYZ boxXYZ, List<Element> excludedElements)
         {
+            //boxXYZ.Show(_doc);
+
             var collisionCheckers = new List<ICollisionChecker>();
 
             var elementsInOutlineIds = GetElementsInBB(boxXYZ, excludedElements).Select(obj => obj.Id);
@@ -64,10 +68,9 @@ namespace DS.RevitLib.Utils.Elements.MEPElements.Transfer
         private List<Element> GetElementsInBB(BoundingBoxXYZ boxXYZ, List<Element> excludedObjects)
         {
             var outline = new Outline(boxXYZ.Min, boxXYZ.Max);
-            List<RevitLinkInstance> links = _linksElements?.Select(obj => obj.Key).ToList();
-            List<Element> modelElements = _linksElements?.SelectMany(obj => obj.Value).ToList();
+            List<RevitLinkInstance> links = _linksElements?.Select(obj => obj.Key).ToList();        
 
-            var bBCollisionUtils = new BBCollisionUtils(_doc, modelElements, links);
+            var bBCollisionUtils = new BBCollisionUtils(_doc, _docElements, links);
             return bBCollisionUtils.GetElements(outline, 0, excludedObjects);
         }
     }
