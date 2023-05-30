@@ -1,8 +1,10 @@
 ﻿using Autodesk.Revit.DB;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.MEP.SystemTree;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 
 namespace DS.RevitLib.Utils.MEP.Creator
 {
@@ -21,13 +23,17 @@ namespace DS.RevitLib.Utils.MEP.Creator
         /// Add elbows to given MEPSystem.
         /// </summary>
         /// <returns>Returns MEPElementsModel with elbows.</returns>
-        public MEPCurvesModel WithElbows()
+        public MEPCurvesModel WithElbows(Element baseElement)
         {
             FamilyInstance familyInstance;
 
             for (int i = 0; i < MEPCurves.Count - 1; i++)
             {
                 familyInstance = FamInstCreator.CreateElbow(MEPCurves[i] as MEPCurve, MEPCurves[i + 1] as MEPCurve);
+                if(familyInstance  == null) 
+                { return null; }
+
+                Insulation.Create(baseElement, familyInstance);
                 AllElements.Insert(i + 1, familyInstance);
             }
             return this;

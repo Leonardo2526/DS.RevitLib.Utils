@@ -1,6 +1,9 @@
 ﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.Architecture;
+using DS.RevitLib.Utils.Connection;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.MEP.SystemTree.Relatives;
+using DS.RevitLib.Utils.Transactions;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -21,7 +24,7 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
         {
             get
             {
-                return Elements.Where(x => ElementUtils.IsElementMEPCurve(x)).
+                return Elements.Where(x => x is MEPCurve).
                     Select(x => x as MEPCurve).ToList();
             }
         }
@@ -60,6 +63,32 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
 
         public List<NodeElement> ParentNodes { get; set; }
 
+        /// <summary>
+        /// Specify whether all <see cref="Elements"/> are valid objects. 
+        /// </summary>
+        public bool IsValid
+        {
+            get { return Elements.TrueForAll(obj => obj.IsValidObject); }
+        }
+
+        /// <summary>
+        /// Specify whether all not spud <see cref="Elements"/> are valid objects. 
+        /// </summary>
+        public bool HasNoBreaks
+        {
+            get
+            {
+                var validElem = Elements.FirstOrDefault(obj => obj.IsValidObject && !MEPElementUtils.IsNodeElement(obj));
+                MEPSystemComponent newComp = new ComponentBuilder(validElem).Build();
+                var newElemnetsIds = newComp.Elements.Select(obj => obj.Id);
+
+                var oldElementsIds = Elements.Where(x => x.IsValidObject).Select(obj => obj.Id).ToList();
+                oldElementsIds.TrueForAll(obj => newElemnetsIds.Contains(obj));
+
+                return oldElementsIds.TrueForAll(obj => newElemnetsIds.Contains(obj));
+            }
+        }
+
         #endregion
 
         /// <summary>
@@ -87,9 +116,16 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
             return range.ToList();
         }
 
-        public List<Element> GetElements(Element elem1, Element elem2)
+        /// <summary>
+        /// Get elements span of current component.
+        /// </summary>
+        /// <param name="elem1"></param>
+        /// <param name="elem2"></param>
+        /// <param name="includeEdge">Check if include or not <paramref name="elem1"/> and <paramref name="elem2"/> to result.</param>
+        /// <returns>Returns list of elements from <paramref name="elem1"/> to <paramref name="elem2"/>.</returns>
+        public List<Element> GetElements(Element elem1, Element elem2, bool includeEdge = true)
         {
-            if (!IsSystemValid()) { return null; }
+            if (!IsValid) { return null; }
             var elemsIds = Elements.Select(obj => obj.Id).ToList();
 
             int ind1 = elemsIds.IndexOf(elem1.Id);
@@ -98,7 +134,9 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
             int minInd = Math.Min(ind1, ind2);
             int maxInd = Math.Max(ind1, ind2);
 
-            var range = Elements.FindAll(x => Elements.IndexOf(x) >= minInd && Elements.IndexOf(x) <= maxInd);
+            var range = includeEdge ?
+                Elements.FindAll(x => Elements.IndexOf(x) >= minInd && Elements.IndexOf(x) <= maxInd) :
+                Elements.FindAll(x => Elements.IndexOf(x) > minInd && Elements.IndexOf(x) < maxInd);
             List<ElementId> rangeIds = range.Select(obj => obj.Id).ToList();
             var mEPCurveIds = Elements.OfType<MEPCurve>().Select(obj => obj.Id).ToList();
 
@@ -109,9 +147,13 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
                 range.Insert(mepInd1, mePCurve1);
             }
             (MEPCurve mePCurve2, int mepInd2) = GetSpudMEPCurveToInsert(elem2, rangeIds, mEPCurveIds);
-            if (mePCurve2 is not null && mePCurve2.Id != mePCurve1.Id)
+            if (mePCurve2 is not null)
             {
-                range.Insert(mepInd2, mePCurve2);
+                if (mePCurve1 is not null && mePCurve2.Id == mePCurve1.Id) { }
+                else if(mepInd2 > 0)
+                {
+                    range.Insert(mepInd2, mePCurve2);
+                }
             }
 
             return range;
@@ -238,24 +280,6 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
         }
 
         /// <summary>
-        /// Check if each one object in <see cref="Elements"/> is Valid.
-        /// </summary>
-        /// <returns>Returns true if all elements are valid.</returns>
-        public bool IsSystemValid()
-        {
-            if (Elements.TrueForAll(obj => obj.IsValidObject))
-            {
-                return true;
-            }
-            Debug.Indent();
-            Debug.WriteLine(FailureSeverity.Error.ToString().ToUpper() +
-                $": Not valid {Elements.Where(obj => !obj.IsValidObject).Count()} elements.");
-            Debug.Unindent();
-
-            return false;
-        }
-
-        /// <summary>
         /// Try to find <paramref name="element"/> in <see cref="ChildrenNodes"/> and <see cref="ParentNodes"/>.
         /// </summary>
         /// <param name="element"></param>
@@ -274,6 +298,36 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
                 if (nodeElement is not null) { return nodeElement; }
             }
             return nodeElement;
+        }
+
+        /// <inheritdoc/>
+        public override bool Equals(object obj)
+        {
+            return obj is MEPSystemComponent component &&
+                   EqualityComparer<ElementId>.Default.Equals(BaseElement.Id, component.BaseElement.Id);
+        }
+
+        private void ConnectElements((Element, Element) elementsToConnect) =>
+            new MEPCurveConnectionFactory(elementsToConnect.Item1.Document,
+                elementsToConnect.Item1 as MEPCurve,
+                elementsToConnect.Item2 as MEPCurve).Connect();
+
+        /// <summary>
+        /// Fix component by replacing not valid elements with MEPCurve.
+        /// </summary>
+        /// <param name="trb"></param>
+        public void Fix(AbstractTransactionBuilder trb = null)
+        {
+            for (int i = 0; i < Elements.Count; i++)
+            {
+                if (!Elements[i].IsValidObject && i > 0 && i < Elements.Count)
+                {
+                    var elementsToConnect = (Elements[i - 1], Elements[i + 1]);
+                    if (trb is null) { ConnectElements(elementsToConnect); }
+                    else { trb.Build(() => ConnectElements(elementsToConnect), "Fix component"); }
+                    break;
+                }
+            }
         }
     }
 }

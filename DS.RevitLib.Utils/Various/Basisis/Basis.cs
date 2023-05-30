@@ -143,6 +143,55 @@ namespace DS.RevitLib.Utils.Models
             creator.Create(Point, Point + Z);
         }
 
+        /// <summary>
+        /// Get basis vector from <paramref name="basis"/> on <paramref name="plane"/>.
+        /// </summary>
+        /// <param name="basis"></param>
+        /// <param name="plane"></param>
+        /// <param name="projAvailable">Specifies whether projection on <paramref name="plane"/> is available if no occurent was found.</param>
+        /// <returns>Returns first occurence of basis vector from <paramref name="basis"/> on <paramref name="plane"/>.
+        /// <para>Returns <see langword="null"/> if no occurence was found.</para>
+        /// </returns>
+        public XYZ GetBasisVectorOnPlane(Plane plane, bool projAvailable = false)
+        {
+            var basisVectorInPlane = GetBasisVectorOntoPlane(this, plane);
+            if(basisVectorInPlane != null) { return basisVectorInPlane; }
+
+            if (projAvailable)
+            {
+                //create new projection basis
+                var xProj = plane.ProjectOnto(this.X);
+                var yProj = plane.ProjectOnto(this.Y);
+                var zProj = plane.ProjectOnto(this.Z);
+                var oProj = plane.ProjectOnto(this.Point);
+                var projBasis = new Basis(xProj, yProj, zProj, oProj);
+
+                basisVectorInPlane = GetBasisVectorOntoPlane(projBasis, plane);
+                if (basisVectorInPlane != null) { return basisVectorInPlane; }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Get basis vector from <paramref name="basis"/> on <paramref name="plane"/>.
+        /// </summary>
+        /// <param name="basis"></param>
+        /// <param name="plane"></param>
+        /// <returns>Returns first occurence of basis vector from <paramref name="basis"/> on <paramref name="plane"/>.</returns>
+        private XYZ GetBasisVectorOntoPlane(Basis basis, Plane plane)
+        {
+            if(basis.X.IsZeroLength() || basis.Y.IsZeroLength() || basis.Z.IsZeroLength())
+            { return null; }
+
+            var v1 = plane.XVec; var v2 =plane.YVec;
+
+            if (XYZUtils.Coplanarity(basis.X, v1, v2)) { return basis.X; }
+            if (XYZUtils.Coplanarity(basis.Y, v1, v2)) { return basis.Y; }
+            if (XYZUtils.Coplanarity(basis.Z, v1, v2)) { return basis.Z; }
+            return null;
+        }
+
         #endregion
 
 

@@ -5,6 +5,7 @@ using DS.RevitLib.Utils.Transactions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Media.Media3D;
 
 namespace DS.RevitLib.Utils.Extensions
 {
@@ -96,6 +97,24 @@ namespace DS.RevitLib.Utils.Extensions
             return false;
         }
 
+        /// <summary>
+        /// Specifies if <paramref name="point"/> lies on <paramref name="line"/>.
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="line"></param>
+        /// <param name="canCoinsidence"></param>
+        ///  /// <remarks>
+        /// Parameter <paramref name="canCoinsidence"/> specifies if <paramref name="point"/> can coinsidence with <paramref name="line"/>'s end points.
+        /// </remarks>
+        /// <returns>Reruns <see langword="true"/> if <paramref name="point"/> lies inside <paramref name="line"/> segment.
+        /// Otherwise returns <see langword="false"/>. 
+        /// </returns>
+        public static bool OnLine(this XYZ point, Line line, bool canCoinsidence = true)
+        {
+            var p1 = line.GetEndPoint(0); var p2 = line.GetEndPoint(1);
+            return point.IsBetweenPoints(p1, p2, 3, canCoinsidence);
+        }
+
         public static XYZ RoundVector(this XYZ vector, int value = 3)
         {
             double x = Math.Round(vector.X, value);
@@ -108,14 +127,27 @@ namespace DS.RevitLib.Utils.Extensions
         /// <summary>
         /// Check if current point lies inside segment between point1 and point2.
         /// </summary>
+        /// <param name="point"></param>
         /// <param name="point1"></param>
         /// <param name="point2"></param>
-        /// <returns></returns>
-        public static bool IsBetweenPoints(this XYZ point, XYZ point1, XYZ point2)
+        /// <param name="tolerance">Tolerance in degrees.</param>
+        /// <param name="canCoinsidence"></param>
+        /// <remarks>
+        /// Parameter <paramref name="canCoinsidence"/> specifies if <paramref name="point"/> can coinsidence with <paramref name="point1"/> and <paramref name="point2"/>.
+        /// </remarks>
+        /// <returns>
+        /// Returns <see langword="true"/> if <paramref name="point"/> is between <paramref name="point1"/> and <paramref name="point2"/>.
+        /// <para>
+        /// Returns <see langword="false"/> if <paramref name="canCoinsidence"/> is <see langword="false"/> and one of points lies on <paramref name="point"/>.
+        /// </para>
+        /// </returns>
+        public static bool IsBetweenPoints(this XYZ point, XYZ point1, XYZ point2, double tolerance = 3, bool canCoinsidence = true)
         {
             var v1 = (point - point1).Normalize();
+            if(!canCoinsidence && v1.IsZeroLength()) { return false; }
             var v2 = (point - point2).Normalize();
-            if (v1.IsAlmostEqualTo(v2.Negate(), 3.DegToRad()))
+            if (!canCoinsidence && v2.IsZeroLength()) { return false; }
+            if (v1.IsAlmostEqualTo(v2.Negate(), tolerance.DegToRad()))
             {
                 return true;
             }
@@ -192,6 +224,16 @@ namespace DS.RevitLib.Utils.Extensions
                 creator.Create(line2);
                 creator.Create(line3);
             }, "ShowPoint");
+        }
+
+        /// <summary>
+        /// Convert <paramref name="point"/> to <see cref="Point3D"/>.
+        /// </summary>
+        /// <param name="point"></param>
+        /// <returns>Returns a new <see cref="Point3D"/> built by <paramref name="point"/> coordinates.</returns>
+        public static Point3D ToPoint3D(this XYZ point)
+        {
+            return new Point3D(point.X , point.Y, point.Z);
         }
 
     }

@@ -12,13 +12,13 @@ using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Selection;
 using DS.ClassLib.VarUtils;
 using DS.RevitLib.Utils;
-using DS.RevitLib.Utils.Collisions.Models;
+using DS.ClassLib.VarUtils.Collisions;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.MEP;
 using DS.RevitLib.Utils.MEP.Models;
 using DS.RevitLib.Utils.MEP.SystemTree;
 using DS.RevitLib.Utils.ModelCurveUtils;
-using DS.RevitLib.Utils.PathFinders;
+using DS.RevitLib.Utils.PathCreators;
 using DS.RevitLib.Utils.Solids.Models;
 
 namespace DS.RevitLib.Test
@@ -110,14 +110,15 @@ namespace DS.RevitLib.Test
 
             var mEPCurveModel = new MEPCurveModel(mEPCurve1, new SolidModel(ElementUtils.GetSolid(mEPCurve1)));
 
-            double elbowRadius = new ElbowRadiusCalc(mEPCurveModel, _trb).GetRadius(90.DegToRad());
-
-            var pathFinder = new IvanovPathFinder(_doc, elbowRadius, sourceMEPModel, new CancellationTokenSource().Token);
+            double elbowRadius = new ElbowRadiusCalc(mEPCurveModel, _trb).GetRadius(90.DegToRad()).Result;
+           
+            var pathFinder = new PathFindCreator().Create(_doc, elbowRadius, XYZ.BasisX,
+                mEPCurve1.Height, mEPCurve1.Width);
 
             var elementsToDelete = new List<Element>() { mEPCurve1, mEPCurve2 };
             pathFinder.ExceptionElements = elementsToDelete.Select(obj => obj.Id).ToList();
 
-            return _trb.Build(() => pathFinder.Find(startPoint, endPoint), "find Path");
+            return _trb.Build(() => pathFinder.CreateAsync(startPoint, endPoint), "find Path").Result;
         }
 
         private void ShowPath(List<XYZ> path)

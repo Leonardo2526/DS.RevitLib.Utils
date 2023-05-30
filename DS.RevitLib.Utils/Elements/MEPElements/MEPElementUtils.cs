@@ -1,6 +1,10 @@
 ﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.Mechanical;
+using Autodesk.Revit.DB.Plumbing;
 using Autodesk.Revit.UI;
+using DS.RevitLib.Utils.Elements.MEPElements;
 using DS.RevitLib.Utils.Extensions;
+using DS.RevitLib.Utils.MEP.Models;
 using Ivanov.RevitLib.Utils;
 using System;
 using System.Collections.Generic;
@@ -15,7 +19,7 @@ namespace DS.RevitLib.Utils.MEP
             BuiltInCategory familyInstanceCategory = CategoryExtension.GetBuiltInCategory(familyInstance.Category);
 
             List<BuiltInCategory> builtInCategories = new List<BuiltInCategory>
-            { BuiltInCategory.OST_PipeFitting, BuiltInCategory.OST_DuctFitting};
+            { BuiltInCategory.OST_PipeFitting, BuiltInCategory.OST_DuctFitting, BuiltInCategory.OST_CableTrayFitting};
 
             if (!ElementUtils.CheckCategory(familyInstanceCategory, builtInCategories))
             {
@@ -87,7 +91,7 @@ namespace DS.RevitLib.Utils.MEP
         {
             Type type = element.GetType();
 
-            if (type.Name.Contains("System") | type.Name.Contains("Insulation"))
+            if (type.Name.Contains("System") | type.Name.Contains("Insulation") | type.Name.Contains("Connector"))
             {
                 return false;
             }
@@ -106,6 +110,34 @@ namespace DS.RevitLib.Utils.MEP
             var connectors = ConnectorUtils.GetConnectors(famInst);
 
             var connectorInfo = (MEPFamilyConnectorInfo)connectors.First().GetMEPConnectorInfo();
+
+            var associatedFamilyParameterId = connectorInfo.GetAssociateFamilyParameterId(new ElementId(connectorParameter));
+
+            if (associatedFamilyParameterId == ElementId.InvalidElementId)
+                return null;
+
+            var document = famInst.Document;
+
+            var parameterElement = document.GetElement(associatedFamilyParameterId) as ParameterElement;
+
+            if (parameterElement == null)
+                return null;
+
+            var paramterDefinition = parameterElement.GetDefinition();
+
+            return famInst.get_Parameter(paramterDefinition);
+        }
+
+        /// <summary>
+        /// Get <paramref name="famInst"/>'s <paramref name="connector"/> parameter associated with parameter connectors.
+        /// </summary>
+        /// <param name="famInst"></param>
+        /// <param name="connector"></param>
+        /// <param name="connectorParameter"></param>
+        /// <returns>Return assiciated parameter.</returns>
+        public static Parameter GetAssociatedParameter(FamilyInstance famInst, Connector connector, BuiltInParameter connectorParameter)
+        {          
+            var connectorInfo = (MEPFamilyConnectorInfo)connector.GetMEPConnectorInfo();
 
             var associatedFamilyParameterId = connectorInfo.GetAssociateFamilyParameterId(new ElementId(connectorParameter));
 
@@ -209,5 +241,75 @@ namespace DS.RevitLib.Utils.MEP
                 }
             }
         }
+
+        /// <summary>
+        /// Connect <paramref name="element1"/> with <paramref name="element2"/> if they have common connector.
+        /// </summary>
+        /// <param name="element1"></param>
+        /// <param name="element2"></param>
+        public static void Connect(Element element1, Element element2)
+        {          
+            var (elem1Con, elem2Con) = ConnectorUtils.GetCommonNotConnectedConnectors(element1, element2);
+            if(elem1Con is null || elem2Con is null) { return; }
+            if(elem1Con.IsConnectedTo(elem2Con)) { return; }
+            else
+            {elem1Con.ConnectTo(elem2Con);}
+        }
+
+        /// <summary>
+        /// Get <see cref="MEPSystemType"/> by type of <paramref name="baseMEPCurve"/>.
+        /// </summary>
+        /// <param name="baseMEPCurve"></param>
+        /// <returns>Returns first <see cref="MEPSystemType"/> that match to type of <paramref name="baseMEPCurve"/>.</returns>
+        public static MEPSystemType GetDefaultMepSystemType(MEPCurve baseMEPCurve)
+        {
+            string elementTypeName = baseMEPCurve.GetType().Name;
+            var collector = new FilteredElementCollector(baseMEPCurve.Document).OfClass(typeof(ElementType));
+
+            ElementClassFilter systemFilter = null;
+            if(elementTypeName == "Pipe") { systemFilter = new ElementClassFilter(typeof(PipingSystemType)); }
+            else if (elementTypeName == "Duct") { systemFilter = new ElementClassFilter(typeof(MechanicalSystemType)); }
+
+            var systems = collector.WherePasses(systemFilter).ToElements().Cast<MEPSystemType>();
+            return systems.FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Get <see cref="MEPSystem"/> of <paramref name="baseMEPCurve"/>.
+        /// </summary>
+        /// <param name="baseMEPCurve"></param>
+        /// <returns>Returns first <see cref="MEPSystem"/> that match to type of <paramref name="baseMEPCurve"/></returns>
+        public static MEPSystem GetDefaultMepSystem(MEPCurve baseMEPCurve)
+        {
+            string elementTypeName = baseMEPCurve.GetType().Name;
+            var systemCollector = new FilteredElementCollector(baseMEPCurve.Document).OfClass(typeof(MEPSystem));
+            IEnumerable<MEPSystem> desirableSystems = systemCollector.Cast<MEPSystem>();
+
+            foreach (MEPSystem system in desirableSystems)
+            {
+                var systemType = system.GetType();
+                if (elementTypeName == "Pipe" && systemType == typeof(PipingSystem))
+                {
+                    return system;
+                }
+                if (elementTypeName == "Duct" && systemType == typeof(MechanicalSystem))
+                {
+                    return system;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Get elements of <see cref="MEPSystem"/> with <paramref name="strMEPSysName"/> name.
+        /// </summary>
+        /// <param name="doc"></param>
+        /// <param name="strMEPSysName"></param>
+        /// <param name="canContain">Specify whether system name should match exactly with <paramref name="strMEPSysName"/>,</param>
+        /// <returns>Returns all elements in first <see cref="MEPSystem"/> with <paramref name="strMEPSysName"/>.</returns>
+        public static List<Element> GetSystemElements(Document doc, string strMEPSysName,bool canContain = false) => 
+            new MEPSystemElement(doc).GetSystemElements(strMEPSysName, canContain);
+        
     }
 }

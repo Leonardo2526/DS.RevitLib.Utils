@@ -38,7 +38,12 @@ namespace DS.RevitLib.Utils.Elements
         /// <summary>
         /// Get geometry elements from document and all it's loaded links.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>
+        /// Elements in document and links. 
+        /// <para>
+        /// Returns empty collecions if document don't contains elements or <see cref="RevitLinkInstance"/>'s.
+        /// </para> 
+        /// </returns>
         public (List<Element> elements, Dictionary<RevitLinkInstance, List<Element>> linkElementsDict) GetAll()
         {
             ModelElements = GetFromDoc();
@@ -59,13 +64,14 @@ namespace DS.RevitLib.Utils.Elements
         /// <summary>
         /// Get elements from all loaded links in <see cref="Document"/>.
         /// </summary>
-        /// <returns>Retruns null if no loaded links are in document.</returns>
+        /// <returns>Retruns empty list if no loaded links are in document.</returns>
         public Dictionary<RevitLinkInstance, List<Element>> GetFromLinks()
         {
-            var allLinks = _doc.GetLoadedLinks();
-            if (allLinks is null || !allLinks.Any()) return null;
-
             var elements = new Dictionary<RevitLinkInstance, List<Element>>();
+
+            var allLinks = _doc.GetLoadedLinks();
+            if (allLinks is null || !allLinks.Any()) return elements;
+
             foreach (var link in allLinks)
             {
                 Document linkDoc = link.GetLinkDocument();

@@ -9,6 +9,10 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Security.Cryptography;
 using DS.RevitLib.Test.TestedClasses;
+using DS.RevitLib.Utils;
+using DS.RevitLib.Utils.Various;
+using DS.RevitLib.Utils.Extensions;
+using Autodesk.Revit.UI.Selection;
 
 namespace DS.RevitLib.Test
 {
@@ -20,30 +24,9 @@ namespace DS.RevitLib.Test
         {
             UIApplication uiapp = commandData.Application;
             Autodesk.Revit.ApplicationServices.Application application = uiapp.Application;
-
             UIDocument uidoc = uiapp.ActiveUIDocument;
-            Document doc = uiapp.ActiveUIDocument.Document;
 
-            //var test = new AlignMEPCurvesTest(uidoc);
-            //var test = new BuilderByPointsTest(uidoc);
-            //var test = new GetAssociatedParameterTest(uidoc);
-
-            //var test = new SolidContainsPointTest(doc,  uidoc);
-            var test = new ConnectionFactoryClient(uidoc);
-            test.Run();
-            //test.RepeatRun();
-
-
-            //var pathFinderTest = new SimplePathFinderTest(uidoc, doc);
-            //var path = pathFinderTest.RunTest2();
-            //pathFinderTest.ShowPath(path);
-            //SolidCollisionCheckerTest.RunWithLink(doc);
-
-            //var selector = new SystemModelTest(uidoc, doc, uiapp);
-            //selector.RunTest();
-
-            //var test = new SolidPlacerTest(uidoc, doc, uiapp);
-            //test.Run();
+            new GetOverlapResultTest(uidoc);
 
             return Autodesk.Revit.UI.Result.Succeeded;
         }

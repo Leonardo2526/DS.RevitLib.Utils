@@ -1,7 +1,11 @@
 ﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.Electrical;
 using Autodesk.Revit.DB.Mechanical;
 using Autodesk.Revit.DB.Plumbing;
 using DS.RevitLib.Utils.Elements;
+using System;
+using System.Collections.Generic;
+using System.Security.Cryptography;
 
 namespace DS.RevitLib.Utils.MEP.Creator
 {
@@ -9,7 +13,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
     /// Class for create and modify MEPCurves. 
     /// Transactions are not provided, so methods should be wrapped to transacion.
     /// </summary>
-    internal class MEPCurveCreator
+    public class MEPCurveCreator
     {
         private readonly Document _doc;
         private readonly MEPCurve _baseMEPCurve;
@@ -38,6 +42,10 @@ namespace DS.RevitLib.Utils.MEP.Creator
             get
             {
                 MEPCurve mEPCurve = _baseMEPCurve as MEPCurve;
+                if (mEPCurve.MEPSystem is null)
+                {
+                    return MEPElementUtils.GetDefaultMepSystemType(mEPCurve).Id;
+                }
                 return mEPCurve.MEPSystem.GetTypeId();
             }
         }
@@ -48,10 +56,11 @@ namespace DS.RevitLib.Utils.MEP.Creator
                 return _baseMEPCurve.GetTypeId();
             }
         }
-        private string ElementTypeName
+        private Type ElemType
         {
-            get { return _baseMEPCurve.GetType().Name; }
+            get { return _baseMEPCurve.GetType(); }
         }
+
         private ElementId MEPLevelId
         {
             get
@@ -59,6 +68,8 @@ namespace DS.RevitLib.Utils.MEP.Creator
                 return _baseMEPCurve.ReferenceLevel.Id;
             }
         }
+
+
 
         #endregion
 
@@ -72,9 +83,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
         public MEPCurve Create(XYZ p1, XYZ p2, MEPCurve baseMEPCurve = null)
         {
             baseMEPCurve ??= _baseMEPCurve;
-            MEPCurve mEPCurve = ElementTypeName == "Pipe" ?
-                Pipe.Create(_doc, MEPSystemTypeId, ElementTypeId, MEPLevelId, p1, p2) :
-                Duct.Create(_doc, MEPSystemTypeId, ElementTypeId, MEPLevelId, p1, p2);
+            MEPCurve mEPCurve = CreateMEPCurve(p1, p2);
 
             Insulation.Create(baseMEPCurve, mEPCurve);
             ElementParameter.CopyAllParameters(baseMEPCurve, mEPCurve);
@@ -85,7 +94,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
         public MEPCurve Create(Connector c1, XYZ p2, MEPCurve baseMEPCurve = null)
         {
             baseMEPCurve ??= _baseMEPCurve;
-            MEPCurve mEPCurve = ElementTypeName == "Pipe" ?
+            MEPCurve mEPCurve = ElemType == typeof(Pipe) ?
                 Pipe.Create(_doc, ElementTypeId, MEPLevelId, c1, p2) :
                 Duct.Create(_doc, ElementTypeId, MEPLevelId, c1, p2);
 
@@ -98,7 +107,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
         public MEPCurve Create(Connector c1, Connector c2, MEPCurve baseMEPCurve = null)
         {
             baseMEPCurve ??= _baseMEPCurve;
-            MEPCurve mEPCurve = ElementTypeName == "Pipe" ?
+            MEPCurve mEPCurve = ElemType == typeof(Pipe) ?
                 Pipe.Create(_doc, ElementTypeId, MEPLevelId, c1, c2) :
                 Duct.Create(_doc, ElementTypeId, MEPLevelId, c1, c2);
 
@@ -108,23 +117,17 @@ namespace DS.RevitLib.Utils.MEP.Creator
             return mEPCurve;
         }
 
-        /// <summary>
-        /// Swap MEPCurve's width and height.
-        /// </summary>
-        /// <param name="mEPCurve"></param>
-        /// <returns>Return MEPCurve with swaped parameters.</returns>
-        public MEPCurve SwapSize(MEPCurve mEPCurve)
+        private MEPCurve CreateMEPCurve(XYZ p1, XYZ p2)
         {
-            double width = mEPCurve.Width;
-            double height = mEPCurve.Height;
+            var @switch = new Dictionary<Type, Func<MEPCurve>>
+            {
+                { typeof(Pipe), () => Pipe.Create(_doc, MEPSystemTypeId, ElementTypeId, MEPLevelId, p1, p2) },
+                { typeof(Duct), () => Duct.Create(_doc, MEPSystemTypeId, ElementTypeId, MEPLevelId, p1, p2) },
+                { typeof(CableTray), () => CableTray.Create(_doc, ElementTypeId, p1, p2, MEPLevelId) }
+            };
+            @switch.TryGetValue(ElemType, out Func<MEPCurve> func);
 
-            Parameter widthParam = mEPCurve.get_Parameter(BuiltInParameter.RBS_CURVE_WIDTH_PARAM);
-            Parameter heightParam = mEPCurve.get_Parameter(BuiltInParameter.RBS_CURVE_HEIGHT_PARAM);
-
-            widthParam.Set(height);
-            heightParam.Set(width);
-
-            return mEPCurve;
+            return func();
         }
     }
 }

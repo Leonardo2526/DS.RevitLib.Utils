@@ -102,6 +102,11 @@ namespace DS.RevitLib.Utils
             return SolidExtractor.GetSolids(element);
         }
 
+        /// <summary>
+        /// Get <paramref name="element"/>'s solid.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <returns></returns>
         public static Solid GetSolid(Element element)
         {
             var solids = SolidExtractor.GetSolids(element);
@@ -155,22 +160,6 @@ namespace DS.RevitLib.Utils
             }
 
             return solids;
-        }
-
-        /// <summary>
-        /// Check if element subtype is MEPCurve
-        /// </summary>
-        /// <param name="element"></param>
-        /// <returns></returns>
-        public static bool IsElementMEPCurve(Element element)
-        {
-            if (element.GetType().Name == "Pipe"
-                  || element.GetType().Name == "Duct"
-                  || element.GetType().Name == "Cable")
-            {
-                return true;
-            }
-            return false;
         }
 
         /// <summary>
@@ -593,5 +582,8 @@ namespace DS.RevitLib.Utils
             (XYZ minPoint, XYZ maxPoint) = XYZUtils.CreateMinMaxPoints(offsetPoints);
             return new BoundingBoxXYZ() { Min = minPoint, Max = maxPoint };
         }
+
+      
+
     }
 }

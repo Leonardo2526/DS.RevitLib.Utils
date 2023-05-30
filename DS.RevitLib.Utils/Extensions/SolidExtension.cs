@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.DB;
+using DS.RevitLib.Utils.Lines;
 using DS.RevitLib.Utils.Visualisators;
 using System.Collections.Generic;
 using System.Linq;
@@ -132,7 +133,7 @@ namespace DS.RevitLib.Utils.Extensions
         public static DirectShape ShowShape(this Solid solid, Document doc)
         {
             DirectShape ds = DirectShape.CreateElement(doc, new ElementId(BuiltInCategory.OST_GenericModel));
-            ds.SetShape(new GeometryObject[] { solid });
+            ds.SetShape(new GeometryObject[] { solid });           
 
             return ds;
         }
@@ -145,14 +146,18 @@ namespace DS.RevitLib.Utils.Extensions
         /// <returns>Returns true if <paramref name="point"/> is inside <paramref name="solid"/>.</returns>
         public static bool Contains(this Solid solid, XYZ point)
         {
-            var dir = XYZUtils.GenerateXYZ();
-            Line line = Line.CreateBound(point, dir.Multiply(100));
-            var options = new SolidCurveIntersectionOptions();
-            var intersecion = solid.IntersectWithCurve(line, options);
-            int segments = intersecion.SegmentCount;
+            double multiplicator = 100;
+            Line line1 = Line.CreateBound(point, point + XYZUtils.GenerateXYZ().Multiply(multiplicator));
 
-            return segments % 2 != 0;
+            var faces = solid.Faces;
+            int intersectionCount = 0;
+            foreach (Face face in faces)
+            {
+                if (face.Intersect(line1) == SetComparisonResult.Overlap)
+                { intersectionCount++; }
+            }
+
+            return intersectionCount % 2 != 0;
         }
-
     }
 }

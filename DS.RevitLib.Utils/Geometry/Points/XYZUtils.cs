@@ -2,7 +2,7 @@
 using DS.ClassLib.VarUtils;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.Points.XYZAlgorithms.MaxDistance;
-using DS.RevitLib.Utils.Points.XYZAlgorithms.MaxDistance.Strategies;
+using DS.RevitLib.Utils.Points.XYZAlgorithms.Strategies;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -102,8 +102,22 @@ namespace DS.RevitLib.Utils
         /// <returns>Returns points pair and maximum distance.</returns>
         public static (XYZ point1, XYZ point2) GetMaxDistancePoints(List<XYZ> points, out double maxDist)
         {
-            var client = new MaxDistanceClient(points, new NaiveStrategy());
-            maxDist = client.GetMaxDistance();
+            var client = new FindDistanceClient(points, new StrategyToFindMaxDist());
+            maxDist = client.GetDistance();
+
+            return (client.Point1, client.Point2);
+        }
+
+        /// <summary>
+        /// Get points from the list with minimum distance between them.
+        /// </summary>
+        /// <param name="points"></param>
+        /// <param name="minDist"></param>
+        /// <returns>Returns points pair and minimum distance.</returns>
+        public static (XYZ point1, XYZ point2) GetMinDistancePoints(List<XYZ> points, out double minDist)
+        {
+            var client = new FindDistanceClient(points, new StrategyToFindMinDist());
+            minDist = client.GetDistance();
 
             return (client.Point1, client.Point2);
         }

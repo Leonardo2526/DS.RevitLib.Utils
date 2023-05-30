@@ -3,6 +3,7 @@ using DS.RevitLib.Utils.Elements;
 using DS.RevitLib.Utils.TransactionCommitter;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace DS.RevitLib.Utils.MEP.Creator
@@ -210,7 +211,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
         private void TransactionConnect(Connector c1, Connector c2) => ConnectorUtils.ConnectConnectors(_doc, c1, c2);
         private void Connect(Connector c1, Connector c2) => c1.ConnectTo(c2);
 
-        public void Insert(FamilyInstance family, MEPCurve mEPCurve, out List<MEPCurve> splittedMEPCurves)
+        public FamilyInstance Insert(FamilyInstance family, MEPCurve mEPCurve, out List<MEPCurve> splittedMEPCurves)
         {
             var (famInstCon1, famInstCon2) = ConnectorUtils.GetMainConnectors(family);
             splittedMEPCurves = mEPCurve.Cut(famInstCon1.Origin, famInstCon2.Origin);
@@ -223,11 +224,21 @@ namespace DS.RevitLib.Utils.MEP.Creator
             }
 
             var selectedCon = ConnectorUtils.GetClosest(famInstCon1, cons);
-            ConnectOperation connectOperation = _transactionCommit ? TransactionConnect : Connect;
-            connectOperation.Invoke(famInstCon1, selectedCon);
 
-            selectedCon = ConnectorUtils.GetClosest(famInstCon2, cons);
-            connectOperation.Invoke(famInstCon2, selectedCon);
+            try
+            {
+                ConnectOperation connectOperation = _transactionCommit ? TransactionConnect : Connect;
+                connectOperation.Invoke(famInstCon1, selectedCon);
+
+                selectedCon = ConnectorUtils.GetClosest(famInstCon2, cons);
+                connectOperation.Invoke(famInstCon2, selectedCon);
+                return family;
+            }
+            catch (Exception)
+            {
+                Debug.WriteLine("Failed to insert " + family.Id);
+                return null;
+            }
         }
 
     }

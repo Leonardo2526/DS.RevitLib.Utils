@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.DB;
+using DS.ClassLib.VarUtils.Collisions;
 using DS.RevitLib.Utils.Collisions.Models;
 using DS.RevitLib.Utils.Solids.Models;
 using System;

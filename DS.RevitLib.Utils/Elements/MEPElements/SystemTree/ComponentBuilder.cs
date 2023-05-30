@@ -71,7 +71,8 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
                 List<Element> connectedElements = ConnectorUtils.GetConnectedElements(currentElement);
                 var intersected = connectedElements.Select(x => x.Id).Intersect(Elements.Select(x => x.Id)).ToList();
 
-                if (intersected.Count > 1)
+                if (intersected.Count > 1 ||
+                   currentElement.Category.Name.Contains("Equipment") || currentElement.Category.Name.Contains("Оборудование"))
                 {
                     Elements.Add(currentElement);
                     if (Stack.Any() && Stack.Peek().Id == currentElement.Id) Stack.Pop();

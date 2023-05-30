@@ -29,8 +29,8 @@ namespace DS.RevitLib.Utils.MEP.Creator
         }
 
         /// <summary>
-        /// Build MEPSystem with elbows. 
-        /// Ducts will be aligned if system contains they.
+        /// Build MEPSystem with elbows with transaction. 
+        /// Ducts will be aligned if system contains them.
         /// </summary>
         /// <returns>Returns created system.</returns>
         /// <param name="transactionBuilder"></param>
@@ -38,9 +38,24 @@ namespace DS.RevitLib.Utils.MEP.Creator
         {
             MEPCurvesModel mEPElementsModel = null;
 
-            transactionBuilder.Build(() => mEPElementsModel = BuildMEPCurves(), "Create MEPSystem by path");
+            transactionBuilder.Build(() => mEPElementsModel = BuildSystem(), "Create MEPSystem by path");
             transactionBuilder.Build(() => mEPElementsModel.RefineDucts(_baseMEPCurve), "Align ducts");
-            transactionBuilder.Build(() => mEPElementsModel = mEPElementsModel.WithElbows(), "Insert elbows by path");
+            transactionBuilder.Build(() => mEPElementsModel = mEPElementsModel.WithElbows(_baseMEPCurve), "Insert elbows by path");
+
+            return mEPElementsModel;
+        }
+
+        /// <summary>
+        /// Build MEPSystem with elbows. 
+        /// Ducts will be aligned if system contains them.
+        /// </summary>
+        /// <returns>Returns created system.</returns>
+        public MEPCurvesModel BuildSystem()
+        {
+            MEPCurvesModel mEPElementsModel = BuildMEPCurves();
+            _baseMEPCurve.Document.Regenerate();
+            mEPElementsModel.RefineDucts(_baseMEPCurve);
+            mEPElementsModel = mEPElementsModel.WithElbows(_baseMEPCurve);
 
             return mEPElementsModel;
         }

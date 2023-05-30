@@ -1,7 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using DS.RevitLib.Utils.Collisions.Checkers;
-using DS.RevitLib.Utils.Collisions.Models;
+using DS.ClassLib.VarUtils.Collisions;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.Solids.Models;
 using iUtils;
@@ -11,6 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using static System.Windows.Forms.LinkLabel;
+using DS.RevitLib.Utils.Collisions.Models;
 
 namespace DS.RevitLib.Test
 {
@@ -40,9 +41,9 @@ namespace DS.RevitLib.Test
             }
 
             string outString = null;
-            foreach (SolidElemCollision col in collisions)
+            foreach (SolidElementCollision col in collisions)
             {
-                outString += col.Object1.Element.Id + " - " + col.Object2.Id + "\n";
+                outString += col.Object2.Id + "\n";
             }
 
             TaskDialog.Show("Collisions: ", collisions.Count.ToString() + "\n" + outString);
@@ -83,9 +84,9 @@ namespace DS.RevitLib.Test
             //}
 
             string outString = null;
-            foreach (SolidElemCollision col in collisions)
+            foreach (SolidElementCollision col in collisions)
             {
-                outString += col.Object1.Element.Id + " - " + col.Object2.Id + "\n";
+                outString += col.Object2.Id + "\n";
             }
 
             TaskDialog.Show("Collisions: ", collisions.Count.ToString() + "\n" + outString);

@@ -1,10 +1,13 @@
 ﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.Electrical;
+using DS.RevitLib.Utils.Connection;
 using DS.RevitLib.Utils.MEP;
 using DS.RevitLib.Utils.Transactions;
 using DS.RevitLib.Utils.Visualisators;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Xml.Linq;
 using static System.Windows.Forms.LinkLabel;
 
 namespace DS.RevitLib.Utils.Extensions
@@ -40,21 +43,22 @@ namespace DS.RevitLib.Utils.Extensions
         /// Order elements list by base point.
         /// </summary>
         /// <param name="basePoint"></param>
-        /// <returns>Return ordered elements by descending distances from location points to base point.</returns>
+        /// <param name="elements"></param>
+        /// <returns>Return ordered elements by descending distances from location points to base point.</returns>       
         public static List<Element> OrderByPoint(this List<Element> elements, XYZ basePoint)
         {
-            var distances = new Dictionary<double, Element>();
+            var distances = new Dictionary<Element, double>();
 
             foreach (var elem in elements)
             {
                 XYZ point = ElementUtils.GetLocationPoint(elem);
                 double distance = basePoint.DistanceTo(point);
-                distances.Add(distance, elem);
+                distances.Add(elem, distance);
             }
 
-            distances = distances.OrderByDescending(x => x.Key).ToDictionary(x => x.Key, x => x.Value);
+            distances = distances.OrderByDescending(x => x.Value).ToDictionary(x => x.Key, x => x.Value);
 
-            return distances.Values.ToList();
+            return distances.Keys.ToList();
         }
 
         /// <summary>
@@ -354,5 +358,143 @@ namespace DS.RevitLib.Utils.Extensions
 
             return false;
         }
+
+        /// <summary>
+        /// Connect <paramref name="elements"/> by common connectors.
+        /// </summary>
+        /// <param name="elements"></param>
+        public static void Connect(this List<Element> elements)
+        {
+            for (int i = 0; i < elements.Count - 1; i++)
+            {
+                (Connector con1, Connector con2) = ConnectorUtils.GetCommonNotConnectedConnectors(elements[i], elements[i + 1]);
+                if (con1 is not null && con2 is not null && !con1.IsConnectedTo(con2)) { con1.ConnectTo(con2); };
+            }
+        }
+
+        /// <summary>
+        /// Connect <paramref name="element"/> to <paramref name="element1"/> and <paramref name="element2"/>.
+        /// <para>
+        /// Set <paramref name="element2"/> as parent in case of tee connection.
+        /// </para>
+        /// </summary>
+        /// <param name="element"></param>
+        /// <param name="element1"></param>
+        /// <param name="element2"></param>
+        public static void Connect(this Element element, Element element1, Element element2 = null)
+        {
+            List<Element> elements = new List<Element>() { element, element1 };
+            if(element2 != null) { elements.Add(element2); }
+
+            Document doc = element.Document;
+            MEPCurve mEPCurve = element as MEPCurve;
+            MEPCurve mEPCurve1 = element1 as MEPCurve;
+            MEPCurve mEPCurve2 = element2 as MEPCurve;
+
+            if (mEPCurve is not null && mEPCurve1 is not null)
+            {
+                IConnectionFactory factory = new MEPCurveConnectionFactory(doc, mEPCurve, mEPCurve1, mEPCurve2);
+                factory.Connect();
+            }
+            else
+            {
+                elements.Connect();
+            }          
+        }
+
+        /// <summary>
+        /// Get element's size by vector of element's center point.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <param name="normVector"></param>
+        /// <returns>Return distance between element's center point and intersection point between vector and element's solid.</returns>
+        public static double GetSizeByVector(this Element element, XYZ normVector)
+        {
+            List<Solid> elemSolids = ElementUtils.GetSolids(element);
+            Solid elemSolid = elemSolids.First();
+
+            XYZ centerPoint = GetLocationPoint(element);
+            Line centerLine = element.GetCenterLine();
+
+            Line intersectLine = Line.CreateBound(centerPoint, centerPoint + normVector.Multiply(100));
+
+            var intersectOptions = new SolidCurveIntersectionOptions();
+            SolidCurveIntersection intersection = elemSolid.IntersectWithCurve(intersectLine, intersectOptions);
+
+            XYZ intersectionPoint = null;
+            if (intersection.SegmentCount != 0)
+            {
+                XYZ p1 = intersection.GetCurveSegment(0).GetEndPoint(0);
+                XYZ p2 = intersection.GetCurveSegment(0).GetEndPoint(1);
+
+                (XYZ minPoint, XYZ maxPoint) = XYZUtils.GetMinMaxPoints(new List<XYZ> { p1, p2 }, centerLine);
+                intersectionPoint = maxPoint;
+            }
+
+            return centerLine.Distance(intersectionPoint);
+        }
+
+        /// <summary>
+        /// Get <paramref name="element"/>'s  insulation.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <returns>Returns <paramref name="element"/>'s <see cref="InsulationLiningBase"/> if it has it. 
+        /// Otherwise returns null.</returns>
+        public static InsulationLiningBase GetInsulation(this Element element)
+        {
+            if (element.GetType() == typeof(CableTray))
+            { return null; }
+
+            return InsulationLiningBase.GetInsulationIds(element.Document, element.Id)
+               .Select(x => element.Document.GetElement(x) as InsulationLiningBase).FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Check if <paramref name="element"/> contains <paramref name="point"/>.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <param name="point"></param>
+        /// <returns>Returns true if <paramref name="point"/> is inside <paramref name="element"/>.</returns>
+        public static bool Contains(this Element element, XYZ point)
+        {
+            double multiplicator = 100;
+            Line line1 = Line.CreateBound(point, point + XYZUtils.GenerateXYZ().Multiply(multiplicator));
+
+            var faces = element.Solid().Faces;
+            int intersectionCount = 0;
+            foreach (Face face in faces)
+            {
+                if (face.Intersect(line1) == SetComparisonResult.Overlap)
+                { intersectionCount++; }
+            }
+
+            return intersectionCount % 2 != 0;
+        }
+
+        /// <summary>
+        /// Get <paramref name="element"/>'s solid.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <returns></returns>
+        public static Solid Solid(this Element element) => ElementUtils.GetSolid(element);
+
+        /// <summary>
+        /// Get connected elements to <paramref name="element"/>.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <returns>Returns connected elements by one from each <paramref name="element"/>'s connector.</returns>
+        public static List<Element> GetConnected(this Element element) => ConnectorUtils.GetConnectedElements(element);
+
+        /// <summary>
+        /// Get main connectors of element. 
+        /// </summary>
+        /// <param name="element"></param>
+        /// <returns>If element is <see cref="Autodesk.Revit.DB.MEPCurve"/> type returns two connectors of it with max distance between them.
+        /// <para>        
+        /// If element is <see cref="Autodesk.Revit.DB.FamilyInstance"/> type returns two connectors on line through <paramref name="element"/>'s location point.
+        /// </para>
+        /// </returns>
+        public static (Connector con1, Connector con2) GetMainConnectors(this Element element) => 
+            ConnectorUtils.GetMainConnectors(element);
     }
 }

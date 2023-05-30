@@ -3,6 +3,8 @@ using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Selection;
 using DS.RevitLib.Utils;
 using DS.RevitLib.Utils.Extensions;
+using DS.RevitLib.Utils.MEP;
+using DS.RevitLib.Utils.MEP.SystemTree;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -10,6 +12,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace DS.RevitLib.Test
 {
@@ -23,6 +26,7 @@ namespace DS.RevitLib.Test
             _uidoc = uidoc;
             _doc = doc;
         }
+
 
         public void Run()
         {
@@ -41,6 +45,40 @@ namespace DS.RevitLib.Test
             var intersect = IsIntersect(solid1, points);
             Debug.WriteLine(intersect);
         }
+        public void RunMultiple()
+        {
+            MEPCurve mEPCurve1 = _doc.GetElement(new ElementId(709096)) as MEPCurve;
+            var mEPSystem1 = new SimpleMEPSystemBuilder(mEPCurve1).Build();
+
+            var freeCon = ConnectorUtils.GetFreeConnector(_doc.GetElement(new ElementId(709929))).FirstOrDefault();
+            int count = 0;
+            for (int i = 0; i < 100; i++)
+            {
+                foreach (var elem in mEPSystem1.AllElements)
+                {
+                    var solid = ElementUtils.GetSolid(elem);
+                    if (solid.Contains(freeCon.Origin))
+                    {
+                        if (elem.Id.IntegerValue == 709096)
+                        {
+                            count++;
+                            Debug.WriteLine($"Step: {count} is valid.");
+                            continue;
+                        }
+                        else
+                        {
+                            Debug.Fail($"Error i = {i}. Element = {elem.Id}, Solid volume = {solid.Volume}, " +
+                                $"Point = {freeCon.Origin}");
+                            return;
+                        }
+                    }
+                }
+
+            }
+
+            Debug.WriteLine($"{count} checks complete successfully!");
+        }
+
 
         private bool IsIntersect(Solid solid, List<XYZ> points)
         {

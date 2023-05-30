@@ -1,7 +1,6 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Selection;
-using DS.RevitLib.Collisions2;
 using DS.RevitLib.Utils;
 using DS.RevitLib.Utils.Elements;
 using iUtils.SelctionFilters;

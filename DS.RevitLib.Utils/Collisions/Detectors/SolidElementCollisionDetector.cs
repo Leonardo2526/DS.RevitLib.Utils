@@ -1,6 +1,6 @@
 ﻿using Autodesk.Revit.DB;
 using DS.RevitLib.Utils;
-using DS.RevitLib.Utils.Collisions.Models;
+using DS.ClassLib.VarUtils.Collisions;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.Visualisators;
 using System;
@@ -10,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using DS.RevitLib.Utils.Collisions.Models;
 
 namespace DS.RevitLib.Utils.Collisions.Detectors
 {
@@ -27,6 +28,9 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
             base(revitLink, checkLinkObjects)
         { }
 
+
+
+
         /// <inheritdoc/>
         public override List<ICollision> GetCollisions(Solid checkObject1, List<Element> exludedCheckObjects2 = null)
         {
@@ -36,8 +40,19 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
                 GetIntersectedElements(checkSolid, exludedCheckObjects2);
 
             var collisions = new List<ICollision>();
-            elements.ForEach(obj => collisions.Add(new SolidElementCollision(checkSolid, obj)));
-
+            foreach (Element element in elements)
+            {
+                //var s = ElementUtils.GetSolid(element);
+                //new TransactionBuilder(_doc).Build(() => s.ShowShape(element.Document),"show solid");
+                var collision = new SolidElementCollision(checkSolid, element);
+                if (MinVolume != 0)
+                {
+                    collision.MinVolume = MinVolume;
+                    if (collision.IntersectionSolid != null)
+                    { collisions.Add(collision); }
+                }
+                else collisions.Add(collision);
+            }
             return collisions;
         }
 

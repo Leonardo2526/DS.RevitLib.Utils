@@ -16,7 +16,7 @@ namespace DS.RevitLib.Utils.Connection
         private readonly double _minLength;
 
         /// <summary>
-        /// Initiate factory object to connect two MEPCurves
+        /// Initiate factory object to connect MEPCurves
         /// </summary>
         /// <param name="doc"></param>
         /// <param name="mEPCurve1"></param>
@@ -40,28 +40,20 @@ namespace DS.RevitLib.Utils.Connection
             if (strategy == null)
             {
                 var errorMessage = "Connection error! Unable to get connection strategy.";
-                Debug.WriteLine(errorMessage, TraceLevel.Error.ToString()); 
-                throw new ArgumentNullException(errorMessage);
+                Debug.WriteLine(errorMessage, TraceLevel.Error.ToString());
+                return;
+                //throw new ArgumentNullException(errorMessage);
             }
 
             try
             {
                 strategy.Connect();
-                //Debug.WriteLineIf(_mEPCurveModel3 is null, 
-                //    $"MEPCurve {_mEPCurveModel1.MEPCurve.Id} and " +
-                //    $"MEPCurve {_mEPCurveModel2.MEPCurve.Id} connected succefully.", 
-                //    TraceLevel.Info.ToString());
-                //Debug.WriteLineIf(_mEPCurveModel3 is not null,
-                //    $"MEPCurve {_mEPCurveModel1.MEPCurve.Id}, " +
-                //    $"MEPCurve {_mEPCurveModel2.MEPCurve.Id}  " +
-                //    $"and MEPCurve {_mEPCurveModel3?.MEPCurve.Id} connected succefully.",
-                //    TraceLevel.Info.ToString());
             }
             catch (System.Exception)
             {
                 var errorMessage = "Connection error! Unable to connect element.";
                 Debug.WriteLine(errorMessage, TraceLevel.Error.ToString());
-                throw new Exception(errorMessage);
+                //throw new Exception(errorMessage);
             }
         }
 
@@ -99,7 +91,7 @@ namespace DS.RevitLib.Utils.Connection
             }
 
             var routePrefManager = _mEPCurveModel1.MEPCurveType.RoutingPreferenceManager;
-            switch (routePrefManager.PreferredJunctionType)
+            switch (routePrefManager?.PreferredJunctionType)
             {
                 case PreferredJunctionType.Tee:
                     {
@@ -112,11 +104,10 @@ namespace DS.RevitLib.Utils.Connection
                         return new SpudMEPCurveStrategy(_doc, _mEPCurveModel1, _mEPCurveModel2, _minLength, curve1Con);
                     }
                 default:
-                    break;
+                    return _mEPCurveModel3 is null ?
+                             new TeeWithCutMEPCurveStrategy(_doc, _mEPCurveModel1, _mEPCurveModel2, _minLength, curve1Con) :
+                             new TeeMEPCurveStrategy(_doc, _mEPCurveModel1, _mEPCurveModel2, _mEPCurveModel3, curve1Con, _minLength);
             }
-
-            return null;
-
         }
     }
 }

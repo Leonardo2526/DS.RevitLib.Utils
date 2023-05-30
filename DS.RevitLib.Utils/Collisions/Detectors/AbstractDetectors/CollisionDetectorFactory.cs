@@ -1,5 +1,5 @@
 ﻿using Autodesk.Revit.DB;
-using DS.RevitLib.Utils.Collisions.Models;
+using DS.ClassLib.VarUtils.Collisions;
 using System.Collections.Generic;
 
 namespace DS.RevitLib.Utils.Collisions.Detectors
@@ -14,6 +14,13 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
 
         /// <inheritdoc/>
         public List<ICollision> Collisions { get; protected set; }
+
+
+        /// <summary>
+        /// Minimum intersection volume in <see cref="Autodesk.Revit.DB.DisplayUnitType.DUT_CUBIC_CENTIMETERS"/>.
+        /// Default value is 0.001.
+        /// </summary>
+        public double MinVolume { get; set; } = 0.001;
 
         /// <summary>
         /// Get collisions with <paramref name="checkObject1"/>.

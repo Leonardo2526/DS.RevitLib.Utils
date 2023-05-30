@@ -14,6 +14,8 @@ namespace DS.RevitLib.Utils.MEP
         /// <summary>
         /// Get elements connected to current element. 
         /// </summary>
+        /// <returns>Returns list of connected elements. 
+        /// Returns empty list if no connected elements was found </returns>
         public static List<Element> GetConnectedElements(Element element)
         {
             List<Connector> connectors = GetConnectors(element);
@@ -38,11 +40,11 @@ namespace DS.RevitLib.Utils.MEP
         /// <summary>
         /// Get all sysytem elements connected to current element. 
         /// </summary>
-        public static List<Element> GetAllConnectedElements(Element element, Document Doc)
+        public static List<Element> GetAllConnectedElements(Element element, Document Doc, List<Element> exculdedElements = null)
         {
             INeighbourSearch neighbourSearch = new Search();
             NeighbourElement neighbourElement = new NeighbourElement(neighbourSearch);
-            return neighbourElement.GetAllNeighbours(new List<Element>() { element }, new List<Element>(), Doc);
+            return neighbourElement.GetAllNeighbours(new List<Element>() { element }, exculdedElements ?? new List<Element>(), Doc);
         }
 
         /// <summary>
@@ -187,7 +189,7 @@ namespace DS.RevitLib.Utils.MEP
                 //Get connector set of MEPModel
                 return mepModel.ConnectorManager.Connectors;
             }
-            else if (ElementUtils.IsElementMEPCurve(element))
+            else if (element is MEPCurve)
             {
                 MEPCurve mepCurve = element as MEPCurve;
 
@@ -536,6 +538,7 @@ namespace DS.RevitLib.Utils.MEP
 
             if (element is FamilyInstance)
             {
+                if(connectors.Count ==2) { return (connectors[0], connectors[1]); }
                 for (int i = 0; i < connectors.Count - 1; i++)
                 {
                     for (int j = i + 1; j < connectors.Count; j++)
@@ -559,6 +562,28 @@ namespace DS.RevitLib.Utils.MEP
                 return (con1, con2);
             }
 
+
+            return (null, null);
+        }
+
+        /// <summary>
+        /// Get common not connected connectors between two elements
+        /// </summary>
+        /// <param name="element1"></param>
+        /// <param name="element2"></param>
+        /// <returns>Reruns two connecors with the same origin poin.</returns>
+        public static (Connector con1, Connector con2) GetCommonNotConnectedConnectors(Element element1, Element element2)
+        {
+            var cons1 = GetConnectors(element1);
+            var cons2 = GetConnectors(element2);
+
+            foreach (var c1 in cons1)
+            {
+                foreach (var c2 in cons2)
+                {
+                    if ((c1.Origin - c2.Origin).IsZeroLength()) { return (c1, c2); }
+                }
+            }
 
             return (null, null);
         }

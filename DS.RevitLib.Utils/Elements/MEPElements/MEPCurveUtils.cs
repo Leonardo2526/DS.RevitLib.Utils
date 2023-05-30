@@ -1,9 +1,10 @@
 ﻿using Autodesk.Revit.DB;
 using DS.RevitLib.Utils.Extensions;
+using DS.RevitLib.Utils.Lines;
 using DS.RevitLib.Utils.Models;
-using Ivanov.RevitLib.Utils;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace DS.RevitLib.Utils.MEP
@@ -463,6 +464,100 @@ namespace DS.RevitLib.Utils.MEP
             //align
 
             ElementTransformUtils.RotateElement(sourceMEPCurve.Document, operationMEPCurve.Id, axis, angle);
+        }
+
+
+        /// <summary>
+        /// Align <see cref="Basis"/>.Y of <paramref name="sourceMEPCurve"/> with 
+        /// <paramref name="targetBasis"/> <see cref="Basis"/>.Y.
+        /// </summary>
+        /// <param name="sourceMEPCurve"></param>
+        /// <param name="targetBasis"></param>
+        /// <returns>Returns rotation <see cref="Transform"/> to align Y <see cref="Basis"/>'s. </returns>
+        public static Transform GetAlignTransform(MEPCurve sourceMEPCurve, Basis targetBasis)
+        {
+            if (!sourceMEPCurve.IsRectangular())
+                return null;
+
+            //Check if rect is needed to align
+            Basis sourceBasis = sourceMEPCurve.GetBasis();
+            if (XYZUtils.Collinearity(sourceBasis.Y, targetBasis.Y) || XYZUtils.Collinearity(sourceBasis.Z, targetBasis.Z))
+            { return null;}
+
+            //get align options
+            XYZ cross = sourceBasis.X.CrossProduct(targetBasis.X).Normalize();
+            XYZ crossY = sourceBasis.Y.CrossProduct(targetBasis.Y).Normalize();
+            (XYZ sourceAlignBasis, XYZ targetBasisToAlign) = XYZUtils.Collinearity(targetBasis.Y, cross) ?
+                 (sourceBasis.Y, targetBasis.Y) :
+                 (sourceBasis.Z, targetBasis.Z);
+            double angle = sourceBasis.Y.AngleOnPlaneTo(targetBasis.Y, crossY);
+            //double angle = sourceAlignBasis.AngleTo(targetBasisToAlign);
+            var basis = new Basis(targetBasis.X, sourceAlignBasis, targetBasisToAlign, targetBasis.Point);
+
+            BasisOrientation orientation = basis.GetOrientaion();
+            angle = orientation == BasisOrientation.Left ? angle : -angle;
+
+            //align
+            return Transform.CreateRotationAtPoint(basis.X, angle, basis.Point);
+        }
+
+        /// <summary>
+        /// Get <see cref="Autodesk.Revit.DB.FamilyInstance"/> between 
+        /// <paramref name="mEPCurve1"/> and <paramref name="mEPCurve2"/>.
+        /// </summary>
+        /// <param name="mEPCurve1"></param>
+        /// <param name="mEPCurve2"></param>
+        /// <returns>Returns <see cref="Autodesk.Revit.DB.FamilyInstance"/> 
+        /// if it's connected both to <paramref name="mEPCurve1"/> and <paramref name="mEPCurve2"/>.
+        /// Otherwise returns <see langword="null"/>.
+        /// </returns>
+        public static FamilyInstance GetJunction(MEPCurve mEPCurve1, MEPCurve mEPCurve2)
+        {
+            if(mEPCurve1.Id == mEPCurve2.Id) { return null; }
+
+            var elems1 = ConnectorUtils.GetConnectedElements(mEPCurve1);
+            var elems2 = ConnectorUtils.GetConnectedElements(mEPCurve2);
+            ElementId intersectionElementId =  elems1.Select(obj => obj.Id).
+                Intersect(elems2.Select(obj => obj.Id)).
+                FirstOrDefault();
+
+            return intersectionElementId is null ? 
+                null : 
+                mEPCurve1.Document.GetElement(intersectionElementId) as FamilyInstance;
+        }
+
+        /// <summary>
+        /// Get parent/child relation between <paramref name="mc1"/> and <paramref name="mc2"/>.
+        /// </summary>
+        /// <param name="mc1"></param>
+        /// <param name="mc2"></param>
+        /// <param name="inverted"></param>       
+        /// <returns>Returns <paramref name="mc1"/> as parent and <paramref name="mc2"/> as child 
+        /// if intersection point (real or virtual) lies on center line of <paramref name="mc1"/>.
+        /// <para>
+        /// Parameter <paramref name="inverted"/> returns <see langword="false"/> in this case.    
+        /// </para>     
+        /// Returns <paramref name="mc2"/> as parent and <paramref name="mc1"/> as child
+        /// if intersection point (real or virtual) lies on center line of <paramref name="mc2"/>.
+        /// <para>
+        /// Parameter <paramref name="inverted"/> returns <see langword="true"/> in this case.
+        /// </para>
+        ///  <para>
+        /// Returns (<see langword="null"/>, <see langword="null"/>) if no intersections between <see cref="MEPCurve"/>'s center lines was found
+        /// or unable to detect relation.
+        /// </para>
+        /// </returns>
+        public static (MEPCurve parentMC, MEPCurve childMC) GetRelation(MEPCurve mc1, MEPCurve mc2, out bool inverted)
+        {
+            var line1 = mc1.GetCurve() as Line;
+            var line2 = mc2.GetCurve() as Line;
+
+            var (parentLine, childLine) = LineUtils.GetRelation(line1, line2, out inverted);
+
+            if (parentLine == null && childLine == null)
+            {  return (null, null);}
+
+            return inverted ? (mc2,mc1): (mc1,mc2);
         }
     }
 

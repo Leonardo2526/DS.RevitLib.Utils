@@ -26,7 +26,7 @@ namespace DS.RevitLib.Test
 
         public void Run()
         {
-            ISelectionFilter selFilter = new FamilyInstanceSelectionFilter();
+            ISelectionFilter selFilter = new ElementSelectionFilter<FamilyInstance>();
             Reference reference = _uidoc.Selection.PickObject(ObjectType.Element, selFilter, "Select element");
             var familyInstance = _doc.GetElement(reference) as FamilyInstance;
             var (parents, child) =  familyInstance.GetConnectedElements();
