@@ -1,5 +1,8 @@
 ﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.UI;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace DS.RevitLib.Utils
@@ -35,6 +38,50 @@ namespace DS.RevitLib.Utils
         {
             ICollection<ElementId> excludedElementsIds = excludedElements.Select(el => el.Id).ToList();
             return new ExclusionFilter(excludedElementsIds);
+        }
+
+        /// <summary>
+        /// Find intersection <see cref="Solid"/> between <paramref name="element1"/> and <paramref name="element2"/> with 
+        /// specified minimum <paramref name="minVolume"/> value.
+        /// </summary>
+        /// <param name="element1"></param>
+        /// <param name="element2"></param>
+        /// <param name="solid1"><paramref name="element1"/>'s <see cref="Solid"/>.</param>
+        /// <param name="solid2"><paramref name="element2"/>'s <see cref="Solid"/>.</param>
+        /// <param name="minVolume">Minimum intersection <see cref="Solid"/> volume.</param>
+        /// <returns>Intersection <see cref="Solid"/>.
+        /// <para>
+        /// Returns <see langword="null"/> if intersection volume is less than <paramref name="minVolume"/>.
+        /// </para>
+        /// <para>
+        /// Returns <see langword="null"/> if calculation of intersection <see cref="Solid"/> was <see langword="null"/> or failed.
+        /// </para>
+        /// </returns>
+        /// <exception cref="Exception"></exception>
+        public static Solid GetIntersectionSolid(Element element1, Element element2, out Solid solid1, out Solid solid2, double minVolume = 0)
+        {
+            solid1 = ElementUtils.GetSolid(element1);
+            solid2 = ElementUtils.GetSolid(element2);
+
+            Solid intersectionSolid = null;
+
+            try
+            {
+                intersectionSolid =
+                    BooleanOperationsUtils.ExecuteBooleanOperation(solid1, solid2, BooleanOperationsType.Intersect);
+                if (intersectionSolid is null || intersectionSolid.Volume == 0 || intersectionSolid.Volume < minVolume)
+                {
+                    string txt = "Elements have no intersections";
+                    Debug.WriteLine(txt);
+                    return null;
+                }               
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+            }
+
+            return intersectionSolid;
         }
     }
 }
