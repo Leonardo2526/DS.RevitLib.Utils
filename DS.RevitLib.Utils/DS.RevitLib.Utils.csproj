@@ -37,6 +37,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="AdWindows">
+      <HintPath>C:\Program Files\Autodesk\Revit 2020\AdWindows.dll</HintPath>
+    </Reference>
     <Reference Include="DS.ClassLib.VarUtils">
       <HintPath>..\..\DS.CommonLib.Utils\DS.ClassLib.VarUtils\bin\Debug\DS.ClassLib.VarUtils.dll</HintPath>
     </Reference>
@@ -178,6 +181,7 @@
     <Compile Include="Extensions\MEPSystemExtensions.cs" />
     <Compile Include="Extensions\ConnectorExtensions.cs" />
     <Compile Include="Extensions\BoxXYZExtensions.cs" />
+    <Compile Include="UIUtils.cs" />
     <Compile Include="Geometry\GeometryElementsUtils.cs" />
     <Compile Include="Geometry\Lines\LineOverlapResult.cs" />
     <Compile Include="Geometry\Lines\LinesConnector.cs" />
