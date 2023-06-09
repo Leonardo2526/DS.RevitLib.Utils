@@ -16,7 +16,7 @@ namespace DS.RevitLib.Utils
     public class TransactionBuilder : AbstractTransactionBuilder
     {
         private readonly bool _isRevitContext;
-        private readonly Committer _committer;
+        private Committer _committer;
 
         /// <summary>
         /// Create the new instance to build transaction.       
@@ -41,12 +41,12 @@ namespace DS.RevitLib.Utils
         /// <summary>
         /// Messages with errors prevented to commit transaction.
         /// </summary>
-        public string ErrorMessages { get; set; }
+        public string ErrorMessages => _committer.ErrorMessages;
 
         /// <summary>
         /// Messages with warnings after committing transaction.
         /// </summary>
-        public string WarningMessages { get; set; }
+        public string WarningMessages => _committer.WarningMessages;
 
         /// <inheritdoc/>
         public override T Build<T>(Func<T> operation, string transactionName, bool commitTransaction = true)
@@ -62,7 +62,6 @@ namespace DS.RevitLib.Utils
 
                 _committer.Commit(transNew, commitTransaction);
             }
-            ErrorMessages += _committer?.ErrorMessages;
 
             return result;
         }
@@ -87,7 +86,6 @@ namespace DS.RevitLib.Utils
                 Debug.Fail(ex.Message);
                 Debug.WriteLine($"Transaction '{trName}' was canceled.");
             }
-            finally { ErrorMessages += _committer?.ErrorMessages; }
 
             return result;
         }
@@ -106,7 +104,6 @@ namespace DS.RevitLib.Utils
                     _committer.Commit(transaction, commitTransaction);
                     //Debug.WriteLine($"Transaction '{trName}' is committed successfully!");
                 }
-            ErrorMessages += _committer?.ErrorMessages;
         }
 
         /// <summary>
@@ -156,8 +153,15 @@ namespace DS.RevitLib.Utils
                 Debug.Fail(ex.Message);
                 Debug.WriteLine($"Transaction '{trName}' was canceled.");
             }
-            finally { ErrorMessages += _committer?.ErrorMessages; }
         }
 
+        /// <summary>
+        /// Clear all <see cref="_committer"/> messages.
+        /// </summary>
+        public void ClearMessages()
+        {
+            _committer.ErrorMessages = null;
+            _committer.WarningMessages = null;
+        }
     }
 }
