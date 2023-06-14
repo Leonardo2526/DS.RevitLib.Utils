@@ -1,14 +1,17 @@
 ﻿using Autodesk.Revit.DB;
-using System.Collections.Generic;
-using DS.MainUtils;
+using DS.ClassLib.VarUtils;
+using DS.RevitLib.Utils.ModelCurveUtils;
+using DS.RevitLib.Utils.Transactions;
 using System;
+using System.Collections.Generic;
 using System.Linq;
-using Ivanov.RevitLib.Utils;
-using DS.RevitLib.Utils.MEP;
+using System.Windows.Media.Media3D;
 
 namespace DS.RevitLib.Utils.Extensions
 {
-   
+    /// <summary>
+    /// Object representing extension methods to work with XYZ points.
+    /// </summary>
     public static class XYZExtension
 
     {
@@ -74,7 +77,7 @@ namespace DS.RevitLib.Utils.Extensions
             {
                 return -difVector.GetLength();
             }
-        } 
+        }
 
         /// <summary>
         /// Check if point is on plane.
@@ -94,6 +97,24 @@ namespace DS.RevitLib.Utils.Extensions
             return false;
         }
 
+        /// <summary>
+        /// Specifies if <paramref name="point"/> lies on <paramref name="line"/>.
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="line"></param>
+        /// <param name="canCoinsidence"></param>
+        ///  /// <remarks>
+        /// Parameter <paramref name="canCoinsidence"/> specifies if <paramref name="point"/> can coinsidence with <paramref name="line"/>'s end points.
+        /// </remarks>
+        /// <returns>Reruns <see langword="true"/> if <paramref name="point"/> lies inside <paramref name="line"/> segment.
+        /// Otherwise returns <see langword="false"/>. 
+        /// </returns>
+        public static bool OnLine(this XYZ point, Line line, bool canCoinsidence = true)
+        {
+            var p1 = line.GetEndPoint(0); var p2 = line.GetEndPoint(1);
+            return point.IsBetweenPoints(p1, p2, 3, canCoinsidence);
+        }
+
         public static XYZ RoundVector(this XYZ vector, int value = 3)
         {
             double x = Math.Round(vector.X, value);
@@ -102,6 +123,118 @@ namespace DS.RevitLib.Utils.Extensions
 
             return new XYZ(x, y, z);
         }
-       
+
+        /// <summary>
+        /// Check if current point lies inside segment between point1 and point2.
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="point1"></param>
+        /// <param name="point2"></param>
+        /// <param name="tolerance">Tolerance in degrees.</param>
+        /// <param name="canCoinsidence"></param>
+        /// <remarks>
+        /// Parameter <paramref name="canCoinsidence"/> specifies if <paramref name="point"/> can coinsidence with <paramref name="point1"/> and <paramref name="point2"/>.
+        /// </remarks>
+        /// <returns>
+        /// Returns <see langword="true"/> if <paramref name="point"/> is between <paramref name="point1"/> and <paramref name="point2"/>.
+        /// <para>
+        /// Returns <see langword="false"/> if <paramref name="canCoinsidence"/> is <see langword="false"/> and one of points lies on <paramref name="point"/>.
+        /// </para>
+        /// </returns>
+        public static bool IsBetweenPoints(this XYZ point, XYZ point1, XYZ point2, double tolerance = 3, bool canCoinsidence = true)
+        {
+            var v1 = (point - point1).Normalize();
+            if(!canCoinsidence && v1.IsZeroLength()) { return false; }
+            var v2 = (point - point2).Normalize();
+            if (!canCoinsidence && v2.IsZeroLength()) { return false; }
+            if (v1.IsAlmostEqualTo(v2.Negate(), tolerance.DegToRad()))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Get a random normilise perpendicular vector.
+        /// </summary>
+        /// <param name="vector"></param>
+        /// <param name="basePoint">Common point of two perpendicular vectors.</param>
+        /// <returns></returns>
+        public static XYZ GetRandomPerpendicular(this XYZ vector, XYZ basePoint = null)
+        {
+            basePoint ??= new XYZ(0, 0, 0);
+
+            XYZ randPoint = XYZUtils.GenerateXYZ();
+            XYZ randVector = randPoint - basePoint;
+            return vector.CrossProduct(randVector).RoundVector().Normalize();
+        }
+
+        /// <summary>
+        /// Get line from the list with minimum distnace to given poin.
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="lines"></param>
+        /// <returns></returns>
+        public static Line GetClosestLine(this XYZ point, List<Line> lines)
+        {
+            double resDist = lines.First().Distance(point);
+            Line resLine = lines.First();
+
+            foreach (var line in lines)
+            {
+                double dist = line.Distance(point);
+                if (dist < resDist)
+                {
+                    resDist = dist;
+                    resLine = line;
+                }
+            }
+
+            return resLine;
+        }
+
+        /// <summary>
+        /// Show current point in model as 3 crossing line in this <paramref name="point"/>.
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="transactionBuilder"></param>
+        /// <param name="doc"></param>
+        /// <param name="labelSize">Size of label's line to show.</param>
+        public static void Show(this XYZ point, Document doc, double labelSize = 0, AbstractTransactionBuilder transactionBuilder = null)
+        {
+            transactionBuilder ??= new TransactionBuilder(doc);
+            labelSize = labelSize == 0 ? 100.mmToFyt2() : labelSize;
+
+            Line line1 = Line.CreateBound(
+                point + XYZ.BasisX.Multiply(labelSize / 2),
+                point - XYZ.BasisX.Multiply(labelSize / 2));
+
+            Line line2 = Line.CreateBound(
+               point + XYZ.BasisY.Multiply(labelSize / 2),
+               point - XYZ.BasisY.Multiply(labelSize / 2));
+
+            Line line3 = Line.CreateBound(
+               point + XYZ.BasisZ.Multiply(labelSize / 2),
+               point - XYZ.BasisZ.Multiply(labelSize / 2));
+
+            transactionBuilder.Build(() =>
+            {
+                var creator = new ModelCurveCreator(doc);
+                creator.Create(line1);
+                creator.Create(line2);
+                creator.Create(line3);
+            }, "ShowPoint");
+        }
+
+        /// <summary>
+        /// Convert <paramref name="point"/> to <see cref="Point3D"/>.
+        /// </summary>
+        /// <param name="point"></param>
+        /// <returns>Returns a new <see cref="Point3D"/> built by <paramref name="point"/> coordinates.</returns>
+        public static Point3D ToPoint3D(this XYZ point)
+        {
+            return new Point3D(point.X , point.Y, point.Z);
+        }
+
     }
 }

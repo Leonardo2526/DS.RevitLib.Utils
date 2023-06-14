@@ -26,6 +26,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>x64</PlatformTarget>
+    <DocumentationFile>bin\Debug\DS.RevitLib.Utils.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -36,15 +37,30 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="DS.MainUtils, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\DS.CommonLib.Utils\DS.MainUtils\bin\Debug\DS.MainUtils.dll</HintPath>
+    <Reference Include="AdWindows">
+      <HintPath>C:\Program Files\Autodesk\Revit 2020\AdWindows.dll</HintPath>
+    </Reference>
+    <Reference Include="DS.ClassLib.VarUtils">
+      <HintPath>..\..\DS.CommonLib.Utils\DS.ClassLib.VarUtils\bin\Debug\DS.ClassLib.VarUtils.dll</HintPath>
     </Reference>
     <Reference Include="iUtils">
       <HintPath>..\iUtils\bin\Release\iUtils.dll</HintPath>
     </Reference>
     <Reference Include="Ivanov.RevitLib.Utils">
       <HintPath>..\..\VAR.RevitLib.Utils\Ivanov.RevitLib.Utils\bin\Release\Ivanov.RevitLib.Utils.dll</HintPath>
+    </Reference>
+    <Reference Include="MoreLinq, Version=3.3.2.0, Culture=neutral, PublicKeyToken=384d532d7e88985d, processorArchitecture=MSIL">
+      <HintPath>..\..\Olimproekt\MEPAutoCoordination\DS.RevitLib.SystemConnection\packages\morelinq.3.3.2\lib\net451\MoreLinq.dll</HintPath>
+    </Reference>
+    <Reference Include="Nito.Collections.Deque, Version=1.1.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\Olimproekt\MEPAutoCoordination\OLMP.MEPAC.Entities.SystemConnection\packages\Nito.Collections.Deque.1.1.1\lib\net461\Nito.Collections.Deque.dll</HintPath>
+    </Reference>
+    <Reference Include="PathFinderLib">
+      <HintPath>..\..\VAR.RevitLib.Utils\Ivanov.RevitLib.Utils\Assemblies\PathFinderLib.dll</HintPath>
+    </Reference>
+    <Reference Include="PresentationCore" />
+    <Reference Include="Revit.Async, Version=2.0.1.0, Culture=neutral, processorArchitecture=AMD64">
+      <HintPath>..\packages\Revit.Async.2.0.1\lib\net45\Revit.Async.dll</HintPath>
     </Reference>
     <Reference Include="RevitAPI">
       <HintPath>C:\Program Files\Autodesk\Revit 2020\RevitAPI.dll</HintPath>
@@ -55,8 +71,12 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\..\Olimproekt\MEPAutoCoordination\DS.RevitLib.SystemConnection\packages\System.ValueTuple.4.5.0\lib\net47\System.ValueTuple.dll</HintPath>
+    </Reference>
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -66,43 +86,236 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BoundingBoxUtils.cs" />
-    <Compile Include="Element\ElementsMover.cs" />
-    <Compile Include="Element\PartTypesChecker.cs" />
-    <Compile Include="Collision.cs" />
-    <Compile Include="Element\ElementFilterUtils.cs" />
+    <Compile Include="Collisions\Detectors\CollisionDetectorByTrace.cs" />
+    <Compile Include="Collisions\Resolvers\IResolver.cs" />
+    <Compile Include="Collisions\Resolvers\MoveTransformStrategy.cs" />
+    <Compile Include="Collisions\Solutions\ISolution.cs" />
+    <Compile Include="Connections\PointModels\BestMEPCurveConnectionPoint.cs" />
+    <Compile Include="Connections\PointModels\ConnectionPoint.cs" />
+    <Compile Include="Connections\PointModels\ConnectionPointValidator.cs" />
+    <Compile Include="Connections\PointModels\IConnectionPoint.cs" />
+    <Compile Include="Creation\AbstractCreator.cs" />
+    <Compile Include="Collisions\Detectors\AbstractDetectors\CollisionDetector.cs" />
+    <Compile Include="Collisions\Detectors\AbstractDetectors\CollisionDetectorFactory.cs" />
+    <Compile Include="Collisions\Detectors\AbstractDetectors\ICollisionDetector.cs" />
+    <Compile Include="Collisions\Detectors\ElementCollisionDetector.cs" />
+    <Compile Include="Collisions\Detectors\ElementCollisionDetectorFactory.cs" />
+    <Compile Include="Collisions\Detectors\SolidElementCollisionDetector.cs" />
+    <Compile Include="Collisions\Detectors\SolidElementCollisionDetectorFactory.cs" />
+    <Compile Include="Collisions\ElementsIntersection.cs" />
+    <Compile Include="Collisions\Models\Collision.cs" />
+    <Compile Include="Collisions\Models\ElementCollision.cs" />
+    <Compile Include="Collisions\Models\SolidElementCollision.cs" />
+    <Compile Include="Collisions\Checkers\ElementLinkCollisionChecker.cs" />
+    <Compile Include="Collisions\Checkers\LinkCollisionChecker.cs" />
+    <Compile Include="Collisions\Checkers\ElementCollisionChecker.cs" />
+    <Compile Include="Collisions\BBCollisionUtils.cs" />
+    <Compile Include="Collisions\Models\DummyCollision.cs" />
+    <Compile Include="Collisions\Models\ElementTransformCollision.cs" />
+    <Compile Include="Collisions\Models\SolidElemTransformCollision.cs" />
+    <Compile Include="Collisions\Checkers\CollisionChecker.cs" />
+    <Compile Include="Collisions\Checkers\ICollisionChecker.cs" />
+    <Compile Include="Collisions\Checkers\SolidCollisionChecker.cs" />
+    <Compile Include="Creation\MEP\MEPCurveBreaker.cs" />
+    <Compile Include="Elements\MEPElements\Connection\ElementConnectionFactory.cs" />
+    <Compile Include="Elements\MEPElements\Connection\ElementStrategies\ConnectWithMEPCurve.cs" />
+    <Compile Include="Elements\MEPElements\Connection\ElementStrategies\ElbowElementStrategy.cs" />
+    <Compile Include="Elements\MEPElements\Connection\ElementStrategies\ElementConnectionStrategy.cs" />
+    <Compile Include="Elements\MEPElements\Connection\IConnectionFactory.cs" />
+    <Compile Include="Elements\MEPElements\Connection\MEPCurveStrategies\ConnectorMEPCurveStrategy.cs" />
+    <Compile Include="Elements\MEPElements\Connection\IConnectionStrategy.cs" />
+    <Compile Include="Elements\MEPElements\Connection\MEPCurveConnectionFactory.cs" />
+    <Compile Include="Elements\MEPElements\Connection\MEPCurveStrategies\ElbowMEPCurveStrategy.cs" />
+    <Compile Include="Elements\MEPElements\Connection\MEPCurveStrategies\MEPCurveConnectionStrategy.cs" />
+    <Compile Include="Elements\MEPElements\Connection\MEPCurveStrategies\SpudMEPCurveStrategy.cs" />
+    <Compile Include="Elements\MEPElements\Connection\MEPCurveStrategies\TeeMEPCurveStrategy.cs" />
+    <Compile Include="Elements\MEPElements\Connection\MEPCurveStrategies\TeeWithCutMEPCurveStrategy.cs" />
+    <Compile Include="Creation\CreatorExtensions.cs" />
+    <Compile Include="Elements\MEPElements\TeeCalc.cs" />
+    <Compile Include="Elements\MEPElements\ITraceSettings.cs" />
+    <Compile Include="Elements\MEPElements\MEPSystemElement.cs" />
+    <Compile Include="Elements\MEPElements\TraceSettings.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\AvailableModels\AbstractAvailableCurveService.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\AvailableModels\AvailableLineService.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\AvailableModels\AvailableMEPCurveService.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\CollisionCheckerBuilder.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\FamilyInstTransferFactory.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\IElementsTransferFactory.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\LineModel.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\LineModelBuilder.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\PlacementOption.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\PlacementPoint.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\PositionFinder.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\Resolvers\AroundCenterLineRotateResolver.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\Resolvers\CollisionResolver.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\Resolvers\MoveResolver.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\Resolvers\RotateCenterLineResolver.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\SolidCollisionClient.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\TargetModelBuilder.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\TargetPlacementModel.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\TransformBuilders\BasisLineTransformBuilder.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\TransformBuilders\FamToLineMultipleBuilder.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\TransformBuilders\FamToLineTransformBuilder.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\TransformConvert.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\TransformModels\BasisLineTransformModel.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\TransformModels\FamToLineTransformModel.cs" />
+    <Compile Include="Extensions\CurveExtensions.cs" />
+    <Compile Include="Elements\Alignments\SolidAngleAlignment.cs" />
+    <Compile Include="Elements\Alignments\AngleAlignment.cs" />
+    <Compile Include="Elements\Alignments\IAlignment.cs" />
+    <Compile Include="Elements\Alignments\Strategies\Solids\NormOrthSolidRotator.cs" />
+    <Compile Include="Elements\Alignments\Strategies\Solids\CentralLineSolidRotator.cs" />
+    <Compile Include="Elements\ElementsExtractor.cs" />
+    <Compile Include="Elements\Models\AbstractElementModel.cs" />
+    <Compile Include="Elements\Parameters\CopyParameterOption.cs" />
+    <Compile Include="Creation\ElementCreator.cs" />
+    <Compile Include="Creation\ElementsMover.cs" />
+    <Compile Include="Elements\Models\ElementModel.cs" />
+    <Compile Include="Elements\PartTypesChecker.cs" />
+    <Compile Include="Collisions\CollisionUtils.cs" />
+    <Compile Include="Elements\ElementFilterUtils.cs" />
     <Compile Include="Extensions\ElementExtension.cs" />
-    <Compile Include="Extensions\MEPCurveExtension.cs" />
+    <Compile Include="Extensions\DocumentExtensions.cs" />
+    <Compile Include="Extensions\ConvertationExtensions.cs" />
+    <Compile Include="Extensions\FaceExtensions.cs" />
+    <Compile Include="Extensions\MEPSystemExtensions.cs" />
+    <Compile Include="Extensions\ConnectorExtensions.cs" />
+    <Compile Include="Extensions\BoxXYZExtensions.cs" />
+    <Compile Include="UIUtils.cs" />
+    <Compile Include="Geometry\GeometryElementsUtils.cs" />
+    <Compile Include="Geometry\Lines\LineOverlapResult.cs" />
+    <Compile Include="Geometry\Lines\LinesConnector.cs" />
+    <Compile Include="Geometry\Points\XYZAlgorithms\FindDistanceStrategies\Strategies\StrategyToFindMinDist.cs" />
+    <Compile Include="Geometry\Solids\SolidOffsetExtractor.cs" />
+    <Compile Include="Creation\FailedTransaction.cs" />
+    <Compile Include="Extensions\FamilyInstanceExtensions.cs" />
+    <Compile Include="Creation\MEP\Builders\BuilderByPoints.cs" />
+    <Compile Include="Creation\MEP\FamInstCreator.cs" />
+    <Compile Include="Creation\MEP\MEPCurveCreator.cs" />
+    <Compile Include="Elements\Models\MEPCurveModel.cs" />
+    <Compile Include="Elements\MEPElements\ElbowRadiusCalc.cs" />
+    <Compile Include="Elements\MEPElements\SystemModels\MEPCurvesModel.cs" />
+    <Compile Include="Elements\MEPElements\SystemTree\Relatives\FamInstRelationBuilder.cs" />
+    <Compile Include="Elements\MEPElements\SystemTree\Relatives\NewElementRelationBuilder.cs" />
+    <Compile Include="Elements\MEPElements\SystemTree\Relatives\SpudRelationBuilder.cs" />
+    <Compile Include="Elements\MEPElements\SystemTree\Relatives\TeeRelationBuilder.cs" />
+    <Compile Include="Creation\ModelCurveUtils\ModelCurveTransaction.cs" />
+    <Compile Include="Extensions\VariousExtensions.cs" />
+    <Compile Include="PathCreators\IPathCreator.cs" />
+    <Compile Include="Extensions\LineExtensions.cs" />
+    <Compile Include="Extensions\MEPCurveExtensions.cs" />
+    <Compile Include="Creation\MEP\MEPCurveCutter.cs" />
+    <Compile Include="Elements\Models\MEPCurveGeometryModel.cs" />
+    <Compile Include="PathCreators\PathFindCreator.cs" />
+    <Compile Include="PathCreators\PathCreator.cs" />
+    <Compile Include="Tests\ITestModel.cs" />
+    <Compile Include="Various\IRevitContext.cs" />
+    <Compile Include="Various\VectorPointConverter.cs" />
+    <Compile Include="Various\Selections\Filters\ElementInLinkSelectionFilter.cs" />
+    <Compile Include="Various\Selections\Filters\PointSelectionFilter.cs" />
+    <Compile Include="Various\Selections\Filters\IAdvancedSelectionFilter.cs" />
+    <Compile Include="Various\Selections\MEPCurveSelector.cs" />
+    <Compile Include="Various\Selections\ElementSelector.cs" />
+    <Compile Include="Various\SectionBox.cs" />
+    <Compile Include="Various\Selections\Filters\ElementSelectionFilter.cs" />
+    <Compile Include="Geometry\Solids\Creatros\MEPCurveSolidCreator.cs" />
+    <Compile Include="Geometry\Solids\Creatros\SolidCreatorBase.cs" />
+    <Compile Include="Geometry\Solids\Creatros\SphereCreator.cs" />
+    <Compile Include="Creation\Transactions\Committers\CommitOnApply.cs" />
+    <Compile Include="Creation\Transactions\Committers\CommitOnClose.cs" />
+    <Compile Include="Creation\Transactions\Committers\ITransactionGroupCommitter.cs" />
+    <Compile Include="Creation\Transactions\AbstractTransactionBuilder.cs" />
+    <Compile Include="Creation\Transactions\TransactionBuilder.cs" />
+    <Compile Include="Creation\Transactions\TrgEventBuilder.cs" />
+    <Compile Include="Various\Selections\PointSelector.cs" />
+    <Compile Include="Various\Selections\SelectorBase.cs" />
+    <Compile Include="Various\Transforms\BasisTransformBuilder.cs" />
+    <Compile Include="Various\Transforms\BasisTransformModel.cs" />
+    <Compile Include="Various\Transforms\TransformBuilder.cs" />
+    <Compile Include="Various\Transforms\TransformModel.cs" />
+    <Compile Include="Various\Basisis\Basis.cs" />
+    <Compile Include="Various\Basisis\BasisOrientation.cs" />
+    <Compile Include="Various\Transforms\MultipleTransformBuilder.cs" />
+    <Compile Include="Extensions\PlaneExtensions.cs" />
+    <Compile Include="Various\PlaneUtils.cs" />
+    <Compile Include="Various\Basisis\RotationModel.cs" />
+    <Compile Include="Extensions\SolidExtension.cs" />
     <Compile Include="Extensions\XYZExtension.cs" />
-    <Compile Include="MEP\Creator\Builders\BuilderByPoints.cs" />
-    <Compile Include="MEP\Creator\Builders\MEPSystemBuilder.cs" />
-    <Compile Include="MEP\Creator\MEPCurvesModel.cs" />
-    <Compile Include="MEP\Creator\MEPSystemModel.cs" />
-    <Compile Include="MEP\Neighbours\INeighbourSearch.cs" />
-    <Compile Include="MEP\Neighbours\Neighbour.cs" />
-    <Compile Include="MEP\Neighbours\SearchWithCollision.cs" />
-    <Compile Include="MEP\Neighbours\Search.cs" />
-    <Compile Include="PointUtils.cs" />
+    <Compile Include="Various\FamilySymbolUtils.cs" />
+    <Compile Include="Creation\MEP\Builders\BuilderByPointsTransactions.cs" />
+    <Compile Include="Creation\MEP\Builders\MEPSystemComponentBuilder.cs" />
+    <Compile Include="Creation\MEP\Builders\RotationBuilder.cs" />
+    <Compile Include="Elements\Alignments\Strategies\NormOrthRotator.cs" />
+    <Compile Include="Elements\Alignments\Strategies\CentralLineRotator.cs" />
+    <Compile Include="Elements\Alignments\Strategies\AlignmentRotator.cs" />
+    <Compile Include="Elements\MEPElements\SimpleMEPSystemBuilder.cs" />
+    <Compile Include="Elements\MEPElements\SystemModels\MEPElementsModel.cs" />
+    <Compile Include="Elements\MEPElements\Symbols\SymbolPlacer.cs" />
+    <Compile Include="Elements\MEPElements\SystemTree\Component.cs" />
+    <Compile Include="Elements\MEPElements\SystemTree\ComponentBuilder.cs" />
+    <Compile Include="Elements\MEPElements\SystemModels\MEPCurvesModelTransaction.cs" />
+    <Compile Include="Elements\MEPElements\SystemModels\MEPElement.cs" />
+    <Compile Include="Elements\MEPElements\SystemTree\Composite.cs" />
+    <Compile Include="Elements\MEPElements\SystemTree\CompositeBuilder.cs" />
+    <Compile Include="Elements\MEPElements\SystemTree\ConnectedBuilders\AbstractConnectedBuilder.cs" />
+    <Compile Include="Elements\MEPElements\SystemTree\ConnectedBuilders\ConnectedElementsBuilder.cs" />
+    <Compile Include="Elements\MEPElements\SystemTree\ConnectedBuilders\IConnectedBuilder.cs" />
+    <Compile Include="Elements\MEPElements\SystemTree\ConnectedBuilders\NotOrderedConnectedBuilder.cs" />
+    <Compile Include="Elements\MEPElements\SystemTree\ConnectedBuilders\OrderedConnectedBuilder.cs" />
+    <Compile Include="Elements\MEPElements\SystemTree\TreeMEPSystemModel.cs" />
+    <Compile Include="Elements\MEPElements\SystemTree\NodeElement.cs" />
+    <Compile Include="Elements\MEPElements\SystemTree\Pushers\NodePusher.cs" />
+    <Compile Include="Elements\MEPElements\SystemTree\Pushers\PostNodePusher.cs" />
+    <Compile Include="Elements\MEPElements\SystemTree\Pushers\Pusher.cs" />
+    <Compile Include="Elements\MEPElements\SystemTree\MEPSystemComponent.cs" />
+    <Compile Include="Creation\MEP\ParameterSetter.cs" />
+    <Compile Include="Elements\MEPElements\SystemTree\MEPSystemModel.cs" />
+    <Compile Include="Elements\MEPElements\Neighbours\INeighbourSearch.cs" />
+    <Compile Include="Elements\MEPElements\Neighbours\Neighbour.cs" />
+    <Compile Include="Elements\MEPElements\Neighbours\SearchWithCollision.cs" />
+    <Compile Include="Elements\MEPElements\Neighbours\Search.cs" />
+    <Compile Include="Elements\MEPElements\SystemTree\Relatives\Relation.cs" />
+    <Compile Include="Creation\ModelCurveUtils\ModelCurveCreator.cs" />
     <Compile Include="Extensions\CategoryExtension.cs" />
-    <Compile Include="GPExtractor\GPCreator.cs" />
-    <Compile Include="GPExtractor\GPExtractor.cs" />
-    <Compile Include="Element\IElement.cs" />
-    <Compile Include="GPExtractor\VisiblePointsCreator.cs" />
-    <Compile Include="MEP\Creator\MEPCurveCreator.cs" />
-    <Compile Include="MEP\Creator\FamInstCreator.cs" />
-    <Compile Include="MEP\MEPCurveParameter.cs" />
-    <Compile Include="MEP\Insulation.cs" />
-    <Compile Include="MEP\ConnectorUtils.cs" />
-    <Compile Include="Element\ElementEraser.cs" />
-    <Compile Include="Element\ElementUtils.cs" />
-    <Compile Include="LineUtils.cs" />
-    <Compile Include="MEP\MEPCurveUtils.cs" />
-    <Compile Include="MEP\MEPElementUtils.cs" />
-    <Compile Include="Solids\SolidByCollector.cs" />
-    <Compile Include="PickedElement.cs" />
+    <Compile Include="Geometry\Points\GPExtractor\GPCreator.cs" />
+    <Compile Include="Geometry\Points\GPExtractor\GPExtractor.cs" />
+    <Compile Include="Geometry\Points\GPExtractor\VisiblePointsCreator.cs" />
+    <Compile Include="Creation\MEP\MEPCurveTransactions.cs" />
+    <Compile Include="Creation\MEP\FamInstTransactions.cs" />
+    <Compile Include="Elements\Parameters\ElementParameter.cs" />
+    <Compile Include="Elements\MEPElements\Insulation.cs" />
+    <Compile Include="Elements\MEPElements\ConnectorUtils.cs" />
+    <Compile Include="Elements\ElementEraser.cs" />
+    <Compile Include="Elements\ElementUtils.cs" />
+    <Compile Include="Geometry\Lines\LineUtils.cs" />
+    <Compile Include="Elements\MEPElements\MEPCurveUtils.cs" />
+    <Compile Include="Elements\MEPElements\MEPElementUtils.cs" />
+    <Compile Include="Geometry\Solids\Models\AbstractSolidModel.cs" />
+    <Compile Include="Geometry\Solids\Models\SolidModel.cs" />
+    <Compile Include="Geometry\Solids\Models\SolidModelExt.cs" />
+    <Compile Include="Geometry\Solids\SolidByCollector.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Solids\SolidExtractor.cs" />
-    <Compile Include="Solids\SolidUtils.cs" />
+    <Compile Include="Geometry\Solids\SolidExtractor.cs" />
+    <Compile Include="Geometry\Solids\SolidPlacer.cs" />
+    <Compile Include="Geometry\Solids\SolidUtils.cs" />
+    <Compile Include="Creation\Transactions\Committers\Committer.cs" />
+    <Compile Include="Creation\Transactions\Committers\BaseCommitter.cs" />
+    <Compile Include="Creation\Transactions\Committers\RollBackCommitter.cs" />
+    <Compile Include="Geometry\Points\XYZAlgorithms\FindDistanceStrategies\FindDistanceClient.cs" />
+    <Compile Include="Geometry\Points\XYZAlgorithms\FindDistanceStrategies\Strategies\StrategyToFindDist.cs" />
+    <Compile Include="Geometry\Points\XYZAlgorithms\FindDistanceStrategies\Strategies\StrategyToFindMaxDist.cs" />
+    <Compile Include="Geometry\Points\XYZUtils.cs" />
+    <Compile Include="Creation\Visualisators\BoundingBoxVisualisator.cs" />
+    <Compile Include="Creation\Visualisators\IVisualisator.cs" />
+    <Compile Include="Creation\Visualisators\Visualisator.cs" />
+    <Compile Include="Various\PointConverter.cs" />
+    <Compile Include="Various\Zoomer.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Geometry\Points\Models\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
