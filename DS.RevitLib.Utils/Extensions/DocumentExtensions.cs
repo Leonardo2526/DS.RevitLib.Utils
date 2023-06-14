@@ -20,7 +20,7 @@ namespace DS.RevitLib.Utils.Extensions
         /// <param name="exludedCathegories">Excluded elements list of <see cref="Autodesk.Revit.DB.BuiltInCategory"/>.</param>
         /// <param name="tr"></param>
         /// <returns></returns>
-        public static List<GeometryData> GetGeometryData(this Document doc, 
+        public static List<GeometryData> GetGeometryData(this Document doc,
             List<BuiltInCategory> exludedCathegories = null, Transform tr = null)
         {
             if (doc == null || !doc.IsValidObject)
@@ -47,9 +47,15 @@ namespace DS.RevitLib.Utils.Extensions
         /// Get all <see cref="Autodesk.Revit.DB.Element"/>'s with geometry from <paramref name="doc"/>.
         /// </summary>
         /// <param name="doc">Current <see cref="Document"/>.</param>
+        /// <param name="elementIds">Input elements ids to get geometry elements.</param>
         /// <param name="exludedCathegories">Excluded elements list of <see cref="Autodesk.Revit.DB.BuiltInCategory"/>.</param>
-        /// <returns></returns>
-        public static List<Element> GetGeometryElements(this Document doc, List<BuiltInCategory> exludedCathegories = null)
+        /// <returns>
+        /// List of <see cref="Autodesk.Revit.DB.Element"/> with geometry.
+        /// <para>
+        /// If <paramref name="elementIds"/> is null or empty returns all geometry elements in <paramref name="doc"/>.
+        /// </para>
+        /// </returns>
+        public static List<Element> GetGeometryElements(this Document doc, List<BuiltInCategory> exludedCathegories = null, List<ElementId> elementIds = null)
         {
             if (doc == null || !doc.IsValidObject)
                 return new List<Element>();
@@ -63,10 +69,22 @@ namespace DS.RevitLib.Utils.Extensions
             }
 
             var filter = new ElementMulticategoryFilter(categories.ToList());
-            var geomModelElems = new FilteredElementCollector(doc).
-                WhereElementIsNotElementType().
-                WherePasses(filter).
-                Where(x => x.IsGeometryElement());
+
+            IEnumerable<Element> geomModelElems = new List<Element>();
+            if (elementIds is null || elementIds.Count == 0)
+            {
+                geomModelElems = new FilteredElementCollector(doc).
+                    WhereElementIsNotElementType().
+                    WherePasses(filter).
+                    Where(x => x.IsGeometryElement());
+            }
+            else
+            {
+                geomModelElems = new FilteredElementCollector(doc, elementIds).
+                   WhereElementIsNotElementType().
+                   WherePasses(filter).
+                   Where(x => x.IsGeometryElement());
+            }
 
             return geomModelElems.ToList();
         }
