@@ -70,6 +70,7 @@
     <Compile Include="TestedClasses\ArcCreationTest.cs" />
     <Compile Include="TestedClasses\BBCollisionUtilsTest.cs" />
     <Compile Include="TestedClasses\BuilderByPointsTest.cs" />
+    <Compile Include="TestedClasses\ReplaceMEPCurveTest.cs" />
     <Compile Include="TestedClasses\GetOverlapResultTest.cs" />
     <Compile Include="TestedClasses\LinesIntersectionTest.cs" />
     <Compile Include="TestedClasses\GetRelationTest.cs" />

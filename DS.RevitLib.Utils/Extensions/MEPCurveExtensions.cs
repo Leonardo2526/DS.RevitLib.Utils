@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Security.Cryptography;
 
 namespace DS.RevitLib.Utils.MEP
 {
@@ -412,6 +413,81 @@ namespace DS.RevitLib.Utils.MEP
             }
             else
             { action(); }
+        }
+
+        /// <summary>
+        /// Replace <paramref name="sourceMEPCurve"/> with <paramref name="targetMEPCurve"/>.
+        /// <para>
+        /// If <paramref name="targetMEPCurve"/> is null replace <paramref name="sourceMEPCurve"/> with its copy.  
+        /// </para>
+        /// </summary>
+        /// <param name="sourceMEPCurve"></param>
+        /// <param name="targetMEPCurve"></param>
+        /// <returns>
+        /// Replaced <see cref="MEPCurve"/>.
+        /// If replacing was failed returns <see langword="null"/>.
+        /// </returns>
+        public static MEPCurve Replace(this MEPCurve sourceMEPCurve, MEPCurve targetMEPCurve = null)
+        {
+            Document doc = sourceMEPCurve.Document;
+            if (targetMEPCurve is null)
+            {
+                var copiedId = ElementTransformUtils.CopyElement(doc, sourceMEPCurve.Id, XYZ.Zero).FirstOrDefault();
+                targetMEPCurve = doc.GetElement(copiedId) as MEPCurve;
+            }
+
+
+            List<Element> connectedElements = GetConnectedWithoutSpuds(sourceMEPCurve, out List<Element> spuds);
+            doc.Delete(sourceMEPCurve.Id);
+
+            if(connectedElements.Count == 0) { return targetMEPCurve; }
+
+            spuds.ForEach(spud => { doc.Delete(spud.Id); });
+
+            //connect taregetMEPCurve to elements connected to sourceMEPCurve
+            foreach (var elem in connectedElements)
+            {
+                try
+                {
+                    if(elem is MEPCurve)
+                    {
+                        (var mc1ToConnect, var mc2ToConnect) = MEPCurveUtils.GetRelation(targetMEPCurve, elem as MEPCurve, out _);
+                        mc2ToConnect.Connect(mc1ToConnect);
+                    }
+                    else
+                    {
+                        elem.Connect(targetMEPCurve);
+                    }
+                }
+                //{targetMEPCurve.Connect(elem); }
+                catch (Exception)
+                { return null;}
+            }
+
+            static List<Element> GetConnectedWithoutSpuds(MEPCurve sourceMEPCurve, out List<Element> spuds)
+            {
+                var connectedElements = ConnectorUtils.GetConnectedElements(sourceMEPCurve);
+
+                spuds = new List<Element>();
+                List<Element> elementsWithoutSpud = new List<Element>();
+                foreach (var elem in connectedElements)
+                {
+                    if (elem.IsSpud())
+                    {
+                        spuds.Add(elem);
+                        MEPCurve connectedToSpud = ConnectorUtils.GetConnectedElements(elem).
+                            FirstOrDefault(obj => obj.Id != sourceMEPCurve.Id) as MEPCurve;
+                        if (connectedToSpud is not null) { elementsWithoutSpud.Add(connectedToSpud); }
+                    }
+                    else
+                    {
+                        elementsWithoutSpud.Add(elem);
+                    }
+                }
+                return elementsWithoutSpud;
+            }
+
+            return targetMEPCurve;
         }
     }
 }

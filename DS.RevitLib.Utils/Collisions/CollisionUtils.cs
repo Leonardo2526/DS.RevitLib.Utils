@@ -71,8 +71,8 @@ namespace DS.RevitLib.Utils
                     BooleanOperationsUtils.ExecuteBooleanOperation(solid1, solid2, BooleanOperationsType.Intersect);
                 if (intersectionSolid is null || intersectionSolid.Volume == 0 || intersectionSolid.Volume < minVolume)
                 {
-                    string txt = "Elements have no intersections";
-                    Debug.WriteLine(txt);
+                    //string txt = "Elements have no intersections";
+                    //Debug.WriteLine(txt);
                     return null;
                 }               
             }

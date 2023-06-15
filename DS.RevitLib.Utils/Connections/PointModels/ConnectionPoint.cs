@@ -1,6 +1,5 @@
 ﻿using Autodesk.Revit.DB;
 using DS.RevitLib.Utils.Connections.PointModels.PointModels;
-using DS.RevitLib.Utils;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
