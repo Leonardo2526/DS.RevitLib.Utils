@@ -65,6 +65,7 @@ namespace DS.RevitLib.Utils.Elements.Transfer
                 if (checker is SolidCollisionChecker)
                 {
                     SolidCollisionChecker solidChecker = (SolidCollisionChecker)checker;
+                    solidChecker.FixNotVailid();
                     col = solidChecker.GetCollisions(checkedObjects1);
                 }
                 else if (checker is LinkCollisionChecker)
