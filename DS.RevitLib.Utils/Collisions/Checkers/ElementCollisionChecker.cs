@@ -34,7 +34,7 @@ namespace DS.RevitLib.Utils.Collisions.Checkers
         {
             get
             {
-                ICollection<ElementId> excludedElementsIds = ExludedObjects?.Select(el => el.Id).ToList();
+                ICollection<ElementId> excludedElementsIds = ExcludedObjects?.Select(el => el.Id).ToList();
                 return excludedElementsIds is null ? null : new ExclusionFilter(excludedElementsIds);
             }
         }
@@ -54,9 +54,9 @@ namespace DS.RevitLib.Utils.Collisions.Checkers
         {
             var excludedElementsIds = new List<ElementId>();
 
-            if (ExludedObjects is not null && ExludedObjects.Any())
+            if (ExcludedObjects is not null && ExcludedObjects.Any())
             {
-                excludedElementsIds.AddRange(ExludedObjects.Select(obj => obj.Id).ToList());
+                excludedElementsIds.AddRange(ExcludedObjects.Select(obj => obj.Id).ToList());
             }
 
             excludedElementsIds.Add(object1.Id);

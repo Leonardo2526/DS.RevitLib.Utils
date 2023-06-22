@@ -49,13 +49,21 @@ namespace DS.RevitLib.Utils.Extensions
         /// <param name="doc">Current <see cref="Document"/>.</param>
         /// <param name="elementIds">Input elements ids to get geometry elements.</param>
         /// <param name="exludedCathegories">Excluded elements list of <see cref="Autodesk.Revit.DB.BuiltInCategory"/>.</param>
+        /// <param name="includeLines"></param>
         /// <returns>
         /// List of <see cref="Autodesk.Revit.DB.Element"/> with geometry.
+        /// <para>
+        /// If <paramref name="includeLines"/> parameter is <see langword="true"/> model <see cref="Line"/>'s can be included to list.     
+        /// </para>    
         /// <para>
         /// If <paramref name="elementIds"/> is null or empty returns all geometry elements in <paramref name="doc"/>.
         /// </para>
         /// </returns>
-        public static List<Element> GetGeometryElements(this Document doc, List<BuiltInCategory> exludedCathegories = null, List<ElementId> elementIds = null)
+        public static List<Element> GetGeometryElements(
+            this Document doc, 
+            List<BuiltInCategory> exludedCathegories = null, 
+            List<ElementId> elementIds = null,
+            bool includeLines = false)
         {
             if (doc == null || !doc.IsValidObject)
                 return new List<Element>();
@@ -76,14 +84,14 @@ namespace DS.RevitLib.Utils.Extensions
                 geomModelElems = new FilteredElementCollector(doc).
                     WhereElementIsNotElementType().
                     WherePasses(filter).
-                    Where(x => x.IsGeometryElement());
+                    Where(x => x.IsGeometryElement(includeLines));
             }
             else
             {
                 geomModelElems = new FilteredElementCollector(doc, elementIds).
                    WhereElementIsNotElementType().
                    WherePasses(filter).
-                   Where(x => x.IsGeometryElement());
+                   Where(x => x.IsGeometryElement(includeLines));
             }
 
             return geomModelElems.ToList();
