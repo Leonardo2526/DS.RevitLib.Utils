@@ -24,7 +24,7 @@ namespace DS.RevitLib.Utils.Elements.Transfer
         private readonly List<ICollisionChecker> _collisionCheckers;
         private readonly MEPCurveModel _mEPCurveModel;
         private readonly double _minCurveLength;
-
+        private bool _isAlwaysVertical = false;
 
         //private readonly MEPCollision _collision;
 
@@ -39,6 +39,22 @@ namespace DS.RevitLib.Utils.Elements.Transfer
             //this._collision = _collision;
         }
 
+        private bool IsAlwaysVertical
+        {
+            get
+            {
+                var famIns = _operationModel.Element as FamilyInstance;
+                if (famIns != null)
+                {
+                    var fam = famIns.Symbol.Family;
+                    var param = fam?.get_Parameter(BuiltInParameter.FAMILY_ALWAYS_VERTICAL);
+                    var s = param?.AsValueString();
+                    return s == "Yes";
+                }
+                else { return false; }
+            }
+        }
+
         /// <summary>
         /// Find available operation model's position on targerMEPCurve.
         /// </summary>
@@ -47,7 +63,7 @@ namespace DS.RevitLib.Utils.Elements.Transfer
             //Place and align solid in point
             Basis targetBasis = GetTargetBasis(_targetModel);
 
-            var transformModel = new BasisTransformBuilder(_operationModel.Basis, targetBasis).Build();
+            var transformModel = new BasisTransformBuilder(_operationModel.Basis, targetBasis, IsAlwaysVertical).Build();
             _operationModel.Transform(transformModel.Transforms);
             //_operationModel.ShowBoundingBox();
             //DocModel.UiDoc.RefreshActiveView();

@@ -35,7 +35,7 @@ namespace DS.RevitLib.Utils.Elements.Transfer.Resolvers
             else
             {
                 _successor?.Resolve();
-                if (_successor is not null && _successor.UnresolvedCollisions.Any())
+                if (_successor?.UnresolvedCollisions is not null && _successor.UnresolvedCollisions.Any())
                 {
                     UnresolvedCollisions = _successor.UnresolvedCollisions;
                 }
