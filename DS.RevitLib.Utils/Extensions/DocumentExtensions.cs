@@ -20,7 +20,7 @@ namespace DS.RevitLib.Utils.Extensions
         /// <param name="exludedCathegories">Excluded elements list of <see cref="Autodesk.Revit.DB.BuiltInCategory"/>.</param>
         /// <param name="tr"></param>
         /// <returns></returns>
-        public static List<GeometryData> GetGeometryData(this Document doc, 
+        public static List<GeometryData> GetGeometryData(this Document doc,
             List<BuiltInCategory> exludedCathegories = null, Transform tr = null)
         {
             if (doc == null || !doc.IsValidObject)
@@ -47,9 +47,23 @@ namespace DS.RevitLib.Utils.Extensions
         /// Get all <see cref="Autodesk.Revit.DB.Element"/>'s with geometry from <paramref name="doc"/>.
         /// </summary>
         /// <param name="doc">Current <see cref="Document"/>.</param>
+        /// <param name="elementIds">Input elements ids to get geometry elements.</param>
         /// <param name="exludedCathegories">Excluded elements list of <see cref="Autodesk.Revit.DB.BuiltInCategory"/>.</param>
-        /// <returns></returns>
-        public static List<Element> GetGeometryElements(this Document doc, List<BuiltInCategory> exludedCathegories = null)
+        /// <param name="includeLines"></param>
+        /// <returns>
+        /// List of <see cref="Autodesk.Revit.DB.Element"/> with geometry.
+        /// <para>
+        /// If <paramref name="includeLines"/> parameter is <see langword="true"/> model <see cref="Line"/>'s can be included to list.     
+        /// </para>    
+        /// <para>
+        /// If <paramref name="elementIds"/> is null or empty returns all geometry elements in <paramref name="doc"/>.
+        /// </para>
+        /// </returns>
+        public static List<Element> GetGeometryElements(
+            this Document doc, 
+            List<BuiltInCategory> exludedCathegories = null, 
+            List<ElementId> elementIds = null,
+            bool includeLines = false)
         {
             if (doc == null || !doc.IsValidObject)
                 return new List<Element>();
@@ -63,10 +77,22 @@ namespace DS.RevitLib.Utils.Extensions
             }
 
             var filter = new ElementMulticategoryFilter(categories.ToList());
-            var geomModelElems = new FilteredElementCollector(doc).
-                WhereElementIsNotElementType().
-                WherePasses(filter).
-                Where(x => x.IsGeometryElement());
+
+            IEnumerable<Element> geomModelElems = new List<Element>();
+            if (elementIds is null || elementIds.Count == 0)
+            {
+                geomModelElems = new FilteredElementCollector(doc).
+                    WhereElementIsNotElementType().
+                    WherePasses(filter).
+                    Where(x => x.IsGeometryElement(includeLines));
+            }
+            else
+            {
+                geomModelElems = new FilteredElementCollector(doc, elementIds).
+                   WhereElementIsNotElementType().
+                   WherePasses(filter).
+                   Where(x => x.IsGeometryElement(includeLines));
+            }
 
             return geomModelElems.ToList();
         }
@@ -130,6 +156,41 @@ namespace DS.RevitLib.Utils.Extensions
             {
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Get geometry elements from <paramref name="doc"/> model that contain <paramref name="point"/>.
+        /// </summary>
+        /// <param name="doc"></param>
+        /// <param name="point"></param>
+        /// <returns>
+        /// Elements that contains <paramref name="point"/>.
+        /// <para>
+        /// Empty list if none <paramref name="doc"/> elements contain <paramref name="point"/>.    
+        /// </para>
+        /// </returns>
+        public static List<Element> GetGeometryElements(this Document doc, XYZ point)
+        {
+            var elemensOnPoint = new List<Element>();
+
+            var filter = new BoundingBoxContainsPointFilter(point);
+            var collector = new FilteredElementCollector(doc);
+            var elements = collector.
+                WherePasses(filter).
+                ToElements().
+                Where(el => el.IsGeometryElement()).
+                ToList();
+
+            if (!elements.Any()) { return elemensOnPoint; }
+
+            //Specify collision object
+            elements.ForEach(obj =>
+            {
+                var solid = ElementUtils.GetSolid(obj);
+                if (solid.Contains(point)) { elemensOnPoint.Add(obj); }
+            });
+
+            return elemensOnPoint;
         }
     }
 }

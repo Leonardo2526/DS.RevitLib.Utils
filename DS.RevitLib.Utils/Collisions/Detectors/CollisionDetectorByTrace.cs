@@ -1,5 +1,5 @@
 ﻿using Autodesk.Revit.DB;
-using DS.RevitLib.Utils.Collisions.Models;
+using DS.ClassLib.VarUtils.Collisions;
 using DS.RevitLib.Utils.Elements.MEPElements;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.MEP;
@@ -17,7 +17,7 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
     /// <summary>
     /// An object that detect collisions (intersections) between objects in Revit model by trace and <see cref="MEPCurve"/>.
     /// </summary>
-    public class CollisionDetectorByTrace : ICollisionDetector
+    public class CollisionDetectorByTrace : ITraceCollisionDetector
     {
         private readonly Document _doc;
         private readonly MEPCurve _baseMEPCurve;
@@ -85,7 +85,7 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
         /// Returns empty list if no collisions were detected.
         /// </para>
         /// </returns>
-        public List<ICollision> GetCollisions(Point3D point1, Point3D point2, Basis basis = null)
+        public List<ICollision> GetCollisions(Point3D point1, Point3D point2)
         {
             XYZ p1 = point1.ToXYZ();
             XYZ p2 = point2.ToXYZ();

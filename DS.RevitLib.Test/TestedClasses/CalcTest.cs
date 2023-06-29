@@ -3,7 +3,7 @@ using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Selection;
 using DS.ClassLib.VarUtils;
 using DS.RevitLib.Utils;
-using DS.RevitLib.Utils.Collisions.Models;
+using DS.ClassLib.VarUtils.Collisions;
 using DS.RevitLib.Utils.MEP;
 using DS.RevitLib.Utils.MEP.Models;
 using DS.RevitLib.Utils.MEP.SystemTree;

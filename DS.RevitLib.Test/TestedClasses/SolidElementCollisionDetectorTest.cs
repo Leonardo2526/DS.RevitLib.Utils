@@ -12,6 +12,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DS.ClassLib.VarUtils.Collisions;
 using DS.RevitLib.Utils.Collisions.Models;
 
 namespace DS.RevitLib.Test.TestedClasses
