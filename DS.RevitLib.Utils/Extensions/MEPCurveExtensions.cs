@@ -157,7 +157,7 @@ namespace DS.RevitLib.Utils.MEP
                 case ConnectorProfileType.Round:
                     {
                         Parameter diameter = mEPCurve.get_Parameter(BuiltInParameter.RBS_PIPE_OUTER_DIAMETER);
-                        width = diameter.AsDouble();
+                        width = diameter is null ? mEPCurve.Diameter : diameter.AsDouble();
                         height = width;
                     }
                     break;

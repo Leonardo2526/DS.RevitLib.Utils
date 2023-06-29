@@ -15,7 +15,7 @@ namespace DS.RevitLib.Test
             Autodesk.Revit.ApplicationServices.Application application = uiapp.Application;
             UIDocument uidoc = uiapp.ActiveUIDocument;
 
-            new ReplaceMEPCurveTest(uidoc);
+            new GetSubComponentTest(uidoc);
 
             return Autodesk.Revit.UI.Result.Succeeded;
         }

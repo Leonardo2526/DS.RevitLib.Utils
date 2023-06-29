@@ -16,8 +16,9 @@ namespace DS.RevitLib.Utils.MEP
         /// </summary>
         /// <returns>Returns list of connected elements. 
         /// Returns empty list if no connected elements was found </returns>
-        public static List<Element> GetConnectedElements(Element element)
+        public static List<Element> GetConnectedElements(Element element, bool includeSubElements = false)
         {
+            Document doc = element.Document;
             List<Connector> connectors = GetConnectors(element);
             List<Element> connectedElements = new List<Element>();
 
@@ -31,6 +32,12 @@ namespace DS.RevitLib.Utils.MEP
                     if (elementId != element.Id && MEPElementUtils.IsValidType(con.Owner))
                     {
                         connectedElements.Add(con.Owner);
+                        if (includeSubElements && con.Owner is FamilyInstance)
+                        {
+                            var family = (FamilyInstance) con.Owner;
+                            var subElementIds = family.GetSubAllElementIds();
+                            subElementIds.ForEach(id => connectedElements.Add(doc.GetElement(id)));
+                        }
                     }
                 }
             }
@@ -538,7 +545,7 @@ namespace DS.RevitLib.Utils.MEP
 
             if (element is FamilyInstance)
             {
-                if(connectors.Count ==2) { return (connectors[0], connectors[1]); }
+                if (connectors.Count == 2) { return (connectors[0], connectors[1]); }
                 for (int i = 0; i < connectors.Count - 1; i++)
                 {
                     for (int j = i + 1; j < connectors.Count; j++)

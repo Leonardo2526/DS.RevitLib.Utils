@@ -3,9 +3,10 @@ using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.MEP;
 using DS.RevitLib.Utils.MEP.SystemTree.Relatives;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
-namespace DS.RevitLib.Utils.FamilyInstances
+namespace DS.RevitLib.Utils.Extensions
 {
     /// <summary>
     /// Extension methods for FamilyInstances
@@ -78,6 +79,43 @@ namespace DS.RevitLib.Utils.FamilyInstances
         {
             Parameter partTypeParam = familyInstance.Symbol.Family.get_Parameter(BuiltInParameter.FAMILY_CONTENT_PART_TYPE);
             return (PartType)partTypeParam.AsInteger();
+        }
+
+        /// <summary>
+        /// Gets all included the sub component ElementIds of the <paramref name="famInst"/>. 
+        /// </summary>
+        /// <param name="famInst"></param>
+        /// <returns>
+        /// Included sub component elementIds of the <paramref name="famInst"/> without <paramref name="famInst"/> itself. 
+        /// <para>
+        /// Empty list if <paramref name="famInst"/> doesn't contains any sub components.
+        /// </para>
+        /// <para>
+        /// <see langword="null"/> if <paramref name="famInst"/> is not a <see cref="Autodesk.Revit.DB.FamilyInstance"/>.       
+        /// </para>
+        /// </returns>
+        public static List<ElementId> GetSubAllElementIds(this FamilyInstance famInst)
+        {
+            var subElementIds = new List<ElementId>();
+
+            if (famInst == null)
+            { Debug.WriteLine("Failed to get sub elements: top family instance is null."); return null; }
+
+            Document doc = famInst.Document;
+
+            List<ElementId> currentElemIds = famInst.GetSubComponentIds().
+                Where(comp => doc.GetElement(comp).IsGeometryElement()).
+                ToList();
+            if (currentElemIds.Count == 0) { return subElementIds; }
+
+            subElementIds.AddRange(currentElemIds);
+            foreach (var item in currentElemIds)
+            {
+                var itemFamInst = doc.GetElement(item) as FamilyInstance;
+                if (itemFamInst != null) { subElementIds.AddRange(GetSubAllElementIds(itemFamInst)); }
+            }
+
+            return subElementIds;
         }
     }
 }

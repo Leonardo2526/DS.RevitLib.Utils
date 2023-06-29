@@ -157,5 +157,40 @@ namespace DS.RevitLib.Utils.Extensions
                 return false;
             }
         }
+
+        /// <summary>
+        /// Get geometry elements from <paramref name="doc"/> model that contain <paramref name="point"/>.
+        /// </summary>
+        /// <param name="doc"></param>
+        /// <param name="point"></param>
+        /// <returns>
+        /// Elements that contains <paramref name="point"/>.
+        /// <para>
+        /// Empty list if none <paramref name="doc"/> elements contain <paramref name="point"/>.    
+        /// </para>
+        /// </returns>
+        public static List<Element> GetGeometryElements(this Document doc, XYZ point)
+        {
+            var elemensOnPoint = new List<Element>();
+
+            var filter = new BoundingBoxContainsPointFilter(point);
+            var collector = new FilteredElementCollector(doc);
+            var elements = collector.
+                WherePasses(filter).
+                ToElements().
+                Where(el => el.IsGeometryElement()).
+                ToList();
+
+            if (!elements.Any()) { return elemensOnPoint; }
+
+            //Specify collision object
+            elements.ForEach(obj =>
+            {
+                var solid = ElementUtils.GetSolid(obj);
+                if (solid.Contains(point)) { elemensOnPoint.Add(obj); }
+            });
+
+            return elemensOnPoint;
+        }
     }
 }
