@@ -22,7 +22,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;R2020</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>x64</PlatformTarget>
@@ -43,8 +43,9 @@
     <Reference Include="DS.ClassLib.VarUtils">
       <HintPath>..\..\DS.CommonLib.Utils\DS.ClassLib.VarUtils\bin\Debug\DS.ClassLib.VarUtils.dll</HintPath>
     </Reference>
-    <Reference Include="iUtils">
-      <HintPath>..\iUtils\bin\Release\iUtils.dll</HintPath>
+    <Reference Include="iUtils, Version=2.5.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\VAR.RevitLib.Utils\Ivanov.RevitLib.Utils\Assemblies\iUtils\2020\iUtils.dll</HintPath>
     </Reference>
     <Reference Include="Ivanov.RevitLib.Utils">
       <HintPath>..\..\VAR.RevitLib.Utils\Ivanov.RevitLib.Utils\bin\Release\Ivanov.RevitLib.Utils.dll</HintPath>
