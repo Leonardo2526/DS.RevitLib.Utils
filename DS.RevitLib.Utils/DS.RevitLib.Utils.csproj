@@ -43,9 +43,9 @@
     <Reference Include="DS.ClassLib.VarUtils">
       <HintPath>..\..\DS.CommonLib.Utils\DS.ClassLib.VarUtils\bin\Debug\DS.ClassLib.VarUtils.dll</HintPath>
     </Reference>
-    <Reference Include="iUtils, Version=2.4.0.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="iUtils, Version=2.5.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\VAR.RevitLib.Utils\iUtils.dll</HintPath>
+      <HintPath>..\..\VAR.RevitLib.Utils\Ivanov.RevitLib.Utils\Assemblies\iUtils.dll</HintPath>
     </Reference>
     <Reference Include="Ivanov.RevitLib.Utils">
       <HintPath>..\..\VAR.RevitLib.Utils\Ivanov.RevitLib.Utils\bin\Release\Ivanov.RevitLib.Utils.dll</HintPath>
