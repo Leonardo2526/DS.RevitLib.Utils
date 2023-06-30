@@ -1,4 +1,4 @@
-﻿using DS.RevitLib.Utils.Collisions.Models;
+﻿using DS.ClassLib.VarUtils.Collisions;
 using System.Collections.Generic;
 
 namespace DS.RevitLib.Utils.Collisions.Detectors

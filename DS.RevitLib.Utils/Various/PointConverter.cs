@@ -23,14 +23,14 @@ namespace DS.RevitLib.Utils.Various
             _convertCoefficient = convertCoefficient;
         }
 
-        public Point3D ConvertToUSC1(Point3D uCS2Point)
+        public Point3D ConvertToUCS1(Point3D uCS2Point)
         {
             Vector3D vector =  uCS2Point - _uCS2BasePoint;
             return _uCS1BasePoint + vector.Multiply(_convertCoefficient);
         }
 
 
-        public Point3D ConvertToUSC2(Point3D uCS1Point)
+        public Point3D ConvertToUCS2(Point3D uCS1Point)
         {
             Vector3D vector = uCS1Point - _uCS1BasePoint;
             return _uCS2BasePoint + vector.Multiply(1/ _convertCoefficient);

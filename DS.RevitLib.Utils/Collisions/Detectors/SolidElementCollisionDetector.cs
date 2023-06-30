@@ -1,6 +1,6 @@
 ﻿using Autodesk.Revit.DB;
 using DS.RevitLib.Utils;
-using DS.RevitLib.Utils.Collisions.Models;
+using DS.ClassLib.VarUtils.Collisions;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.Visualisators;
 using System;
@@ -10,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using DS.RevitLib.Utils.Collisions.Models;
 
 namespace DS.RevitLib.Utils.Collisions.Detectors
 {

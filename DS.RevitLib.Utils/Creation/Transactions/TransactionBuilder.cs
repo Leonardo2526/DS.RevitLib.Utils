@@ -15,10 +15,8 @@ namespace DS.RevitLib.Utils
     /// </summary>
     public class TransactionBuilder : AbstractTransactionBuilder
     {
-        private readonly Document _doc;
         private readonly bool _isRevitContext;
-        private readonly Committer _committer;
-        private readonly string _transactionPrefix;
+        private Committer _committer;
 
         /// <summary>
         /// Create the new instance to build transaction.       
@@ -27,39 +25,43 @@ namespace DS.RevitLib.Utils
         /// <param name="committer"></param>
         /// <param name="transactionPrefix"></param>
         /// <param name="isRevitContext">Specifies if asynchronous transactions will be performed with <see cref="RevitTask"/> or not.</param>
-        public TransactionBuilder(Document doc, Committer committer = null, string transactionPrefix = null, bool isRevitContext = true)
+        public TransactionBuilder(Document doc, Committer committer = null, string transactionPrefix = null, bool isRevitContext = true) : 
+            base(doc)
         {
-            _doc = doc;
             _isRevitContext = isRevitContext;
             _committer = committer is null ? new BaseCommitter() : committer;
-            _transactionPrefix = string.IsNullOrEmpty(transactionPrefix) ? null : transactionPrefix + "_";
-        }
+            Prefix = string.IsNullOrEmpty(transactionPrefix) ? null : transactionPrefix + "_";
+        }     
+
+        /// <summary>
+        /// Prefis used for transactions names.
+        /// </summary>
+        public string Prefix { get; }
 
         /// <summary>
         /// Messages with errors prevented to commit transaction.
         /// </summary>
-        public string ErrorMessages { get; set; }
+        public string ErrorMessages => _committer.ErrorMessages;
 
         /// <summary>
         /// Messages with warnings after committing transaction.
         /// </summary>
-        public string WarningMessages { get; set; }
+        public string WarningMessages => _committer.WarningMessages;
 
         /// <inheritdoc/>
         public override T Build<T>(Func<T> operation, string transactionName, bool commitTransaction = true)
         {
             T result = default;
-            var trName = _transactionPrefix + transactionName;
+            var trName = Prefix + transactionName;
 
             //Debug.WriteLine($"Trying to commit transaction '{trName}'...");
-            using (Transaction transNew = new(_doc, _transactionPrefix + transactionName))
+            using (Transaction transNew = new(Doc, Prefix + transactionName))
             {
                 transNew.Start();
                 result = operation.Invoke();
 
                 _committer.Commit(transNew, commitTransaction);
             }
-            ErrorMessages += _committer?.ErrorMessages;
 
             return result;
         }
@@ -67,11 +69,11 @@ namespace DS.RevitLib.Utils
         public T BuildCatch<T>(Func<T> operation, string transactionName, bool commitTransaction = true)
         {
             T result = default;
-            var trName = _transactionPrefix + transactionName;
+            var trName = Prefix + transactionName;
             try
             {
                 //Debug.WriteLine($"Trying to commit transaction '{trName}'...");
-                using (Transaction transNew = new(_doc, _transactionPrefix + transactionName))
+                using (Transaction transNew = new(Doc, Prefix + transactionName))
                 {
                     transNew.Start();
                     result = operation.Invoke();
@@ -84,7 +86,6 @@ namespace DS.RevitLib.Utils
                 Debug.Fail(ex.Message);
                 Debug.WriteLine($"Transaction '{trName}' was canceled.");
             }
-            finally { ErrorMessages += _committer?.ErrorMessages; }
 
             return result;
         }
@@ -92,10 +93,10 @@ namespace DS.RevitLib.Utils
         /// <inheritdoc/>
         public override void Build(Action operation, string transactionName, bool commitTransaction = true)
         {
-            var trName = _transactionPrefix + transactionName;
+            var trName = Prefix + transactionName;
 
             //Debug.WriteLine($"Trying to commit transaction '{trName}'...");
-                using (Transaction transaction = new(_doc, trName))
+                using (Transaction transaction = new(Doc, trName))
                 {
                     transaction.Start();
                     operation.Invoke();
@@ -103,7 +104,6 @@ namespace DS.RevitLib.Utils
                     _committer.Commit(transaction, commitTransaction);
                     //Debug.WriteLine($"Transaction '{trName}' is committed successfully!");
                 }
-            ErrorMessages += _committer?.ErrorMessages;
         }
 
         /// <summary>
@@ -113,7 +113,7 @@ namespace DS.RevitLib.Utils
         /// <param name="transactionName"></param>
         /// <param name="commitTransaction"></param>
         /// <returns></returns>
-        public async Task BuilAsync(Action operation, string transactionName, bool commitTransaction = true)
+        public override async Task BuilAsync(Action operation, string transactionName, bool commitTransaction = true)
         {
             var action = () => Build(operation, transactionName, commitTransaction);
             if (_isRevitContext) { action(); }
@@ -135,11 +135,11 @@ namespace DS.RevitLib.Utils
 
         public void BuildCatch(Action operation, string transactionName, bool commitTransaction = true)
         {
-            var trName = _transactionPrefix + transactionName;
+            var trName = Prefix + transactionName;
             try
             {
                 Debug.WriteLine($"Trying to commit transaction '{trName}'...");
-                using (Transaction transaction = new(_doc, trName))
+                using (Transaction transaction = new(Doc, trName))
                 {
                     transaction.Start();
                     operation.Invoke();
@@ -153,8 +153,15 @@ namespace DS.RevitLib.Utils
                 Debug.Fail(ex.Message);
                 Debug.WriteLine($"Transaction '{trName}' was canceled.");
             }
-            finally { ErrorMessages += _committer?.ErrorMessages; }
         }
 
+        /// <summary>
+        /// Clear all <see cref="_committer"/> messages.
+        /// </summary>
+        public void ClearMessages()
+        {
+            _committer.ErrorMessages = null;
+            _committer.WarningMessages = null;
+        }
     }
 }

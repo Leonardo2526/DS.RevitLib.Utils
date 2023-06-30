@@ -329,5 +329,13 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
                 }
             }
         }
+
+        /// <summary>
+        /// Delete all not valid elements from <see cref="Elements"/>.
+        /// </summary>
+        public void FixNotValid()
+        {
+            Elements = Elements.Where(obj => obj.IsValidObject).ToList();
+        }
     }
 }

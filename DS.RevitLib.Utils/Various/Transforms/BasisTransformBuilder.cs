@@ -15,10 +15,12 @@ namespace DS.RevitLib.Utils.Transforms
     public class BasisTransformBuilder : TransformBuilder
     {
         private readonly Basis _operationObject;
+        private bool _isAlwaysVertical;
 
-        public BasisTransformBuilder(Basis sourceObject, Basis targetObject) : base(sourceObject, targetObject)
+        public BasisTransformBuilder(Basis sourceObject, Basis targetObject, bool isAlwaysVertical = true) : base(sourceObject, targetObject)
         {
             _operationObject = sourceObject.Clone();
+            _isAlwaysVertical = isAlwaysVertical;
         }
 
         /// <summary>
@@ -49,14 +51,19 @@ namespace DS.RevitLib.Utils.Transforms
                 throw new InvalidOperationException(errors);
             }
 
+            if (!_isAlwaysVertical) { return transformModel; }
+
             int i = 0;
             (XYZ basis1, XYZ basis2) = GetNotEqualBasises(_operationObject, target);
             while (basis1 is not null && i < 3)
             {
                 double angle;
-                XYZ axis = basis1.CrossProduct(basis2).RoundVector();
+                XYZ axis = basis1.CrossProduct(basis2).RoundVector();             
                 if (axis.IsZeroLength())
                 {
+                    //if (_isAlwaysVertical && !_operationObject.Y.IsAlmostEqualTo(XYZ.BasisZ))
+                    //{angle = _operationObject.Y.AngleTo(XYZ.BasisZ);}
+                    //else {}
                     angle = 180.DegToRad();
                     axis = XYZUtils.GetPerpendicular(basis1,
                         new List<XYZ>() { _operationObject.X, _operationObject.Y, _operationObject.Z }).First();

@@ -37,8 +37,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="DS.ClassLib.VarUtils, Version=2.0.0.4, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="AdWindows">
+      <HintPath>C:\Program Files\Autodesk\Revit 2020\AdWindows.dll</HintPath>
+    </Reference>
+    <Reference Include="DS.ClassLib.VarUtils">
       <HintPath>..\..\DS.CommonLib.Utils\DS.ClassLib.VarUtils\bin\Debug\DS.ClassLib.VarUtils.dll</HintPath>
     </Reference>
     <Reference Include="iUtils">
@@ -49,6 +51,9 @@
     </Reference>
     <Reference Include="MoreLinq, Version=3.3.2.0, Culture=neutral, PublicKeyToken=384d532d7e88985d, processorArchitecture=MSIL">
       <HintPath>..\..\Olimproekt\MEPAutoCoordination\DS.RevitLib.SystemConnection\packages\morelinq.3.3.2\lib\net451\MoreLinq.dll</HintPath>
+    </Reference>
+    <Reference Include="Nito.Collections.Deque, Version=1.1.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\Olimproekt\MEPAutoCoordination\OLMP.MEPAC.Entities.SystemConnection\packages\Nito.Collections.Deque.1.1.1\lib\net461\Nito.Collections.Deque.dll</HintPath>
     </Reference>
     <Reference Include="PathFinderLib">
       <HintPath>..\..\VAR.RevitLib.Utils\Ivanov.RevitLib.Utils\Assemblies\PathFinderLib.dll</HintPath>
@@ -65,7 +70,11 @@
       <HintPath>C:\Program Files\Autodesk\Revit 2022\RevitAPIUI.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Serilog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
+      <HintPath>..\..\Olimproekt\MEPAutoCoordination\packages\Serilog.3.0.1\lib\net471\Serilog.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
@@ -81,11 +90,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Collisions\Detectors\CollisionDetectorByTrace.cs" />
-    <Compile Include="Collisions\Resolvers\CollisionResolverBase.cs" />
-    <Compile Include="Collisions\Resolvers\ICollisionResolver.cs" />
     <Compile Include="Collisions\Resolvers\IResolver.cs" />
     <Compile Include="Collisions\Resolvers\MoveTransformStrategy.cs" />
     <Compile Include="Collisions\Solutions\ISolution.cs" />
+    <Compile Include="Connections\PointModels\BestMEPCurveConnectionPoint.cs" />
+    <Compile Include="Connections\PointModels\ConnectionPoint.cs" />
+    <Compile Include="Connections\PointModels\ConnectionPointValidator.cs" />
+    <Compile Include="Connections\PointModels\IConnectionPoint.cs" />
     <Compile Include="Creation\AbstractCreator.cs" />
     <Compile Include="Collisions\Detectors\AbstractDetectors\CollisionDetector.cs" />
     <Compile Include="Collisions\Detectors\AbstractDetectors\CollisionDetectorFactory.cs" />
@@ -97,7 +108,6 @@
     <Compile Include="Collisions\ElementsIntersection.cs" />
     <Compile Include="Collisions\Models\Collision.cs" />
     <Compile Include="Collisions\Models\ElementCollision.cs" />
-    <Compile Include="Collisions\Models\ICollision.cs" />
     <Compile Include="Collisions\Models\SolidElementCollision.cs" />
     <Compile Include="Collisions\Checkers\ElementLinkCollisionChecker.cs" />
     <Compile Include="Collisions\Checkers\LinkCollisionChecker.cs" />
@@ -128,6 +138,30 @@
     <Compile Include="Elements\MEPElements\ITraceSettings.cs" />
     <Compile Include="Elements\MEPElements\MEPSystemElement.cs" />
     <Compile Include="Elements\MEPElements\TraceSettings.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\AvailableModels\AbstractAvailableCurveService.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\AvailableModels\AvailableLineService.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\AvailableModels\AvailableMEPCurveService.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\CollisionCheckerBuilder.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\FamilyInstTransferFactory.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\IElementsTransferFactory.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\LineModel.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\LineModelBuilder.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\PlacementOption.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\PlacementPoint.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\PositionFinder.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\Resolvers\AroundCenterLineRotateResolver.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\Resolvers\CollisionResolver.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\Resolvers\MoveResolver.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\Resolvers\RotateCenterLineResolver.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\SolidCollisionClient.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\TargetModelBuilder.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\TargetPlacementModel.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\TransformBuilders\BasisLineTransformBuilder.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\TransformBuilders\FamToLineMultipleBuilder.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\TransformBuilders\FamToLineTransformBuilder.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\TransformConvert.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\TransformModels\BasisLineTransformModel.cs" />
+    <Compile Include="Elements\MEPElements\Transfer\TransformModels\FamToLineTransformModel.cs" />
     <Compile Include="Extensions\CurveExtensions.cs" />
     <Compile Include="Elements\Alignments\SolidAngleAlignment.cs" />
     <Compile Include="Elements\Alignments\AngleAlignment.cs" />
@@ -149,6 +183,8 @@
     <Compile Include="Extensions\FaceExtensions.cs" />
     <Compile Include="Extensions\MEPSystemExtensions.cs" />
     <Compile Include="Extensions\ConnectorExtensions.cs" />
+    <Compile Include="Extensions\BoxXYZExtensions.cs" />
+    <Compile Include="UIUtils.cs" />
     <Compile Include="Geometry\GeometryElementsUtils.cs" />
     <Compile Include="Geometry\Lines\LineOverlapResult.cs" />
     <Compile Include="Geometry\Lines\LinesConnector.cs" />
@@ -167,6 +203,7 @@
     <Compile Include="Elements\MEPElements\SystemTree\Relatives\SpudRelationBuilder.cs" />
     <Compile Include="Elements\MEPElements\SystemTree\Relatives\TeeRelationBuilder.cs" />
     <Compile Include="Creation\ModelCurveUtils\ModelCurveTransaction.cs" />
+    <Compile Include="Extensions\VariousExtensions.cs" />
     <Compile Include="PathCreators\IPathCreator.cs" />
     <Compile Include="Extensions\LineExtensions.cs" />
     <Compile Include="Extensions\MEPCurveExtensions.cs" />
@@ -175,7 +212,6 @@
     <Compile Include="PathCreators\PathFindCreator.cs" />
     <Compile Include="PathCreators\PathCreator.cs" />
     <Compile Include="Tests\ITestModel.cs" />
-    <Compile Include="Various\IPointConverter.cs" />
     <Compile Include="Various\IRevitContext.cs" />
     <Compile Include="Various\VectorPointConverter.cs" />
     <Compile Include="Various\Selections\Filters\ElementInLinkSelectionFilter.cs" />

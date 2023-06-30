@@ -168,8 +168,17 @@ namespace DS.RevitLib.Utils.Extensions
         /// Check if element is geomety element.
         /// </summary>
         /// <param name="element"></param>
-        /// <returns>Returns true if element has volume of solid.</returns>
-        public static bool IsGeometryElement(this Element element)
+        /// <param name="includeLines"></param>
+        /// <returns>
+        /// <see langword="true"/> if element is <see cref="GeometryObject"/> and has volume of solid.
+        /// <para>
+        /// <see langword="true"/> if <paramref name="includeLines"/> parameter is <see langword="true"/> and element is <see cref="Line"/>.     
+        /// </para>
+        /// <para>
+        /// Otherwise returns <see langword="false"/>; 
+        /// </para>
+        /// </returns>
+        public static bool IsGeometryElement(this Element element, bool includeLines = false)
         {
             var g = element.get_Geometry(new Options()
             {
@@ -188,7 +197,8 @@ namespace DS.RevitLib.Utils.Extensions
                 foreach (var elem in g)
                 {
                     if (elem is Solid s && s.Volume > 1e-6)
-                        return true;
+                    { return true; }
+                    else if (includeLines && elem is Line) { return true; }
                     else if (elem is GeometryInstance gi)
                     {
                         var go = gi.GetInstanceGeometry();
@@ -384,7 +394,7 @@ namespace DS.RevitLib.Utils.Extensions
         public static void Connect(this Element element, Element element1, Element element2 = null)
         {
             List<Element> elements = new List<Element>() { element, element1 };
-            if(element2 != null) { elements.Add(element2); }
+            if (element2 != null) { elements.Add(element2); }
 
             Document doc = element.Document;
             MEPCurve mEPCurve = element as MEPCurve;
@@ -399,7 +409,7 @@ namespace DS.RevitLib.Utils.Extensions
             else
             {
                 elements.Connect();
-            }          
+            }
         }
 
         /// <summary>
@@ -494,7 +504,29 @@ namespace DS.RevitLib.Utils.Extensions
         /// If element is <see cref="Autodesk.Revit.DB.FamilyInstance"/> type returns two connectors on line through <paramref name="element"/>'s location point.
         /// </para>
         /// </returns>
-        public static (Connector con1, Connector con2) GetMainConnectors(this Element element) => 
+        public static (Connector con1, Connector con2) GetMainConnectors(this Element element) =>
             ConnectorUtils.GetMainConnectors(element);
+
+        /// <summary>
+        /// Converet <paramref name="elements"/> to list of only valid elements.
+        /// </summary>
+        /// <param name="elements"></param>
+        public static void ConvertToValid(this List<Element> elements)
+        {
+            if(
+                elements is not null && 
+                elements.Any() && 
+                elements.TrueForAll(obj => obj.IsValidObject))
+            { return; }
+
+            var indexesToRemove = new List<int>();
+            for (int i = 0; i < elements.Count; i++)
+            {
+                Element obj = elements[i];
+                if (!obj.IsValidObject)
+                { indexesToRemove.Add(i); }
+            }
+            indexesToRemove.ForEach(elements.RemoveAt);
+        }
     }
 }
