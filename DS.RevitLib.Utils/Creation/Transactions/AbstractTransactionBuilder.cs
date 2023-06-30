@@ -10,6 +10,21 @@ namespace DS.RevitLib.Utils.Transactions
     /// </summary>
     public abstract class AbstractTransactionBuilder
     {
+
+        /// <summary>
+        /// Create the new instance to build transaction.       
+        /// </summary>
+        /// <param name="doc"></param>
+        public AbstractTransactionBuilder(Document doc)
+        {
+            Doc = doc;
+        }
+
+        /// <summary>
+        /// Document to commit transactions.
+        /// </summary>
+        public Document Doc { get; }
+
         /// <summary>
         /// Build new transaction.
         /// </summary>
@@ -24,6 +39,16 @@ namespace DS.RevitLib.Utils.Transactions
         /// <param name="operation"></param>
         /// <param name="transactionName"></param>
         public abstract void Build(Action operation, string transactionName, bool commitTransaction = true);
+
+        /// <summary>
+        /// Build transaction asynchronously.
+        /// </summary>
+        /// <param name="operation"></param>
+        /// <param name="transactionName"></param>
+        /// <param name="commitTransaction"></param>
+        /// <returns></returns>
+        public abstract Task BuilAsync(Action operation, string transactionName, bool commitTransaction = true);
+
 
         /// <summary>
         /// Build transaction asynchronously with <see cref="RevitTask"/>.

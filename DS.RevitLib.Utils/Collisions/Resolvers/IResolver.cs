@@ -1,29 +1,17 @@
 ﻿using DS.RevitLib.Utils.Collisions.Solutions;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.Collisions.Resolvers
 {
     /// <summary>
-    /// The interface used to resolve collisions.
+    /// The interface used to create objects for collisions resoving.
     /// </summary>
-    public interface IResolver
+    public interface IResolverAsync
     {
-        /// <summary>
-        /// Resolve collision.
-        /// </summary>
-        /// <returns>Returns solution for collision.</returns>
-        ISolution Resolve();
-
         /// <summary>
         /// Resolve collision asynchronously.
         /// </summary>
-        /// <returns>Returns solution for collision.</returns>
+        /// <returns><see cref="Task{ISolution}"/> to get solution of collision.</returns>
         Task<ISolution> ResolveAsync();
-
-        /// <summary>
-        /// All solutions for collision.
-        /// </summary>
-        List<ISolution> Solutions { get; }
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace DS.RevitLib.Utils.Collisions.Models
+﻿using DS.ClassLib.VarUtils.Collisions;
+
+namespace DS.RevitLib.Utils.Collisions.Models
 {
     /// <summary>
     /// An object that represents collision between two objects.

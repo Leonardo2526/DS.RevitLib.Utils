@@ -23,7 +23,7 @@ namespace DS.RevitLib.Utils.Various
             _stepVector = stepVector;
         }
 
-        public Point3D ConvertToUSC1(Point3D uCS2Point)
+        public Point3D ConvertToUCS1(Point3D uCS2Point)
         {
             Vector3D vector =  uCS2Point - _uCS2BasePoint;
             var multiVector = new Vector3D(vector.X * _stepVector.X , vector.Y * _stepVector.Y, vector.Z * _stepVector.Z);
@@ -31,7 +31,7 @@ namespace DS.RevitLib.Utils.Various
         }
 
 
-        public Point3D ConvertToUSC2(Point3D uCS1Point)
+        public Point3D ConvertToUCS2(Point3D uCS1Point)
         {
             Vector3D vector = uCS1Point - _uCS1BasePoint;
             var multiVector = new Vector3D(vector.X / _stepVector.X, vector.Y / _stepVector.Y,vector.Z / _stepVector.Z);

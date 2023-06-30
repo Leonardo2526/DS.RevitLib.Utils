@@ -18,6 +18,7 @@ namespace DS.RevitLib.Utils.Solids
         /// Unite list of solids in a single solid.
         /// </summary>
         /// <param name="solids"></param>
+        /// <param name="minVolume"></param>
         /// <returns>Return united solid. Return null if solids count is 0.</returns>
         public static Solid UniteSolids(List<Solid> solids, double minVolume = 0)
         {
