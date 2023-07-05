@@ -2,6 +2,7 @@
 using iUtils;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -144,9 +145,6 @@ namespace DS.RevitLib.Utils.Extensions
         /// <returns>Returns <see langword="true"/> if transactions are available. Otherwise returns <see langword="false"/>.</returns>
         public static bool IsRevitContext(this Document doc)
         {
-            if (doc == null) return false;
-            if (doc.IsModifiable) return true;
-
             try
             {
                 var tr = new Transaction(doc, "CheckContext");
@@ -157,6 +155,7 @@ namespace DS.RevitLib.Utils.Extensions
             }
             catch (Autodesk.Revit.Exceptions.InvalidOperationException)
             {
+                Debug.WriteLine("Outside Revit context.");
                 return false;
             }
         }

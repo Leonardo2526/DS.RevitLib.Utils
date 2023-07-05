@@ -1,5 +1,6 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
+using DS.RevitLib.Utils.Creation.Transactions;
 using DS.RevitLib.Utils.Transactions;
 
 namespace DS.RevitLib.Utils
@@ -10,7 +11,7 @@ namespace DS.RevitLib.Utils
     public class SectionBox
     {
         private readonly UIApplication _app;
-        private readonly AbstractTransactionBuilder _transactionBuilder;
+        private readonly ITransactionFactory _transactionBuilder;
         private readonly Document _doc;
 
         /// <summary>
@@ -18,11 +19,11 @@ namespace DS.RevitLib.Utils
         /// </summary>
         /// <param name="app"></param>
         /// <param name="transactionBuilder"></param>
-        public SectionBox(UIApplication app, AbstractTransactionBuilder transactionBuilder = null)
+        public SectionBox(UIApplication app, ITransactionFactory transactionBuilder = null)
         {
             _app = app;
             _doc = _app.ActiveUIDocument.Document;
-            _transactionBuilder = transactionBuilder ?? new TransactionBuilder(_doc);
+            _transactionBuilder = transactionBuilder ?? new ContextTransactionFactory(_doc);
         }
 
         /// <summary>
@@ -35,7 +36,7 @@ namespace DS.RevitLib.Utils
 
             try
             {
-                _transactionBuilder.Build(() => v3d.SetSectionBox(boxXYZ), "setSectionBox");
+                _transactionBuilder.CreateAsync(() => v3d.SetSectionBox(boxXYZ), "setSectionBox");
             }
             catch (System.Exception)
             { }
