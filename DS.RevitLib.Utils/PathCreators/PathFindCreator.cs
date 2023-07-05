@@ -84,7 +84,7 @@ namespace DS.RevitLib.Utils.PathCreators
 
             //класс для поиска пути
             var finder = new PathFinderToOnePointDefault(point1, point2,
-                          _height, _width, _offset, _offset, geometryDocuments, mainOptions, secondaryOptions);
+                          _height, _width, _offset, _offset, geometryDocuments, mainOptions, secondaryOptions,null);
             //ищем путь
             List<XYZ> path = await finder.FindPath(_cancellationToken) ?? new List<XYZ>();
             if (path.Count == 0) return path;
