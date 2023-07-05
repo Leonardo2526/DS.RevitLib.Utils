@@ -48,6 +48,7 @@ namespace DS.RevitLib.Utils
         /// </summary>
         public string WarningMessages => _committer.WarningMessages;
 
+
         /// <inheritdoc/>
         public override T Build<T>(Func<T> operation, string transactionName, bool commitTransaction = true)
         {
@@ -163,5 +164,31 @@ namespace DS.RevitLib.Utils
             _committer.ErrorMessages = null;
             _committer.WarningMessages = null;
         }
+    }
+
+    /// <summary>
+    /// Specifies current Revit context.
+    /// </summary>
+    public enum RevitContextOption
+    {
+        /// <summary>
+        /// Inside Revit context
+        /// </summary>
+        Inside,
+
+        /// <summary>
+        /// Outside Revit context
+        /// </summary>
+        Outside,
+
+        /// <summary>
+        /// Get Revit context automatically one time on create transaction builder.
+        /// </summary>
+        Auto,
+
+        /// <summary>
+        /// Get Revit context automatically and renew it each time when call transaction.
+        /// </summary>
+        AutoRenew
     }
 }

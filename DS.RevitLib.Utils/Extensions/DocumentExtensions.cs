@@ -144,6 +144,9 @@ namespace DS.RevitLib.Utils.Extensions
         /// <returns>Returns <see langword="true"/> if transactions are available. Otherwise returns <see langword="false"/>.</returns>
         public static bool IsRevitContext(this Document doc)
         {
+            if (doc == null) return false;
+            if (doc.IsModifiable) return true;
+
             try
             {
                 var tr = new Transaction(doc, "CheckContext");
@@ -152,7 +155,7 @@ namespace DS.RevitLib.Utils.Extensions
                 tr.RollBack();
                 return true;
             }
-            catch
+            catch (Autodesk.Revit.Exceptions.InvalidOperationException)
             {
                 return false;
             }
