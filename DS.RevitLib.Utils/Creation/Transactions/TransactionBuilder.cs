@@ -48,6 +48,7 @@ namespace DS.RevitLib.Utils
         /// </summary>
         public string WarningMessages => _committer.WarningMessages;
 
+
         /// <inheritdoc/>
         public override T Build<T>(Func<T> operation, string transactionName, bool commitTransaction = true)
         {

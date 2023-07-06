@@ -2,6 +2,7 @@
 using iUtils;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -152,8 +153,9 @@ namespace DS.RevitLib.Utils.Extensions
                 tr.RollBack();
                 return true;
             }
-            catch
+            catch (Autodesk.Revit.Exceptions.InvalidOperationException)
             {
+                Debug.WriteLine("Outside Revit context.");
                 return false;
             }
         }

@@ -1,5 +1,6 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Electrical;
+using DS.RevitLib.Utils.Creation.Transactions;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.MEP.Creator;
 using DS.RevitLib.Utils.MEP.Models;
@@ -17,7 +18,7 @@ namespace DS.RevitLib.Utils.MEP
     public class ElbowRadiusCalc
     {
         private MEPCurveModel _mEPCurveModel;
-        private readonly TransactionBuilder _transactionBuilder;
+        private readonly ITransactionFactory _transactionBuilder;
         private MEPCurve _MEPCurve;
         private readonly Document _doc;
 
@@ -26,12 +27,12 @@ namespace DS.RevitLib.Utils.MEP
         /// </summary>
         /// <param name="mEPCurve"></param>
         /// <param name="transactionBuilder"></param>
-        public ElbowRadiusCalc(MEPCurveModel mEPCurve, TransactionBuilder transactionBuilder = null)
+        public ElbowRadiusCalc(MEPCurveModel mEPCurve, ITransactionFactory transactionBuilder = null)
         {
             _mEPCurveModel = mEPCurve;
             _MEPCurve = mEPCurve.MEPCurve;
             _doc = _MEPCurve.Document;
-            _transactionBuilder = transactionBuilder ?? new TransactionBuilder(_doc);
+            _transactionBuilder = transactionBuilder ?? new ContextTransactionFactory(_doc);
         }
 
         /// <summary>
@@ -55,7 +56,7 @@ namespace DS.RevitLib.Utils.MEP
                 return GetLength(elbowInst);
             }
 
-            return await _transactionBuilder.BuilAsync(getElbowLength, "GetRadius_CreateElbow.", false);
+            return await _transactionBuilder.CreateAsync(getElbowLength, "GetRadius_CreateElbow.", false);
         }
 
         private Element GetFamilySymbol()

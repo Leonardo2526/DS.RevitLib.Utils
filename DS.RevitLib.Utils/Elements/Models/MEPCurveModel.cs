@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.DB;
+using DS.RevitLib.Utils.Creation.Transactions;
 using DS.RevitLib.Utils.Elements.Models;
 using DS.RevitLib.Utils.Solids.Models;
 using DS.RevitLib.Utils.Transactions;
@@ -70,10 +71,10 @@ namespace DS.RevitLib.Utils.MEP.Models
             return SolidModel.GetSizeByVector(orth, SolidModel.Center);
         }
 
-        public async Task<double> GetElbowRadius(double elbowAngle, TransactionBuilder transactionBuilder = null)
+        public async Task<double> GetElbowRadius(double elbowAngle, ITransactionFactory factory = null)
         {
-            transactionBuilder ??= new TransactionBuilder(MEPCurve.Document);
-            return ElbowRadius = await new ElbowRadiusCalc(this, transactionBuilder).GetRadius(elbowAngle);
+            factory ??= new ContextTransactionFactory(MEPCurve.Document);
+            return ElbowRadius = await new ElbowRadiusCalc(this, factory).GetRadius(elbowAngle);
         }
 
     }

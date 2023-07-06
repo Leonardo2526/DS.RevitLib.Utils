@@ -121,6 +121,11 @@
     <Compile Include="Collisions\Checkers\ICollisionChecker.cs" />
     <Compile Include="Collisions\Checkers\SolidCollisionChecker.cs" />
     <Compile Include="Creation\MEP\MEPCurveBreaker.cs" />
+    <Compile Include="Creation\Transactions\ContextTransactionFactory.cs" />
+    <Compile Include="Creation\Transactions\MessageTransactionFactory.cs" />
+    <Compile Include="Creation\Transactions\Committers\Committer.cs" />
+    <Compile Include="Creation\Transactions\ITransactionFactory.cs" />
+    <Compile Include="Creation\Transactions\RevitContextOption.cs" />
     <Compile Include="Elements\MEPElements\Connection\ElementConnectionFactory.cs" />
     <Compile Include="Elements\MEPElements\Connection\ElementStrategies\ConnectWithMEPCurve.cs" />
     <Compile Include="Elements\MEPElements\Connection\ElementStrategies\ElbowElementStrategy.cs" />
@@ -302,7 +307,6 @@
     <Compile Include="Geometry\Solids\SolidExtractor.cs" />
     <Compile Include="Geometry\Solids\SolidPlacer.cs" />
     <Compile Include="Geometry\Solids\SolidUtils.cs" />
-    <Compile Include="Creation\Transactions\Committers\Committer.cs" />
     <Compile Include="Creation\Transactions\Committers\BaseCommitter.cs" />
     <Compile Include="Creation\Transactions\Committers\RollBackCommitter.cs" />
     <Compile Include="Geometry\Points\XYZAlgorithms\FindDistanceStrategies\FindDistanceClient.cs" />
