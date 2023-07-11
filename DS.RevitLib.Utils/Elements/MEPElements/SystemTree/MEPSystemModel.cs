@@ -56,7 +56,7 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
         {
             get
             {
-                return AllComponents.SelectMany(x => x.Elements).
+                return AllComponents.SelectMany(x => x.Elements).Where(x => x.IsValidObject).ToList().
                     DistinctBy(obj => obj.Id).ToList();
             }
         }
