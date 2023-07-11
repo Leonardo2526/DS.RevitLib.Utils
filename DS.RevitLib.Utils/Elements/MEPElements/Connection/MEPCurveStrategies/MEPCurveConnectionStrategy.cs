@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.DB;
+using DS.RevitLib.Utils.Creation.Transactions;
 using DS.RevitLib.Utils.MEP.Models;
 
 namespace DS.RevitLib.Utils.Connection.Strategies
@@ -11,20 +12,15 @@ namespace DS.RevitLib.Utils.Connection.Strategies
         protected readonly double _minCurveLength;
 
         protected MEPCurveConnectionStrategy(Document doc,
-            MEPCurveGeometryModel mEPCurve1, MEPCurveGeometryModel mEPCurve2, double minCurveLength,
-            TransactionBuilder transactionBuilder = null)
+            MEPCurveGeometryModel mEPCurve1, MEPCurveGeometryModel mEPCurve2, double minCurveLength)
         {
             _doc = doc;
             _mEPCurve1 = mEPCurve1;
             _mEPCurve2 = mEPCurve2;
             _minCurveLength = minCurveLength;
-            TransactionBuilder = transactionBuilder;
-            TransactionBuilder ??= new TransactionBuilder(doc);
         }
 
         public FamilyInstance ConnectionElement { get; protected set; }
-
-        public TransactionBuilder TransactionBuilder { get; protected set; }
 
         public abstract void Connect();
         public abstract bool IsConnectionAvailable();

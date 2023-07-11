@@ -26,8 +26,8 @@ namespace DS.RevitLib.Utils.Solids
             {
                 return null;
             }
-            solids = solids.Where(obj => obj is not null).ToList();
-            double minVolumeCm = UnitUtils.ConvertToInternalUnits(minVolume, UnitTypeId.CubicCentimeters);
+            solids = solids.Where(obj => obj is not null).ToList();            
+            double minVolumeCm = UnitUtils.ConvertToInternalUnits(minVolume, DisplayUnitType.DUT_CUBIC_CENTIMETERS);
 
             Solid initialSolid = solids.FirstOrDefault();
             for (int i = 1; i < solids.Count; i++)
@@ -42,7 +42,7 @@ namespace DS.RevitLib.Utils.Solids
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine("Exception message: Failed to unite the solids");   
+                    Debug.WriteLine("Exception message: Failed to unite the solids");
                     continue;
                 }
             }
@@ -95,7 +95,7 @@ namespace DS.RevitLib.Utils.Solids
         /// <returns>Return null if no intersections have been found.</returns>
         public static Solid GetIntersection(Solid s1, Solid s2, double minVolume = 0)
         {
-            double minVolumeCm = UnitUtils.ConvertToInternalUnits(minVolume, UnitTypeId.CubicCentimeters);
+            double minVolumeCm = UnitUtils.ConvertToInternalUnits(minVolume, DisplayUnitType.DUT_CUBIC_CENTIMETERS);
             if (s1 is not null && s2 is not null)
             {
                 try

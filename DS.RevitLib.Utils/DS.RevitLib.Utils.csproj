@@ -22,7 +22,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;R2022</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;R2020</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>x64</PlatformTarget>
@@ -64,11 +64,11 @@
       <HintPath>..\packages\Revit.Async.2.0.1\lib\net45\Revit.Async.dll</HintPath>
     </Reference>
     <Reference Include="RevitAPI">
-      <HintPath>C:\Program Files\Autodesk\Revit 2022\RevitAPI.dll</HintPath>
+      <HintPath>C:\Program Files\Autodesk\Revit 2020\RevitAPI.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="RevitAPIUI">
-      <HintPath>C:\Program Files\Autodesk\Revit 2022\RevitAPIUI.dll</HintPath>
+      <HintPath>C:\Program Files\Autodesk\Revit 2020\RevitAPIUI.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Serilog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
@@ -121,6 +121,11 @@
     <Compile Include="Collisions\Checkers\ICollisionChecker.cs" />
     <Compile Include="Collisions\Checkers\SolidCollisionChecker.cs" />
     <Compile Include="Creation\MEP\MEPCurveBreaker.cs" />
+    <Compile Include="Creation\Transactions\ContextTransactionFactory.cs" />
+    <Compile Include="Creation\Transactions\MessageTransactionFactory.cs" />
+    <Compile Include="Creation\Transactions\Committers\Committer.cs" />
+    <Compile Include="Creation\Transactions\ITransactionFactory.cs" />
+    <Compile Include="Creation\Transactions\RevitContextOption.cs" />
     <Compile Include="Elements\MEPElements\Connection\ElementConnectionFactory.cs" />
     <Compile Include="Elements\MEPElements\Connection\ElementStrategies\ConnectWithMEPCurve.cs" />
     <Compile Include="Elements\MEPElements\Connection\ElementStrategies\ElbowElementStrategy.cs" />
@@ -302,7 +307,6 @@
     <Compile Include="Geometry\Solids\SolidExtractor.cs" />
     <Compile Include="Geometry\Solids\SolidPlacer.cs" />
     <Compile Include="Geometry\Solids\SolidUtils.cs" />
-    <Compile Include="Creation\Transactions\Committers\Committer.cs" />
     <Compile Include="Creation\Transactions\Committers\BaseCommitter.cs" />
     <Compile Include="Creation\Transactions\Committers\RollBackCommitter.cs" />
     <Compile Include="Geometry\Points\XYZAlgorithms\FindDistanceStrategies\FindDistanceClient.cs" />

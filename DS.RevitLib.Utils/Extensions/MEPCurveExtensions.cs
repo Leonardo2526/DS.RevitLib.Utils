@@ -3,6 +3,7 @@ using Autodesk.Revit.DB.Electrical;
 using Autodesk.Revit.DB.Mechanical;
 using Autodesk.Revit.DB.Plumbing;
 using DS.RevitLib.Utils.Creation.MEP;
+using DS.RevitLib.Utils.Creation.Transactions;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.MEP.Creator;
 using DS.RevitLib.Utils.Models;
@@ -13,6 +14,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
+using System.Windows.Media.Media3D;
 
 namespace DS.RevitLib.Utils.MEP
 {
@@ -58,7 +60,7 @@ namespace DS.RevitLib.Utils.MEP
         /// <param name="mEPCurve"></param>
         /// <param name="trb"></param>
         /// <returns>Returns MEPCurve with swaped parameters.</returns>
-        public static MEPCurve SwapSize(this MEPCurve mEPCurve, AbstractTransactionBuilder trb = null)
+        public static MEPCurve SwapSize(this MEPCurve mEPCurve, ITransactionFactory trb = null)
         {
             Document doc = mEPCurve.Document;
             void action()
@@ -75,8 +77,8 @@ namespace DS.RevitLib.Utils.MEP
 
             if (!doc.IsModifiable)
             {
-                trb ??= new TransactionBuilder(doc);
-                trb.Build(action, "FixOrientation");
+                trb ??= new ContextTransactionFactory(doc);
+                trb.CreateAsync(action, "FixOrientation");
             }
             else
             { action(); }
@@ -191,8 +193,8 @@ namespace DS.RevitLib.Utils.MEP
                     break;
                 case ConnectorProfileType.Round:
                     {
-                        Parameter diameter = mEPCurve.get_Parameter(BuiltInParameter.RBS_PIPE_OUTER_DIAMETER);
-                        return diameter.AsDouble();
+                        Parameter diameter = mEPCurve.get_Parameter(BuiltInParameter.RBS_PIPE_OUTER_DIAMETER);                        
+                        return diameter is null ? mEPCurve.Diameter : diameter.AsDouble();
                     }
                 case ConnectorProfileType.Rectangular:
                     {
@@ -222,7 +224,7 @@ namespace DS.RevitLib.Utils.MEP
                 case ConnectorProfileType.Round:
                     {
                         Parameter diameter = mEPCurve.get_Parameter(BuiltInParameter.RBS_PIPE_OUTER_DIAMETER);
-                        return diameter.AsDouble();
+                        return diameter is null ? mEPCurve.Diameter : diameter.AsDouble();
                     }
                 case ConnectorProfileType.Rectangular:
                     {
@@ -395,7 +397,7 @@ namespace DS.RevitLib.Utils.MEP
         /// </summary>
         /// <param name="mEPCurve"></param>
         /// <param name="trb"></param>
-        public static void FixNotValidOrientation(this MEPCurve mEPCurve, AbstractTransactionBuilder trb = null)
+        public static void FixNotValidOrientation(this MEPCurve mEPCurve, ITransactionFactory trb = null)
         {
             if(mEPCurve.HasValidOrientation()) { return; }
 
@@ -408,8 +410,8 @@ namespace DS.RevitLib.Utils.MEP
 
             if (!doc.IsModifiable)
             {
-                trb ??= new TransactionBuilder(doc);
-                trb.Build(action, "FixOrientation");
+                trb ??= new ContextTransactionFactory(doc);
+                trb.CreateAsync(action, "FixOrientation");
             }
             else
             { action(); }

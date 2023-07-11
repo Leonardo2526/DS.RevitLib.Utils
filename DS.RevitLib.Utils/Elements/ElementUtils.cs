@@ -80,14 +80,14 @@ namespace DS.RevitLib.Utils
             XYZ centerPoint = GetLocationPoint(element);
 
             double X = UnitUtils.Convert(centerPoint.X,
-                                           UnitTypeId.Feet,
-                                           UnitTypeId.Millimeters);
+                                         DisplayUnitType.DUT_DECIMAL_FEET,
+                                         DisplayUnitType.DUT_MILLIMETERS);
             double Y = UnitUtils.Convert(centerPoint.Y,
-                                          UnitTypeId.Feet,
-                                           UnitTypeId.Millimeters);
+                                          DisplayUnitType.DUT_DECIMAL_FEET,
+                                           DisplayUnitType.DUT_MILLIMETERS);
             double Z = UnitUtils.Convert(centerPoint.Z,
-                                            UnitTypeId.Feet,
-                                           UnitTypeId.Millimeters);
+                                            DisplayUnitType.DUT_DECIMAL_FEET,
+                                           DisplayUnitType.DUT_MILLIMETERS);
             int X_MM = (int)Math.Round(X);
             int Y_MM = (int)Math.Round(Y);
             int Z_MM = (int)Math.Round(Z);
@@ -583,7 +583,7 @@ namespace DS.RevitLib.Utils
             return new BoundingBoxXYZ() { Min = minPoint, Max = maxPoint };
         }
 
-      
+
 
     }
 }

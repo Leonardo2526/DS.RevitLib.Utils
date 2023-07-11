@@ -17,7 +17,8 @@ namespace DS.RevitLib.Utils.MEP.SystemTree.Relatives
         {
             if (element is not MEPCurve)
             {
-                throw new ArgumentException("Element should be MEPCurve type.");
+                //throw new ArgumentException("Element should be MEPCurve type.");
+                return Relation.Default;
             }
             var collinear = IsCollinear(element as MEPCurve);
             return collinear ? Relation.Child : Relation.Parent;
