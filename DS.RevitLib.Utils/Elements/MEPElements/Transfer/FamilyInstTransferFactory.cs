@@ -36,7 +36,7 @@ namespace DS.RevitLib.Utils.Elements.MEPElements.Transfer
         public FamilyInstTransferFactory(List<ICollisionChecker> collisionCheckers, List<XYZ> path, MEPSystemModel sourceModel,
             ITraceSettings traceSettings, double elbowRadius)
         {
-            _doc = sourceModel.AllElements.FirstOrDefault().Document;
+            _doc = sourceModel.Root.BaseElement.Document;
             _collisionCheckers = collisionCheckers;
             _path = path;
             _sourceModel = sourceModel;
