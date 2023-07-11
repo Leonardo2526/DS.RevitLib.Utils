@@ -73,12 +73,6 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\DS.RevitLib.Utils\DS.RevitLib.Utils.csproj">
-      <Project>{9873F185-F630-4BB2-94A4-D9665F32B802}</Project>
-      <Name>DS.RevitLib.Utils</Name>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
