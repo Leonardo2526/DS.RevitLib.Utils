@@ -14,6 +14,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
+using System.Windows.Media.Media3D;
 
 namespace DS.RevitLib.Utils.MEP
 {
@@ -192,8 +193,8 @@ namespace DS.RevitLib.Utils.MEP
                     break;
                 case ConnectorProfileType.Round:
                     {
-                        Parameter diameter = mEPCurve.get_Parameter(BuiltInParameter.RBS_PIPE_OUTER_DIAMETER);
-                        return diameter.AsDouble();
+                        Parameter diameter = mEPCurve.get_Parameter(BuiltInParameter.RBS_PIPE_OUTER_DIAMETER);                        
+                        return diameter is null ? mEPCurve.Diameter : diameter.AsDouble();
                     }
                 case ConnectorProfileType.Rectangular:
                     {
@@ -223,7 +224,7 @@ namespace DS.RevitLib.Utils.MEP
                 case ConnectorProfileType.Round:
                     {
                         Parameter diameter = mEPCurve.get_Parameter(BuiltInParameter.RBS_PIPE_OUTER_DIAMETER);
-                        return diameter.AsDouble();
+                        return diameter is null ? mEPCurve.Diameter : diameter.AsDouble();
                     }
                 case ConnectorProfileType.Rectangular:
                     {
