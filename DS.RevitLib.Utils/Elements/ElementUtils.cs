@@ -79,15 +79,9 @@ namespace DS.RevitLib.Utils
         {
             XYZ centerPoint = GetLocationPoint(element);
 
-            double X = UnitUtils.Convert(centerPoint.X,
-                                         DisplayUnitType.DUT_DECIMAL_FEET,
-                                         DisplayUnitType.DUT_MILLIMETERS);
-            double Y = UnitUtils.Convert(centerPoint.Y,
-                                          DisplayUnitType.DUT_DECIMAL_FEET,
-                                           DisplayUnitType.DUT_MILLIMETERS);
-            double Z = UnitUtils.Convert(centerPoint.Z,
-                                            DisplayUnitType.DUT_DECIMAL_FEET,
-                                           DisplayUnitType.DUT_MILLIMETERS);
+            double X = UnitUtils.Convert(centerPoint.X, UnitTypeId.Feet, UnitTypeId.Millimeters);
+            double Y = UnitUtils.Convert(centerPoint.Y, UnitTypeId.Feet, UnitTypeId.Millimeters);
+            double Z = UnitUtils.Convert(centerPoint.Z, UnitTypeId.Feet, UnitTypeId.Millimeters);
             int X_MM = (int)Math.Round(X);
             int Y_MM = (int)Math.Round(Y);
             int Z_MM = (int)Math.Round(Z);
