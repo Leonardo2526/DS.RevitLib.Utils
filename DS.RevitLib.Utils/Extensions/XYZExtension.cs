@@ -3,10 +3,13 @@ using DS.ClassLib.VarUtils;
 using DS.RevitLib.Utils.Creation.Transactions;
 using DS.RevitLib.Utils.ModelCurveUtils;
 using DS.RevitLib.Utils.Transactions;
+using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Media.Media3D;
+using Line = Autodesk.Revit.DB.Line;
+using Plane = Autodesk.Revit.DB.Plane;
 
 namespace DS.RevitLib.Utils.Extensions
 {
@@ -235,6 +238,26 @@ namespace DS.RevitLib.Utils.Extensions
         public static Point3D ToPoint3D(this XYZ point)
         {
             return new Point3D(point.X , point.Y, point.Z);
+        }
+
+        /// <summary>
+        /// Convert <paramref name="xYZ"/> to <see cref="Vector3d"/>.
+        /// </summary>
+        /// <param name="xYZ"></param>
+        /// <returns>Returns a new <see cref="Vector3d"/> built by <paramref name="xYZ"/> coordinates.</returns>
+        public static Vector3d ToVector3d(this XYZ xYZ)
+        {
+            return new Vector3d(xYZ.X, xYZ.Y, xYZ.Z);
+        }
+
+        /// <summary>
+        /// Convert <paramref name="xYZ"/> to <see cref="Point3d"/>.
+        /// </summary>
+        /// <param name="xYZ"></param>
+        /// <returns>Returns a new <see cref="Point3d"/> built by <paramref name="xYZ"/> coordinates.</returns>
+        public static Point3d ToPoint3d(this XYZ xYZ)
+        {
+            return new Point3d(xYZ.X, xYZ.Y, xYZ.Z);
         }
 
     }

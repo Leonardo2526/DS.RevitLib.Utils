@@ -302,7 +302,7 @@ namespace DS.RevitLib.Utils.Extensions
             transactionBuilder.Build(() =>
             {
                 var visualizator = new BoundingBoxVisualisator(boundingBox, doc);
-                visualizator.Visualise();
+                visualizator.Show();
             }, "show BoundingBox");
         }
 
@@ -330,7 +330,7 @@ namespace DS.RevitLib.Utils.Extensions
             transactionBuilder.Build(() =>
             {
                 var visualizator = new BoundingBoxVisualisator(transformBoundingBox, doc);
-                visualizator.Visualise();
+                visualizator.Show();
             }, "show BoundingBox");
         }
 

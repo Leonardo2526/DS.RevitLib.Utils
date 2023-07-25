@@ -20,7 +20,7 @@ namespace DS.RevitLib.Utils.Extensions
         /// <param name="boxXYZ"></param>
         /// <param name="doc"></param>
         public static void Show(this BoundingBoxXYZ boxXYZ, Document doc) => 
-            new BoundingBoxVisualisator(boxXYZ, doc).Visualise();
+            new BoundingBoxVisualisator(boxXYZ, doc).Show();
 
         /// <summary>
         /// Get minimum and maximum coordinate points from <paramref name="boxXYZ"/> in Revit coordinates. 

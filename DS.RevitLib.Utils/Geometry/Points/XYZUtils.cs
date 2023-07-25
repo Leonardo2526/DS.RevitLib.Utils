@@ -3,9 +3,13 @@ using DS.ClassLib.VarUtils;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.Points.XYZAlgorithms.MaxDistance;
 using DS.RevitLib.Utils.Points.XYZAlgorithms.Strategies;
+using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Media.Media3D;
+using Line = Autodesk.Revit.DB.Line;
+using Matrix = DS.ClassLib.VarUtils.Matrix;
 
 namespace DS.RevitLib.Utils
 {
@@ -258,8 +262,21 @@ namespace DS.RevitLib.Utils
             var maxz = points.Max(x => x.Z);
             var min = new XYZ(minx, miny, minz);
             var max = new XYZ(maxx, maxy, maxz);
+            return (min, max);
+        }
 
-            return (min, max); 
+        /// <summary>
+        /// Convert <paramref name="initBasisX"/>, <paramref name="initBasisY"/> and <paramref name="initBasisZ"/> to <see cref="Vector3d"/> basis.
+        /// </summary>
+        /// <param name="initBasisX"></param>
+        /// <param name="initBasisY"></param>
+        /// <param name="initBasisZ"></param>
+        /// <returns>
+        /// Returns a new <see cref="Vector3d"/> bases  built by initial coordinates.
+        /// </returns>
+        public static (Vector3d basisX, Vector3d basisY, Vector3d basisZ) ToBasis3d(XYZ initBasisX, XYZ initBasisY, XYZ initBasisZ)
+        {
+            return (initBasisX.ToVector3d(), initBasisY.ToVector3d(), initBasisZ.ToVector3d());
         }
 
         #endregion

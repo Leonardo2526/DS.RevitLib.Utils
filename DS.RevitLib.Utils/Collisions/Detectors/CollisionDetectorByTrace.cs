@@ -39,7 +39,7 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
         {
             _doc = doc;
             _baseMEPCurve = baseMEPCurve;
-            _offset = baseMEPCurve.GetInsulationThickness() + traceSettings.D;
+            _offset = baseMEPCurve.GetInsulationThickness() + traceSettings.B;
             _traceSettings = traceSettings;
             _detectorFactory = new SolidElementCollisionDetectorFactory(doc, docElements, linkElementsDict);
         }

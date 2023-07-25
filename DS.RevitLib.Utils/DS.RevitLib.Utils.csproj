@@ -1,8 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\..\DS.RevitApp.Tests\packages\Rhino3dm.7.15.0\build\net45\Rhino3dm.props" Condition="Exists('..\..\DS.RevitApp.Tests\packages\Rhino3dm.7.15.0\build\net45\Rhino3dm.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <LangVersion>latest</LangVersion>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -70,6 +73,9 @@
     <Reference Include="RevitAPIUI">
       <HintPath>C:\Program Files\Autodesk\Revit 2020\RevitAPIUI.dll</HintPath>
       <Private>False</Private>
+    </Reference>
+    <Reference Include="Rhino3dm, Version=7.15.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\DS.RevitApp.Tests\packages\Rhino3dm.7.15.0\lib\net45\Rhino3dm.dll</HintPath>
     </Reference>
     <Reference Include="Serilog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
       <HintPath>..\..\Olimproekt\MEPAutoCoordination\packages\Serilog.3.0.1\lib\net471\Serilog.dll</HintPath>
@@ -190,6 +196,8 @@
     <Compile Include="Extensions\MEPSystemExtensions.cs" />
     <Compile Include="Extensions\ConnectorExtensions.cs" />
     <Compile Include="Extensions\BoxXYZExtensions.cs" />
+    <Compile Include="Geometry\Points\PointVisualisator.cs" />
+    <Compile Include="Geometry\Points\XYZVisualizator.cs" />
     <Compile Include="UIUtils.cs" />
     <Compile Include="Geometry\GeometryElementsUtils.cs" />
     <Compile Include="Geometry\Lines\LineOverlapResult.cs" />
@@ -314,9 +322,7 @@
     <Compile Include="Geometry\Points\XYZAlgorithms\FindDistanceStrategies\Strategies\StrategyToFindMaxDist.cs" />
     <Compile Include="Geometry\Points\XYZUtils.cs" />
     <Compile Include="Creation\Visualisators\BoundingBoxVisualisator.cs" />
-    <Compile Include="Creation\Visualisators\IVisualisator.cs" />
     <Compile Include="Creation\Visualisators\Visualisator.cs" />
-    <Compile Include="Various\PointConverter.cs" />
     <Compile Include="Various\Zoomer.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -330,4 +336,10 @@
     <PostBuildEvent>
     </PostBuildEvent>
   </PropertyGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\..\DS.RevitApp.Tests\packages\Rhino3dm.7.15.0\build\net45\Rhino3dm.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\DS.RevitApp.Tests\packages\Rhino3dm.7.15.0\build\net45\Rhino3dm.props'))" />
+  </Target>
 </Project>

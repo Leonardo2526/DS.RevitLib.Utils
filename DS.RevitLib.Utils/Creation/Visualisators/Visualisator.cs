@@ -1,4 +1,6 @@
-﻿namespace DS.RevitLib.Utils.Visualisators
+﻿using DS.ClassLib.VarUtils;
+
+namespace DS.RevitLib.Utils.Visualisators
 {
     public class Visualisator
     {
@@ -7,7 +9,7 @@
         public Visualisator(IVisualisator visualisator)
         {
             _visualisator = visualisator;
-            _visualisator.Visualise();
+            _visualisator.Show();
         }
     }
 }
