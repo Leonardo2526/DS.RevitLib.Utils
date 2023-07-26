@@ -15,9 +15,10 @@ namespace DS.RevitLib.Utils.Elements.MEPElements
         private double _c = 100.MMToFeet();
         private double _d = 50.MMToFeet();
         private double _h = 2200.MMToFeet();
+        private List<int> _aList = new List<int>() { 90, 60, 45, 30, 15 };
 
         ///<inheritdoc/>
-        public List<int> AList { get; } = new List<int>() { 90, 60, 45, 30, 15 };
+        public List<int> AList { get => _aList; set => _aList = value; }
 
         ///<inheritdoc/>
         public double A { get => _a; set => _a = value; }
@@ -33,5 +34,8 @@ namespace DS.RevitLib.Utils.Elements.MEPElements
 
         ///<inheritdoc/>
         public double H { get => _h; set => _h = value; }
+
+        ///<inheritdoc/>
+        public double F { get; set; }
     }
 }
