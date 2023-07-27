@@ -4,14 +4,8 @@ using DS.ClassLib.VarUtils;
 using DS.ClassLib.VarUtils.Points;
 using DS.PathFinder;
 using DS.RevitLib.Utils.Bases;
-using DS.RevitLib.Utils.Extensions;
 using Rhino.Geometry;
-using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Net;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.PathCreators
@@ -26,6 +20,7 @@ namespace DS.RevitLib.Utils.PathCreators
         private readonly PathAlgorithmFactory _algorithmFactory;
         private readonly UIDocument _uiDoc;
         private readonly Document _doc;
+        private MEPCurve _baseMEPCurve;
         private double _step;
         private List<Element> _objectsToExclude = new List<Element>();
 
@@ -45,15 +40,17 @@ namespace DS.RevitLib.Utils.PathCreators
         /// <summary>
         /// Build with some additional paramters.
         /// </summary>
+        /// <param name="baseMEPCurve"></param>
         /// <param name="step"></param>
         /// <param name="objectsToExclude"></param>
         /// <returns></returns>
-        public xYZPathFinder Build(double step, List<Element> objectsToExclude) 
+        public xYZPathFinder Build(MEPCurve baseMEPCurve, double step, List<Element> objectsToExclude)
         {
+            _baseMEPCurve = baseMEPCurve;
             _step = step;
-            _objectsToExclude = objectsToExclude;         
+            _objectsToExclude = objectsToExclude;
 
-            return this; 
+            return this;
         }
 
 
@@ -63,7 +60,7 @@ namespace DS.RevitLib.Utils.PathCreators
         /// <inheritdoc/>
         public List<XYZ> FindPath(XYZ startPoint, XYZ endPoint)
         {
-            _algorithmFactory.Build(startPoint, endPoint, _step, _objectsToExclude);
+            _algorithmFactory.Build(_baseMEPCurve, startPoint, endPoint, _step, _objectsToExclude);
             var algorithm = _algorithmFactory.Create();
             List<Point3d> path3d = algorithm?.FindPath(_algorithmFactory.StartPoint, _algorithmFactory.EndPoint);
 
@@ -89,7 +86,7 @@ namespace DS.RevitLib.Utils.PathCreators
         /// <returns>Converted to <see cref="Autodesk.Revit.DB.XYZ"/> path.</returns>
         private List<XYZ> ConvertPath(List<Point3d> path, IPoint3dConverter pointConverter)
         {
-                    
+
             List<XYZ> pathCoords = new List<XYZ>();
 
             foreach (var point in path)

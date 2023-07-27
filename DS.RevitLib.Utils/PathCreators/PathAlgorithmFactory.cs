@@ -5,22 +5,14 @@ using DS.ClassLib.VarUtils.Collisions;
 using DS.ClassLib.VarUtils.Directions;
 using DS.ClassLib.VarUtils.Points;
 using DS.PathFinder;
+using DS.PathFinder.Algorithms.AStar;
 using DS.RevitLib.Utils.Bases;
 using DS.RevitLib.Utils.Collisions.Detectors;
-using DS.RevitLib.Utils.Connections.PointModels;
-using DS.RevitLib.Utils.Elements;
-using DS.RevitLib.Utils.Elements.MEPElements;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.Geometry.Points;
-using DS.RevitLib.Utils.MEP;
-using DS.RevitLib.Utils.MEP.Models;
-using DS.RevitLib.Utils.Solids.Models;
-using FrancoGustavo.Algorithm;
 using Rhino.Geometry;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
-using System.Xml.Linq;
 using Transform = Rhino.Geometry.Transform;
 
 namespace DS.RevitLib.Utils.PathCreators
@@ -30,20 +22,31 @@ namespace DS.RevitLib.Utils.PathCreators
     /// </summary>
     public class PathAlgorithmFactory
     {
+        #region SettingsFields
+
+        private readonly int _tolerance = 5;
+        private readonly int _mHEstimate = 20;
+        private readonly HeuristicFormula _heuristicFormula = HeuristicFormula.Manhattan;
+        private readonly bool _mCompactPath = false;
+        private readonly bool _punishChangeDirection = false;
+
+        #endregion
+
         private readonly UIDocument _uiDoc;
-        private XYZ _startPoint;
-        private XYZ _endPoint;
         private readonly IBasisStrategy _basisStrategy;
         private readonly List<Element> _docElements;
         private readonly Dictionary<RevitLinkInstance, List<Element>> _linkElementsDict;
-        private double _step;
-        private List<Element> _objectsToExclude;
         private readonly Document _doc;
-        private readonly int _tolerance = 3;
+
         private readonly (Vector3d basisX, Vector3d basisY, Vector3d basisZ) _initialBasis =
             XYZUtils.ToBasis3d(XYZ.BasisX, XYZ.BasisY, XYZ.BasisZ);
-        private (Vector3d basisX, Vector3d basisY, Vector3d basisZ) _pathFindBasis;
 
+        private (Vector3d basisX, Vector3d basisY, Vector3d basisZ) _pathFindBasis;
+        private XYZ _startPoint;
+        private XYZ _endPoint;
+        private double _step;
+        private List<Element> _objectsToExclude;
+        private MEPCurve _baseMEPCurve;
         private ITraceSettings _traceSettings;
 
         /// <summary>
@@ -68,13 +71,15 @@ namespace DS.RevitLib.Utils.PathCreators
         /// <summary>
         /// Build with some additional paramters.
         /// </summary>
+        /// <param name="baseMEPCurve"></param>
         /// <param name="startPoint"></param>
         /// <param name="endPoint"></param>
         /// <param name="step"></param>
         /// <param name="objectsToExclude"></param>
         /// <returns></returns>
-        public PathAlgorithmFactory Build(XYZ startPoint, XYZ endPoint, double step, List<Element> objectsToExclude)
+        public PathAlgorithmFactory Build(MEPCurve baseMEPCurve, XYZ startPoint, XYZ endPoint, double step, List<Element> objectsToExclude)
         {
+            _baseMEPCurve = baseMEPCurve;
             _startPoint = startPoint;
             _endPoint = endPoint;
             _step = step;
@@ -108,23 +113,19 @@ namespace DS.RevitLib.Utils.PathCreators
         {
             var (basisX, basisY, basisZ) = _basisStrategy.GetBasis();
 
-            MEPCurve basisMEPCurve1 = null;
-            if (_basisStrategy is TwoMEPCurvesBasisStrategy twoMC)
-            { basisMEPCurve1 = twoMC.MEPCurve1; var basisMEPCurve2 = twoMC.MEPCurve2; }
-
             //specify basis.
             _pathFindBasis = XYZUtils.ToBasis3d(basisX, basisY, basisZ);
-
-            var orths = new List<Vector3d>() { _initialBasis.basisX, _initialBasis.basisY, _initialBasis.basisZ };
-            var mainBasis = _pathFindBasis.basisX + _pathFindBasis.basisY + _pathFindBasis.basisZ; 
 
             var (transform, inverseTransform) = GetTransforms(
                 _initialBasis.basisX, _initialBasis.basisY, _initialBasis.basisZ,
             _pathFindBasis.basisX, _pathFindBasis.basisY, _pathFindBasis.basisZ);
 
-            //_pathFindBasis.basisX = _pathFindBasis.basisX.Round(_tolerance);
-            //_pathFindBasis.basisY = _pathFindBasis.basisY.Round(_tolerance);
-            //_pathFindBasis.basisZ = _pathFindBasis.basisZ.Round(_tolerance);
+            _pathFindBasis.basisX = _pathFindBasis.basisX.Round(_tolerance);
+            _pathFindBasis.basisY = _pathFindBasis.basisY.Round(_tolerance);
+            _pathFindBasis.basisZ = _pathFindBasis.basisZ.Round(_tolerance);
+
+            var orths = new List<Vector3d>() { _initialBasis.basisX, _initialBasis.basisY, _initialBasis.basisZ };
+            var mainBasis = _pathFindBasis.basisX + _pathFindBasis.basisY + _pathFindBasis.basisZ;
 
             PointConverter = new Point3dConverter(transform, inverseTransform);
 
@@ -137,17 +138,20 @@ namespace DS.RevitLib.Utils.PathCreators
             IDirectionFactory directionFactory = new UserDirectionFactory();
             directionFactory.Build(_initialBasis.basisX, _initialBasis.basisY, _initialBasis.basisZ, _traceSettings.AList);
 
-            var mHEstimate = 20;
-            //return null;
-            INodeBuilder nodeBuilder = new NodeBuilder(
-                FrancoGustavo.HeuristicFormula.Manhattan, mHEstimate, StartPoint, EndPoint, _step, orths, false, false);
-            ITraceCollisionDetector<Point3d> collisionDetector = 
-                new CollisionDetectorByTrace(_doc, basisMEPCurve1, _traceSettings, _docElements, _linkElementsDict, PointConverter)
-            { ObjectsToExclude = _objectsToExclude };
+            var nodeBuilder = new NodeBuilder(
+                _heuristicFormula, _mHEstimate, StartPoint, EndPoint, 
+                _step, orths, _mCompactPath, _punishChangeDirection)
+            {
+                Tolerance = _tolerance
+            };
 
-        IRefineFactory<Point3d> refineFactory = new PathRefineFactory();
+            ITraceCollisionDetector<Point3d> collisionDetector =
+                new CollisionDetectorByTrace(_doc, _baseMEPCurve, _traceSettings, _docElements, _linkElementsDict, PointConverter)
+                { ObjectsToExclude = _objectsToExclude };
+
+            IRefineFactory<Point3d> refineFactory = new PathRefineFactory();
             IPointVisualisator<Point3d> pointVisualisator =
-                new Point3dVisualisator(_uiDoc, PointConverter, 100.MMToFeet(), null, true);
+                new Point3dVisualisator(_uiDoc, PointConverter, 50.MMToFeet(), null, true);
 
             var userDirectionFactory = directionFactory as UserDirectionFactory;
             if (userDirectionFactory == null) { return null; }
@@ -164,11 +168,12 @@ namespace DS.RevitLib.Utils.PathCreators
 
             var factory = new AStarAlgorithmCDF(_traceSettings, nodeBuilder, directionFactory, collisionDetector, refineFactory)
             {
+                Tolerance = _tolerance,
                 TokenSource = new CancellationTokenSource(),
                 PointVisualisator = pointVisualisator
             }
             .WithBounds(minPoint, maxPoint)
-            .WithSearchDirections(dirs1);
+            .WithSearchDirections(alldirs);
 
 
             return factory;
@@ -194,7 +199,7 @@ namespace DS.RevitLib.Utils.PathCreators
             bool finalRightHanded = Vector3d.AreRighthanded(finalBasisX, finalBasisY, finalBasisZ);
             bool orthonormal = Vector3d.AreOrthonormal(finalBasisX, finalBasisY, finalBasisZ);
 
-            if (!finalRightHanded) 
+            if (!finalRightHanded)
             {
                 finalBasisZ = Vector3d.Negate(finalBasisZ);
                 _pathFindBasis.basisZ = finalBasisZ;
