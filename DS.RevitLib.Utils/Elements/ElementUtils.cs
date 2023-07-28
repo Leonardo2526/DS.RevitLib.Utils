@@ -583,7 +583,25 @@ namespace DS.RevitLib.Utils
             return new BoundingBoxXYZ() { Min = minPoint, Max = maxPoint };
         }
 
-
+        /// <summary>
+        /// Get insulation if for each element if <paramref name="elements"/>.
+        /// </summary>
+        /// <param name="elements"></param>
+        /// <returns>
+        /// List of <see cref="Autodesk.Revit.DB.ElementId"/> insulations.
+        /// </returns>
+        public static List<ElementId> GetInsulation(List<Element> elements)
+        {
+            var insulationIds = new List<ElementId>();
+            elements.ForEach(elem =>
+            {
+                var insulation = elem.GetInsulation();
+                if (insulation != null)
+                { insulationIds.Add(insulation.Id); }
+            });
+            
+            return insulationIds;
+        }
 
     }
 }

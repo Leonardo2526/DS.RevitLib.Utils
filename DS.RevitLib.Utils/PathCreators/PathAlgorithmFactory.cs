@@ -35,7 +35,7 @@ namespace DS.RevitLib.Utils.PathCreators
         /// </summary>
         private int _cTolerance = 2;
 
-        private readonly int _mHEstimate = 20;
+        private readonly int _mHEstimate = 10;
         private readonly HeuristicFormula _heuristicFormula = HeuristicFormula.Manhattan;
         private readonly bool _mCompactPath = false;
         private readonly bool _punishChangeDirection = true;
@@ -168,7 +168,10 @@ namespace DS.RevitLib.Utils.PathCreators
 
             ITraceCollisionDetector<Point3d> collisionDetector =
                 new CollisionDetectorByTrace(_doc, _baseMEPCurve, _traceSettings, _docElements, _linkElementsDict, PointConverter)
-                { ObjectsToExclude = _objectsToExclude };
+                { 
+                    ObjectsToExclude = _objectsToExclude,
+                    OffsetOnEndPoint = true
+                };
 
             IRefineFactory<Point3d> refineFactory = new PathRefineFactory();
             IPointVisualisator<Point3d> pointVisualisator =
@@ -188,8 +191,8 @@ namespace DS.RevitLib.Utils.PathCreators
             {
                 Tolerance = _tolerance,
                 CTolerance = _cTolerance,
-                TokenSource = new CancellationTokenSource(),
-                //TokenSource = new CancellationTokenSource(5000),
+                //TokenSource = new CancellationTokenSource(),
+                TokenSource = new CancellationTokenSource(15000),
                 PointVisualisator = pointVisualisator
             }
             .WithBounds(minPoint, maxPoint);

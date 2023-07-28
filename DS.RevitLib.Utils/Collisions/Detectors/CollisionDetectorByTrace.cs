@@ -38,6 +38,7 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
         /// <param name="traceSettings"></param>
         /// <param name="docElements"></param>
         /// <param name="linkElementsDict"></param>
+        /// <param name="pointConverter"></param>
         public CollisionDetectorByTrace(Document doc, MEPCurve baseMEPCurve, ITraceSettings traceSettings,
             List<Element> docElements, Dictionary<RevitLinkInstance, List<Element>> linkElementsDict = null, IPoint3dConverter pointConverter = null)
         {
@@ -47,6 +48,7 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
             _traceSettings = traceSettings;
             _pointConverter = pointConverter;
             _detectorFactory = new SolidElementCollisionDetectorFactory(doc, docElements, linkElementsDict);
+            _detectorFactory.MinVolume = 0;
         }
 
         /// <inheritdoc/>
@@ -56,6 +58,11 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
         /// Check objects 2 to exclude from collisions detection. 
         /// </summary>
         public List<Element> ObjectsToExclude { get; set; }
+
+        /// <summary>
+        /// Specify if check offset <see cref="Solid"/> will be created up to the end point + <see cref="Solid"/> offset.
+        /// </summary>
+        public bool OffsetOnEndPoint { get; set; } = false;
 
         /// <summary>
         /// 
@@ -73,19 +80,28 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
             XYZ p1 = null;
             XYZ p2 = null;
 
+            var endSolidPoint = point2;
+            if (OffsetOnEndPoint)
+            {
+                var v = point2 - point1;
+                v = Vector3d.Divide(v, v.Length);
+                var size = _baseMEPCurve.GetMaxSize();
+                var mult = size + _offset;
+                endSolidPoint += Vector3d.Multiply(v, mult);
+            }
+
             if (_pointConverter is not null)
             {
                 Point3d point1UCS1 = _pointConverter.ConvertToUCS1(point1);
-                Point3d point2UCS1 = _pointConverter.ConvertToUCS1(point2);
+                Point3d point2UCS1 = _pointConverter.ConvertToUCS1(endSolidPoint);
                 p1 = new XYZ(point1UCS1.X, point1UCS1.Y, point1UCS1.Z);
                 p2 = new XYZ(point2UCS1.X, point2UCS1.Y, point2UCS1.Z);
             }
             else
             {
                 p1 = new XYZ(point1.X, point1.Y, point1.Z);
-                p2 = new XYZ(point2.X, point2.Y, point2.Z);
+                p2 = new XYZ(endSolidPoint.X, endSolidPoint.Y, endSolidPoint.Z);
             }
-
 
             var checkSolid = _baseMEPCurve.GetOffsetSolid(_offset, p1, p2);
             //new TransactionBuilder(_doc).Build(() => checkSolid.ShowShape(_doc), "Show shape");

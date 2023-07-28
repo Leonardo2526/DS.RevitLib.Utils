@@ -1,5 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Electrical;
+using Autodesk.Revit.DB.Mechanical;
+using Autodesk.Revit.DB.Plumbing;
 using DS.RevitLib.Utils.Connection;
 using DS.RevitLib.Utils.MEP;
 using DS.RevitLib.Utils.Transactions;
@@ -448,15 +450,15 @@ namespace DS.RevitLib.Utils.Extensions
         /// Get <paramref name="element"/>'s  insulation.
         /// </summary>
         /// <param name="element"></param>
-        /// <returns>Returns <paramref name="element"/>'s <see cref="InsulationLiningBase"/> if it has it. 
+        /// <returns>
+        /// Returns <paramref name="element"/>'s <see cref="InsulationLiningBase"/> if it has it. 
         /// Otherwise returns null.</returns>
         public static InsulationLiningBase GetInsulation(this Element element)
         {
-            if (element.GetType() == typeof(CableTray))
-            { return null; }
-
-            return InsulationLiningBase.GetInsulationIds(element.Document, element.Id)
-               .Select(x => element.Document.GetElement(x) as InsulationLiningBase).FirstOrDefault();
+            return element is Pipe || element is Duct ?
+                InsulationLiningBase.GetInsulationIds(element.Document, element.Id)
+               .Select(x => element.Document.GetElement(x) as InsulationLiningBase).FirstOrDefault() : 
+               null;
         }
 
         /// <summary>

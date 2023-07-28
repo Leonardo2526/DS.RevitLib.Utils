@@ -6,6 +6,7 @@ using DS.PathFinder;
 using DS.RevitLib.Utils.Bases;
 using Rhino.Geometry;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.PathCreators
@@ -50,6 +51,15 @@ namespace DS.RevitLib.Utils.PathCreators
         {
             _baseMEPCurve = baseMEPCurve;
             _step = step;
+
+            //add objectsToExclude with its insulations
+            var objectToExcludeIds = objectsToExclude.Select(obj => obj.Id).ToList();
+            List<ElementId> insulationIds = ElementUtils.GetInsulation(objectsToExclude);
+            foreach (var insId in insulationIds)
+            {
+                if(!objectToExcludeIds.Contains(insId)) { objectsToExclude.Add(_doc.GetElement(insId)); }
+            }
+
             _objectsToExclude = objectsToExclude;
             _planes = planes;
 
