@@ -4,9 +4,11 @@ using DS.ClassLib.VarUtils;
 using DS.ClassLib.VarUtils.Points;
 using DS.PathFinder;
 using DS.RevitLib.Utils.Bases;
+using DS.RevitLib.Utils.Extensions;
 using Rhino.Geometry;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.PathCreators
@@ -22,7 +24,6 @@ namespace DS.RevitLib.Utils.PathCreators
         private readonly UIDocument _uiDoc;
         private readonly Document _doc;
         private MEPCurve _baseMEPCurve;
-        private double _step;
         private List<Element> _objectsToExclude = new List<Element>();
         private List<PlaneType> _planes;
 
@@ -47,10 +48,9 @@ namespace DS.RevitLib.Utils.PathCreators
         /// <param name="objectsToExclude"></param>
         /// <param name="planes"></param>
         /// <returns></returns>
-        public xYZPathFinder Build(MEPCurve baseMEPCurve, double step, List<Element> objectsToExclude, List<PlaneType> planes = null) 
+        public xYZPathFinder Build(MEPCurve baseMEPCurve, List<Element> objectsToExclude, List<PlaneType> planes = null) 
         {
             _baseMEPCurve = baseMEPCurve;
-            _step = step;
 
             //add objectsToExclude with its insulations
             var objectToExcludeIds = objectsToExclude.Select(obj => obj.Id).ToList();
@@ -73,13 +73,26 @@ namespace DS.RevitLib.Utils.PathCreators
         /// <inheritdoc/>
         public List<XYZ> FindPath(XYZ startPoint, XYZ endPoint)
         {
-            _algorithmFactory.Build(_baseMEPCurve, startPoint, endPoint, _step, _objectsToExclude);
-            if(_planes is not null && _planes.Count > 0) { _algorithmFactory.Planes = _planes; }           
-            var algorithm = _algorithmFactory.Create();
-            List<Point3d> path3d = algorithm?.FindPath(_algorithmFactory.StartPoint, _algorithmFactory.EndPoint);
+            _algorithmFactory.Build(_baseMEPCurve, startPoint, endPoint,_objectsToExclude, _planes);
+
+            var maxStepValue = 1000.MMToFeet();
+            var dist = startPoint.DistanceTo(endPoint);
+
+            var stepsCount = 5;
+            var minStep = 50.MMToFeet();
+            var maxStep =  maxStepValue > dist / 2 ? dist / 2 : maxStepValue;
+            var stepTemp = (maxStep - minStep)/ stepsCount;
+
+            IPathFindIterator<Point3d> pathFindIterator = new PathFindIteratorByStep(
+                _algorithmFactory,
+                _algorithmFactory.StartPoint, _algorithmFactory.EndPoint,
+                minStep, maxStep, stepTemp)
+            {TokenSource = new CancellationTokenSource(200000)};
+
+            List<Point3d> path3d = pathFindIterator.FindPath();
 
             if (path3d == null || path3d.Count == 0)
-            { TaskDialog.Show("Error", "No available path exist!"); }
+            { TaskDialog.Show("Error", "No available path exist!");}
             else
             { Path = ConvertPath(path3d, _algorithmFactory.PointConverter); }
 

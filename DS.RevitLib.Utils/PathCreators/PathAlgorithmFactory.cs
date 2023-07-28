@@ -21,7 +21,7 @@ namespace DS.RevitLib.Utils.PathCreators
     /// <summary>
     /// Factory to create a new path find algorythm.
     /// </summary>
-    public class PathAlgorithmFactory
+    public class PathAlgorithmFactory : IAlgorithmFactory
     {
         #region SettingsFields
 
@@ -58,6 +58,8 @@ namespace DS.RevitLib.Utils.PathCreators
         private List<Element> _objectsToExclude;
         private MEPCurve _baseMEPCurve;
         private ITraceSettings _traceSettings;
+        private NodeBuilder _nodeBuilder;
+        private AStarAlgorithmCDF _algorithm;
 
         /// <summary>
         /// Instansiate a factory to create a new path find algorythm.
@@ -79,6 +81,9 @@ namespace DS.RevitLib.Utils.PathCreators
         }
 
         #region Properties
+
+        /// <inheritdoc/>
+        public IPathFindAlgorithm<Point3d> Algorithm { get => _algorithm; }
 
         /// <summary>
         /// Start point in UCS.
@@ -111,16 +116,27 @@ namespace DS.RevitLib.Utils.PathCreators
         /// <param name="endPoint"></param>
         /// <param name="step"></param>
         /// <param name="objectsToExclude"></param>
+        /// <param name="planes"></param>
         /// <returns></returns>
-        public PathAlgorithmFactory Build(MEPCurve baseMEPCurve, XYZ startPoint, XYZ endPoint, double step, List<Element> objectsToExclude)
+        public PathAlgorithmFactory Build(MEPCurve baseMEPCurve, XYZ startPoint, XYZ endPoint, List<Element> objectsToExclude, 
+            List<PlaneType> planes = null)
         {
             _baseMEPCurve = baseMEPCurve;
             _startPoint = startPoint;
             _endPoint = endPoint;
-            _step = step;
             _objectsToExclude = objectsToExclude;
+            Planes = planes;
+            Create();
 
             return this;
+        }
+
+        /// <inheritdoc/>
+        public void WithStep(double step)
+        {
+            _step = step;
+            _nodeBuilder = _nodeBuilder.WithStep(_step);
+            _algorithm = _algorithm.WithNodeBuilder(_nodeBuilder);
         }
 
         /// <summary>
@@ -129,7 +145,7 @@ namespace DS.RevitLib.Utils.PathCreators
         /// <returns>
         /// Algorythm to find path between <see cref="StartPoint"/> and  <see cref="EndPoint"/>.
         /// </returns>
-        public IPathFindAlgorithm<Point3d> Create()
+        private IPathFindAlgorithm<Point3d> Create()
         {
             var (basisX, basisY, basisZ) = _basisStrategy.GetBasis();
 
@@ -158,7 +174,7 @@ namespace DS.RevitLib.Utils.PathCreators
             IDirectionFactory directionFactory = new UserDirectionFactory();
             directionFactory.Build(_initialBasis.basisX, _initialBasis.basisY, _initialBasis.basisZ, _traceSettings.AList);
 
-            var nodeBuilder = new NodeBuilder(
+            _nodeBuilder = new NodeBuilder(
                 _heuristicFormula, _mHEstimate, StartPoint, EndPoint,
                 _step, orths, _mCompactPath, _punishChangeDirection)
             {
@@ -187,20 +203,20 @@ namespace DS.RevitLib.Utils.PathCreators
             Vector3d boundMoveVector = GetMoveVector();
             var (minPoint, maxPoint) = PointsUtils.GetBound(StartPoint, EndPoint, boundMoveVector);
 
-            var factory = new AStarAlgorithmCDF(_traceSettings, nodeBuilder, searchDirections, collisionDetector, refineFactory)
+            _algorithm = new AStarAlgorithmCDF(_traceSettings, _nodeBuilder, searchDirections, collisionDetector, refineFactory)
             {
                 Tolerance = _tolerance,
                 CTolerance = _cTolerance,
                 //TokenSource = new CancellationTokenSource(),
-                TokenSource = new CancellationTokenSource(15000),
+                TokenSource = new CancellationTokenSource(150000),
                 PointVisualisator = pointVisualisator
             }
             .WithBounds(minPoint, maxPoint);
 
-            return factory;
+            return Algorithm;
         }
 
-        private static List<Vector3d> GetSearchDirections(UserDirectionFactory userDirectionFactory, List<PlaneType> planes)
+        private List<Vector3d> GetSearchDirections(UserDirectionFactory userDirectionFactory, List<PlaneType> planes)
         {
             PlaneType xyPlane = planes.FirstOrDefault(p => p == PlaneType.XY);
             PlaneType xzPlane = planes.FirstOrDefault(p => p == PlaneType.XZ);
@@ -232,7 +248,7 @@ namespace DS.RevitLib.Utils.PathCreators
         {
             var basis = _initialBasis;
 
-            double offsetX = 5000.MMToFeet();
+            double offsetX = 500.MMToFeet();
             double offsetY = 5000.MMToFeet();
             double offsetZ = 5000.MMToFeet();
 
