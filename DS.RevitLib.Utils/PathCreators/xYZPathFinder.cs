@@ -23,6 +23,7 @@ namespace DS.RevitLib.Utils.PathCreators
         private MEPCurve _baseMEPCurve;
         private double _step;
         private List<Element> _objectsToExclude = new List<Element>();
+        private List<PlaneType> _planes;
 
         /// <summary>
         /// Instantiate an object to find path between <see cref="Autodesk.Revit.DB.XYZ"/> points.
@@ -43,12 +44,14 @@ namespace DS.RevitLib.Utils.PathCreators
         /// <param name="baseMEPCurve"></param>
         /// <param name="step"></param>
         /// <param name="objectsToExclude"></param>
+        /// <param name="planes"></param>
         /// <returns></returns>
-        public xYZPathFinder Build(MEPCurve baseMEPCurve, double step, List<Element> objectsToExclude)
+        public xYZPathFinder Build(MEPCurve baseMEPCurve, double step, List<Element> objectsToExclude, List<PlaneType> planes = null) 
         {
             _baseMEPCurve = baseMEPCurve;
             _step = step;
             _objectsToExclude = objectsToExclude;
+            _planes = planes;
 
             return this;
         }
@@ -61,6 +64,7 @@ namespace DS.RevitLib.Utils.PathCreators
         public List<XYZ> FindPath(XYZ startPoint, XYZ endPoint)
         {
             _algorithmFactory.Build(_baseMEPCurve, startPoint, endPoint, _step, _objectsToExclude);
+            if(_planes is not null && _planes.Count > 0) { _algorithmFactory.Planes = _planes; }           
             var algorithm = _algorithmFactory.Create();
             List<Point3d> path3d = algorithm?.FindPath(_algorithmFactory.StartPoint, _algorithmFactory.EndPoint);
 

@@ -12,6 +12,7 @@ using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.Geometry.Points;
 using Rhino.Geometry;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using Transform = Rhino.Geometry.Transform;
 
@@ -24,11 +25,20 @@ namespace DS.RevitLib.Utils.PathCreators
     {
         #region SettingsFields
 
+        /// <summary>
+        /// Data store tolerance.
+        /// </summary>
         private readonly int _tolerance = 5;
+
+        /// <summary>
+        /// Compound numbers tolerance.
+        /// </summary>
+        private int _cTolerance = 2;
+
         private readonly int _mHEstimate = 20;
         private readonly HeuristicFormula _heuristicFormula = HeuristicFormula.Manhattan;
         private readonly bool _mCompactPath = false;
-        private readonly bool _punishChangeDirection = false;
+        private readonly bool _punishChangeDirection = true;
 
         #endregion
 
@@ -68,6 +78,31 @@ namespace DS.RevitLib.Utils.PathCreators
             _traceSettings = traceSettings;
         }
 
+        #region Properties
+
+        /// <summary>
+        /// Start point in UCS.
+        /// </summary>
+        public Point3d StartPoint { get; private set; }
+
+        /// <summary>
+        /// End point in UCS.
+        /// </summary>
+        public Point3d EndPoint { get; private set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public IPoint3dConverter PointConverter { get; private set; }
+
+        /// <summary>
+        /// Planes to find path.
+        /// </summary>
+        public List<PlaneType> Planes { get; set; } = 
+            new List<PlaneType>() { PlaneType.XY, PlaneType.XZ, PlaneType.YZ };
+
+        #endregion
+
         /// <summary>
         /// Build with some additional paramters.
         /// </summary>
@@ -87,21 +122,6 @@ namespace DS.RevitLib.Utils.PathCreators
 
             return this;
         }
-
-        /// <summary>
-        /// Start point in UCS.
-        /// </summary>
-        public Point3d StartPoint { get; private set; }
-
-        /// <summary>
-        /// End point in UCS.
-        /// </summary>
-        public Point3d EndPoint { get; private set; }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public IPoint3dConverter PointConverter { get; private set; }
 
         /// <summary>
         /// Create a new algorythm.
@@ -131,18 +151,19 @@ namespace DS.RevitLib.Utils.PathCreators
 
             //convert start and end points.
             var sp = new Point3d(_startPoint.X, _startPoint.Y, _startPoint.Z);
-            StartPoint = PointConverter.ConvertToUCS2(sp);
+            StartPoint = PointConverter.ConvertToUCS2(sp).Round(_tolerance);
             var ep = new Point3d(_endPoint.X, _endPoint.Y, _endPoint.Z);
-            EndPoint = PointConverter.ConvertToUCS2(ep);
+            EndPoint = PointConverter.ConvertToUCS2(ep).Round(_tolerance);
 
             IDirectionFactory directionFactory = new UserDirectionFactory();
             directionFactory.Build(_initialBasis.basisX, _initialBasis.basisY, _initialBasis.basisZ, _traceSettings.AList);
 
             var nodeBuilder = new NodeBuilder(
-                _heuristicFormula, _mHEstimate, StartPoint, EndPoint, 
+                _heuristicFormula, _mHEstimate, StartPoint, EndPoint,
                 _step, orths, _mCompactPath, _punishChangeDirection)
             {
-                Tolerance = _tolerance
+                Tolerance = _tolerance,
+                CTolerance = _cTolerance
             };
 
             ITraceCollisionDetector<Point3d> collisionDetector =
@@ -156,36 +177,61 @@ namespace DS.RevitLib.Utils.PathCreators
             var userDirectionFactory = directionFactory as UserDirectionFactory;
             if (userDirectionFactory == null) { return null; }
 
-            //specify all search directions.
-            var dirs1 = userDirectionFactory.Plane1_Directions;
-            var dirs2 = userDirectionFactory.Plane2_Directions;
-            var dirs3 = userDirectionFactory.Plane3_Directions;
-            var alldirs = userDirectionFactory.Directions;
+            //specify search directions.
+            List<Vector3d> searchDirections = GetSearchDirections(userDirectionFactory, Planes);
 
             //find restrict area
             Vector3d boundMoveVector = GetMoveVector();
             var (minPoint, maxPoint) = PointsUtils.GetBound(StartPoint, EndPoint, boundMoveVector);
 
-            var factory = new AStarAlgorithmCDF(_traceSettings, nodeBuilder, directionFactory, collisionDetector, refineFactory)
+            var factory = new AStarAlgorithmCDF(_traceSettings, nodeBuilder, searchDirections, collisionDetector, refineFactory)
             {
                 Tolerance = _tolerance,
+                CTolerance = _cTolerance,
                 TokenSource = new CancellationTokenSource(),
+                //TokenSource = new CancellationTokenSource(5000),
                 PointVisualisator = pointVisualisator
             }
-            .WithBounds(minPoint, maxPoint)
-            .WithSearchDirections(alldirs);
-
+            .WithBounds(minPoint, maxPoint);
 
             return factory;
+        }
+
+        private static List<Vector3d> GetSearchDirections(UserDirectionFactory userDirectionFactory, List<PlaneType> planes)
+        {
+            PlaneType xyPlane = planes.FirstOrDefault(p => p == PlaneType.XY);
+            PlaneType xzPlane = planes.FirstOrDefault(p => p == PlaneType.XZ);
+            PlaneType yzPlane = planes.FirstOrDefault(p => p == PlaneType.YZ);
+
+            var xyDirs = userDirectionFactory.Plane1_Directions;
+            var xzDirs = userDirectionFactory.Plane2_Directions;
+            var yzDirs = userDirectionFactory.Plane3_Directions;
+            var alldirs = userDirectionFactory.Directions;
+
+            var searchDirections = new List<Vector3d>();
+
+            if (xyPlane != 0) { searchDirections.AddRange(xyDirs); }
+            if (xzPlane != 0)
+            {
+                xzDirs.ForEach(d =>
+                { if (!searchDirections.Contains(d)) { searchDirections.Add(d); } });
+            }
+            if (yzPlane != 0)
+            {
+                xzDirs.ForEach(d =>
+                { if (!searchDirections.Contains(d)) { searchDirections.Add(d); } });
+            }
+
+            return searchDirections;
         }
 
         private Vector3d GetMoveVector()
         {
             var basis = _initialBasis;
 
-            double offsetX = 2000.MMToFeet();
-            double offsetY = 2000.MMToFeet();
-            double offsetZ = 2000.MMToFeet();
+            double offsetX = 5000.MMToFeet();
+            double offsetY = 5000.MMToFeet();
+            double offsetZ = 5000.MMToFeet();
 
             return new Vector3d(basis.basisX.X * offsetX, basis.basisY.Y * offsetY, basis.basisZ.Z * offsetZ);
         }
