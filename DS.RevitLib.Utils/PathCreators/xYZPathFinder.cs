@@ -75,7 +75,7 @@ namespace DS.RevitLib.Utils.PathCreators
         {
             _algorithmFactory.Build(_baseMEPCurve, startPoint, endPoint,_objectsToExclude, _planes);
 
-            var maxStepValue = 1000.MMToFeet();
+            var maxStepValue = 2000.MMToFeet();
             var dist = startPoint.DistanceTo(endPoint);
 
             var stepsCount = 5;

@@ -3,6 +3,7 @@ using Autodesk.Revit.UI;
 using DS.ClassLib.VarUtils;
 using DS.ClassLib.VarUtils.Collisions;
 using DS.ClassLib.VarUtils.Directions;
+using DS.ClassLib.VarUtils.Enumerables;
 using DS.ClassLib.VarUtils.Points;
 using DS.PathFinder;
 using DS.PathFinder.Algorithms.AStar;
@@ -14,6 +15,7 @@ using Rhino.Geometry;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Plane = Rhino.Geometry.Plane;
 using Transform = Rhino.Geometry.Transform;
 
 namespace DS.RevitLib.Utils.PathCreators
@@ -49,7 +51,7 @@ namespace DS.RevitLib.Utils.PathCreators
         private readonly Document _doc;
 
         private readonly (Vector3d basisX, Vector3d basisY, Vector3d basisZ) _initialBasis =
-            XYZUtils.ToBasis3d(XYZ.BasisX, XYZ.BasisY, XYZ.BasisZ);
+            (Vector3d.XAxis, Vector3d.YAxis, Vector3d.ZAxis);
 
         private (Vector3d basisX, Vector3d basisY, Vector3d basisZ) _pathFindBasis;
         private XYZ _startPoint;
@@ -60,6 +62,7 @@ namespace DS.RevitLib.Utils.PathCreators
         private ITraceSettings _traceSettings;
         private NodeBuilder _nodeBuilder;
         private AStarAlgorithmCDF _algorithm;
+        private List<Plane> _planes;
 
         /// <summary>
         /// Instansiate a factory to create a new path find algorythm.
@@ -100,11 +103,6 @@ namespace DS.RevitLib.Utils.PathCreators
         /// </summary>
         public IPoint3dConverter PointConverter { get; private set; }
 
-        /// <summary>
-        /// Planes to find path.
-        /// </summary>
-        public List<PlaneType> Planes { get; set; } = 
-            new List<PlaneType>() { PlaneType.XY, PlaneType.XZ, PlaneType.YZ };
 
         #endregion
 
@@ -116,27 +114,28 @@ namespace DS.RevitLib.Utils.PathCreators
         /// <param name="endPoint"></param>
         /// <param name="step"></param>
         /// <param name="objectsToExclude"></param>
-        /// <param name="planes"></param>
+        /// <param name="planeTypes"></param>
         /// <returns></returns>
-        public PathAlgorithmFactory Build(MEPCurve baseMEPCurve, XYZ startPoint, XYZ endPoint, List<Element> objectsToExclude, 
-            List<PlaneType> planes = null)
+        public PathAlgorithmFactory Build(MEPCurve baseMEPCurve, XYZ startPoint, XYZ endPoint, List<Element> objectsToExclude,
+            List<PlaneType> planeTypes = null)
         {
             _baseMEPCurve = baseMEPCurve;
             _startPoint = startPoint;
             _endPoint = endPoint;
             _objectsToExclude = objectsToExclude;
-            Planes = planes;
+            _planes = ConvertPlaneTypes(planeTypes);
             Create();
 
             return this;
         }
 
         /// <inheritdoc/>
-        public void WithStep(double step)
+        public void Reset(double step)
         {
             _step = step;
             _nodeBuilder = _nodeBuilder.WithStep(_step);
             _algorithm = _algorithm.WithNodeBuilder(_nodeBuilder);
+            _algorithm.ResetToken();
         }
 
         /// <summary>
@@ -184,7 +183,7 @@ namespace DS.RevitLib.Utils.PathCreators
 
             ITraceCollisionDetector<Point3d> collisionDetector =
                 new CollisionDetectorByTrace(_doc, _baseMEPCurve, _traceSettings, _docElements, _linkElementsDict, PointConverter)
-                { 
+                {
                     ObjectsToExclude = _objectsToExclude,
                     OffsetOnEndPoint = true
                 };
@@ -193,22 +192,18 @@ namespace DS.RevitLib.Utils.PathCreators
             IPointVisualisator<Point3d> pointVisualisator =
                 new Point3dVisualisator(_uiDoc, PointConverter, 50.MMToFeet(), null, true);
 
-            var userDirectionFactory = directionFactory as UserDirectionFactory;
-            if (userDirectionFactory == null) { return null; }
-
-            //specify search directions.
-            List<Vector3d> searchDirections = GetSearchDirections(userDirectionFactory, Planes);
+            var dirIterator = new DirectionIterator(_planes, _traceSettings.AList);
 
             //find restrict area
             Vector3d boundMoveVector = GetMoveVector();
             var (minPoint, maxPoint) = PointsUtils.GetBound(StartPoint, EndPoint, boundMoveVector);
 
-            _algorithm = new AStarAlgorithmCDF(_traceSettings, _nodeBuilder, searchDirections, collisionDetector, refineFactory)
+            _algorithm = new AStarAlgorithmCDF(_traceSettings, _nodeBuilder, dirIterator, collisionDetector, refineFactory)
             {
                 Tolerance = _tolerance,
                 CTolerance = _cTolerance,
                 //TokenSource = new CancellationTokenSource(),
-                TokenSource = new CancellationTokenSource(150000),
+                TokenSource = new CancellationTokenSource(5000),
                 PointVisualisator = pointVisualisator
             }
             .WithBounds(minPoint, maxPoint);
@@ -216,32 +211,31 @@ namespace DS.RevitLib.Utils.PathCreators
             return Algorithm;
         }
 
-        private List<Vector3d> GetSearchDirections(UserDirectionFactory userDirectionFactory, List<PlaneType> planes)
+        private List<Plane> ConvertPlaneTypes(List<PlaneType> planeTypes)
         {
-            PlaneType xyPlane = planes.FirstOrDefault(p => p == PlaneType.XY);
-            PlaneType xzPlane = planes.FirstOrDefault(p => p == PlaneType.XZ);
-            PlaneType yzPlane = planes.FirstOrDefault(p => p == PlaneType.YZ);
+            var planes = new List<Plane>();
 
-            var xyDirs = userDirectionFactory.Plane1_Directions;
-            var xzDirs = userDirectionFactory.Plane2_Directions;
-            var yzDirs = userDirectionFactory.Plane3_Directions;
-            var alldirs = userDirectionFactory.Directions;
+            PlaneType xyPlaneType = planeTypes.FirstOrDefault(p => p == PlaneType.XY);
+            PlaneType xzPlaneType = planeTypes.FirstOrDefault(p => p == PlaneType.XZ);
+            PlaneType yzPlaneType = planeTypes.FirstOrDefault(p => p == PlaneType.YZ);
 
-            var searchDirections = new List<Vector3d>();
+            var xyPlane = Plane.WorldXY;
+            var xzPlane = Plane.WorldZX;
+            var yzPlane = Plane.WorldYZ;
 
-            if (xyPlane != 0) { searchDirections.AddRange(xyDirs); }
-            if (xzPlane != 0)
+            if (xyPlaneType != default) { planes.Add(xyPlane); }
+            if (xzPlaneType != default) { planes.Add(xzPlane); }
+            if (yzPlaneType != default) { planes.Add(yzPlane); }
+
+            //default planes set
+            if(planes.Count ==0)
             {
-                xzDirs.ForEach(d =>
-                { if (!searchDirections.Contains(d)) { searchDirections.Add(d); } });
-            }
-            if (yzPlane != 0)
-            {
-                xzDirs.ForEach(d =>
-                { if (!searchDirections.Contains(d)) { searchDirections.Add(d); } });
+                planes.Add(xyPlane);
+                planes.Add(xzPlane);
+                planes.Add(yzPlane);
             }
 
-            return searchDirections;
+            return planes;
         }
 
         private Vector3d GetMoveVector()
