@@ -23,8 +23,10 @@ namespace DS.RevitLib.Utils.PathCreators
         private readonly PathAlgorithmFactory _algorithmFactory;
         private readonly UIDocument _uiDoc;
         private readonly Document _doc;
-        private MEPCurve _baseMEPCurve;
+        private MEPCurve _startMEPCurve;
+        private MEPCurve _endMEPCurve;
         private List<Element> _objectsToExclude = new List<Element>();
+        private bool _allowStartDirection;
         private List<PlaneType> _planes;
 
         /// <summary>
@@ -43,14 +45,17 @@ namespace DS.RevitLib.Utils.PathCreators
         /// <summary>
         /// Build with some additional paramters.
         /// </summary>
-        /// <param name="baseMEPCurve"></param>
-        /// <param name="step"></param>
+        /// <param name="startMEPCurve"></param>
+        /// <param name="endMEPCurve"></param>
         /// <param name="objectsToExclude"></param>
+        /// <param name="allowStartDirection"></param>
         /// <param name="planes"></param>
         /// <returns></returns>
-        public xYZPathFinder Build(MEPCurve baseMEPCurve, List<Element> objectsToExclude, List<PlaneType> planes = null) 
+        public xYZPathFinder Build(MEPCurve startMEPCurve, MEPCurve endMEPCurve, List<Element> objectsToExclude, 
+            bool allowStartDirection = true, List<PlaneType> planes = null) 
         {
-            _baseMEPCurve = baseMEPCurve;
+            _startMEPCurve = startMEPCurve;
+            _endMEPCurve = endMEPCurve;
 
             //add objectsToExclude with its insulations
             var objectToExcludeIds = objectsToExclude.Select(obj => obj.Id).ToList();
@@ -61,6 +66,7 @@ namespace DS.RevitLib.Utils.PathCreators
             }
 
             _objectsToExclude = objectsToExclude;
+            _allowStartDirection = allowStartDirection;
             _planes = planes;
 
             return this;
@@ -73,15 +79,16 @@ namespace DS.RevitLib.Utils.PathCreators
         /// <inheritdoc/>
         public List<XYZ> FindPath(XYZ startPoint, XYZ endPoint)
         {
-            _algorithmFactory.Build(_baseMEPCurve, startPoint, endPoint,_objectsToExclude, _planes);
+            _algorithmFactory.Build(_startMEPCurve, startPoint, endPoint,_objectsToExclude, _planes);
+            if (_allowStartDirection) { _algorithmFactory.WithInitialDirections(_startMEPCurve, _endMEPCurve); }
 
-            var maxStepValue = 2000.MMToFeet();
+            var maxStepValue = 3000.MMToFeet();
             var dist = startPoint.DistanceTo(endPoint);
 
             var stepsCount = 5;
             var minStep = 50.MMToFeet();
-            var maxStep =  maxStepValue > dist / 2 ? dist / 2 : maxStepValue;
-            var stepTemp = (maxStep - minStep)/ stepsCount;
+            var maxStep =  maxStepValue > dist / 3 ? dist / 3 : maxStepValue;
+            var stepTemp = stepsCount == 0 ? maxStep : (maxStep - minStep)/ stepsCount;
 
             IPathFindIterator<Point3d> pathFindIterator = new PathFindIteratorByStep(
                 _algorithmFactory,

@@ -11,7 +11,9 @@ using DS.RevitLib.Utils.Bases;
 using DS.RevitLib.Utils.Collisions.Detectors;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.Geometry.Points;
+using DS.RevitLib.Utils.MEP;
 using Rhino.Geometry;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -114,10 +116,10 @@ namespace DS.RevitLib.Utils.PathCreators
         /// <param name="endPoint"></param>
         /// <param name="step"></param>
         /// <param name="objectsToExclude"></param>
+        /// <param name="allowStartDirection"></param>
         /// <param name="planeTypes"></param>
         /// <returns></returns>
-        public PathAlgorithmFactory Build(MEPCurve baseMEPCurve, XYZ startPoint, XYZ endPoint, List<Element> objectsToExclude,
-            List<PlaneType> planeTypes = null)
+        public PathAlgorithmFactory Build(MEPCurve baseMEPCurve, XYZ startPoint, XYZ endPoint, List<Element> objectsToExclude, List<PlaneType> planeTypes = null)
         {
             _baseMEPCurve = baseMEPCurve;
             _startPoint = startPoint;
@@ -136,6 +138,30 @@ namespace DS.RevitLib.Utils.PathCreators
             _nodeBuilder = _nodeBuilder.WithStep(_step);
             _algorithm = _algorithm.WithNodeBuilder(_nodeBuilder);
             _algorithm.ResetToken();
+        }
+
+        /// <summary>
+        /// Build algorithm with <paramref name="startMEPCurve"/> and <paramref name="endMEPCurve"/> directions to use it by path finding.
+        /// </summary>
+        /// <param name="startMEPCurve"></param>
+        /// <param name="endMEPCurve"></param>
+        public void WithInitialDirections(MEPCurve startMEPCurve, MEPCurve endMEPCurve)
+        {
+            var sp = new Point3d(_startPoint.X, _startPoint.Y, _startPoint.Z);
+            var ep = new Point3d(_endPoint.X, _endPoint.Y, _endPoint.Z);
+
+            var startDir = GetDirection(startMEPCurve, sp, ep, out Point3d startANP);
+            var endDir = GetDirection(endMEPCurve, ep, sp, out Point3d endANP);
+            endDir = Vector3d.Negate(endDir);
+
+            var allConnected = ConnectorUtils.GetAllConnectedElements(startMEPCurve, _doc);
+            if (allConnected.Select(obj => obj.Id).Contains(endMEPCurve.Id))
+            { startDir = Vector3d.Negate(startDir); }
+
+            _algorithm.StartDirection = startDir;
+            _algorithm.StartANP = startANP;
+            _algorithm.EndDirection = endDir;
+            _algorithm.EndANP = endANP;
         }
 
         /// <summary>
@@ -173,12 +199,16 @@ namespace DS.RevitLib.Utils.PathCreators
             IDirectionFactory directionFactory = new UserDirectionFactory();
             directionFactory.Build(_initialBasis.basisX, _initialBasis.basisY, _initialBasis.basisZ, _traceSettings.AList);
 
+            IPointVisualisator<Point3d> pointVisualisator =
+                new Point3dVisualisator(_uiDoc, PointConverter, 50.MMToFeet(), null, true);
+
             _nodeBuilder = new NodeBuilder(
                 _heuristicFormula, _mHEstimate, StartPoint, EndPoint,
                 _step, orths, _mCompactPath, _punishChangeDirection)
             {
                 Tolerance = _tolerance,
-                CTolerance = _cTolerance
+                PointVisualisator = pointVisualisator
+                //CTolerance = _cTolerance
             };
 
             ITraceCollisionDetector<Point3d> collisionDetector =
@@ -189,15 +219,12 @@ namespace DS.RevitLib.Utils.PathCreators
                 };
 
             IRefineFactory<Point3d> refineFactory = new PathRefineFactory();
-            IPointVisualisator<Point3d> pointVisualisator =
-                new Point3dVisualisator(_uiDoc, PointConverter, 50.MMToFeet(), null, true);
 
             var dirIterator = new DirectionIterator(_planes, _traceSettings.AList);
 
             //find restrict area
             Vector3d boundMoveVector = GetMoveVector();
             var (minPoint, maxPoint) = PointsUtils.GetBound(StartPoint, EndPoint, boundMoveVector);
-
             _algorithm = new AStarAlgorithmCDF(_traceSettings, _nodeBuilder, dirIterator, collisionDetector, refineFactory)
             {
                 Tolerance = _tolerance,
@@ -209,6 +236,29 @@ namespace DS.RevitLib.Utils.PathCreators
             .WithBounds(minPoint, maxPoint);
 
             return Algorithm;
+        }
+
+        private Vector3d GetDirection(MEPCurve mEPCurve, Point3d pointOnMEPCurve, Point3d pointOnSecondMEPCurve, out Point3d aNP)
+        {
+            Vector3d direction;
+
+            var cons = ConnectorUtils.GetConnectors(mEPCurve);
+            cons = cons.OrderBy(c => c.Origin.ToPoint3d().DistanceTo(pointOnMEPCurve)).ToList();
+            aNP = cons[1].Origin.ToPoint3d();
+            aNP = PointConverter.ConvertToUCS2(aNP).Round(_tolerance);
+
+            var spUCS2 = PointConverter.ConvertToUCS2(pointOnMEPCurve);
+            var epUCS2 = PointConverter.ConvertToUCS2(pointOnSecondMEPCurve);
+            direction = spUCS2 - aNP;
+            direction = Vector3d.Divide(direction, direction.Length).Round(_tolerance);
+
+            if ((aNP - epUCS2).Length < _cTolerance)
+            {
+                direction = Vector3d.Negate(direction);
+                aNP = Point3d.Origin;
+            }
+
+            return direction;
         }
 
         private List<Plane> ConvertPlaneTypes(List<PlaneType> planeTypes)
@@ -228,7 +278,7 @@ namespace DS.RevitLib.Utils.PathCreators
             if (yzPlaneType != default) { planes.Add(yzPlane); }
 
             //default planes set
-            if(planes.Count ==0)
+            if (planes.Count == 0)
             {
                 planes.Add(xyPlane);
                 planes.Add(xzPlane);
@@ -242,7 +292,7 @@ namespace DS.RevitLib.Utils.PathCreators
         {
             var basis = _initialBasis;
 
-            double offsetX = 500.MMToFeet();
+            double offsetX = 5000.MMToFeet();
             double offsetY = 5000.MMToFeet();
             double offsetZ = 5000.MMToFeet();
 
