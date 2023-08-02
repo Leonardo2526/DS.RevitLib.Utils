@@ -61,7 +61,7 @@ namespace DS.RevitLib.Test
             _transactionBuilder.Build(() =>
             {
                 var visualizator = new BoundingBoxVisualisator(bb, _doc);
-                visualizator.Visualise();
+                visualizator.Show();
             }, "show BoundingBox");
         }
 
@@ -92,7 +92,7 @@ namespace DS.RevitLib.Test
             _transactionBuilder.Build(() =>
             {
                 var visualizator = new BoundingBoxVisualisator(bb, _doc);
-                visualizator.Visualise();
+                visualizator.Show();
             }, "show BoundingBox");
         }
 

@@ -30,8 +30,9 @@ namespace DS.RevitLib.Test
             var mc1 = _doc.GetElement(reference) as MEPCurve;
             var (con1, con2) = ConnectorUtils.GetMainConnectors(mc1);
 
-            var finder = new PathCreator().Create(mc1.GetCenterLine(), null, 500.mmToFyt2(), 500.mmToFyt2(), 45);
-            return finder.CreateAsync(con1.Origin, con2.Origin).Result;
+            //var finder = new PathCreator().Create(mc1.GetCenterLine(), null, 500.mmToFyt2(), 500.mmToFyt2(), 45);
+            //return finder.CreateAsync(con1.Origin, con2.Origin).Result;
+            return null;
         }
 
         public List<XYZ> RunTest2()
@@ -44,8 +45,9 @@ namespace DS.RevitLib.Test
             var mc2 = _doc.GetElement(reference) as MEPCurve;
             var (con21, con22) = ConnectorUtils.GetMainConnectors(mc2);
             double midDistPoints = 500.mmToFyt2();
-            var finder = new PathCreator().Create(mc1.GetCenterLine(), mc2.GetCenterLine(), midDistPoints, midDistPoints * 5, 90, midDistPoints * 3);
-            return finder.CreateAsync(con11.Origin, con21.Origin).Result;
+            //var finder = new PathCreator().Create(mc1.GetCenterLine(), mc2.GetCenterLine(), midDistPoints, midDistPoints * 5, 90, midDistPoints * 3);
+            //return finder.CreateAsync(con11.Origin, con21.Origin).Result;
+            return null;
         }
 
         public void ShowPath(List<XYZ> path)
