@@ -135,6 +135,7 @@
     <Compile Include="Creation\Transactions\Committers\Committer.cs" />
     <Compile Include="Creation\Transactions\ITransactionFactory.cs" />
     <Compile Include="Creation\Transactions\RevitContextOption.cs" />
+    <Compile Include="Elements\ConnectedElementFinder.cs" />
     <Compile Include="Elements\MEPElements\Connection\ElementConnectionFactory.cs" />
     <Compile Include="Elements\MEPElements\Connection\ElementStrategies\ConnectWithMEPCurve.cs" />
     <Compile Include="Elements\MEPElements\Connection\ElementStrategies\ElbowElementStrategy.cs" />
@@ -232,6 +233,7 @@
     <Compile Include="PathCreators\PathFindCreator.cs" />
     <Compile Include="Tests\ITestModel.cs" />
     <Compile Include="Various\Bases\TwoMEPCurvesBasisStrategy.cs" />
+    <Compile Include="Elements\IElementFinder.cs" />
     <Compile Include="Various\IRevitContext.cs" />
     <Compile Include="Various\VectorPointConverter.cs" />
     <Compile Include="Various\Selections\Filters\ElementInLinkSelectionFilter.cs" />
