@@ -114,7 +114,7 @@ namespace DS.RevitLib.Utils.Connections
             {
                 element = selector.Pick($"Укажите 2 точку направления..");
                 ConnectionPoint connectionPoint2 = new ConnectionPoint(element, selector.Point);
-                return (connectionPoint2.Point - connectionPoint1.Point);
+                return (connectionPoint2.Point - connectionPoint1.Point).Normalize();
             }
 
             return null;

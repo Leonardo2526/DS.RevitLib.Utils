@@ -38,7 +38,7 @@ namespace DS.RevitLib.Utils.Various.Selections
                 Point = reference.GlobalPoint;
                 element = _doc.GetElement(reference);
             }
-            catch (OperationCanceledException)
+            catch (Exception)
             {return null;}
 
             return element is RevitLinkInstance ?

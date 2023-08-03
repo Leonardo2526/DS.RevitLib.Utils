@@ -457,7 +457,7 @@ namespace DS.RevitLib.Utils.Extensions
         {
             return element is Pipe || element is Duct ?
                 InsulationLiningBase.GetInsulationIds(element.Document, element.Id)
-               .Select(x => element.Document.GetElement(x) as InsulationLiningBase).FirstOrDefault() : 
+               .Select(x => element.Document.GetElement(x) as InsulationLiningBase).FirstOrDefault() :
                null;
         }
 
@@ -515,9 +515,9 @@ namespace DS.RevitLib.Utils.Extensions
         /// <param name="elements"></param>
         public static void ConvertToValid(this List<Element> elements)
         {
-            if(
-                elements is not null && 
-                elements.Any() && 
+            if (
+                elements is not null &&
+                elements.Any() &&
                 elements.TrueForAll(obj => obj.IsValidObject))
             { return; }
 
@@ -529,6 +529,35 @@ namespace DS.RevitLib.Utils.Extensions
                 { indexesToRemove.Add(i); }
             }
             indexesToRemove.ForEach(elements.RemoveAt);
+        }
+
+        /// <summary>
+        /// Specify if <paramref name="element"/> is MEP element.    
+        /// </summary>
+        /// <param name="element"></param>
+        /// <returns>
+        /// <see langword="true"/> if <paramref name="element"/> is pipe, duct, cable tray, fitting, accessory or equipment.
+        /// </returns>
+        public static bool IsMEPElement(this Element element)
+        {
+            var type = element.GetType();
+            bool validType = type == typeof(Pipe) || type == typeof(Duct) || type == typeof(CableTray) ? true : false;
+            if(validType) {  return true; } 
+
+            if(type != typeof(FamilyInstance)) { return false; }
+
+            BuiltInCategory familyInstanceCategory = CategoryExtension.GetBuiltInCategory(element.Category);
+
+            List<BuiltInCategory> builtInCategories = new List<BuiltInCategory>
+            {
+                BuiltInCategory.OST_PipeFitting,
+                BuiltInCategory.OST_DuctFitting,
+                BuiltInCategory.OST_CableTrayFitting,
+            BuiltInCategory.OST_MechanicalEquipment,
+            BuiltInCategory.OST_DuctAccessory,
+            BuiltInCategory.OST_PipeAccessory};
+
+            return ElementUtils.CheckCategory(familyInstanceCategory, builtInCategories);
         }
     }
 }

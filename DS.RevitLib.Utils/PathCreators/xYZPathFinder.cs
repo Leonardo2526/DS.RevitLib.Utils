@@ -82,10 +82,10 @@ namespace DS.RevitLib.Utils.PathCreators
             _algorithmFactory.Build(_startMEPCurve, startPoint, endPoint,_objectsToExclude, _planes);
             if (_allowStartDirection) { _algorithmFactory.WithInitialDirections(_startMEPCurve, _endMEPCurve); }
 
-            var maxStepValue = 3000.MMToFeet();
+            var maxStepValue = 1000.MMToFeet();
             var dist = startPoint.DistanceTo(endPoint);
 
-            var stepsCount = 5;
+            var stepsCount = 20;
             var minStep = 50.MMToFeet();
             var maxStep =  maxStepValue > dist / 3 ? dist / 3 : maxStepValue;
             var stepTemp = stepsCount == 0 ? maxStep : (maxStep - minStep)/ stepsCount;

@@ -9,13 +9,17 @@ using DS.PathFinder;
 using DS.PathFinder.Algorithms.AStar;
 using DS.RevitLib.Utils.Bases;
 using DS.RevitLib.Utils.Collisions.Detectors;
+using DS.RevitLib.Utils.Connections;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.Geometry.Points;
 using DS.RevitLib.Utils.MEP;
+using DS.RevitLib.Utils.MEP.Models;
+using DS.RevitLib.Utils.Visualisators;
 using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Threading;
 using Plane = Rhino.Geometry.Plane;
 using Transform = Rhino.Geometry.Transform;
@@ -39,7 +43,7 @@ namespace DS.RevitLib.Utils.PathCreators
         /// </summary>
         private int _cTolerance = 2;
 
-        private readonly int _mHEstimate = 10;
+        private readonly int _mHEstimate = 20;
         private readonly HeuristicFormula _heuristicFormula = HeuristicFormula.Manhattan;
         private readonly bool _mCompactPath = false;
         private readonly bool _punishChangeDirection = true;
@@ -62,6 +66,8 @@ namespace DS.RevitLib.Utils.PathCreators
         private List<Element> _objectsToExclude;
         private MEPCurve _baseMEPCurve;
         private ITraceSettings _traceSettings;
+        private readonly XYZVisualizator _visualisator;
+        private IPointVisualisator<Point3d> _pointVisualisator;
         private NodeBuilder _nodeBuilder;
         private AStarAlgorithmCDF _algorithm;
         private List<Plane> _planes;
@@ -83,6 +89,7 @@ namespace DS.RevitLib.Utils.PathCreators
             _docElements = docElements;
             _linkElementsDict = linkElementsDict;
             _traceSettings = traceSettings;
+            _visualisator = new XYZVisualizator(uiDoc, 100.MMToFeet(), null, true);
         }
 
         #region Properties
@@ -147,16 +154,8 @@ namespace DS.RevitLib.Utils.PathCreators
         /// <param name="endMEPCurve"></param>
         public void WithInitialDirections(MEPCurve startMEPCurve, MEPCurve endMEPCurve)
         {
-            var sp = new Point3d(_startPoint.X, _startPoint.Y, _startPoint.Z);
-            var ep = new Point3d(_endPoint.X, _endPoint.Y, _endPoint.Z);
-
-            var startDir = GetDirection(startMEPCurve, sp, ep, out Point3d startANP);
-            var endDir = GetDirection(endMEPCurve, ep, sp, out Point3d endANP);
-            endDir = Vector3d.Negate(endDir);
-
-            var allConnected = ConnectorUtils.GetAllConnectedElements(startMEPCurve, _doc);
-            if (allConnected.Select(obj => obj.Id).Contains(endMEPCurve.Id))
-            { startDir = Vector3d.Negate(startDir); }
+            var startDir = GetDirection(startMEPCurve, _startPoint, endMEPCurve, _endPoint, out Point3d startANP);
+            var endDir = GetDirection(endMEPCurve, _endPoint, startMEPCurve, _startPoint, out Point3d endANP, true);
 
             _algorithm.StartDirection = startDir;
             _algorithm.StartANP = startANP;
@@ -199,7 +198,7 @@ namespace DS.RevitLib.Utils.PathCreators
             IDirectionFactory directionFactory = new UserDirectionFactory();
             directionFactory.Build(_initialBasis.basisX, _initialBasis.basisY, _initialBasis.basisZ, _traceSettings.AList);
 
-            IPointVisualisator<Point3d> pointVisualisator =
+            _pointVisualisator =
                 new Point3dVisualisator(_uiDoc, PointConverter, 50.MMToFeet(), null, true);
 
             _nodeBuilder = new NodeBuilder(
@@ -207,7 +206,7 @@ namespace DS.RevitLib.Utils.PathCreators
                 _step, orths, _mCompactPath, _punishChangeDirection)
             {
                 Tolerance = _tolerance,
-                PointVisualisator = pointVisualisator
+                PointVisualisator = _pointVisualisator
                 //CTolerance = _cTolerance
             };
 
@@ -231,34 +230,44 @@ namespace DS.RevitLib.Utils.PathCreators
                 CTolerance = _cTolerance,
                 //TokenSource = new CancellationTokenSource(),
                 TokenSource = new CancellationTokenSource(5000),
-                PointVisualisator = pointVisualisator
+                PointVisualisator = _pointVisualisator
             }
             .WithBounds(minPoint, maxPoint);
 
             return Algorithm;
         }
 
-        private Vector3d GetDirection(MEPCurve mEPCurve, Point3d pointOnMEPCurve, Point3d pointOnSecondMEPCurve, out Point3d aNP)
+        private Vector3d GetDirection(MEPCurve mEPCurve1, XYZ point1, MEPCurve mEPCurve2, XYZ point2, out Point3d aNP, bool inverse = false)
         {
-            Vector3d direction;
+            XYZ dirXYZ = new ConnectionDirectionFactory(point1, mEPCurve1, _uiDoc).
+                GetDirection(point2, mEPCurve2);
+            if (inverse) { dirXYZ = dirXYZ.Negate(); }
+            //_visualisator.ShowVectorByDirection(point1, dirXYZ);
 
-            var cons = ConnectorUtils.GetConnectors(mEPCurve);
-            cons = cons.OrderBy(c => c.Origin.ToPoint3d().DistanceTo(pointOnMEPCurve)).ToList();
-            aNP = cons[1].Origin.ToPoint3d();
-            aNP = PointConverter.ConvertToUCS2(aNP).Round(_tolerance);
+            Point3d dirPoint = dirXYZ.ToPoint3d();
+            Point3d dirPointUCS2 = PointConverter.ConvertToUCS2(dirPoint);
+            Vector3d dir = dirPointUCS2 - Point3d.Origin;
 
-            var spUCS2 = PointConverter.ConvertToUCS2(pointOnMEPCurve);
-            var epUCS2 = PointConverter.ConvertToUCS2(pointOnSecondMEPCurve);
-            direction = spUCS2 - aNP;
-            direction = Vector3d.Divide(direction, direction.Length).Round(_tolerance);
+            var dTolerance = Math.Pow(0.1, _cTolerance);
+            var cons = ConnectorUtils.GetConnectors(mEPCurve1);
+            cons = cons.OrderBy(c => c.Origin.DistanceTo(point1)).
+                Where(c => c.Origin.DistanceTo(point1) > dTolerance).ToList();
 
-            if ((aNP - epUCS2).Length < _cTolerance)
+            var checkDir = inverse ? dirXYZ.Negate() : dirXYZ;
+
+            var aTolerance = 3.DegToRad();
+            Func<Connector, bool> func = (c) => Math.Round((point1 - c.Origin).Normalize().AngleTo(checkDir)) == 0;
+            var foundCon = cons.FirstOrDefault(func);
+            if (foundCon == null)
+            { aNP = default; }
+            else
             {
-                direction = Vector3d.Negate(direction);
-                aNP = Point3d.Origin;
+                aNP = foundCon.Origin.ToPoint3d();
+                aNP = PointConverter.ConvertToUCS2(aNP).Round(_tolerance);
+                //_pointVisualisator.Show(aNP);
             }
 
-            return direction;
+            return dir;
         }
 
         private List<Plane> ConvertPlaneTypes(List<PlaneType> planeTypes)
