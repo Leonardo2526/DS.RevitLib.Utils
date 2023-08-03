@@ -103,6 +103,7 @@
     <Compile Include="Collisions\Resolvers\IResolver.cs" />
     <Compile Include="Collisions\Resolvers\MoveTransformStrategy.cs" />
     <Compile Include="Collisions\Solutions\ISolution.cs" />
+    <Compile Include="Connections\ConnectionDirectionFactory.cs" />
     <Compile Include="Connections\PointModels\BestMEPCurveConnectionPoint.cs" />
     <Compile Include="Connections\PointModels\ConnectionPoint.cs" />
     <Compile Include="Connections\PointModels\ConnectionPointValidator.cs" />

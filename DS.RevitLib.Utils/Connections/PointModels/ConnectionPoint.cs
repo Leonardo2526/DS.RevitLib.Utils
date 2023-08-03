@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.UI;
 using DS.RevitLib.Utils.Connections.PointModels.PointModels;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -78,6 +79,26 @@ namespace DS.RevitLib.Utils.Connections.PointModels
         {
             Validator.ConnectionPoint = this;
             IsValid = Validator.Validate();
+        }
+
+        /// <summary>
+        /// Get direction by <paramref name="refPoint"/> of <paramref name="refElement"/>.
+        /// </summary>
+        /// <param name="refPoint"></param>
+        /// <param name="refElement"></param>
+        /// <param name="uIDocument"></param>
+        /// <remarks>
+        /// Specify <paramref name="uIDocument"/> if get direction manually should be enabled.
+        /// </remarks>
+        /// <returns>
+        /// <see cref="Autodesk.Revit.DB.XYZ"/> direction to connect <see cref="Element"/> at <see cref="Point"/>.
+        /// <para>
+        /// <see langword="null"/> if no direction was found.
+        /// </para>
+        /// </returns>
+        public XYZ GetDirection(XYZ refPoint, Element refElement, UIDocument uIDocument = null)
+        {
+            return new ConnectionDirectionFactory(Point, Element, uIDocument).GetDirection(refPoint, refElement);
         }
     }
 }
