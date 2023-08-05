@@ -8,6 +8,7 @@ using DS.ClassLib.VarUtils.Points;
 using DS.PathFinder;
 using DS.PathFinder.Algorithms.AStar;
 using DS.RevitLib.Utils.Bases;
+using DS.RevitLib.Utils.Collisions;
 using DS.RevitLib.Utils.Collisions.Detectors;
 using DS.RevitLib.Utils.Connections;
 using DS.RevitLib.Utils.Extensions;
@@ -43,7 +44,7 @@ namespace DS.RevitLib.Utils.PathCreators
         /// </summary>
         private int _cTolerance = 2;
 
-        private readonly int _mHEstimate = 20;
+        private readonly int _mHEstimate = 10;
         private readonly HeuristicFormula _heuristicFormula = HeuristicFormula.Manhattan;
         private readonly bool _mCompactPath = false;
         private readonly bool _punishChangeDirection = true;
@@ -62,6 +63,7 @@ namespace DS.RevitLib.Utils.PathCreators
         private (Vector3d basisX, Vector3d basisY, Vector3d basisZ) _pathFindBasis;
         private XYZ _startPoint;
         private XYZ _endPoint;
+        private Outline _outline;
         private double _step;
         private List<Element> _objectsToExclude;
         private MEPCurve _baseMEPCurve;
@@ -126,11 +128,12 @@ namespace DS.RevitLib.Utils.PathCreators
         /// <param name="allowStartDirection"></param>
         /// <param name="planeTypes"></param>
         /// <returns></returns>
-        public PathAlgorithmFactory Build(MEPCurve baseMEPCurve, XYZ startPoint, XYZ endPoint, List<Element> objectsToExclude, List<PlaneType> planeTypes = null)
+        public PathAlgorithmFactory Build(MEPCurve baseMEPCurve, XYZ startPoint, XYZ endPoint, Outline outline, List<Element> objectsToExclude, List<PlaneType> planeTypes = null)
         {
             _baseMEPCurve = baseMEPCurve;
             _startPoint = startPoint;
             _endPoint = endPoint;
+            _outline = outline;
             _objectsToExclude = objectsToExclude;
             _planes = ConvertPlaneTypes(planeTypes);
             Create();
@@ -142,8 +145,14 @@ namespace DS.RevitLib.Utils.PathCreators
         public void Reset(double step)
         {
             _step = step;
-            _nodeBuilder = _nodeBuilder.WithStep(_step);
+            _nodeBuilder = _nodeBuilder.WithStep(_step).ResetHestimate(_mHEstimate);
             _algorithm = _algorithm.WithNodeBuilder(_nodeBuilder);
+            _algorithm.ResetToken();
+        }
+
+        public void NextHestimate()
+        {
+            _nodeBuilder = _nodeBuilder.NextHestimate();
             _algorithm.ResetToken();
         }
 
@@ -199,7 +208,7 @@ namespace DS.RevitLib.Utils.PathCreators
             directionFactory.Build(_initialBasis.basisX, _initialBasis.basisY, _initialBasis.basisZ, _traceSettings.AList);
 
             _pointVisualisator =
-                new Point3dVisualisator(_uiDoc, PointConverter, 50.MMToFeet(), null, true);
+                new Point3dVisualisator(_uiDoc, PointConverter, 100.MMToFeet(), null, true);
 
             _nodeBuilder = new NodeBuilder(
                 _heuristicFormula, _mHEstimate, StartPoint, EndPoint,
@@ -208,7 +217,7 @@ namespace DS.RevitLib.Utils.PathCreators
                 Tolerance = _tolerance,
                 PointVisualisator = _pointVisualisator
                 //CTolerance = _cTolerance
-            };
+            };         
 
             ITraceCollisionDetector<Point3d> collisionDetector =
                 new CollisionDetectorByTrace(_doc, _baseMEPCurve, _traceSettings, _docElements, _linkElementsDict, PointConverter)
@@ -222,8 +231,22 @@ namespace DS.RevitLib.Utils.PathCreators
             var dirIterator = new DirectionIterator(_planes, _traceSettings.AList);
 
             //find restrict area
-            Vector3d boundMoveVector = GetMoveVector();
-            var (minPoint, maxPoint) = PointsUtils.GetBound(StartPoint, EndPoint, boundMoveVector);
+            //Vector3d boundMoveVector = GetMoveVector();
+            //var (minPoint1, maxPoint1) = PointsUtils.GetBound(StartPoint, EndPoint, boundMoveVector);
+
+            var bb = new BoundingBoxXYZ();
+            bb.Min = _outline.MinimumPoint;
+            bb.Max = _outline.MaximumPoint;         
+            var points = bb.GetPoints();
+            //points.ForEach(p => { p.Show(_doc); });
+
+            var points3d = new List<Point3d>();
+            points.ForEach(p => { points3d.Add(p.ToPoint3d()); });
+            var pointsUCS2 = new List<Point3d>();
+            points3d.ForEach(p => pointsUCS2.Add(PointConverter.ConvertToUCS2(p).Round(_tolerance)));
+            (Point3d minPoint, Point3d maxPoint) = PointsUtils.GetMinMax(pointsUCS2);
+            //_pointVisualisator.Show(minPoint);
+            //_pointVisualisator.Show(maxPoint);
             _algorithm = new AStarAlgorithmCDF(_traceSettings, _nodeBuilder, dirIterator, collisionDetector, refineFactory)
             {
                 Tolerance = _tolerance,

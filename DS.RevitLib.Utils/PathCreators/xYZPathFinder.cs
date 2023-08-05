@@ -25,6 +25,7 @@ namespace DS.RevitLib.Utils.PathCreators
         private readonly Document _doc;
         private MEPCurve _startMEPCurve;
         private MEPCurve _endMEPCurve;
+        private Outline _outline;
         private List<Element> _objectsToExclude = new List<Element>();
         private bool _allowStartDirection;
         private List<PlaneType> _planes;
@@ -48,14 +49,16 @@ namespace DS.RevitLib.Utils.PathCreators
         /// <param name="startMEPCurve"></param>
         /// <param name="endMEPCurve"></param>
         /// <param name="objectsToExclude"></param>
+        /// <param name="outline"></param>
         /// <param name="allowStartDirection"></param>
         /// <param name="planes"></param>
         /// <returns></returns>
-        public xYZPathFinder Build(MEPCurve startMEPCurve, MEPCurve endMEPCurve, List<Element> objectsToExclude, 
+        public xYZPathFinder Build(MEPCurve startMEPCurve, MEPCurve endMEPCurve, List<Element> objectsToExclude, Outline outline,
             bool allowStartDirection = true, List<PlaneType> planes = null) 
         {
             _startMEPCurve = startMEPCurve;
             _endMEPCurve = endMEPCurve;
+            _outline = outline;
 
             //add objectsToExclude with its insulations
             var objectToExcludeIds = objectsToExclude.Select(obj => obj.Id).ToList();
@@ -79,13 +82,13 @@ namespace DS.RevitLib.Utils.PathCreators
         /// <inheritdoc/>
         public List<XYZ> FindPath(XYZ startPoint, XYZ endPoint)
         {
-            _algorithmFactory.Build(_startMEPCurve, startPoint, endPoint,_objectsToExclude, _planes);
+            _algorithmFactory.Build(_startMEPCurve, startPoint, endPoint, _outline, _objectsToExclude, _planes);
             if (_allowStartDirection) { _algorithmFactory.WithInitialDirections(_startMEPCurve, _endMEPCurve); }
 
             var maxStepValue = 1000.MMToFeet();
             var dist = startPoint.DistanceTo(endPoint);
 
-            var stepsCount = 20;
+            var stepsCount = 10;
             var minStep = 50.MMToFeet();
             var maxStep =  maxStepValue > dist / 3 ? dist / 3 : maxStepValue;
             var stepTemp = stepsCount == 0 ? maxStep : (maxStep - minStep)/ stepsCount;

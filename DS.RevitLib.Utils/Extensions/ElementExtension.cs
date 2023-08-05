@@ -542,9 +542,10 @@ namespace DS.RevitLib.Utils.Extensions
         {
             var type = element.GetType();
             bool validType = type == typeof(Pipe) || type == typeof(Duct) || type == typeof(CableTray) ? true : false;
-            if(validType) {  return true; } 
+            if (validType) { return true; }
 
-            if(type != typeof(FamilyInstance)) { return false; }
+            var familyInstance = element as FamilyInstance;
+            if (familyInstance?.MEPModel.ConnectorManager is null) { return false; }
 
             BuiltInCategory familyInstanceCategory = CategoryExtension.GetBuiltInCategory(element.Category);
 

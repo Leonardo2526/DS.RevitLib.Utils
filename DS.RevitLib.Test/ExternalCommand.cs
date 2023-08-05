@@ -15,7 +15,7 @@ namespace DS.RevitLib.Test
             Autodesk.Revit.ApplicationServices.Application application = uiapp.Application;
             UIDocument uidoc = uiapp.ActiveUIDocument;
 
-            new GetConnectionDirectionTest(uidoc);
+            new ElementsExtractorTest(uidoc.Document, uidoc).RunWithBox();
 
             return Autodesk.Revit.UI.Result.Succeeded;
         }

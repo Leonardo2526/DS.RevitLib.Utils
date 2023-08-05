@@ -43,6 +43,16 @@ namespace DS.RevitLib.Utils.Collisions
         }
 
         /// <summary>
+        /// Intersected elements in current <see cref="Document"/>.
+        /// </summary>
+        public List<Element> DocElements { get; } = new List<Element>();
+
+        /// <summary>
+        /// Intersected elemenets by each <see cref="RevitLinkInstance"/>.
+        /// </summary>
+        public Dictionary<RevitLinkInstance, List<Element>> LinkElementsDict { get; } = new Dictionary<RevitLinkInstance, List<Element>>();
+
+        /// <summary>
         /// Get all elements which have a bounding box which intersects a given <paramref name="outline"/>.
         /// </summary>
         /// <param name="outline"></param>
@@ -62,19 +72,18 @@ namespace DS.RevitLib.Utils.Collisions
             List<Element> docElements = Collector?.WherePasses(new BoundingBoxIntersectsFilter(outline, tolerance)).
                 WherePasses(exclusionFilter).
                    ToElements().ToList();
-            if(docElements!= null && docElements.Any()) { allElementsInOutline.AddRange(docElements); }
+            if (docElements != null && docElements.Any())
+            { DocElements.AddRange(docElements); allElementsInOutline.AddRange(docElements); }
             else { return allElementsInOutline; }
-            
+
 
 
             //get elements by outline in all links
-            ICollection<ElementId> checkedObjects2Ids = _elements?.Select(el => el.Id).ToList();
             foreach (var link in _allLinks)
             {
-                var linkCollector = checkedObjects2Ids is null ? null :
-                    new FilteredElementCollector(link.GetLinkDocument(), checkedObjects2Ids);
+                var linkCollector = new FilteredElementCollector(link.GetLinkDocument());
 
-                var tr = link.GetTransform();
+                var tr = link.GetTotalTransform();
                 var linkOutLine = new Outline(tr.Inverse.OfPoint(outline.MinimumPoint), tr.Inverse.OfPoint(outline.MaximumPoint));
 
                 //show outlint points
@@ -83,9 +92,10 @@ namespace DS.RevitLib.Utils.Collisions
 
                 List<Element> linkElements = linkCollector?.
                     WherePasses(new BoundingBoxIntersectsFilter(linkOutLine, tolerance)).
-                    WherePasses(exclusionFilter).ToElements().ToList();
+                WherePasses(exclusionFilter).ToElements().ToList();
 
                 allElementsInOutline.AddRange(linkElements);
+                LinkElementsDict.Add(link, linkElements);
             }
 
 
