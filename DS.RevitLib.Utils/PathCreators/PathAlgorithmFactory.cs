@@ -30,7 +30,7 @@ namespace DS.RevitLib.Utils.PathCreators
     /// <summary>
     /// Factory to create a new path find algorythm.
     /// </summary>
-    public class PathAlgorithmFactory : IAlgorithmFactory
+    internal class PathAlgorithmFactory : IAlgorithmFactory
     {
         #region SettingsFields
 
@@ -44,7 +44,6 @@ namespace DS.RevitLib.Utils.PathCreators
         /// </summary>
         private int _cTolerance = 2;
 
-        private readonly int _mHEstimate = 10;
         private readonly HeuristicFormula _heuristicFormula = HeuristicFormula.Manhattan;
         private readonly bool _mCompactPath = false;
         private readonly bool _punishChangeDirection = true;
@@ -70,9 +69,9 @@ namespace DS.RevitLib.Utils.PathCreators
         private ITraceSettings _traceSettings;
         private readonly XYZVisualizator _visualisator;
         private IPointVisualisator<Point3d> _pointVisualisator;
-        private NodeBuilder _nodeBuilder;
         private AStarAlgorithmCDF _algorithm;
         private List<Plane> _planes;
+        private INodeBuilder _nodeBuilder;
 
         /// <summary>
         /// Instansiate a factory to create a new path find algorythm.
@@ -114,6 +113,7 @@ namespace DS.RevitLib.Utils.PathCreators
         /// </summary>
         public IPoint3dConverter PointConverter { get; private set; }
 
+        public INodeBuilder NodeBuilder { get => _nodeBuilder; private set => _nodeBuilder = value; }
 
         #endregion
 
@@ -141,19 +141,9 @@ namespace DS.RevitLib.Utils.PathCreators
             return this;
         }
 
-        /// <inheritdoc/>
-        public void Reset(double step)
+        public void Update(int tolerance)
         {
-            _step = step;
-            _nodeBuilder = _nodeBuilder.WithStep(_step).ResetHestimate(_mHEstimate);
-            _algorithm = _algorithm.WithNodeBuilder(_nodeBuilder);
-            _algorithm.ResetToken();
-        }
-
-        public void NextHestimate()
-        {
-            _nodeBuilder = _nodeBuilder.NextHestimate();
-            _algorithm.ResetToken();
+            _algorithm.MToleranceCoef = tolerance;
         }
 
         /// <summary>
@@ -210,14 +200,14 @@ namespace DS.RevitLib.Utils.PathCreators
             _pointVisualisator =
                 new Point3dVisualisator(_uiDoc, PointConverter, 100.MMToFeet(), null, true);
 
-            _nodeBuilder = new NodeBuilder(
-                _heuristicFormula, _mHEstimate, StartPoint, EndPoint,
+            NodeBuilder = new NodeBuilder(
+                _heuristicFormula, StartPoint, EndPoint,
                 _step, orths, _mCompactPath, _punishChangeDirection)
             {
                 Tolerance = _tolerance,
                 PointVisualisator = _pointVisualisator
                 //CTolerance = _cTolerance
-            };         
+            };
 
             ITraceCollisionDetector<Point3d> collisionDetector =
                 new CollisionDetectorByTrace(_doc, _baseMEPCurve, _traceSettings, _docElements, _linkElementsDict, PointConverter)
@@ -236,7 +226,7 @@ namespace DS.RevitLib.Utils.PathCreators
 
             var bb = new BoundingBoxXYZ();
             bb.Min = _outline.MinimumPoint;
-            bb.Max = _outline.MaximumPoint;         
+            bb.Max = _outline.MaximumPoint;
             var points = bb.GetPoints();
             //points.ForEach(p => { p.Show(_doc); });
 
@@ -247,7 +237,7 @@ namespace DS.RevitLib.Utils.PathCreators
             (Point3d minPoint, Point3d maxPoint) = PointsUtils.GetMinMax(pointsUCS2);
             //_pointVisualisator.Show(minPoint);
             //_pointVisualisator.Show(maxPoint);
-            _algorithm = new AStarAlgorithmCDF(_traceSettings, _nodeBuilder, dirIterator, collisionDetector, refineFactory)
+            _algorithm = new AStarAlgorithmCDF(_traceSettings, NodeBuilder, dirIterator, collisionDetector, refineFactory)
             {
                 Tolerance = _tolerance,
                 CTolerance = _cTolerance,
@@ -258,6 +248,12 @@ namespace DS.RevitLib.Utils.PathCreators
             .WithBounds(minPoint, maxPoint);
 
             return Algorithm;
+        }
+
+        public List<Point3d> FindPath()
+        {
+            _algorithm.ResetToken();
+            return _algorithm?.FindPath(StartPoint, EndPoint);
         }
 
         private Vector3d GetDirection(MEPCurve mEPCurve1, XYZ point1, MEPCurve mEPCurve2, XYZ point2, out Point3d aNP, bool inverse = false)
