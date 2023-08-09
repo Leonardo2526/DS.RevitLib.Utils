@@ -22,7 +22,7 @@ namespace DS.RevitLib.Utils.Geometry.Points
         private readonly UIDocument _uiDoc;
         private readonly Document _doc;
         private readonly bool _refresh;
-        private readonly double _labelSize;
+        private double _labelSize;
         private readonly double _minLineLength;
         private readonly ITransactionFactory _transactionFactory;
         private readonly double _arrowLabelAngle = 30.DegToRad();
@@ -43,6 +43,11 @@ namespace DS.RevitLib.Utils.Geometry.Points
             _minLineLength = 3 * _labelSize;
             _transactionFactory ??= new ContextTransactionFactory(_doc);
         }
+
+        /// <summary>
+        /// Label size.
+        /// </summary>
+        public double LabelSize { get => _labelSize; set => _labelSize = value; }
 
         /// <summary>
         /// Show point

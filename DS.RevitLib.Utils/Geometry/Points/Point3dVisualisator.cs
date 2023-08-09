@@ -36,5 +36,22 @@ namespace DS.RevitLib.Utils.Geometry.Points
             XYZ xYZPoint = new XYZ(point3d.X, point3d.Y, point3d.Z);
             Show(xYZPoint);
         }
+
+        /// <inheritdoc/>
+        public void ShowVector(Point3d point1, Point3d point2)
+        {
+            var point3d1 = _pointConverter is null ? point1 : _pointConverter.ConvertToUCS1(point1);
+            var point3d2 = _pointConverter is null ? point2 : _pointConverter.ConvertToUCS1(point2);
+            XYZ xYZPoint1 = new XYZ(point3d1.X, point3d1.Y, point3d1.Z);
+            XYZ xYZPoint2 = new XYZ(point3d2.X, point3d2.Y, point3d2.Z);
+            ShowVector(xYZPoint1, xYZPoint2);
+        }
+
+        /// <inheritdoc/>
+        public void ShowVectorByDirection(Point3d origin, Point3d direction)
+        {
+            var p2 = origin + direction;
+            ShowVector(origin, p2);
+        }
     }
 }

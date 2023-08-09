@@ -49,7 +49,6 @@ namespace DS.RevitLib.Utils.MEP
             var basisZ = basisX.CrossProduct(basisY);
             basePoint ??= line.GetCenter();
             Basis basis = new Basis(basisX, basisY, basisZ, basePoint);
-            basis.Round();
 
             return basis;
         }

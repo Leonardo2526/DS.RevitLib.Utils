@@ -104,7 +104,11 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
             }
 
             var checkSolid = _baseMEPCurve.GetOffsetSolid(_offset, p1, p2);
-            //new TransactionBuilder(_doc).Build(() => checkSolid.ShowShape(_doc), "Show shape");
+            //new TransactionBuilder(_doc).Build(() =>
+            //{
+            //    checkSolid.ShowShape(_doc);
+            //}
+            //, "Show shape");
             //return new List<ICollision>();
             return Collisions = _detectorFactory.GetCollisions(checkSolid, ObjectsToExclude);
         }

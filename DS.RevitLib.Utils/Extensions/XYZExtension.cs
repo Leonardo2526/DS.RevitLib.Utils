@@ -260,5 +260,25 @@ namespace DS.RevitLib.Utils.Extensions
             return new Point3d(xYZ.X, xYZ.Y, xYZ.Z);
         }
 
+        /// <summary>
+        /// Convert <paramref name="point"/> to <see cref="Autodesk.Revit.DB.XYZ"/>.
+        /// </summary>
+        /// <param name="point"></param>
+        /// <returns>Returns a new <see cref="Autodesk.Revit.DB.XYZ"/> built by <paramref name="point"/> coordinates.</returns>
+        public static XYZ ToXYZ(this Point3d point)
+        {
+            return new XYZ(point.X, point.Y, point.Z);
+        }
+
+        /// <summary>
+        /// Convert <paramref name="vector"/> to <see cref="Autodesk.Revit.DB.XYZ"/>.
+        /// </summary>
+        /// <param name="vector"></param>
+        /// <returns>Returns a new <see cref="Autodesk.Revit.DB.XYZ"/> built by <paramref name="vector"/> coordinates.</returns>
+        public static XYZ ToXYZ(this Vector3d vector)
+        {
+            return new XYZ(vector.X, vector.Y, vector.Z);
+        }
+
     }
 }

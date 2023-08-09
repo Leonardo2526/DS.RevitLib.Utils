@@ -213,7 +213,7 @@ namespace DS.RevitLib.Utils.PathCreators
                 new CollisionDetectorByTrace(_doc, _baseMEPCurve, _traceSettings, _docElements, _linkElementsDict, PointConverter)
                 {
                     ObjectsToExclude = _objectsToExclude,
-                    OffsetOnEndPoint = true
+                    OffsetOnEndPoint = false
                 };
 
             IRefineFactory<Point3d> refineFactory = new PathRefineFactory();

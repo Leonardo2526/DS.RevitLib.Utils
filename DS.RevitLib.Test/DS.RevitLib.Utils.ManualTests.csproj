@@ -74,6 +74,7 @@
   <ItemGroup>
     <Compile Include="TestedClasses\AlignMEPCurvesTest.cs" />
     <Compile Include="TestedClasses\ArcCreationTest.cs" />
+    <Compile Include="TestedClasses\BasisBuilderTest.cs" />
     <Compile Include="TestedClasses\BBCollisionUtilsTest.cs" />
     <Compile Include="TestedClasses\BuilderByPointsTest.cs" />
     <Compile Include="TestedClasses\ConnectedElementFinderTest.cs" />
