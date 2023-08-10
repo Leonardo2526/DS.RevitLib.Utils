@@ -204,6 +204,8 @@
     <Compile Include="Geometry\Points\PointVisualisator.cs" />
     <Compile Include="Geometry\Points\XYZVisualizator.cs" />
     <Compile Include="PathCreators\xYZPathFinder.cs" />
+    <Compile Include="Various\Bases\BasisExtensions.cs" />
+    <Compile Include="Various\Bases\BasisXYZ.cs" />
     <Compile Include="Various\Bases\IBasisStrategy.cs" />
     <Compile Include="PathCreators\PathAlgorithmFactory.cs" />
     <Compile Include="UIUtils.cs" />

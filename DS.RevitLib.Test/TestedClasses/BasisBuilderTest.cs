@@ -19,6 +19,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Xsl;
 using Transform = Rhino.Geometry.Transform;
+using DS.ClassLib.VarUtils.Basis;
+using DS.RevitLib.Utils.Various.Bases;
 
 namespace DS.RevitLib.Test.TestedClasses
 {
@@ -45,7 +47,9 @@ namespace DS.RevitLib.Test.TestedClasses
             _visualisator = new XYZVisualizator(_uiDoc, _labelSize);
             _point3dVisualisator =
                new Point3dVisualisator(_uiDoc, null, _labelSize, null, true);
-            var transforms = GetTransfrom();
+
+            //var transforms = GetTransfroms();
+            var transforms = GetMEPCurveTransfroms();
             if (transforms == null) { return; }
 
             //var xYZ = new XYZ(1, 0, 0);
@@ -54,69 +58,54 @@ namespace DS.RevitLib.Test.TestedClasses
             //var xYZ = new XYZ(1, 1, 0);
             //var xYZ = new XYZ(1, 0, 1);
             //var xYZ = new XYZ(0, 1, 1);
-            var xYZ = new XYZ(1, 1, 1);
-            TryTransform(transforms, xYZ);
-
-
+            //var xYZ = new XYZ(1, 1, 1);
+            //TryTransform(transforms, xYZ);
         }
 
-        private List<Autodesk.Revit.DB.Transform> GetTransfrom()
+        private List<Autodesk.Revit.DB.Transform> GetTransfroms()
         {
+            var sourceBasis = new Basis3d(Point3d.Origin, Vector3d.XAxis, Vector3d.YAxis, Vector3d.ZAxis);
+            sourceBasis.Show(_uiDoc);
+            Debug.Assert(sourceBasis.IsRighthanded(), "AreRighthanded");
 
-            //Point3d point = new Point3d(-1, 0, 0);
-            //_point3dVisualisator.Show(point);
-
-            //Vector3d diagonal = new Vector3d(point.X, point.Y, point.Z);
-            //var movePoint = origin + diagonal;
-            //_point3dVisualisator.ShowVector(origin, movePoint);
-
-            (Point3d initialOrigin, Vector3d initialBasisX, Vector3d initialBasisY, Vector3d initialBasisZ) = GetOriginBasis();
-            //(Point3d initialOrigin, Vector3d initialBasisX, Vector3d initialBasisY, Vector3d initialBasisZ) = GetInitialBasis();
-            //_point3dVisualisator.Show(initialOrigin);
-            //ShowBases(initialOrigin, initialBasisX, initialBasisY, initialBasisZ);
-
-            Debug.Assert(Vector3d.AreRighthanded(initialBasisX, initialBasisY, initialBasisZ), "AreRighthanded");
-            Debug.Assert(Vector3d.AreOrthonormal(initialBasisX, initialBasisY, initialBasisZ), "AreOrthonormal");
-
-
-            var targetOrigin = Point3d.Origin;
+            var targetOrigin = new Point3d(5, -6, 10);
             Vector3d stargetBasisX = new Vector3d(1, 1, 1);
-            //Vector3d stargetBasisX = new Vector3d(0, 1, 1);
-            //Vector3d stargetBasisX = new Vector3d(1, 0, 1);
-            //Vector3d stargetBasisX = new Vector3d(1, 1, 0);
-            //Vector3d stargetBasisX = new Vector3d(0, 0, 1);
-            //Vector3d stargetBasisX = new Vector3d(0, 1, 0);
-            //Vector3d stargetBasisX = GetTargetBasisX(out Point3d targetOrigin);
-            (Vector3d targetBasisX, Vector3d targetBasisY, Vector3d targetBasisZ) = GetTargetBasis(stargetBasisX, initialBasisX, initialBasisY, initialBasisZ);
-            ShowBases(targetOrigin, targetBasisX, targetBasisY, targetBasisZ);
+            Basis3d targetBasis = sourceBasis.GetBasis(stargetBasisX);
+            targetBasis.Origin = targetOrigin;
+            targetBasis.Show(_uiDoc);
+            Debug.Assert(targetBasis.IsRighthanded(), "AreRighthanded");
 
             Debug.WriteLine("");
             Debug.WriteLine($"origin: {targetOrigin}");
-            Debug.WriteLine($"basisX: {targetBasisX}");
-            Debug.WriteLine($"basisY: {targetBasisY}");
-            Debug.WriteLine($"basisZ: {targetBasisZ}");
+            Debug.WriteLine($"basisX: {targetBasis.X}");
+            Debug.WriteLine($"basisY: {targetBasis.Y}");
+            Debug.WriteLine($"basisZ: {targetBasis.Z}");
 
-            var rigth = Vector3d.AreRighthanded(targetBasisX, targetBasisY, targetBasisZ);
-            var orthnorm = Vector3d.AreOrthonormal(targetBasisX, targetBasisY, targetBasisZ);
-            Debug.Assert(rigth, "AreRighthanded");
-            Debug.Assert(orthnorm, "AreOrthonormal");
-            //Debug.Assert(basisY.IsParallelTo(initialBasisY) == 1 || basisY.IsParallelTo(initialBasisX) == 1, "BasisY direction failure");
-            if (!rigth || !orthnorm) { return null; }
-
-            Transform transform = Transform.ChangeBasis(
-              initialBasisX, initialBasisY, initialBasisZ,
-              targetBasisX, targetBasisY, targetBasisZ);
-
-            var transforms = Decomposite(transform,
-                initialOrigin, initialBasisX, initialBasisY, initialBasisZ,
-                targetOrigin, targetBasisX, targetBasisY, targetBasisZ);
-
-            return transforms;
+            return sourceBasis.GetTransforms(targetBasis); ;
         }
 
-        private List<Autodesk.Revit.DB.Transform> Decomposite(Transform transform,
-            Point3d initialOrigin, Vector3d initialBasisX, Vector3d initialBasisY, Vector3d initialBasisZ,
-            Point3d targetOrigin, Vector3d targetBasisX, Vector3d targetBasisY, Vector3d targetBasisZ)
+        private List<Autodesk.Revit.DB.Transform> GetMEPCurveTransfroms()
+        {
+            var sourceBasis = GetSourceBasis();
+            sourceBasis.Show(_uiDoc);
+            Debug.Assert(sourceBasis.IsRighthanded(), "AreRighthanded");
+
+            Vector3d stargetBasisX = GetTargetBasisX(out Point3d targetOrigin);
+            Basis3d targetBasis = sourceBasis.GetBasis(stargetBasisX);
+            targetBasis.Origin = targetOrigin;
+            targetBasis.Show(_uiDoc);
+            Debug.Assert(targetBasis.IsRighthanded(), "AreRighthanded");
+
+            Debug.WriteLine("");
+            Debug.WriteLine($"origin: {targetOrigin}");
+            Debug.WriteLine($"basisX: {targetBasis.X}");
+            Debug.WriteLine($"basisY: {targetBasis.Y}");
+            Debug.WriteLine($"basisZ: {targetBasis.Z}");
+
+            return sourceBasis.GetTransforms(targetBasis);
+        }
+
+        private List<Autodesk.Revit.DB.Transform> Decomposite(Transform transform, Basis3d initialBasis, Basis3d targetBasis)
         {
             var xYZTransforms = new List<Autodesk.Revit.DB.Transform>();
 
@@ -128,20 +117,20 @@ namespace DS.RevitLib.Test.TestedClasses
             double beta = beta1.RadToDeg();
             double gamma = gamma1.RadToDeg();
 
-            XYZ origin1 = initialOrigin.ToXYZ();
-            XYZ initpx = initialBasisX.ToXYZ();
-            XYZ initpy = initialBasisY.ToXYZ();
-            XYZ initpz = initialBasisZ.ToXYZ();
+            XYZ origin1 = initialBasis.Origin.ToXYZ();
+            XYZ initpx = initialBasis.X.ToXYZ();
+            XYZ initpy = initialBasis.Y.ToXYZ();
+            XYZ initpz = initialBasis.Z.ToXYZ();
 
-            XYZ px = initialBasisX.ToXYZ();
-            XYZ py = initialBasisY.ToXYZ();
-            XYZ pz = initialBasisZ.ToXYZ();
+            XYZ px = initialBasis.X.ToXYZ();
+            XYZ py = initialBasis.Y.ToXYZ();
+            XYZ pz = initialBasis.Z.ToXYZ();          
 
             var xYZTransform1 = Autodesk.Revit.DB.Transform.CreateRotationAtPoint(initpz, -alpha1, origin1);
             xYZTransforms.Add(xYZTransform1);
-            px = xYZTransform1.OfVector(initialBasisX.ToXYZ());
-            py = xYZTransform1.OfVector(initialBasisY.ToXYZ());
-            pz = xYZTransform1.OfVector(initialBasisZ.ToXYZ());
+            px = xYZTransform1.OfVector(initialBasis.X.ToXYZ());
+            py = xYZTransform1.OfVector(initialBasis.Y.ToXYZ());
+            pz = xYZTransform1.OfVector(initialBasis.Z.ToXYZ());
 
             var xYZTransform2 = Autodesk.Revit.DB.Transform.CreateRotationAtPoint(initpy, -beta1, origin1);
             xYZTransforms.Add(xYZTransform2);
@@ -155,6 +144,8 @@ namespace DS.RevitLib.Test.TestedClasses
             py = xYZTransform3.OfVector(py);
             pz = xYZTransform3.OfVector(pz);
 
+            var translation  = Autodesk.Revit.DB.Transform.CreateTranslation((targetBasis.Origin - initialBasis.Origin).ToXYZ());
+            xYZTransforms.Add(translation);
 
             return xYZTransforms;
             //var dec = transform.DecomposeRigid(out Vector3d translation, out Transform rotation, _tolerance);
@@ -183,12 +174,7 @@ namespace DS.RevitLib.Test.TestedClasses
             return MEPCurveUtils.GetDirection(mc1).ToVector3d();
         }
 
-        private (Point3d origin, Vector3d initialBasisX, Vector3d initialBasisY, Vector3d initialBasisZ) GetOriginBasis()
-        {
-            return (Point3d.Origin, Vector3d.XAxis, Vector3d.YAxis, Vector3d.ZAxis);
-        }
-
-        private (Point3d origin, Vector3d initialBasisX, Vector3d initialBasisY, Vector3d initialBasisZ) GetInitialBasis()
+        private Basis3d GetSourceBasis()
         {
             Reference reference = _uiDoc.Selection.PickObject(ObjectType.Element, "Select element1");
             var mc1 = _doc.GetElement(reference) as MEPCurve;
@@ -198,33 +184,33 @@ namespace DS.RevitLib.Test.TestedClasses
             var initialBasisX = xYZBasis.X.ToVector3d();
             var initialBasisY = xYZBasis.Y.ToVector3d();
             var initialBasisZ = xYZBasis.Z.ToVector3d();
-            return (origin, initialBasisX, initialBasisY, initialBasisZ);
+            return new Basis3d(origin, initialBasisX, initialBasisY, initialBasisZ);
         }
 
-        private (Vector3d basisX, Vector3d basisY, Vector3d basisZ) GetTargetBasis(Vector3d targetBasisX,
-            Vector3d initialBasisX, Vector3d initialBasisY, Vector3d initialBasisZ)
-        {
-            Vector3d basisX = targetBasisX;
+        //private (Vector3d basisX, Vector3d basisY, Vector3d basisZ) GetTargetBasis(Vector3d targetBasisX,
+        //    Vector3d initialBasis.X, Vector3d initialBasis.Y, Vector3d initialBasis.Z)
+        //{
+        //    Vector3d basisX = targetBasisX;
 
-            double aTolerance = 3.DegToRad();
-            Vector3d basisY;
-            var xCross = Vector3d.CrossProduct(basisX, initialBasisX);
-            //if (xCross.IsParallelTo(initialBasisZ, tolerance) == 1) { basisY = Vector3d.CrossProduct(initialBasisZ, basisX); }
-            //else if (xCross.IsParallelTo(initialBasisY, tolerance) == 1) { basisY = initialBasisY; }
-            if (basisX.IsPerpendicularTo(initialBasisY, aTolerance)) { basisY = initialBasisY; }
-            else if (basisX.IsPerpendicularTo(initialBasisZ, aTolerance)) { basisY = Vector3d.CrossProduct(initialBasisZ, basisX); ; }
-            else if (basisX.IsPerpendicularTo(initialBasisX, aTolerance)) { basisY = initialBasisX; }
-            else { basisY = xCross; }
+        //    double aTolerance = 3.DegToRad();
+        //    Vector3d basisY;
+        //    var xCross = Vector3d.CrossProduct(basisX, initialBasis.X);
+        //    //if (xCross.IsParallelTo(initialBasis.Z, tolerance) == 1) { basisY = Vector3d.CrossProduct(initialBasis.Z, basisX); }
+        //    //else if (xCross.IsParallelTo(initialBasis.Y, tolerance) == 1) { basisY = initialBasis.Y; }
+        //    if (basisX.IsPerpendicularTo(initialBasis.Y, aTolerance)) { basisY = initialBasis.Y; }
+        //    else if (basisX.IsPerpendicularTo(initialBasis.Z, aTolerance)) { basisY = Vector3d.CrossProduct(initialBasis.Z, basisX); ; }
+        //    else if (basisX.IsPerpendicularTo(initialBasis.X, aTolerance)) { basisY = initialBasis.X; }
+        //    else { basisY = xCross; }
 
-            Vector3d basisZ = Vector3d.CrossProduct(basisX, basisY);
+        //    Vector3d basisZ = Vector3d.CrossProduct(basisX, basisY);
 
-            basisX = Vector3d.Divide(basisX, basisX.Length);
-            basisY = Vector3d.Divide(basisY, basisY.Length);
-            basisZ = Vector3d.Divide(basisZ, basisZ.Length);
+        //    basisX = Vector3d.Divide(basisX, basisX.Length);
+        //    basisY = Vector3d.Divide(basisY, basisY.Length);
+        //    basisZ = Vector3d.Divide(basisZ, basisZ.Length);
 
-            return (basisX, basisY, basisZ);
-            //return (basisX.Round(_tolerance), basisY.Round(_tolerance), basisZ.Round(_tolerance));
-        }
+        //    return (basisX, basisY, basisZ);
+        //    //return (basisX.Round(_tolerance), basisY.Round(_tolerance), basisZ.Round(_tolerance));
+        //}
 
 
         private void ShowVector()
