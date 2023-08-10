@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.DB;
+using DS.ClassLib.VarUtils.Basis;
 using DS.RevitLib.Utils.Lines;
 using DS.RevitLib.Utils.MEP;
 using DS.RevitLib.Utils.Various.Bases;
@@ -14,9 +15,8 @@ namespace DS.RevitLib.Utils.Extensions
     {
         private readonly Document _doc;
         private readonly MEPCurve _mEPCurve;
-        private readonly BasisXYZ _sourceBasis;
-        private readonly Solid _sourceSolid;
-        private readonly List<Curve> _sourceFaceCurves;
+        private readonly BasisXYZ _mcBasis;
+        private List<Curve> _sourceFaceCurves;
 
         /// <summary>
         /// Create a new instance of object to extract solid from <paramref name="mEPCurve"/>.
@@ -31,17 +31,27 @@ namespace DS.RevitLib.Utils.Extensions
             var (con1, con2) = mEPCurve.GetMainConnectors();
             var offsetDir = (con1.Origin - con2.Origin).Normalize();
 
-            _sourceBasis = mEPCurve.GetBasisXYZ(offsetDir, con1.Origin);
-            SourceBasis3d = _sourceBasis.ToBasis3d();
+            _mcBasis = mEPCurve.GetBasisXYZ(offsetDir, con1.Origin);
 
-            _sourceSolid = ElementUtils.GetSolid(_mEPCurve);
-            _sourceFaceCurves = GetFaceCurves(_sourceSolid.Faces, _sourceBasis, offset);
+            var sourceSolid = ElementUtils.GetSolid(_mEPCurve);
+            _sourceFaceCurves = GetFaceCurves(sourceSolid.Faces, _mcBasis, offset);
+        }
+
+        /// <summary>
+        /// Set a new source basis.
+        /// </summary>
+        /// <param name="sourceBasis"></param>
+        public void SetSource(Basis3d sourceBasis)
+        {
+            SourceBasis3d = sourceBasis;
+            List<Transform> transforms = _mcBasis.ToBasis3d().GetTransforms(sourceBasis);
+            _sourceFaceCurves = GetTransformed(_sourceFaceCurves, transforms);
         }
 
         /// <summary>
         /// Source basis.
         /// </summary>
-        public ClassLib.VarUtils.Basis.Basis3d SourceBasis3d { get; }
+        public ClassLib.VarUtils.Basis.Basis3d SourceBasis3d { get; private set; }
 
         /// <summary>
         /// Extract <see cref="Solid"/> from <see cref="_mEPCurve"/> and place it between <paramref name="startPoint"/> and <paramref name="startPoint"/>
@@ -52,19 +62,21 @@ namespace DS.RevitLib.Utils.Extensions
         /// <param name="targetBasis"></param>
         /// <returns>
         /// Offsetted transformed <see cref="Solid"/>.
-        /// </returns>
+        /// </returns>  
         public Solid Extract(XYZ startPoint, XYZ endPoint, BasisXYZ targetBasis)
         {
             List<Transform> transforms = SourceBasis3d.GetTransforms(targetBasis.ToBasis3d());
 
-            var vector = targetBasis.Origin - startPoint;
+            var vector =  startPoint - targetBasis.Origin;
             var translation = Transform.CreateTranslation(vector);
             transforms.Add(translation);
 
             var trCurves = GetTransformed(_sourceFaceCurves, transforms);
 
-            return Extract(trCurves, vector.Negate().Normalize(), startPoint.DistanceTo(endPoint));
+            var dir = (endPoint - startPoint).Normalize();
+            return Extract(trCurves,dir , startPoint.DistanceTo(endPoint));
         }
+
 
         #region PrivateMethods
 
@@ -109,7 +121,7 @@ namespace DS.RevitLib.Utils.Extensions
                 curve = offset == 0 ? curve : curve.CreateOffset(offset, sourceBasis.X);
                 faceCurves.Add(curve);
             }
-
+          
             return faceCurves;
         }
 

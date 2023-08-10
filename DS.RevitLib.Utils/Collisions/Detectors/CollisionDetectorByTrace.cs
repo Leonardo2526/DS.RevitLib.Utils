@@ -1,16 +1,21 @@
 ﻿using Autodesk.Revit.DB;
 using DS.ClassLib.VarUtils;
+using DS.ClassLib.VarUtils.Basis;
 using DS.ClassLib.VarUtils.Collisions;
 using DS.ClassLib.VarUtils.Points;
 using DS.RevitLib.Utils.Elements.MEPElements;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.MEP;
 using DS.RevitLib.Utils.Models;
+using DS.RevitLib.Utils.Solids;
+using DS.RevitLib.Utils.Various.Bases;
 using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Net;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Media.Media3D;
@@ -28,6 +33,7 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
         private readonly IPoint3dConverter _pointConverter;
         private readonly SolidElementCollisionDetectorFactory _detectorFactory;
         private readonly double _offset;
+        private BasisXYZ _sourceBasis;
 
         /// <summary>
         /// Instantiate an object to create objects for collisions (intersections) detection 
@@ -49,6 +55,7 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
             _pointConverter = pointConverter;
             _detectorFactory = new SolidElementCollisionDetectorFactory(doc, docElements, linkElementsDict);
             _detectorFactory.MinVolume = 0;
+            SolidExtractor = new BestSolidOffsetExtractor(baseMEPCurve, _offset);
         }
 
         /// <inheritdoc/>
@@ -64,18 +71,21 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
         /// </summary>
         public bool OffsetOnEndPoint { get; set; } = false;
 
+        public BestSolidOffsetExtractor SolidExtractor { get; }
+       
         /// <summary>
         /// 
         /// </summary>
         /// <param name="point1"></param>
         /// <param name="point2"></param>
+        /// <param name="basis"></param>
         /// <returns>
         /// Returns collisions by <see cref="MEPCurve"/> between <paramref name="point1"/> and <paramref name="point2"/>.
         /// <para>
         /// Returns empty list if no collisions were detected.
         /// </para>
         /// </returns>
-        public List<ICollision> GetCollisions(Point3d point1, Point3d point2)
+        public List<ICollision> GetCollisions(Point3d point1, Point3d point2, Basis3d basis)
         {
             XYZ p1 = null;
             XYZ p2 = null;
@@ -103,12 +113,16 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
                 p2 = new XYZ(endSolidPoint.X, endSolidPoint.Y, endSolidPoint.Z);
             }
 
-            var checkSolid = _baseMEPCurve.GetOffsetSolid(_offset, p1, p2);
-            //new TransactionBuilder(_doc).Build(() =>
-            //{
-            //    checkSolid.ShowShape(_doc);
-            //}
-            //, "Show shape");
+
+            var uCS1Basis = _pointConverter.ConvertToUCS1(basis).ToXYZ();
+            var checkSolid = SolidExtractor.Extract(p1, p2, uCS1Basis);
+            return Collisions = _detectorFactory.GetCollisions(checkSolid, ObjectsToExclude);
+
+            new TransactionBuilder(_doc).Build(() =>
+            {
+                checkSolid.ShowShape(_doc);
+            }
+            , "Show shape");
             //return new List<ICollision>();
             return Collisions = _detectorFactory.GetCollisions(checkSolid, ObjectsToExclude);
         }

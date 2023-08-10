@@ -1,9 +1,12 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using DS.ClassLib.VarUtils;
+using DS.ClassLib.VarUtils.Basis;
 using DS.ClassLib.VarUtils.Points;
 using DS.RevitLib.Utils.Creation.Transactions;
+using DS.RevitLib.Utils.Various.Bases;
 using Rhino.Geometry;
+using System.Drawing;
 
 namespace DS.RevitLib.Utils.Geometry.Points
 {
@@ -52,6 +55,12 @@ namespace DS.RevitLib.Utils.Geometry.Points
         {
             var p2 = origin + direction;
             ShowVector(origin, p2);
+        }
+
+        /// <inheritdoc/>
+        public void Show(Basis3d basis)
+        {
+            _pointConverter.ConvertToUCS1(basis).Show(_uiDoc);
         }
     }
 }

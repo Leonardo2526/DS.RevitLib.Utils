@@ -1,10 +1,12 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using DS.ClassLib.VarUtils;
+using DS.ClassLib.VarUtils.Basis;
 using DS.RevitLib.Utils.Creation.Transactions;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.Lines;
 using DS.RevitLib.Utils.ModelCurveUtils;
+using DS.RevitLib.Utils.Various.Bases;
 using DS.RevitLib.Utils.Visualisators;
 using System;
 using System.Collections.Generic;
@@ -19,7 +21,7 @@ namespace DS.RevitLib.Utils.Geometry.Points
     /// </summary>
     public class XYZVisualizator : IPointVisualisator<XYZ>
     {
-        private readonly UIDocument _uiDoc;
+        protected readonly UIDocument _uiDoc;
         private readonly Document _doc;
         private readonly bool _refresh;
         private double _labelSize;
@@ -167,6 +169,11 @@ namespace DS.RevitLib.Utils.Geometry.Points
             { return XYZ.BasisZ; }
 
             return line.GetNormal(); ;
+        }
+
+        public void Show(Basis3d basis)
+        {
+            basis.Show(_uiDoc);
         }
     }
 }

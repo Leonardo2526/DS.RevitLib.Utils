@@ -15,6 +15,7 @@ using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.Geometry.Points;
 using DS.RevitLib.Utils.MEP;
 using DS.RevitLib.Utils.MEP.Models;
+using DS.RevitLib.Utils.Various.Bases;
 using DS.RevitLib.Utils.Visualisators;
 using Rhino.Geometry;
 using System;
@@ -115,6 +116,8 @@ namespace DS.RevitLib.Utils.PathCreators
 
         public INodeBuilder NodeBuilder { get => _nodeBuilder; private set => _nodeBuilder = value; }
 
+        private CollisionDetectorByTrace _collisionDetector;
+
         #endregion
 
         /// <summary>
@@ -202,14 +205,14 @@ namespace DS.RevitLib.Utils.PathCreators
 
             NodeBuilder = new NodeBuilder(
                 _heuristicFormula, StartPoint, EndPoint,
-                _step, orths, _mCompactPath, _punishChangeDirection)
+                _step, orths, PointConverter, _mCompactPath, _punishChangeDirection)
             {
                 Tolerance = _tolerance,
                 PointVisualisator = _pointVisualisator
                 //CTolerance = _cTolerance
             };
 
-            ITraceCollisionDetector<Point3d> collisionDetector =
+            _collisionDetector =
                 new CollisionDetectorByTrace(_doc, _baseMEPCurve, _traceSettings, _docElements, _linkElementsDict, PointConverter)
                 {
                     ObjectsToExclude = _objectsToExclude,
@@ -237,15 +240,20 @@ namespace DS.RevitLib.Utils.PathCreators
             (Point3d minPoint, Point3d maxPoint) = PointsUtils.GetMinMax(pointsUCS2);
             //_pointVisualisator.Show(minPoint);
             //_pointVisualisator.Show(maxPoint);
-            _algorithm = new AStarAlgorithmCDF(_traceSettings, NodeBuilder, dirIterator, collisionDetector, refineFactory)
+            _algorithm = new AStarAlgorithmCDF(_traceSettings, NodeBuilder, dirIterator, _collisionDetector, refineFactory)
             {
                 Tolerance = _tolerance,
                 CTolerance = _cTolerance,
                 //TokenSource = new CancellationTokenSource(),
                 TokenSource = new CancellationTokenSource(5000),
-                PointVisualisator = _pointVisualisator
+                PointVisualisator = _pointVisualisator,
             }
             .WithBounds(minPoint, maxPoint);
+
+            var dir = MEPCurveUtils.GetDirection(_baseMEPCurve);
+            var sourceBasisUCS1 = _baseMEPCurve.GetBasisXYZ(dir, _startPoint).ToBasis3d();
+            _algorithm.SourceBasis = PointConverter.ConvertToUCS2(sourceBasisUCS1);
+            _collisionDetector.SolidExtractor.SetSource(sourceBasisUCS1);
 
             return Algorithm;
         }
