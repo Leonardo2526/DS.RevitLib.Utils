@@ -38,16 +38,16 @@ namespace DS.RevitLib.Test.TestedClasses
         {
             _uiDoc = uidoc;
             _doc = uidoc.Document;
-            Run();
-        }
-
-        private void Run()
-        {
             _selector = new PointSelector(_uiDoc) { AllowLink = true };
             _visualisator = new XYZVisualizator(_uiDoc, _labelSize);
             _point3dVisualisator =
                new Point3dVisualisator(_uiDoc, null, _labelSize, null, true);
+            RunMulti();
+            //Run();
+        }
 
+        private void Run()
+        {
             //var transforms = GetTransfroms();
             var transforms = GetMEPCurveTransfroms();
             if (transforms == null) { return; }
@@ -60,6 +60,20 @@ namespace DS.RevitLib.Test.TestedClasses
             //var xYZ = new XYZ(0, 1, 1);
             //var xYZ = new XYZ(1, 1, 1);
             //TryTransform(transforms, xYZ);
+        }
+
+        private void RunMulti()
+        {
+            Transform transform1 = GetMEPCurveTransfrom(out Basis3d sourceBasis1, out Basis3d targetBasis1);
+            XYZ testPoint = (sourceBasis1.Origin + sourceBasis1.X).ToXYZ();
+            testPoint.Show(_doc);
+
+            Transform transform2 = GetMEPCurveTransfrom(out Basis3d sourceBasis2, out Basis3d targetBasis2);
+            List<Autodesk.Revit.DB.Transform> transforms = sourceBasis1.GetTransforms(targetBasis2);
+            //var transform = transform1 * transform2;
+
+            var trPoint = testPoint.Transform(transforms);
+            trPoint.Show(_doc);
         }
 
         private List<Autodesk.Revit.DB.Transform> GetTransfroms()
@@ -103,6 +117,27 @@ namespace DS.RevitLib.Test.TestedClasses
             Debug.WriteLine($"basisZ: {targetBasis.Z}");
 
             return sourceBasis.GetTransforms(targetBasis);
+        }
+
+        private Transform GetMEPCurveTransfrom(out Basis3d sourceBasis, out Basis3d targetBasis)
+        {
+            sourceBasis = GetSourceBasis();
+            sourceBasis.Show(_uiDoc);
+            Debug.Assert(sourceBasis.IsRighthanded(), "AreRighthanded");
+
+            Vector3d stargetBasisX = GetTargetBasisX(out Point3d targetOrigin);
+            targetBasis = sourceBasis.GetBasis(stargetBasisX);
+            targetBasis.Origin = targetOrigin;
+            targetBasis.Show(_uiDoc);
+            Debug.Assert(targetBasis.IsRighthanded(), "AreRighthanded");
+
+            Debug.WriteLine("");
+            Debug.WriteLine($"origin: {targetOrigin}");
+            Debug.WriteLine($"basisX: {targetBasis.X}");
+            Debug.WriteLine($"basisY: {targetBasis.Y}");
+            Debug.WriteLine($"basisZ: {targetBasis.Z}");
+
+            return sourceBasis.GetTransform(targetBasis);
         }
 
         private List<Autodesk.Revit.DB.Transform> Decomposite(Transform transform, Basis3d initialBasis, Basis3d targetBasis)

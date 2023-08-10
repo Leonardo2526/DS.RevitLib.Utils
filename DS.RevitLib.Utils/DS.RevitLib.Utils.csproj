@@ -203,6 +203,7 @@
     <Compile Include="Geometry\Points\Point3dVisualisator.cs" />
     <Compile Include="Geometry\Points\PointVisualisator.cs" />
     <Compile Include="Geometry\Points\XYZVisualizator.cs" />
+    <Compile Include="Geometry\Solids\SolidOffsetExtractor.cs" />
     <Compile Include="PathCreators\xYZPathFinder.cs" />
     <Compile Include="Various\Bases\BasisExtensions.cs" />
     <Compile Include="Various\Bases\BasisXYZ.cs" />
@@ -213,7 +214,7 @@
     <Compile Include="Geometry\Lines\LineOverlapResult.cs" />
     <Compile Include="Geometry\Lines\LinesConnector.cs" />
     <Compile Include="Geometry\Points\XYZAlgorithms\FindDistanceStrategies\Strategies\StrategyToFindMinDist.cs" />
-    <Compile Include="Geometry\Solids\SolidOffsetExtractor.cs" />
+    <Compile Include="Geometry\Solids\BestSolidOffsetExtractor.cs" />
     <Compile Include="Creation\FailedTransaction.cs" />
     <Compile Include="Extensions\FamilyInstanceExtensions.cs" />
     <Compile Include="Creation\MEP\Builders\BuilderByPoints.cs" />

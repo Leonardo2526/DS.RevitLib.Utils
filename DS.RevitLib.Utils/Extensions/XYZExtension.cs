@@ -7,6 +7,7 @@ using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Media;
 using System.Windows.Media.Media3D;
 using Line = Autodesk.Revit.DB.Line;
 using Plane = Autodesk.Revit.DB.Plane;
@@ -278,6 +279,25 @@ namespace DS.RevitLib.Utils.Extensions
         public static XYZ ToXYZ(this Vector3d vector)
         {
             return new XYZ(vector.X, vector.Y, vector.Z);
+        }
+
+        /// <summary>
+        /// Transform <paramref name="point"/> with set of <paramref name="transforms"/>.
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="transforms"></param>
+        /// <returns>
+        /// A new transformed <see cref="Autodesk.Revit.DB.XYZ"/>.
+        /// </returns>
+        public static XYZ Transform(this XYZ point, List<Autodesk.Revit.DB.Transform> transforms)
+        {
+            XYZ xYZ = new XYZ(point.X, point.Y, point.Z);
+            foreach (var transform in transforms)
+            {
+                xYZ = transform.OfPoint(xYZ);
+            }
+
+            return xYZ;
         }
 
     }

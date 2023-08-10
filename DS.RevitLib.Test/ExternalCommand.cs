@@ -15,7 +15,7 @@ namespace DS.RevitLib.Test
             Autodesk.Revit.ApplicationServices.Application application = uiapp.Application;
             UIDocument uidoc = uiapp.ActiveUIDocument;
 
-            new BasisBuilderTest( uidoc);
+            new BestSolidOffsetExtractorTest( uidoc);
 
             return Autodesk.Revit.UI.Result.Succeeded;
         }

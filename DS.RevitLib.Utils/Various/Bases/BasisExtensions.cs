@@ -36,7 +36,7 @@ namespace DS.RevitLib.Utils.Various.Bases
         /// <returns>
         /// New <see cref="Basis3d"/> built by <paramref name="basis"/> coordinates.
         /// </returns>
-        public static Basis3d ToXYZ(this BasisXYZ basis) =>
+        public static Basis3d ToBasis3d(this BasisXYZ basis) =>
             new Basis3d(basis.Origin.ToPoint3d(), basis.X.ToVector3d(), basis.Y.ToVector3d(), basis.Z.ToVector3d());
 
         /// <summary>
