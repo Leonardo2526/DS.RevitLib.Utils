@@ -12,6 +12,7 @@ using DS.RevitLib.Utils.Collisions;
 using DS.RevitLib.Utils.Collisions.Detectors;
 using DS.RevitLib.Utils.Connections;
 using DS.RevitLib.Utils.Connections.PointModels;
+using DS.RevitLib.Utils.Creation.Transactions;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.Geometry.Points;
 using DS.RevitLib.Utils.MEP;
@@ -56,6 +57,7 @@ namespace DS.RevitLib.Utils.PathCreators
         private readonly IBasisStrategy _basisStrategy;
         private readonly List<Element> _docElements;
         private readonly Dictionary<RevitLinkInstance, List<Element>> _linkElementsDict;
+        private readonly ITransactionFactory _transactionFactory;
         private readonly Document _doc;
 
         private readonly (Vector3d basisX, Vector3d basisY, Vector3d basisZ) _initialBasis =
@@ -86,15 +88,16 @@ namespace DS.RevitLib.Utils.PathCreators
         /// <param name="linkElementsDict"></param>
         /// <param name="traceSettings"></param>
         public PathAlgorithmFactory(UIDocument uiDoc, IBasisStrategy basisStrategy, ITraceSettings traceSettings,
-            List<Element> docElements, Dictionary<RevitLinkInstance, List<Element>> linkElementsDict = null)
+            List<Element> docElements, Dictionary<RevitLinkInstance, List<Element>> linkElementsDict = null, ITransactionFactory transactionFactory = null)
         {
             _uiDoc = uiDoc;
             _doc = _uiDoc.Document;
             _basisStrategy = basisStrategy;
             _docElements = docElements;
             _linkElementsDict = linkElementsDict;
+            _transactionFactory = transactionFactory;
             _traceSettings = traceSettings;
-            _visualisator = new XYZVisualizator(uiDoc, 100.MMToFeet(), null, true);
+            _visualisator = new XYZVisualizator(uiDoc, 100.MMToFeet(), transactionFactory, true);
         }
 
         #region Properties
@@ -224,11 +227,11 @@ namespace DS.RevitLib.Utils.PathCreators
             var ep = new Point3d(_endPoint.X, _endPoint.Y, _endPoint.Z);
             EndPoint = PointConverter.ConvertToUCS2(ep).Round(_tolerance);
 
-            IDirectionFactory directionFactory = new UserDirectionFactory();
-            directionFactory.Build(_initialBasis.basisX, _initialBasis.basisY, _initialBasis.basisZ, _traceSettings.AList);
+            //IDirectionFactory directionFactory = new UserDirectionFactory();
+            //directionFactory.Build(_initialBasis.basisX, _initialBasis.basisY, _initialBasis.basisZ, _traceSettings.AList);
 
             _pointVisualisator =
-                new Point3dVisualisator(_uiDoc, PointConverter, 100.MMToFeet(), null, true);
+                new Point3dVisualisator(_uiDoc, PointConverter, 100.MMToFeet(), _transactionFactory, true);
 
             NodeBuilder = new NodeBuilder(
                 _heuristicFormula, StartPoint, EndPoint,
@@ -240,7 +243,7 @@ namespace DS.RevitLib.Utils.PathCreators
             };
 
             _collisionDetector =
-                new CollisionDetectorByTrace(_doc, _baseMEPCurve, _traceSettings, _docElements, _linkElementsDict, PointConverter)
+                new CollisionDetectorByTrace(_doc, _baseMEPCurve, _traceSettings, _docElements, _linkElementsDict, PointConverter, _transactionFactory)
                 {
                     ObjectsToExclude = _objectsToExclude,
                     OffsetOnEndPoint = false,
@@ -251,7 +254,8 @@ namespace DS.RevitLib.Utils.PathCreators
 
             IRefineFactory<Point3d> refineFactory = new PathRefineFactory();
 
-            var dirIterator = new DirectionIterator(_planes, _traceSettings.AList);
+            var dirs = new List<int>() { (int)_traceSettings.A };
+            var dirIterator = new DirectionIterator(_planes, dirs);
 
             //find restrict area
             //Vector3d boundMoveVector = GetMoveVector();
@@ -300,7 +304,7 @@ namespace DS.RevitLib.Utils.PathCreators
             XYZ dirXYZ = new ConnectionDirectionFactory(connectionPoint1.Point, mc, _uiDoc).
                 GetDirection(connectionPoint2.Point, connectionPoint2.Element);
             if (inverse) { dirXYZ = dirXYZ.Negate(); }
-            _visualisator.ShowVectorByDirection(connectionPoint1.Point, dirXYZ);
+            //_visualisator.ShowVectorByDirection(connectionPoint1.Point, dirXYZ);
 
             Point3d dirPoint = dirXYZ.ToPoint3d();
             Point3d dirPointUCS2 = PointConverter.ConvertToUCS2(dirPoint);
@@ -326,7 +330,7 @@ namespace DS.RevitLib.Utils.PathCreators
             {
                 aNP = foundCon.ToPoint3d();
                 aNP = PointConverter.ConvertToUCS2(aNP).Round(_tolerance);
-                _pointVisualisator.Show(aNP);
+                //_pointVisualisator.Show(aNP);
             }
 
             return dir;

@@ -4,6 +4,7 @@ using DS.ClassLib.VarUtils.Basis;
 using DS.ClassLib.VarUtils.Collisions;
 using DS.ClassLib.VarUtils.Points;
 using DS.RevitLib.Utils.Connections.PointModels;
+using DS.RevitLib.Utils.Creation.Transactions;
 using DS.RevitLib.Utils.Elements.MEPElements;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.MEP;
@@ -32,6 +33,7 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
         private readonly MEPCurve _baseMEPCurve;
         private readonly ITraceSettings _traceSettings;
         private readonly IPoint3dConverter _pointConverter;
+        private readonly ITransactionFactory _transactionFactory;
         private readonly SolidElementCollisionDetectorFactory _detectorFactory;
         private readonly double _offset;
         private BasisXYZ _sourceBasis;
@@ -51,13 +53,16 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
         /// <param name="linkElementsDict"></param>
         /// <param name="pointConverter"></param>
         public CollisionDetectorByTrace(Document doc, MEPCurve baseMEPCurve, ITraceSettings traceSettings,
-            List<Element> docElements, Dictionary<RevitLinkInstance, List<Element>> linkElementsDict = null, IPoint3dConverter pointConverter = null)
+            List<Element> docElements, Dictionary<RevitLinkInstance, List<Element>> linkElementsDict = null, IPoint3dConverter pointConverter = null,
+            ITransactionFactory transactionFactory = null)
         {
             _doc = doc;
             _baseMEPCurve = baseMEPCurve;
-            _offset = baseMEPCurve.GetInsulationThickness() + traceSettings.B;
+            _offset = baseMEPCurve.GetInsulationThickness() + traceSettings.B - 0.03;
             _traceSettings = traceSettings;
             _pointConverter = pointConverter;
+            _transactionFactory = transactionFactory;
+            _transactionFactory ??= new ContextTransactionFactory(_doc);
             _detectorFactory = new SolidElementCollisionDetectorFactory(doc, docElements, linkElementsDict);
             _detectorFactory.MinVolume = 0;
             SolidExtractor = new BestSolidOffsetExtractor(baseMEPCurve, _offset);
@@ -143,13 +148,13 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
             var checkSolid = SolidExtractor.Extract(p1, p2, uCS1Basis);
             return Collisions = _detectorFactory.GetCollisions(checkSolid, ObjectsToExclude);
 
-            new TransactionBuilder(_doc).Build(() =>
+            _transactionFactory.CreateAsync(() =>
             {
                 checkSolid.ShowShape(_doc);
             }
             , "Show shape");
             //return new List<ICollision>();
-            return Collisions = _detectorFactory.GetCollisions(checkSolid, ObjectsToExclude);
+            //return Collisions = _detectorFactory.GetCollisions(checkSolid, ObjectsToExclude);
         }
 
         public List<ICollision> GetFirstCollisions(Point3d point2, Basis3d basis)

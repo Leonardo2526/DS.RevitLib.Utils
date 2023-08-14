@@ -34,15 +34,16 @@ namespace DS.RevitLib.Utils.Geometry.Points
         /// </summary>
         /// <param name="uiDoc"></param>
         /// <param name="labelSize"></param>
-        /// <param name="transactionBuilder"></param>
+        /// <param name="transactionFactory"></param>
         /// <param name="refresh"></param>
-        public XYZVisualizator(UIDocument uiDoc, double labelSize = 0, ITransactionFactory transactionBuilder = null, bool refresh = false) 
+        public XYZVisualizator(UIDocument uiDoc, double labelSize = 0, ITransactionFactory transactionFactory = null, bool refresh = false) 
         {            
             _uiDoc = uiDoc;
             _doc = uiDoc.Document;
             _refresh = refresh;
             _labelSize = labelSize == 0 ? 100.MMToFeet() : labelSize;
             _minLineLength = 3 * _labelSize;
+            _transactionFactory = transactionFactory;
             _transactionFactory ??= new ContextTransactionFactory(_doc);
         }
 

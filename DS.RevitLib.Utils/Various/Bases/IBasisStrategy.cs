@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.UI;
 
 namespace DS.RevitLib.Utils.Bases
 {
@@ -26,6 +27,13 @@ namespace DS.RevitLib.Utils.Bases
         /// Central point of basis
         /// </summary>
         public XYZ Point { get; }
+
+        /// <summary>
+        /// Build strategy.
+        /// </summary>
+        /// <returns></returns>
+        /// <param name="uiDoc"></param>
+        IBasisStrategy Build(UIDocument uiDoc);
 
         /// <summary>
         /// Get basis vectors.

@@ -7,6 +7,7 @@ using DS.PathFinder;
 using DS.PathFinder.Algorithms.Enumeratos;
 using DS.RevitLib.Utils.Bases;
 using DS.RevitLib.Utils.Connections.PointModels;
+using DS.RevitLib.Utils.Creation.Transactions;
 using DS.RevitLib.Utils.Elements;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.MEP;
@@ -29,28 +30,34 @@ namespace DS.RevitLib.Utils.PathCreators
         private  List<Element> _docElements;
         private  Dictionary<RevitLinkInstance, List<Element>> _linkElementsDict;
         private PathAlgorithmFactory _algorithmFactory;
-        private readonly UIDocument _uiDoc;
+        private  UIDocument _uiDoc;
         private readonly IBasisStrategy _basisStrategy;
         private readonly ITraceSettings _traceSettings;
-        private readonly List<BuiltInCategory> _exludedCathegories;
-        private readonly Document _doc;      
+        private List<BuiltInCategory> _exludedCathegories;
+        private Document _doc;      
         private List<Element> _objectsToExclude = new List<Element>();
         private bool _allowStartDirection;
         private List<PlaneType> _planes;
         private List<XYZ> _path = new List<XYZ>();
         private MEPCurve _baseMEPCurve;
+        private ITransactionFactory _transactionFactory;
 
         /// <summary>
         /// Instantiate an object to find path between <see cref="Autodesk.Revit.DB.XYZ"/> points.
         /// </summary>
-        public xYZPathFinder(UIDocument uiDoc, IBasisStrategy basisStrategy, ITraceSettings traceSettings, 
-            List<BuiltInCategory> exludedCathegories)
+        public xYZPathFinder(IBasisStrategy basisStrategy, ITraceSettings traceSettings)
+        {           
+            _basisStrategy = basisStrategy;
+            _traceSettings = traceSettings;
+        }
+
+        public xYZPathFinder AddDoc(UIDocument uiDoc)
         {
             _uiDoc = uiDoc;
             _doc = _uiDoc.Document;
-            _basisStrategy = basisStrategy;
-            _traceSettings = traceSettings;
-            _exludedCathegories = exludedCathegories;
+            _basisStrategy.Build(uiDoc);
+
+            return this;
         }
 
         /// <summary>
@@ -60,14 +67,17 @@ namespace DS.RevitLib.Utils.PathCreators
         /// <param name="startMEPCurve"></param>
         /// <param name="endMEPCurve"></param>
         /// <param name="objectsToExclude"></param>
+        /// <param name="exludedCathegories"></param>
         /// <param name="outline"></param>
         /// <param name="allowStartDirection"></param>
         /// <param name="planes"></param>
         /// <param name="basisMEPCurve1"></param>
         /// <param name="basisMEPCurve2"></param>
         /// <returns></returns>
-        public xYZPathFinder Build(MEPCurve baseMEPCurve, List<Element> objectsToExclude, 
-            bool allowStartDirection = true, List<PlaneType> planes = null, MEPCurve basisMEPCurve1 = null, MEPCurve basisMEPCurve2 = null)
+        public xYZPathFinder Build(MEPCurve baseMEPCurve, List<Element> objectsToExclude,
+        List<BuiltInCategory> exludedCathegories,
+            bool allowStartDirection = true, List<PlaneType> planes = null, MEPCurve basisMEPCurve1 = null, MEPCurve basisMEPCurve2 = null, 
+            ITransactionFactory transactionFactory= null)
         {
             _baseMEPCurve = baseMEPCurve;
 
@@ -80,11 +90,14 @@ namespace DS.RevitLib.Utils.PathCreators
             }
 
             _objectsToExclude = objectsToExclude;
+            _exludedCathegories = exludedCathegories;
             _allowStartDirection = allowStartDirection;
             _planes = planes;
 
             if (_basisStrategy is TwoMEPCurvesBasisStrategy twoMCStrategy)
             { twoMCStrategy.MEPCurve1 = basisMEPCurve1; twoMCStrategy.MEPCurve2 = basisMEPCurve2; }
+
+            _transactionFactory = transactionFactory;
 
             return this;
         }
@@ -92,13 +105,19 @@ namespace DS.RevitLib.Utils.PathCreators
         /// <inheritdoc/>
         public List<XYZ> Path { get => _path; }
 
+        /// <summary>
+        /// Token to cancel finding path operation.
+        /// </summary>
+        public CancellationTokenSource TokenSource { get; set; }
+
         /// <inheritdoc/>
         public List<XYZ> FindPath(ConnectionPoint startPoint, ConnectionPoint endPoint)
         {
             var outline = GetOutline(startPoint.Point, endPoint.Point);
 
             (_docElements, _linkElementsDict) = new ElementsExtractor(_doc, _exludedCathegories, outline).GetAll();
-            _algorithmFactory = new PathAlgorithmFactory(_uiDoc, _basisStrategy, _traceSettings, _docElements, _linkElementsDict);
+            _algorithmFactory = new PathAlgorithmFactory(_uiDoc, _basisStrategy, _traceSettings, _docElements, _linkElementsDict, _transactionFactory);
+
 
             _algorithmFactory.Build(_baseMEPCurve, startPoint, endPoint, outline, _objectsToExclude, _planes);
             if (_allowStartDirection) 
@@ -109,12 +128,16 @@ namespace DS.RevitLib.Utils.PathCreators
                 { throw new ArgumentNullException("Failed to find MEPCurve on connection point.");}
                 _algorithmFactory.WithInitialDirections(); 
             }
+            _algorithmFactory.Algorithm.TokenSource = TokenSource;
 
             var dist = startPoint.Point.DistanceTo(endPoint.Point) / 3;
             var stepEnumerator = new StepEnumerator(_algorithmFactory.NodeBuilder, dist.FeetToMM(), true);
             var heuristicEnumerator = new HeuristicEnumerator(_algorithmFactory.NodeBuilder, true);
             var toleranceEnumerator = new ToleranceEnumerator(_algorithmFactory, true);
-            var pathFindEnumerator = new PathFindEnumerator(stepEnumerator, heuristicEnumerator, toleranceEnumerator, _algorithmFactory);
+            var pathFindEnumerator = new PathFindEnumerator(stepEnumerator, heuristicEnumerator, toleranceEnumerator, _algorithmFactory)
+            {
+                TokenSource = TokenSource
+            };
 
             var path = new List<Point3d>();
             while (pathFindEnumerator.MoveNext())

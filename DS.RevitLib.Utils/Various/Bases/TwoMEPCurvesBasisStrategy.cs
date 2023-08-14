@@ -11,18 +11,20 @@ namespace DS.RevitLib.Utils.Bases
     /// </summary>
     public class TwoMEPCurvesBasisStrategy : IBasisStrategy
     {
-        private readonly UIDocument _uiDoc;
-        private readonly Document _doc;
+        private UIDocument _uiDoc;
+        private Document _doc;
 
 
         /// <summary>
         /// Instansiate an object to get basis vectors by selecting two elements in model.
         /// </summary>
         /// <param name="uidoc"></param>
-        public TwoMEPCurvesBasisStrategy(UIDocument uidoc)
+        public IBasisStrategy Build(UIDocument uidoc)
         {
             _uiDoc = uidoc;
             _doc = _uiDoc.Document;
+
+            return this;
         }
 
         /// <summary>

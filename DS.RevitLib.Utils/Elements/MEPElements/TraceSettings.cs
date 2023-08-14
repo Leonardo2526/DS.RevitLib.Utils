@@ -10,7 +10,7 @@ namespace DS.RevitLib.Utils.Elements.MEPElements
 {
     public class TraceSettings : ITraceSettings
     {
-        private double _a = 90.DegToRad();
+        private double _a = 90;
         private double _b = 100.MMToFeet();
         private double _c = 100.MMToFeet();
         private double _d = 50.MMToFeet();
@@ -37,5 +37,8 @@ namespace DS.RevitLib.Utils.Elements.MEPElements
 
         ///<inheritdoc/>
         public double F { get; set; }
+
+        ///<inheritdoc/>
+        public double R { get; set; }
     }
 }
