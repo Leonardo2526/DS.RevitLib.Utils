@@ -11,6 +11,7 @@ using DS.RevitLib.Utils.Bases;
 using DS.RevitLib.Utils.Collisions;
 using DS.RevitLib.Utils.Collisions.Detectors;
 using DS.RevitLib.Utils.Connections;
+using DS.RevitLib.Utils.Connections.PointModels;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.Geometry.Points;
 using DS.RevitLib.Utils.MEP;
@@ -63,6 +64,8 @@ namespace DS.RevitLib.Utils.PathCreators
         private (Vector3d basisX, Vector3d basisY, Vector3d basisZ) _pathFindBasis;
         private XYZ _startPoint;
         private XYZ _endPoint;
+        private ConnectionPoint _startConnectionPoint;
+        private ConnectionPoint _endConnectionPoint;
         private Outline _outline;
         private double _step;
         private List<Element> _objectsToExclude;
@@ -97,7 +100,7 @@ namespace DS.RevitLib.Utils.PathCreators
         #region Properties
 
         /// <inheritdoc/>
-        public IPathFindAlgorithm<Point3d> Algorithm { get => _algorithm; }
+        public IPathFindAlgorithm<Point3d, Point3d> Algorithm { get => _algorithm; }
 
         /// <summary>
         /// Start point in UCS.
@@ -118,6 +121,20 @@ namespace DS.RevitLib.Utils.PathCreators
 
         private CollisionDetectorByTrace _collisionDetector;
 
+        private static List<PartType> fittingPartTypes = new List<PartType>()
+            {
+                PartType.Tee,
+                   PartType.TapPerpendicular,
+                    PartType.TapAdjustable,
+                    PartType.SpudPerpendicular,
+                    PartType.SpudAdjustable
+            };
+        private static Dictionary<BuiltInCategory, List<PartType>> stopCategories = new Dictionary<BuiltInCategory, List<PartType>>()
+            {
+                { BuiltInCategory.OST_DuctFitting, fittingPartTypes },
+                { BuiltInCategory.OST_PipeFitting, fittingPartTypes }
+            };
+
         #endregion
 
         /// <summary>
@@ -131,11 +148,14 @@ namespace DS.RevitLib.Utils.PathCreators
         /// <param name="allowStartDirection"></param>
         /// <param name="planeTypes"></param>
         /// <returns></returns>
-        public PathAlgorithmFactory Build(MEPCurve baseMEPCurve, XYZ startPoint, XYZ endPoint, Outline outline, List<Element> objectsToExclude, List<PlaneType> planeTypes = null)
+        public PathAlgorithmFactory Build(MEPCurve baseMEPCurve, ConnectionPoint startPoint, ConnectionPoint endPoint,
+            Outline outline, List<Element> objectsToExclude, List<PlaneType> planeTypes = null)
         {
             _baseMEPCurve = baseMEPCurve;
-            _startPoint = startPoint;
-            _endPoint = endPoint;
+            _startConnectionPoint = startPoint;
+            _endConnectionPoint = endPoint;
+            _startPoint = startPoint.Point;
+            _endPoint = endPoint.Point;
             _outline = outline;
             _objectsToExclude = objectsToExclude;
             _planes = ConvertPlaneTypes(planeTypes);
@@ -154,15 +174,22 @@ namespace DS.RevitLib.Utils.PathCreators
         /// </summary>
         /// <param name="startMEPCurve"></param>
         /// <param name="endMEPCurve"></param>
-        public void WithInitialDirections(MEPCurve startMEPCurve, MEPCurve endMEPCurve)
+        public void WithInitialDirections()
         {
-            var startDir = GetDirection(startMEPCurve, _startPoint, endMEPCurve, _endPoint, out Point3d startANP);
-            var endDir = GetDirection(endMEPCurve, _endPoint, startMEPCurve, _startPoint, out Point3d endANP, true);
+            var startDir = GetDirection(_startConnectionPoint, _endConnectionPoint, out Point3d startANP);
+            var endDir = GetDirection(_endConnectionPoint, _startConnectionPoint, out Point3d endANP, true);
 
-            _algorithm.StartDirection = startDir;
-            _algorithm.StartANP = startANP;
-            _algorithm.EndDirection = endDir;
-            _algorithm.EndANP = endANP;
+            if (!_startConnectionPoint.Element.IsCategoryElement(stopCategories))
+            {
+                _algorithm.StartDirection = startDir;
+                _algorithm.StartANP = startANP;
+            }
+
+            if (!_endConnectionPoint.Element.IsCategoryElement(stopCategories))
+            {
+                _algorithm.EndDirection = endDir;
+                _algorithm.EndANP = endANP;
+            }
         }
 
         /// <summary>
@@ -171,12 +198,12 @@ namespace DS.RevitLib.Utils.PathCreators
         /// <returns>
         /// Algorythm to find path between <see cref="StartPoint"/> and  <see cref="EndPoint"/>.
         /// </returns>
-        private IPathFindAlgorithm<Point3d> Create()
+        private IPathFindAlgorithm<Point3d, Point3d> Create()
         {
-            var (basisX, basisY, basisZ) = _basisStrategy.GetBasis();
-
             //specify basis.
-            _pathFindBasis = XYZUtils.ToBasis3d(basisX, basisY, basisZ);
+            _basisStrategy.GetBasis();
+            _pathFindBasis = XYZUtils.ToBasis3d(_basisStrategy.BasisX, _basisStrategy.BasisY, _basisStrategy.BasisZ);
+            //basis.ToBasis3d().Show(_uiDoc, 100.MMToFeet(), null, true);
 
             var (transform, inverseTransform) = GetTransforms(
                 _initialBasis.basisX, _initialBasis.basisY, _initialBasis.basisZ,
@@ -216,8 +243,11 @@ namespace DS.RevitLib.Utils.PathCreators
                 new CollisionDetectorByTrace(_doc, _baseMEPCurve, _traceSettings, _docElements, _linkElementsDict, PointConverter)
                 {
                     ObjectsToExclude = _objectsToExclude,
-                    OffsetOnEndPoint = false
+                    OffsetOnEndPoint = false,
+                    StartConnectionPoint = _startConnectionPoint,
+                    EndConnectionPoint = _endConnectionPoint
                 };
+
 
             IRefineFactory<Point3d> refineFactory = new PathRefineFactory();
 
@@ -264,34 +294,39 @@ namespace DS.RevitLib.Utils.PathCreators
             return _algorithm?.FindPath(StartPoint, EndPoint);
         }
 
-        private Vector3d GetDirection(MEPCurve mEPCurve1, XYZ point1, MEPCurve mEPCurve2, XYZ point2, out Point3d aNP, bool inverse = false)
+        private Vector3d GetDirection(ConnectionPoint connectionPoint1, ConnectionPoint connectionPoint2, out Point3d aNP, bool inverse = false)
         {
-            XYZ dirXYZ = new ConnectionDirectionFactory(point1, mEPCurve1, _uiDoc).
-                GetDirection(point2, mEPCurve2);
+            var mc = connectionPoint1.Element is MEPCurve curve ? curve : connectionPoint1.GetMEPCurve(_objectsToExclude.Select(o => o.Id));
+            XYZ dirXYZ = new ConnectionDirectionFactory(connectionPoint1.Point, mc, _uiDoc).
+                GetDirection(connectionPoint2.Point, connectionPoint2.Element);
             if (inverse) { dirXYZ = dirXYZ.Negate(); }
-            //_visualisator.ShowVectorByDirection(point1, dirXYZ);
+            _visualisator.ShowVectorByDirection(connectionPoint1.Point, dirXYZ);
 
             Point3d dirPoint = dirXYZ.ToPoint3d();
             Point3d dirPointUCS2 = PointConverter.ConvertToUCS2(dirPoint);
             Vector3d dir = dirPointUCS2 - Point3d.Origin;
 
             var dTolerance = Math.Pow(0.1, _cTolerance);
-            var cons = ConnectorUtils.GetConnectors(mEPCurve1);
-            cons = cons.OrderBy(c => c.Origin.DistanceTo(point1)).
-                Where(c => c.Origin.DistanceTo(point1) > dTolerance).ToList();
+            var cons = ConnectorUtils.GetConnectors(mc);
+            var line = mc.GetCenterLine();
+            var conPoints = new List<XYZ>();
+            cons.ForEach(c => conPoints.Add(line.Project(c.Origin).XYZPoint));
+            conPoints = conPoints.OrderBy(c => c.DistanceTo(connectionPoint1.Point)).
+                Where(c => c.DistanceTo(connectionPoint1.Point) > dTolerance).ToList();
 
+            if (mc.Id != connectionPoint1.Element.Id) { conPoints.RemoveAt(0); }
             var checkDir = inverse ? dirXYZ.Negate() : dirXYZ;
 
             var aTolerance = 3.DegToRad();
-            Func<Connector, bool> func = (c) => Math.Round((point1 - c.Origin).Normalize().AngleTo(checkDir)) == 0;
-            var foundCon = cons.FirstOrDefault(func);
+            Func<XYZ, bool> func = (c) => Math.Round((connectionPoint1.Point - c).Normalize().AngleTo(checkDir)) == 0;
+            var foundCon = conPoints.FirstOrDefault(func);
             if (foundCon == null)
             { aNP = default; }
             else
             {
-                aNP = foundCon.Origin.ToPoint3d();
+                aNP = foundCon.ToPoint3d();
                 aNP = PointConverter.ConvertToUCS2(aNP).Round(_tolerance);
-                //_pointVisualisator.Show(aNP);
+                _pointVisualisator.Show(aNP);
             }
 
             return dir;

@@ -3,6 +3,7 @@ using DS.ClassLib.VarUtils;
 using DS.ClassLib.VarUtils.Basis;
 using DS.ClassLib.VarUtils.Collisions;
 using DS.ClassLib.VarUtils.Points;
+using DS.RevitLib.Utils.Connections.PointModels;
 using DS.RevitLib.Utils.Elements.MEPElements;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.MEP;
@@ -34,6 +35,10 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
         private readonly SolidElementCollisionDetectorFactory _detectorFactory;
         private readonly double _offset;
         private BasisXYZ _sourceBasis;
+        private Point3d _startPoint;
+        private Point3d _endPoint;
+        private ConnectionPoint _startConnectionPoint;
+        private ConnectionPoint _endConnectionPoint;
 
         /// <summary>
         /// Instantiate an object to create objects for collisions (intersections) detection 
@@ -72,7 +77,27 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
         public bool OffsetOnEndPoint { get; set; } = false;
 
         public BestSolidOffsetExtractor SolidExtractor { get; }
-       
+
+        public ConnectionPoint StartConnectionPoint
+        {
+            get => _startConnectionPoint;
+            set 
+            { 
+                _startConnectionPoint = value;
+                _startPoint = _pointConverter.ConvertToUCS2(value.Point.ToPoint3d());
+            }
+        }
+
+        public ConnectionPoint EndConnectionPoint
+        {
+            get => _endConnectionPoint;
+            set
+            {
+                _endConnectionPoint = value;
+                _endPoint = _pointConverter.ConvertToUCS2(value.Point.ToPoint3d());
+            }
+        }
+
         /// <summary>
         /// 
         /// </summary>
@@ -125,6 +150,44 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
             , "Show shape");
             //return new List<ICollision>();
             return Collisions = _detectorFactory.GetCollisions(checkSolid, ObjectsToExclude);
+        }
+
+        public List<ICollision> GetFirstCollisions(Point3d point2, Basis3d basis)
+        {
+            var point1 = _startPoint;
+
+            if (_startConnectionPoint is null) { return GetCollisions(point1, point2, basis); }
+
+            var connectedElements = ConnectorUtils.GetConnectedElements(_startConnectionPoint.Element);
+
+            var cacheExcluded = new List<Element>();
+            cacheExcluded.AddRange(ObjectsToExclude);
+
+            ObjectsToExclude = ObjectsToExclude.Union(connectedElements).ToList();
+
+            var collisions = GetCollisions(point1, point2, basis);
+            ObjectsToExclude = cacheExcluded;
+
+            return collisions;
+        }
+
+        public List<ICollision> GetLastCollisions(Point3d point1, Basis3d basis)
+        {
+            var point2 = _endPoint;
+
+            if (_endConnectionPoint is null) { return GetCollisions(point1, point2, basis); }
+
+            var connectedElements = ConnectorUtils.GetConnectedElements(_endConnectionPoint.Element);
+
+            var cacheExcluded = new List<Element>();
+            cacheExcluded.AddRange(ObjectsToExclude);
+
+            ObjectsToExclude = ObjectsToExclude.Union(connectedElements).ToList();
+
+            var collisions = GetCollisions(point1, point2, basis);
+            ObjectsToExclude = cacheExcluded;
+
+            return collisions;
         }
     }
 }

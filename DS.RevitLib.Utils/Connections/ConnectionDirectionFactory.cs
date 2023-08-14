@@ -23,6 +23,7 @@ namespace DS.RevitLib.Utils.Connections
         private readonly Line _line;
         private readonly int _tolerance = 3;
         private readonly double _dTolerance = Math.Pow(0.1 , 3);
+        private readonly XYZ _center;
 
         /// <summary>
         /// Instantiate an object to get direction at <paramref name="connectionPoint"/> of <paramref name="connectionElement"/>.
@@ -39,6 +40,7 @@ namespace DS.RevitLib.Utils.Connections
             _connectionElement = connectionElement;
             _uiDoc = uiDoc;
             _line = connectionElement.GetCenterLine();
+            _center = _line.GetCenter();
         }
 
         /// <summary>
@@ -78,7 +80,7 @@ namespace DS.RevitLib.Utils.Connections
                 if (con.Find(refElement) is not null)
                 {
                     var p = _line.Project(con.Origin).XYZPoint;
-                    return (p - _connectionPoint).Normalize();
+                    return (p - _center).Normalize();
                 }
             }
 

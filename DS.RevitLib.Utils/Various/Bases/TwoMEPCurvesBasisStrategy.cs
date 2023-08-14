@@ -28,12 +28,12 @@ namespace DS.RevitLib.Utils.Bases
         /// <summary>
         /// Selected <see cref="MEPCurve"/> 1.
         /// </summary>
-        public MEPCurve MEPCurve1 { get ; private set; }
+        public MEPCurve MEPCurve1 { get ; set; }
 
         /// <summary>
         /// Selected <see cref="MEPCurve"/> 2.
         /// </summary>
-        public MEPCurve MEPCurve2 { get; private set; }
+        public MEPCurve MEPCurve2 { get; set; }
 
         /// <inheritdoc/>
         public XYZ BasisX { get; private set; }
@@ -52,8 +52,8 @@ namespace DS.RevitLib.Utils.Bases
         {
             try
             {
-                MEPCurve1 = new MEPCurveSelector(_uiDoc) { AllowLink = false }.Pick("Выберите элемент 1 для получения базиса.");
-                MEPCurve2 = new MEPCurveSelector(_uiDoc) { AllowLink = true }.Pick("Выберите элемент 2 для получения базиса.");
+                MEPCurve1 ??= new MEPCurveSelector(_uiDoc) { AllowLink = false }.Pick("Выберите элемент 1 для получения базиса.");
+                MEPCurve2 ??= new MEPCurveSelector(_uiDoc) { AllowLink = true }.Pick("Выберите элемент 2 для получения базиса.");
             }
             catch (OperationCanceledException)
             { return (null, null, null); }
@@ -67,11 +67,11 @@ namespace DS.RevitLib.Utils.Bases
             //get basis
             var line1 = MEPCurve1.GetCenterLine();
             var line2 = MEPCurve2.GetCenterLine();
-            var x = line1.Direction;
-            var z = x.CrossProduct(line2.Direction);
-            var y = x.CrossProduct(z);
+            BasisX = line1.Direction;
+           BasisZ = BasisX.CrossProduct(line2.Direction);
+            BasisY = BasisX.CrossProduct(BasisZ);
 
-            return (x, y, z);
+            return (BasisX, BasisY, BasisZ);
         }
     }
 }

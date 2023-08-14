@@ -1,11 +1,16 @@
-﻿using Autodesk.Revit.DB;
+﻿using Autodesk.Private.InfoCenterLib;
+using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using DS.ClassLib.VarUtils;
 using DS.ClassLib.VarUtils.Points;
 using DS.PathFinder;
 using DS.PathFinder.Algorithms.Enumeratos;
 using DS.RevitLib.Utils.Bases;
+using DS.RevitLib.Utils.Connections.PointModels;
+using DS.RevitLib.Utils.Elements;
 using DS.RevitLib.Utils.Extensions;
+using DS.RevitLib.Utils.MEP;
+using DS.RevitLib.Utils.Various.Bases;
 using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
@@ -19,50 +24,52 @@ namespace DS.RevitLib.Utils.PathCreators
     /// <summary>
     /// An object that used to find path between <see cref="Autodesk.Revit.DB.XYZ"/> points.
     /// </summary>
-    public class xYZPathFinder : IPathFinder<XYZ>
+    public class xYZPathFinder : IPathFinder<ConnectionPoint, XYZ>
     {
-        private readonly List<Element> _docElements;
-        private readonly Dictionary<RevitLinkInstance, List<Element>> _linkElementsDict;
-        private readonly PathAlgorithmFactory _algorithmFactory;
+        private  List<Element> _docElements;
+        private  Dictionary<RevitLinkInstance, List<Element>> _linkElementsDict;
+        private PathAlgorithmFactory _algorithmFactory;
         private readonly UIDocument _uiDoc;
-        private readonly Document _doc;
-        private MEPCurve _startMEPCurve;
-        private MEPCurve _endMEPCurve;
-        private Outline _outline;
+        private readonly IBasisStrategy _basisStrategy;
+        private readonly ITraceSettings _traceSettings;
+        private readonly List<BuiltInCategory> _exludedCathegories;
+        private readonly Document _doc;      
         private List<Element> _objectsToExclude = new List<Element>();
         private bool _allowStartDirection;
         private List<PlaneType> _planes;
         private List<XYZ> _path = new List<XYZ>();
+        private MEPCurve _baseMEPCurve;
 
         /// <summary>
         /// Instantiate an object to find path between <see cref="Autodesk.Revit.DB.XYZ"/> points.
         /// </summary>
-        public xYZPathFinder(UIDocument uiDoc, IBasisStrategy basisStrategy, ITraceSettings traceSettings,
-            List<Element> docElements, Dictionary<RevitLinkInstance, List<Element>> linkElementsDict = null)
+        public xYZPathFinder(UIDocument uiDoc, IBasisStrategy basisStrategy, ITraceSettings traceSettings, 
+            List<BuiltInCategory> exludedCathegories)
         {
             _uiDoc = uiDoc;
             _doc = _uiDoc.Document;
-            _docElements = docElements;
-            _linkElementsDict = linkElementsDict;
-            _algorithmFactory = new PathAlgorithmFactory(_uiDoc, basisStrategy, traceSettings, _docElements, _linkElementsDict);
+            _basisStrategy = basisStrategy;
+            _traceSettings = traceSettings;
+            _exludedCathegories = exludedCathegories;
         }
 
         /// <summary>
         /// Build with some additional paramters.
         /// </summary>
+        /// <param name="baseMEPCurve"></param>
         /// <param name="startMEPCurve"></param>
         /// <param name="endMEPCurve"></param>
         /// <param name="objectsToExclude"></param>
         /// <param name="outline"></param>
         /// <param name="allowStartDirection"></param>
         /// <param name="planes"></param>
+        /// <param name="basisMEPCurve1"></param>
+        /// <param name="basisMEPCurve2"></param>
         /// <returns></returns>
-        public xYZPathFinder Build(MEPCurve startMEPCurve, MEPCurve endMEPCurve, List<Element> objectsToExclude, Outline outline,
-            bool allowStartDirection = true, List<PlaneType> planes = null)
+        public xYZPathFinder Build(MEPCurve baseMEPCurve, List<Element> objectsToExclude, 
+            bool allowStartDirection = true, List<PlaneType> planes = null, MEPCurve basisMEPCurve1 = null, MEPCurve basisMEPCurve2 = null)
         {
-            _startMEPCurve = startMEPCurve;
-            _endMEPCurve = endMEPCurve;
-            _outline = outline;
+            _baseMEPCurve = baseMEPCurve;
 
             //add objectsToExclude with its insulations
             var objectToExcludeIds = objectsToExclude.Select(obj => obj.Id).ToList();
@@ -76,22 +83,36 @@ namespace DS.RevitLib.Utils.PathCreators
             _allowStartDirection = allowStartDirection;
             _planes = planes;
 
+            if (_basisStrategy is TwoMEPCurvesBasisStrategy twoMCStrategy)
+            { twoMCStrategy.MEPCurve1 = basisMEPCurve1; twoMCStrategy.MEPCurve2 = basisMEPCurve2; }
+
             return this;
         }
-
 
         /// <inheritdoc/>
         public List<XYZ> Path { get => _path; }
 
         /// <inheritdoc/>
-        public List<XYZ> FindPath(XYZ startPoint, XYZ endPoint)
+        public List<XYZ> FindPath(ConnectionPoint startPoint, ConnectionPoint endPoint)
         {
-            _algorithmFactory.Build(_startMEPCurve, startPoint, endPoint, _outline, _objectsToExclude, _planes);
-            if (_allowStartDirection) { _algorithmFactory.WithInitialDirections(_startMEPCurve, _endMEPCurve); }
+            var outline = GetOutline(startPoint.Point, endPoint.Point);
 
-            var dist = startPoint.DistanceTo(endPoint) / 3;
+            (_docElements, _linkElementsDict) = new ElementsExtractor(_doc, _exludedCathegories, outline).GetAll();
+            _algorithmFactory = new PathAlgorithmFactory(_uiDoc, _basisStrategy, _traceSettings, _docElements, _linkElementsDict);
+
+            _algorithmFactory.Build(_baseMEPCurve, startPoint, endPoint, outline, _objectsToExclude, _planes);
+            if (_allowStartDirection) 
+            {
+                var startMEPCurve = startPoint.GetMEPCurve(_objectsToExclude.Select(o => o.Id));
+                var endMEPCurve = endPoint.GetMEPCurve(_objectsToExclude.Select(o => o.Id));
+                if(startMEPCurve == null || endMEPCurve == null) 
+                { throw new ArgumentNullException("Failed to find MEPCurve on connection point.");}
+                _algorithmFactory.WithInitialDirections(); 
+            }
+
+            var dist = startPoint.Point.DistanceTo(endPoint.Point) / 3;
             var stepEnumerator = new StepEnumerator(_algorithmFactory.NodeBuilder, dist.FeetToMM(), true);
-            var heuristicEnumerator = new HeuristicEnumerator(_algorithmFactory.NodeBuilder, false);
+            var heuristicEnumerator = new HeuristicEnumerator(_algorithmFactory.NodeBuilder, true);
             var toleranceEnumerator = new ToleranceEnumerator(_algorithmFactory, true);
             var pathFindEnumerator = new PathFindEnumerator(stepEnumerator, heuristicEnumerator, toleranceEnumerator, _algorithmFactory);
 
@@ -139,7 +160,7 @@ namespace DS.RevitLib.Utils.PathCreators
         //}
 
         /// <inheritdoc/>
-        public async Task<List<XYZ>> FindPathAsync(XYZ startPoint, XYZ endPoint)
+        public async Task<List<XYZ>> FindPathAsync(ConnectionPoint startPoint, ConnectionPoint endPoint)
         {
             return await Task.Run(() => FindPath(startPoint, endPoint));
         }
@@ -163,6 +184,47 @@ namespace DS.RevitLib.Utils.PathCreators
             }
 
             return pathCoords;
+        }
+
+        private Outline GetOutline(XYZ startPoint = null, XYZ endPoint = null)
+        {
+            XYZ p1;
+            if (startPoint == null)
+            {
+                p1 = _uiDoc.Selection.PickPoint("Укажите первую точку зоны поиска.");
+                p1.Show(_doc, 200.MMToFeet());
+                _uiDoc.RefreshActiveView();
+            }
+            else
+            { p1 = startPoint; }
+
+            XYZ p2;
+            if (startPoint == null)
+            {
+                p2 = _uiDoc.Selection.PickPoint("Укажите вторую точку зоны поиска.");
+                p2.Show(_doc, 200.MMToFeet());
+                _uiDoc.RefreshActiveView();
+            }
+            else
+            { p2 = endPoint; }
+
+            var (minPoint, maxPoint) = XYZUtils.CreateMinMaxPoints(new List<XYZ>() { p1, p2 });
+
+            double offsetX = startPoint is null ? 0 : 5000.MMToFeet();
+            double offsetY = startPoint is null ? 0 : 5000.MMToFeet();
+            double offsetZ = 5000.MMToFeet();
+
+            var moveVector = new XYZ(XYZ.BasisX.X * offsetX, XYZ.BasisY.Y * offsetY, XYZ.BasisZ.Z * offsetZ);
+
+            var p11 = minPoint + moveVector;
+            var p12 = minPoint - moveVector;
+            (XYZ minP1, XYZ maxP1) = XYZUtils.CreateMinMaxPoints(new List<XYZ> { p11, p12 });
+
+            var p21 = maxPoint + moveVector;
+            var p22 = maxPoint - moveVector;
+            (XYZ minP2, XYZ maxP2) = XYZUtils.CreateMinMaxPoints(new List<XYZ> { p21, p22 });
+
+            return new Outline(minP1, maxP2);
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using DS.RevitLib.Utils.Connections.PointModels.PointModels;
+using DS.RevitLib.Utils.MEP;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -99,6 +100,19 @@ namespace DS.RevitLib.Utils.Connections.PointModels
         public XYZ GetDirection(XYZ refPoint, Element refElement, UIDocument uIDocument = null)
         {
             return new ConnectionDirectionFactory(Point, Element, uIDocument).GetDirection(refPoint, refElement);
+        }
+
+        public MEPCurve GetMEPCurve(IEnumerable<ElementId> excluededIds = null)
+        {
+            if(Element is MEPCurve curve) { return  curve; }
+
+            var connectedMEPCurves = ConnectorUtils.GetConnectedElements(Element)?.Where(e => e is MEPCurve);
+            if(connectedMEPCurves is null || !connectedMEPCurves.Any()) { return null; }
+
+            if(excluededIds is null || !excluededIds.Any()) {  return connectedMEPCurves.FirstOrDefault() as MEPCurve; }
+            var noExeptionIds = connectedMEPCurves.Select(e => e.Id).Except(excluededIds);
+
+            return Element.Document.GetElement(noExeptionIds.FirstOrDefault()) as MEPCurve;
         }
     }
 }
