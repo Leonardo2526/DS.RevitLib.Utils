@@ -300,5 +300,46 @@ namespace DS.RevitLib.Utils.Extensions
             return xYZ;
         }
 
+        /// <summary>
+        /// Get distance to closest point on floor under the <paramref name="point"/>.
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="doc"></param>
+        /// <returns>
+        /// Distance to closest point on floor under the <paramref name="point"/>.
+        /// <para>
+        /// If no floors or no floors under the <paramref name="point"/> was found returns <see cref="double.PositiveInfinity"/>.
+        /// </para>
+        /// </returns>
+        public static double GetDistanceToFloor(this XYZ point, Document doc)
+        {
+            var outline = GetOutline(point);
+            var floors= doc.GetFloors(outline);
+            if(floors.Count == 0) { return double.PositiveInfinity; }
+
+            var line = Line.CreateBound(new XYZ(point.X, point.Y, point.Z), new XYZ(point.X, point.Y, point.Z - 50));
+            var opt = new SolidCurveIntersectionOptions() { ResultType = SolidCurveIntersectionMode.CurveSegmentsOutside };
+
+            var intersections = new List<SolidCurveIntersection>();
+            foreach (var f in floors)
+            {
+                var intersectResult = f.Solid().IntersectWithCurve(line, opt);
+                if (intersectResult.SegmentCount > 0)
+                {intersections.Add(intersectResult);}
+            }
+            if (intersections.Count == 0) { return double.PositiveInfinity; ; }
+            intersections.OrderBy(x => x.GetCurveSegment(0).Length);
+
+            var result = intersections.Min(x => x.GetCurveSegment(0).Length);
+
+            return Math.Abs(result - line.Length) < 0.001 ? double.PositiveInfinity : result;
+
+            static Outline GetOutline(XYZ point)
+            {
+                var vector = new XYZ(1, 1, 30);
+                return new Outline(point - vector, point + vector);
+            }
+        }
+
     }
 }

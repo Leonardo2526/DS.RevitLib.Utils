@@ -160,6 +160,7 @@ namespace DS.RevitLib.Utils.Extensions
             {
                 FamilyInstance familyInstance = element as FamilyInstance;
                 var (famInstCon1, famInstCon2) = ConnectorUtils.GetMainConnectors(familyInstance);
+                if(famInstCon1 == null || famInstCon2 == null) { return null; }
                 return Line.CreateBound(famInstCon1.Origin, famInstCon2.Origin);
             }
 

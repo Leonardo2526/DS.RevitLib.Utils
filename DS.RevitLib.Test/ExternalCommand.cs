@@ -15,7 +15,7 @@ namespace DS.RevitLib.Test
             Autodesk.Revit.ApplicationServices.Application application = uiapp.Application;
             UIDocument uidoc = uiapp.ActiveUIDocument;
 
-            new AlignMEPCurvesTest( uidoc);
+            new GetFloorDistTest( uidoc);
 
             return Autodesk.Revit.UI.Result.Succeeded;
         }
