@@ -491,6 +491,33 @@ namespace DS.RevitLib.Utils.Extensions
         public static Solid Solid(this Element element) => ElementUtils.GetSolid(element);
 
         /// <summary>
+        /// Get <paramref name="element"/>'s solid with it's insulation.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <returns>
+        /// <paramref name="element"/>'s <see cref="Autodesk.Revit.DB.Solid"/> with it's insulation if it has it.
+        /// <para>
+        /// Otherwise returns only <paramref name="element"/>'s <see cref="Autodesk.Revit.DB.Solid"/>.
+        /// </para>
+        /// </returns>
+        public static Solid GetSolidWithInsulation(this Element element)
+        {
+            Solid solid = element.Solid();
+
+            List<Solid> solids = new()
+            {solid};
+
+            Element insulation = element.GetInsulation();
+            if (insulation is not null && insulation.IsValidObject)
+            { 
+                solids.Add(insulation.Solid());
+                solid = Solids.SolidUtils.UniteSolids(solids);
+            }
+
+            return solid;
+        }
+
+        /// <summary>
         /// Get connected elements to <paramref name="element"/>.
         /// </summary>
         /// <param name="element"></param>

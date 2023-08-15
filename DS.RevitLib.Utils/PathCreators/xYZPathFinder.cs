@@ -133,8 +133,9 @@ namespace DS.RevitLib.Utils.PathCreators
             var dist = startPoint.Point.DistanceTo(endPoint.Point) / 3;
             var stepEnumerator = new StepEnumerator(_algorithmFactory.NodeBuilder, dist.FeetToMM(), true);
             var heuristicEnumerator = new HeuristicEnumerator(_algorithmFactory.NodeBuilder, true);
-            var toleranceEnumerator = new ToleranceEnumerator(_algorithmFactory, true);
-            var pathFindEnumerator = new PathFindEnumerator(stepEnumerator, heuristicEnumerator, toleranceEnumerator, _algorithmFactory)
+            var toleranceEnumerator = new ToleranceEnumerator(_algorithmFactory, true, _traceSettings.A != 90 && _traceSettings.A != 45);
+            var pathFindEnumerator = new PathFindEnumerator(stepEnumerator, heuristicEnumerator, 
+                toleranceEnumerator, _algorithmFactory)
             {
                 TokenSource = TokenSource
             };

@@ -34,6 +34,7 @@ namespace DS.RevitLib.Utils.Collisions.Resolvers
         public Transform GetTransform(XYZ basePoint, Solid intersectionSolid)
         {
             (var p1, var p2) = intersectionSolid.GetEdgeProjectPoints(_baseLine);
+            if(p1 == null || p2 == null) return null;
             double moveDist = p1.DistanceTo(p2) + _offset;
 
             XYZ vector = _moveDir.Multiply(moveDist);

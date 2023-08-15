@@ -333,7 +333,7 @@ namespace DS.RevitLib.Utils.PathCreators
                 //_pointVisualisator.Show(aNP);
             }
 
-            return dir;
+            return dir.Round(_tolerance);
         }
 
         private List<Plane> ConvertPlaneTypes(List<PlaneType> planeTypes)
