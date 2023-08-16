@@ -73,6 +73,7 @@ namespace DS.RevitLib.Utils.PathCreators
         private List<Element> _objectsToExclude;
         private MEPCurve _baseMEPCurve;
         private ITraceSettings _traceSettings;
+        private readonly BasisXYZ _baseMEPCurveBasis;
         private readonly XYZVisualizator _visualisator;
         private IPointVisualisator<Point3d> _pointVisualisator;
         private AStarAlgorithmCDF _algorithm;
@@ -87,7 +88,7 @@ namespace DS.RevitLib.Utils.PathCreators
         /// <param name="docElements"></param>
         /// <param name="linkElementsDict"></param>
         /// <param name="traceSettings"></param>
-        public PathAlgorithmFactory(UIDocument uiDoc, IBasisStrategy basisStrategy, ITraceSettings traceSettings,
+        public PathAlgorithmFactory(UIDocument uiDoc, IBasisStrategy basisStrategy, ITraceSettings traceSettings, BasisXYZ baseMEPCurveBasis,
             List<Element> docElements, Dictionary<RevitLinkInstance, List<Element>> linkElementsDict = null, ITransactionFactory transactionFactory = null)
         {
             _uiDoc = uiDoc;
@@ -97,6 +98,7 @@ namespace DS.RevitLib.Utils.PathCreators
             _linkElementsDict = linkElementsDict;
             _transactionFactory = transactionFactory;
             _traceSettings = traceSettings;
+            _baseMEPCurveBasis = baseMEPCurveBasis;
             _visualisator = new XYZVisualizator(uiDoc, 100.MMToFeet(), transactionFactory, true);
         }
 
@@ -217,7 +219,6 @@ namespace DS.RevitLib.Utils.PathCreators
             _pathFindBasis.basisZ = _pathFindBasis.basisZ.Round(_tolerance);
 
             var orths = new List<Vector3d>() { _initialBasis.basisX, _initialBasis.basisY, _initialBasis.basisZ };
-            var mainBasis = _pathFindBasis.basisX + _pathFindBasis.basisY + _pathFindBasis.basisZ;
 
             PointConverter = new Point3dConverter(transform, inverseTransform);
 
@@ -266,6 +267,8 @@ namespace DS.RevitLib.Utils.PathCreators
             bb.Max = _outline.MaximumPoint;
             var points = bb.GetPoints();
             //points.ForEach(p => { p.Show(_doc); });
+            //bb.Show(_doc);
+            //return null;
 
             var points3d = new List<Point3d>();
             points.ForEach(p => { points3d.Add(p.ToPoint3d()); });
@@ -284,8 +287,7 @@ namespace DS.RevitLib.Utils.PathCreators
             }
             .WithBounds(minPoint, maxPoint);
 
-            var dir = MEPCurveUtils.GetDirection(_baseMEPCurve);
-            var sourceBasisUCS1 = _baseMEPCurve.GetBasisXYZ(dir, _startPoint).ToBasis3d();
+            var sourceBasisUCS1 = _baseMEPCurveBasis.ToBasis3d();
             _algorithm.SourceBasis = PointConverter.ConvertToUCS2(sourceBasisUCS1);
             _collisionDetector.SolidExtractor.SetSource(sourceBasisUCS1);
 

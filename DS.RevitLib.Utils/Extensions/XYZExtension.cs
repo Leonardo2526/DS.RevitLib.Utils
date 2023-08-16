@@ -336,8 +336,7 @@ namespace DS.RevitLib.Utils.Extensions
 
             static Outline GetOutline(XYZ point)
             {
-                var vector = new XYZ(1, 1, 30);
-                return new Outline(point - vector, point + vector);
+                return new Outline(point - new XYZ(0.5, 0.5, 30), point + new XYZ(0.5, 0.5, 0));
             }
         }
 

@@ -113,13 +113,28 @@ namespace DS.RevitLib.Utils.PathCreators
         /// <inheritdoc/>
         public List<XYZ> FindPath(ConnectionPoint startPoint, ConnectionPoint endPoint)
         {
-            var outline = GetOutline(startPoint.Point, endPoint.Point);
+            var dir = MEPCurveUtils.GetDirection(_baseMEPCurve);
+            var baseMEPCurveBasis = _baseMEPCurve.GetBasisXYZ(dir, startPoint.Point);
+
+            var outline = GetOutline(baseMEPCurveBasis, startPoint.Point, endPoint.Point);
+            if(outline == null) { return _path; }
+
+            //show bb
+            //var bb = new BoundingBoxXYZ();
+            //bb.Min = outline.MinimumPoint;
+            //bb.Max = outline.MaximumPoint;
+            //var points = bb.GetPoints();
+            //points.ForEach(p => { p.Show(_doc); });
+            //bb.Show(_doc);
+            //return _path;
 
             (_docElements, _linkElementsDict) = new ElementsExtractor(_doc, _exludedCathegories, outline).GetAll();
-            _algorithmFactory = new PathAlgorithmFactory(_uiDoc, _basisStrategy, _traceSettings, _docElements, _linkElementsDict, _transactionFactory);
-
-
+            _algorithmFactory = new PathAlgorithmFactory(_uiDoc, _basisStrategy, _traceSettings, baseMEPCurveBasis, 
+                _docElements, _linkElementsDict, _transactionFactory);
             _algorithmFactory.Build(_baseMEPCurve, startPoint, endPoint, outline, _objectsToExclude, _planes);
+
+            if(_algorithmFactory.Algorithm is null) { return _path; }
+
             if (_allowStartDirection) 
             {
                 var startMEPCurve = startPoint.GetMEPCurve(_objectsToExclude.Select(o => o.Id));
@@ -210,7 +225,7 @@ namespace DS.RevitLib.Utils.PathCreators
             return pathCoords;
         }
 
-        private Outline GetOutline(XYZ startPoint = null, XYZ endPoint = null)
+        private Outline GetOutline(BasisXYZ basisXYZ, XYZ startPoint = null, XYZ endPoint = null)
         {
             XYZ p1;
             if (startPoint == null)
@@ -234,9 +249,14 @@ namespace DS.RevitLib.Utils.PathCreators
 
             var (minPoint, maxPoint) = XYZUtils.CreateMinMaxPoints(new List<XYZ>() { p1, p2 });
 
+
+
             double offsetX = startPoint is null ? 0 : 5000.MMToFeet();
             double offsetY = startPoint is null ? 0 : 5000.MMToFeet();
             double offsetZ = 5000.MMToFeet();
+
+            (XYZ lowerZBound, XYZ topZBound) = GetOffsetZ(startPoint, endPoint, _baseMEPCurve, basisXYZ, offsetZ);
+            if(lowerZBound is null || topZBound is null) { return null; }
 
             var moveVector = new XYZ(XYZ.BasisX.X * offsetX, XYZ.BasisY.Y * offsetY, XYZ.BasisZ.Z * offsetZ);
 
@@ -248,7 +268,39 @@ namespace DS.RevitLib.Utils.PathCreators
             var p22 = maxPoint - moveVector;
             (XYZ minP2, XYZ maxP2) = XYZUtils.CreateMinMaxPoints(new List<XYZ> { p21, p22 });
 
+            minP1 = new XYZ(minP1.X, minP1.Y, lowerZBound.Z);
+            maxP2 = new XYZ(maxP2.X, maxP2.Y, topZBound.Z);
+
             return new Outline(minP1, maxP2);
+
+            (XYZ bottomZBound, XYZ topZBound) GetOffsetZ(XYZ startPoint, XYZ endPoint, MEPCurve baseMEPCurve, BasisXYZ basis, double offsetZ)
+            {
+                var bottomZBound = startPoint - XYZ.BasisZ.Multiply(offsetZ);
+                var topZBound = startPoint + XYZ.BasisZ.Multiply(offsetZ);
+
+                var startHFloor = startPoint.GetDistanceToFloor(_doc);
+                var endHFloor = endPoint.GetDistanceToFloor(_doc);
+
+                var h2 = baseMEPCurve.GetSizeByVector(basis.Z);
+                var ins = baseMEPCurve.GetInsulationThickness();
+                var hmin = h2 + ins;
+
+                //if no floors
+                if(startHFloor == double.PositiveInfinity && endHFloor == double.PositiveInfinity)
+                { return (bottomZBound, topZBound); }
+
+                var startZOffset = startHFloor - _traceSettings.H;
+                var endZOffset = endHFloor - _traceSettings.H;
+
+                if(startZOffset < hmin)
+                { TaskDialog.Show("Ошибка", "Расстояние до пола в начальной точке меньше заданного в настройках значения.");
+                    return (null , null); }
+                else if (endZOffset < hmin)
+                { TaskDialog.Show("Ошибка", "Расстояние до пола в конеченой точке меньше заданного в настройках значения.");
+                    return (null, null);   }
+                else
+                { return ((startPoint - XYZ.BasisZ.Multiply(startHFloor - _traceSettings.H), topZBound)); }
+            }
         }
     }
 }
