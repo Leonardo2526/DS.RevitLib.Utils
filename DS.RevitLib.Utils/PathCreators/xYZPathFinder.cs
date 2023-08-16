@@ -146,7 +146,7 @@ namespace DS.RevitLib.Utils.PathCreators
             _algorithmFactory.Algorithm.TokenSource = TokenSource;
 
             var dist = startPoint.Point.DistanceTo(endPoint.Point) / 3;
-            var stepEnumerator = new StepEnumerator(_algorithmFactory.NodeBuilder, dist.FeetToMM(), true);
+            var stepEnumerator = new StepEnumerator(_algorithmFactory.NodeBuilder, dist.FeetToMM(), _traceSettings.Step.FeetToMM(), true);
             var heuristicEnumerator = new HeuristicEnumerator(_algorithmFactory.NodeBuilder, true);
             var toleranceEnumerator = new ToleranceEnumerator(_algorithmFactory, true, _traceSettings.A != 90 && _traceSettings.A != 45);
             var pathFindEnumerator = new PathFindEnumerator(stepEnumerator, heuristicEnumerator, 
@@ -292,14 +292,19 @@ namespace DS.RevitLib.Utils.PathCreators
                 var startZOffset = startHFloor - _traceSettings.H;
                 var endZOffset = endHFloor - _traceSettings.H;
 
-                if(startZOffset < hmin)
-                { TaskDialog.Show("Ошибка", "Расстояние до пола в начальной точке меньше заданного в настройках значения.");
-                    return (null , null); }
+                if (startZOffset < hmin)
+                { _transactionFactory.CreateAsync(() => 
+                TaskDialog.Show("Ошибка", "Расстояние до пола в начальной точке меньше заданного в настройках значения."), "show message");
+                    TokenSource?.Cancel(); return (null , null);  }
                 else if (endZOffset < hmin)
-                { TaskDialog.Show("Ошибка", "Расстояние до пола в конеченой точке меньше заданного в настройках значения.");
-                    return (null, null);   }
-                else
-                { return ((startPoint - XYZ.BasisZ.Multiply(startHFloor - _traceSettings.H), topZBound)); }
+                { _transactionFactory.CreateAsync(() => 
+                TaskDialog.Show("Ошибка", "Расстояние до пола в конеченой точке меньше заданного в настройках значения."), "show message");
+                    TokenSource?.Cancel(); return (null, null);   }
+                else if(startHFloor != double.PositiveInfinity)
+                { return (startPoint - XYZ.BasisZ.Multiply(startHFloor - _traceSettings.H), topZBound); }
+                else if(endHFloor != double.PositiveInfinity)
+                { return (endPoint - XYZ.BasisZ.Multiply(endHFloor - _traceSettings.H), topZBound); }
+                else { return (null, null); }
             }
         }
     }

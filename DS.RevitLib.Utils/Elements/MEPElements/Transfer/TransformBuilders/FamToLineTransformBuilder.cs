@@ -6,28 +6,31 @@ using DS.RevitLib.Utils.Transforms;
 using DS.RevitLib.Utils.Elements.Transfer.TransformModels;
 using Revit.Async;
 using System.Collections.Generic;
+using DS.RevitLib.Utils.Collisions.Detectors;
 
 namespace DS.RevitLib.Utils.Elements.Transfer.TransformBuilders
 {
     internal class FamToLineTransformBuilder : TransformBuilder
     {
-        private readonly List<ICollisionChecker> _collisionCheckers;
+        private readonly ISolidCollisionDetector _detector;
         private readonly double _placementLength;
         private readonly List<XYZ> _points;
         private readonly MEPCurveModel _mEPCurveModel;
         private readonly double _minCurveLength;
+        private readonly List<Element> _excludedElements;
         private readonly SolidModelExt _operationObject;
 
         public FamToLineTransformBuilder(SolidModelExt sourceObject, LineModel targetObject,
-            List<ICollisionChecker> collisionCheckers, double placementLength, List<XYZ> points,
-            MEPCurveModel mEPCurveModel, double minCurveLength) :
+            ISolidCollisionDetector detector, double placementLength, List<XYZ> points,
+            MEPCurveModel mEPCurveModel, double minCurveLength, List<Element> excludedElements) :
             base(sourceObject, targetObject)
         {
-            _collisionCheckers = collisionCheckers;
+            _detector = detector;
             _placementLength = placementLength;
             _points = points;
             _mEPCurveModel = mEPCurveModel;
             _minCurveLength = minCurveLength;
+            _excludedElements = excludedElements;
             _operationObject = sourceObject.Clone();
         }
 
@@ -38,7 +41,7 @@ namespace DS.RevitLib.Utils.Elements.Transfer.TransformBuilders
 
             TargetPlacementModel targetModel = new TargetModelBuilder(target, _placementLength, _points).Build();
 
-            var finder = new PositionFinder(targetModel, source, _collisionCheckers, _mEPCurveModel, _minCurveLength);
+            var finder = new PositionFinder(targetModel, source, _detector, _mEPCurveModel, _minCurveLength, _excludedElements);
             finder.Find();
             //DocModel.TransactionBuiler.BuildRevitTask(() =>
             //{

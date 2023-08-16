@@ -74,6 +74,7 @@ namespace DS.RevitLib.Utils.Connections.PointModels.PointModels
         /// </returns>
         public bool GetSystemValidity()
         {
+            if(ConnectionPoint.Element is null) { return false; }
             return _mEPSystemModel.AllElements.Select(obj => obj.Id).Contains(ConnectionPoint.Element.Id);
         }
 

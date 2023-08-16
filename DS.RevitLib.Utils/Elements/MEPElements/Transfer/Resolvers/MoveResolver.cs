@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using DS.RevitLib.Utils;
 using DS.RevitLib.Utils.Collisions.Checkers;
+using DS.RevitLib.Utils.Collisions.Detectors;
 using DS.RevitLib.Utils.Collisions.Models;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.Lines;
@@ -13,17 +14,15 @@ namespace DS.RevitLib.Utils.Elements.Transfer.Resolvers
 {
     internal class MoveResolver : CollisionResolver
     {
-        private readonly SolidModelExt _operationElement;
         private readonly XYZ _basePoint;
         private readonly TargetPlacementModel _targetModel;
         private readonly Solid _totalIntersectionSolid;
         private readonly double _minCurveLength;
 
-        public MoveResolver(SolidElemTransformCollision collision, List<ICollisionChecker> collisionCheckers,
-            XYZ basePoint, TargetPlacementModel targetModel, Solid totalIntersectionSolid, double minCurveLength) :
-            base(collision, collisionCheckers)
+        public MoveResolver(SolidModelExt operationElement, SolidElementCollision collision, ISolidCollisionDetector detector,
+            XYZ basePoint, TargetPlacementModel targetModel, Solid totalIntersectionSolid, double minCurveLength, List<Element> excludedElements) :
+            base(operationElement, collision, detector, excludedElements)
         {
-            _operationElement = collision.Object1;
             _basePoint = basePoint;
             _targetModel = targetModel;
             _totalIntersectionSolid = totalIntersectionSolid;
@@ -45,7 +44,7 @@ namespace DS.RevitLib.Utils.Elements.Transfer.Resolvers
             Transform rotateTransform = Transform.CreateTranslation(moveVector);
             _operationElement.Transform(rotateTransform);
 
-            UnresolvedCollisions = GetCollisions();
+            UnresolvedCollisions = _detector.GetCollisions(_operationElement.Solid);
 
             if (!UnresolvedCollisions.Any())
             {

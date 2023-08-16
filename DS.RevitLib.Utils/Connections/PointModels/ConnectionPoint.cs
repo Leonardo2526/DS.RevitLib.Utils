@@ -79,6 +79,7 @@ namespace DS.RevitLib.Utils.Connections.PointModels
         public void Validate()
         {
             Validator.ConnectionPoint = this;
+            if(this.Element is null) { IsValid = false; return; }
             IsValid = Validator.Validate();
         }
 

@@ -99,6 +99,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Collisions\Detectors\AbstractDetectors\ISolidCollisionDetector.cs" />
     <Compile Include="Collisions\Detectors\CollisionDetectorByTrace.cs" />
     <Compile Include="Collisions\Resolvers\IResolver.cs" />
     <Compile Include="Collisions\Resolvers\MoveTransformStrategy.cs" />

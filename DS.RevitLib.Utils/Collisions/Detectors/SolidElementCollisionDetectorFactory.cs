@@ -12,7 +12,7 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
     /// and <see cref="Autodesk.Revit.DB.Element"/>'s in Revit model. 
     /// <para>It uses <see cref="Autodesk.Revit.DB.BoundingBoxIntersectsFilter"/> by each <see cref="Solid"/> to detect collisions faster.</para>
     /// </summary>
-    public class SolidElementCollisionDetectorFactory : CollisionDetectorFactory<Solid, Element>
+    public class SolidElementCollisionDetectorFactory : CollisionDetectorFactory<Solid, Element>, ISolidCollisionDetector
     {
         private readonly Document _doc;
         private readonly SolidElementCollisionDetector _modelDetector;

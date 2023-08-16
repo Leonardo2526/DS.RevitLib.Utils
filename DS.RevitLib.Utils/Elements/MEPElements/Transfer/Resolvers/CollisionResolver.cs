@@ -1,6 +1,9 @@
-﻿using DS.ClassLib.VarUtils.Collisions;
+﻿using Autodesk.Revit.DB;
+using DS.ClassLib.VarUtils.Collisions;
 using DS.RevitLib.Utils.Collisions.Checkers;
+using DS.RevitLib.Utils.Collisions.Detectors;
 using DS.RevitLib.Utils.Collisions.Models;
+using DS.RevitLib.Utils.Solids.Models;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -9,18 +12,16 @@ namespace DS.RevitLib.Utils.Elements.Transfer.Resolvers
     public abstract class CollisionResolver
     {
         protected CollisionResolver _successor;
-        protected readonly List<ICollisionChecker> _collisionCheckers = new List<ICollisionChecker>();
+        protected readonly SolidModelExt _operationElement;
+        protected readonly ISolidCollisionDetector _detector;
+        protected readonly List<Element> _excludedElements;
 
-        protected CollisionResolver(ICollision collision, ICollisionChecker collisionChecker)
+        protected CollisionResolver(SolidModelExt operationElement, ICollision collision, ISolidCollisionDetector detector, List<Element> excludedElements)
         {
+            _operationElement = operationElement;
             Collision = collision;
-            _collisionCheckers.Add(collisionChecker);
-        }
-
-        protected CollisionResolver(ICollision collision, List<ICollisionChecker> collisionChecker)
-        {
-            Collision = collision;
-            _collisionCheckers = collisionChecker;
+            _detector = detector;
+            _excludedElements = excludedElements;
         }
 
         public ICollision Collision { get; }
@@ -32,22 +33,6 @@ namespace DS.RevitLib.Utils.Elements.Transfer.Resolvers
         public void SetSuccessor(CollisionResolver successor)
         {
             _successor = successor;
-        }
-
-        protected List<ICollision> GetCollisions()
-        {
-            var collisions = new List<ICollision>();
-
-            foreach (ICollisionChecker checker in _collisionCheckers)
-            {
-                var checkerCollisions = checker.GetCollisions();
-                if (checkerCollisions != null && checkerCollisions.Any())
-                {
-                    collisions.AddRange(checkerCollisions);
-                }
-            }
-
-            return collisions;
         }
     }
 }
