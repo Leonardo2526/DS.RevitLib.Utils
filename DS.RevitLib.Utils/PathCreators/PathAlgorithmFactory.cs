@@ -281,8 +281,6 @@ namespace DS.RevitLib.Utils.PathCreators
             {
                 Tolerance = _tolerance,
                 CTolerance = _cTolerance,
-                //TokenSource = new CancellationTokenSource(),
-                TokenSource = new CancellationTokenSource(5000),
                 PointVisualisator = _pointVisualisator,
             }
             .WithBounds(minPoint, maxPoint);
@@ -296,7 +294,6 @@ namespace DS.RevitLib.Utils.PathCreators
 
         public List<Point3d> FindPath()
         {
-            _algorithm.ResetToken();
             return _algorithm?.FindPath(StartPoint, EndPoint);
         }
 

@@ -83,12 +83,22 @@ namespace DS.RevitLib.Utils.PathCreators
 
             //add objectsToExclude with its insulations
             var objectToExcludeIds = objectsToExclude.Select(obj => obj.Id).ToList();
-            List<ElementId> insulationIds = ElementUtils.GetInsulation(objectsToExclude);
-            foreach (var insId in insulationIds)
+
+            var insulations = new List<Element>();
+            foreach (var item in objectsToExclude)
             {
-                if (!objectToExcludeIds.Contains(insId)) { objectsToExclude.Add(_doc.GetElement(insId)); }
+                InsulationLiningBase ins = null;
+                try
+                {
+                    ins = InsulationLiningBase.GetInsulationIds(item.Document, item.Id).
+                        Select(x => item.Document.GetElement(x) as InsulationLiningBase).FirstOrDefault();
+                }
+                catch (Exception)
+                { }
+                if (ins is not null && !objectToExcludeIds.Contains(ins.Id)) { insulations.Add(_doc.GetElement(ins.Id)); }
             }
 
+            objectsToExclude.AddRange(insulations);
             _objectsToExclude = objectsToExclude;
             _exludedCathegories = exludedCathegories;
             _allowStartDirection = allowStartDirection;
@@ -143,7 +153,7 @@ namespace DS.RevitLib.Utils.PathCreators
                 { throw new ArgumentNullException("Failed to find MEPCurve on connection point.");}
                 _algorithmFactory.WithInitialDirections(); 
             }
-            _algorithmFactory.Algorithm.TokenSource = TokenSource;
+            _algorithmFactory.Algorithm.ExternalTokenSource = TokenSource;
 
             var dist = startPoint.Point.DistanceTo(endPoint.Point) / 3;
             var stepEnumerator = new StepEnumerator(_algorithmFactory.NodeBuilder, dist.FeetToMM(), _traceSettings.Step.FeetToMM(), true);

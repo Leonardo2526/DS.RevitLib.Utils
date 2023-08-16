@@ -154,7 +154,7 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
             }
             , "Show shape");
             //return new List<ICollision>();
-            //return Collisions = _detectorFactory.GetCollisions(checkSolid, ObjectsToExclude);
+            return Collisions = _detectorFactory.GetCollisions(checkSolid, ObjectsToExclude);
         }
 
         public List<ICollision> GetFirstCollisions(Point3d point2, Basis3d basis)
@@ -169,6 +169,20 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
             cacheExcluded.AddRange(ObjectsToExclude);
 
             ObjectsToExclude = ObjectsToExclude.Union(connectedElements).ToList();
+            var objectToExcludeIds = ObjectsToExclude.Select(o => o.Id);
+
+            foreach (var item in connectedElements)
+            {
+                InsulationLiningBase ins = null;
+                try
+                {
+                    ins = InsulationLiningBase.GetInsulationIds(item.Document, item.Id).
+                        Select(x => item.Document.GetElement(x) as InsulationLiningBase).FirstOrDefault();
+                }
+                catch (Exception)
+                { }
+                if (ins is not null && !objectToExcludeIds.Contains(ins.Id)) { ObjectsToExclude.Add(_doc.GetElement(ins.Id)); }
+            }
 
             var collisions = GetCollisions(point1, point2, basis);
             ObjectsToExclude = cacheExcluded;
@@ -188,6 +202,20 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
             cacheExcluded.AddRange(ObjectsToExclude);
 
             ObjectsToExclude = ObjectsToExclude.Union(connectedElements).ToList();
+            var objectToExcludeIds = ObjectsToExclude.Select(o => o.Id);
+
+            foreach (var item in connectedElements)
+            {
+                InsulationLiningBase ins = null;
+                try
+                {
+                    ins = InsulationLiningBase.GetInsulationIds(item.Document, item.Id).
+                        Select(x => item.Document.GetElement(x) as InsulationLiningBase).FirstOrDefault();
+                }
+                catch (Exception)
+                { }
+                if (ins is not null && !objectToExcludeIds.Contains(ins.Id)) { ObjectsToExclude.Add(_doc.GetElement(ins.Id)); }
+            }
 
             var collisions = GetCollisions(point1, point2, basis);
             ObjectsToExclude = cacheExcluded;
