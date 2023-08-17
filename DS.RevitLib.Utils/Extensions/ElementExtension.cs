@@ -588,5 +588,28 @@ namespace DS.RevitLib.Utils.Extensions
 
             return ElementUtils.CheckCategory(familyInstanceCategory, builtInCategories);
         }
+
+        /// <summary>
+        /// Get <see cref="RevitLinkInstance"/> by <paramref name="element"/>.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <param name="doc"></param>
+        /// <returns>
+        /// <see cref="RevitLinkInstance"/> from loaded links in <paramref name="doc"/> if there is any that contains <paramref name="element"/>.
+        /// <para>
+        /// <see langword="null"/> if no loaded links are in <paramref name="doc"/> or no links that contains <paramref name="element"/>.
+        /// </para>
+        /// </returns>
+        public static RevitLinkInstance GetLink(this Element element, Document doc)
+        {
+            var elemDoc = element.Document;
+
+            if(!elemDoc.IsLinked) { return null; }
+            else
+            {
+                var links = doc.GetLoadedLinks();
+                return links.FirstOrDefault(l => l.GetLinkDocument().Title == elemDoc.Title);
+            }
+        }
     }
 }

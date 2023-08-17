@@ -32,6 +32,8 @@ namespace DS.RevitLib.Utils.Extensions
             var tr = link.GetTotalTransform();
             var filterOutline = new Outline(tr.Inverse.OfPoint(outline.MinimumPoint), tr.Inverse.OfPoint(outline.MaximumPoint));
 
+            (XYZ min, XYZ max) = XYZUtils.CreateMinMaxPoints(new List<XYZ> { filterOutline.MinimumPoint, filterOutline.MaximumPoint });
+            filterOutline.MinimumPoint = min; filterOutline.MaximumPoint = max;
             return new BoundingBoxIntersectsFilter(filterOutline); ;
         }
 

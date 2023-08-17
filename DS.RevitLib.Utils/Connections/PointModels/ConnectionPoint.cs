@@ -64,6 +64,9 @@ namespace DS.RevitLib.Utils.Connections.PointModels
             if (collisions is not null && collisions.Any())
             { errors.Add(new ValidationResult("Точка не должна располагаться в зоне коллизии.")); }
 
+            if(!Validator.IsWithinLengthLimits(Point))
+            { errors.Add(new ValidationResult("Точка вне зоны решения коллизии.")); }
+
             return errors;
         }
 
