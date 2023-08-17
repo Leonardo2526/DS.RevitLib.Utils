@@ -1,5 +1,6 @@
 ﻿using Autodesk.Revit.DB;
 using DS.ClassLib.VarUtils;
+using DS.ClassLib.VarUtils.Points;
 using DS.RevitLib.Utils.Creation.Transactions;
 using DS.RevitLib.Utils.ModelCurveUtils;
 using DS.RevitLib.Utils.Transactions;
@@ -338,6 +339,51 @@ namespace DS.RevitLib.Utils.Extensions
             {
                 return new Outline(point - new XYZ(0.5, 0.5, 30), point + new XYZ(0.5, 0.5, 0));
             }
+        }
+
+        /// <summary>
+        /// Specifies if <paramref name="point1"/> is less than <paramref name="point2"/>.
+        /// </summary>
+        /// <returns>
+        /// <see langword="true"/> if each coordinate of <paramref name="point1"/> is less than <paramref name="point2"/>.
+        /// <para>
+        /// Otherwise returns <see langword="false"/>.
+        /// </para>
+        /// </returns>
+        public static bool Less(this XYZ point1, XYZ point2)
+           => point1.X < point2.X && point1.Y < point2.Y && point1.Z < point2.Z;
+
+        /// <summary>
+        /// Specifies if <paramref name="point1"/> is more than <paramref name="point2"/>.
+        /// </summary>
+        /// <returns>
+        /// <see langword="true"/> if each coordinate of <paramref name="point1"/> is more than <paramref name="point2"/>.
+        /// <para>
+        /// Otherwise returns <see langword="false"/>.
+        /// </para>
+        /// </returns>
+        public static bool More(this XYZ point1, XYZ point2)
+           => point1.X > point2.X && point1.Y > point2.Y && point1.Z > point2.Z;
+
+        /// <summary>
+        /// Get normal to <paramref name="dir"/> from 
+        /// <see cref="Autodesk.Revit.DB.XYZ.BasisX"/>, <see cref="Autodesk.Revit.DB.XYZ.BasisY"/> or <see cref="Autodesk.Revit.DB.XYZ.BasisZ"/>.
+        /// </summary>
+        /// <param name="dir"></param>
+        /// <returns>
+        /// Normal vector from XYZ base orths.
+        /// <para>
+        /// Random normal if no normal vectors to <paramref name="dir"/> from XYZ base orths exists.
+        /// </para>
+        /// </returns>
+        public static XYZ GetBaseNormal(this XYZ dir)
+        {
+            var dir3d = dir.ToVector3d().Round(3);           
+            if (dir3d.IsPerpendicularTo(XYZ.BasisX.ToVector3d())) { return XYZ.BasisX; }
+            else if (dir3d.IsPerpendicularTo(XYZ.BasisY.ToVector3d())) { return XYZ.BasisY; }
+            else if (dir3d.IsPerpendicularTo(XYZ.BasisZ.ToVector3d())) { return XYZ.BasisZ; }
+            else
+            { return dir.GetRandomPerpendicular(XYZ.Zero); }
         }
 
     }

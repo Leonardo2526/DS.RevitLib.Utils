@@ -1,5 +1,6 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
+using DS.ClassLib.VarUtils;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.Various;
 using System;
@@ -30,7 +31,7 @@ namespace DS.RevitLib.Utils.Bases
         /// <summary>
         /// Selected <see cref="MEPCurve"/> 1.
         /// </summary>
-        public MEPCurve MEPCurve1 { get ; set; }
+        public MEPCurve MEPCurve1 { get; set; }
 
         /// <summary>
         /// Selected <see cref="MEPCurve"/> 2.
@@ -70,7 +71,8 @@ namespace DS.RevitLib.Utils.Bases
             var line1 = MEPCurve1.GetCenterLine();
             var line2 = MEPCurve2.GetCenterLine();
             BasisX = line1.Direction;
-           BasisZ = BasisX.CrossProduct(line2.Direction);
+            BasisZ = BasisX.CrossProduct(line2.Direction);
+            BasisZ = BasisZ.IsZeroLength() ? BasisX.GetBaseNormal() : BasisZ;
             BasisY = BasisX.CrossProduct(BasisZ);
 
             return (BasisX, BasisY, BasisZ);
