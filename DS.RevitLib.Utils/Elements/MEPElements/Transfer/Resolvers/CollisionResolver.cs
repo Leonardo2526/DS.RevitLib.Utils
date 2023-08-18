@@ -1,6 +1,6 @@
 ﻿using Autodesk.Revit.DB;
 using DS.ClassLib.VarUtils.Collisions;
-using DS.RevitLib.Utils.Collisions.Checkers;
+
 using DS.RevitLib.Utils.Collisions.Detectors;
 using DS.RevitLib.Utils.Collisions.Models;
 using DS.RevitLib.Utils.Solids.Models;
@@ -16,7 +16,7 @@ namespace DS.RevitLib.Utils.Elements.Transfer.Resolvers
         protected readonly ISolidCollisionDetector _detector;
         protected readonly List<Element> _excludedElements;
 
-        protected CollisionResolver(SolidModelExt operationElement, ICollision collision, ISolidCollisionDetector detector, List<Element> excludedElements)
+        protected CollisionResolver(SolidModelExt operationElement, (Solid, Element) collision, ISolidCollisionDetector detector, List<Element> excludedElements)
         {
             _operationElement = operationElement;
             Collision = collision;
@@ -24,9 +24,9 @@ namespace DS.RevitLib.Utils.Elements.Transfer.Resolvers
             _excludedElements = excludedElements;
         }
 
-        public ICollision Collision { get; }
+        public (Solid, Element) Collision { get; }
         public bool IsResolved { get; protected set; }
-        public List<ICollision> UnresolvedCollisions { get; protected set; }
+        public List<(Solid, Element)> UnresolvedCollisions { get; protected set; }
 
 
         public abstract void Resolve();

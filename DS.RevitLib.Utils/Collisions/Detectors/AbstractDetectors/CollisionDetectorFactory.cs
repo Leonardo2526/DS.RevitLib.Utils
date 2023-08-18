@@ -9,11 +9,11 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <typeparam name="P"></typeparam>
-    public abstract class CollisionDetectorFactory<T, P> : ICollisionDetector
+    public abstract class CollisionDetectorFactory<T, P> : ICollisionDetector<T,P>
     {
 
         /// <inheritdoc/>
-        public List<ICollision> Collisions { get; protected set; }
+        public List<(T,P)> Collisions { get; protected set; }
 
 
         /// <summary>
@@ -28,6 +28,6 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
         /// <param name="checkObject1"></param>
         /// <param name="checkObjects2ToExclude"></param>
         /// <returns></returns>
-        public abstract List<ICollision> GetCollisions(T checkObject1, List<P> checkObjects2ToExclude = null);
+        public abstract List<(T, P)> GetCollisions(T checkObject1, List<P> checkObjects2ToExclude = null);
     }
 }

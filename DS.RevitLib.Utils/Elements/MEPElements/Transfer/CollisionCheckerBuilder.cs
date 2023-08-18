@@ -1,16 +1,8 @@
 ﻿using Autodesk.Revit.DB;
 using DS.RevitLib.Utils.Collisions;
-using DS.RevitLib.Utils.Collisions.Checkers;
 using DS.RevitLib.Utils.Collisions.Detectors;
-using DS.RevitLib.Utils.Extensions;
-using DS.RevitLib.Utils.MEP;
-using DS.RevitLib.Utils.Visualisators;
-using Rhino.UI;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.Elements.MEPElements.Transfer
 {
@@ -64,7 +56,7 @@ namespace DS.RevitLib.Utils.Elements.MEPElements.Transfer
         private List<Element> GetElementsInBB(BoundingBoxXYZ boxXYZ, List<Element> excludedObjects)
         {
             var outline = new Outline(boxXYZ.Min, boxXYZ.Max);
-            List<RevitLinkInstance> links = _linkElementsDict?.Select(obj => obj.Key).ToList();        
+            List<RevitLinkInstance> links = _linkElementsDict?.Select(obj => obj.Key).ToList();
 
             var bBCollisionUtils = new BBCollisionUtils(_doc, _docElements, links);
             return bBCollisionUtils.GetElements(outline, 0, excludedObjects);

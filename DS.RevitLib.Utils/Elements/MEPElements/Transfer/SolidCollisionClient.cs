@@ -1,5 +1,5 @@
 ﻿using Autodesk.Revit.DB;
-using DS.RevitLib.Utils.Collisions.Checkers;
+
 using DS.RevitLib.Utils.Collisions.Models;
 using DS.RevitLib.Utils.MEP;
 using DS.RevitLib.Utils.Elements.Transfer.Resolvers;
@@ -8,20 +8,21 @@ using System.Linq;
 using DS.RevitLib.Utils.Collisions.Detectors;
 using DS.ClassLib.VarUtils.Collisions;
 using DS.RevitLib.Utils.Solids.Models;
+using DS.RevitLib.Utils.Extensions;
 
 namespace DS.RevitLib.Utils.Elements.Transfer
 {
     internal class SolidCollisionClient
     {
         private readonly SolidModelExt _operationElement;
-        private readonly List<SolidElementCollision> _collisions;
+        private readonly List<(Solid, Element)> _collisions;
         private readonly ISolidCollisionDetector _detector;
         private readonly TargetPlacementModel _targetModel;
         private XYZ _currentPoint;
         private readonly double _minCurveLength;
         private readonly List<Element> _excludedElements;
 
-        public SolidCollisionClient(SolidModelExt operationElement, List<SolidElementCollision> collisions, ISolidCollisionDetector collisionChecker,
+        public SolidCollisionClient(SolidModelExt operationElement, List<(Solid, Element)> collisions, ISolidCollisionDetector collisionChecker,
             TargetPlacementModel targetModel, double minCurveLength, List<Element> excludedElements)
         {
             _operationElement = operationElement;
@@ -41,8 +42,8 @@ namespace DS.RevitLib.Utils.Elements.Transfer
             var clr = new RotateCenterLineResolver(_operationElement, collision, _detector, _excludedElements);
 
             //check profile
-            (double width, double heigth) = collision.Object2 is MEPCurve ?
-                MEPCurveUtils.GetWidthHeight(collision.Object2 as MEPCurve) : 
+            (double width, double heigth) = collision.Item2 is MEPCurve ?
+                MEPCurveUtils.GetWidthHeight(collision.Item2 as MEPCurve) : 
                 (0,0);
             var aclr = width==heigth ? new AroundCenterLineRotateResolver(_operationElement, collision, _detector, _excludedElements) : null;
 
@@ -65,7 +66,7 @@ namespace DS.RevitLib.Utils.Elements.Transfer
                 aclr = aclr is null ? null : new AroundCenterLineRotateResolver(_operationElement, collision, _detector, _excludedElements);
                 clr = new RotateCenterLineResolver(_operationElement, collision, _detector, _excludedElements);
 
-                var currentCollisions = new List<SolidElementCollision>();
+                var currentCollisions = new List<(Solid, Element)>();
                 currentCollisions.AddRange(_collisions);
                 while (!mr.IsResolved)
                 {
@@ -94,16 +95,16 @@ namespace DS.RevitLib.Utils.Elements.Transfer
 
                     if (mr.UnresolvedCollisions is not null && mr.UnresolvedCollisions.Any())
                     {
-                        collision = (SolidElementCollision)mr.UnresolvedCollisions.First();
-                        currentCollisions = mr.UnresolvedCollisions.Cast<SolidElementCollision>().ToList();
+                        collision = mr.UnresolvedCollisions.First();
+                        currentCollisions = mr.UnresolvedCollisions;
                     }
                 }
             }
         }
 
-        private Solid GetIntersectionSolid(List<SolidElementCollision> collisions)
+        private Solid GetIntersectionSolid(List<(Solid, Element)> collisions)
         {
-            var solid = collisions.Select(obj => obj.IntersectionSolid).ToList();
+            var solid = collisions.Select(obj => obj.GetIntersectionSolid()).ToList();
             return DS.RevitLib.Utils.Solids.SolidUtils.UniteSolids(solid);
         }
     }

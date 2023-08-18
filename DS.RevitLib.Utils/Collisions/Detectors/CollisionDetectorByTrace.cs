@@ -66,13 +66,15 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
             _pointConverter = pointConverter;
             _transactionFactory = transactionFactory;
             _transactionFactory ??= new ContextTransactionFactory(_doc);
-            _detectorFactory = new SolidElementCollisionDetectorFactory(doc, docElements, linkElementsDict);
-            _detectorFactory.MinVolume = 0;
+            _detectorFactory = new SolidElementCollisionDetectorFactory(doc, docElements, linkElementsDict)
+            {
+                MinVolume = 0
+            };
             SolidExtractor = new BestSolidOffsetExtractor(baseMEPCurve, _offset);
         }
 
         /// <inheritdoc/>
-        public List<ICollision> Collisions { get; private set; } = new List<ICollision>();
+        public List<(object, object)> Collisions { get; private set; } = new List<(object, object)>();
 
         /// <summary>
         /// Check objects 2 to exclude from collisions detection. 
@@ -118,7 +120,7 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
         /// Returns empty list if no collisions were detected.
         /// </para>
         /// </returns>
-        public List<ICollision> GetCollisions(Point3d point1, Point3d point2, Basis3d basis)
+        public List<(object, object)> GetCollisions(Point3d point1, Point3d point2, Basis3d basis)
         {
             XYZ p1 = null;
             XYZ p2 = null;
@@ -146,21 +148,23 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
                 p2 = new XYZ(endSolidPoint.X, endSolidPoint.Y, endSolidPoint.Z);
             }
 
-
             var uCS1Basis = _pointConverter.ConvertToUCS1(basis).ToXYZ();
             var checkSolid = SolidExtractor.Extract(p1, p2, uCS1Basis);
-            return Collisions = _detectorFactory.GetCollisions(checkSolid, ObjectsToExclude);
+
+            return Collisions = _detectorFactory.GetCollisions(checkSolid, ObjectsToExclude).
+                Select(x => ((object)x.Item1, (object)x.Item2)).ToList();
 
             _transactionFactory.CreateAsync(() =>
             {
                 checkSolid.ShowShape(_doc);
             }
             , "Show shape");
-            //return new List<ICollision>();
-            return Collisions = _detectorFactory.GetCollisions(checkSolid, ObjectsToExclude);
+
+            return Collisions = _detectorFactory.GetCollisions(checkSolid, ObjectsToExclude).
+                Select(x => ((object)x.Item1, (object)x.Item2)).ToList();
         }
 
-        public List<ICollision> GetFirstCollisions(Point3d point2, Basis3d basis)
+        public List<(object, object)> GetFirstCollisions(Point3d point2, Basis3d basis)
         {
             var point1 = _startPoint;
 
@@ -193,7 +197,7 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
             return collisions;
         }
 
-        public List<ICollision> GetLastCollisions(Point3d point1, Basis3d basis)
+        public List<(object, object)> GetLastCollisions(Point3d point1, Basis3d basis)
         {
             var point2 = _endPoint;
 

@@ -160,7 +160,7 @@ namespace DS.RevitLib.Utils.Extensions
             {
                 FamilyInstance familyInstance = element as FamilyInstance;
                 var (famInstCon1, famInstCon2) = ConnectorUtils.GetMainConnectors(familyInstance);
-                if(famInstCon1 == null || famInstCon2 == null) { return null; }
+                if (famInstCon1 == null || famInstCon2 == null) { return null; }
                 return Line.CreateBound(famInstCon1.Origin, famInstCon2.Origin);
             }
 
@@ -510,7 +510,7 @@ namespace DS.RevitLib.Utils.Extensions
 
             Element insulation = element.GetInsulation();
             if (insulation is not null && insulation.IsValidObject)
-            { 
+            {
                 solids.Add(insulation.Solid());
                 solid = Solids.SolidUtils.UniteSolids(solids);
             }
@@ -604,12 +604,33 @@ namespace DS.RevitLib.Utils.Extensions
         {
             var elemDoc = element.Document;
 
-            if(!elemDoc.IsLinked) { return null; }
+            if (!elemDoc.IsLinked) { return null; }
             else
             {
                 var links = doc.GetLoadedLinks();
                 return links.FirstOrDefault(l => l.GetLinkDocument().Title == elemDoc.Title);
             }
+        }
+
+        /// <summary>
+        /// Get transformed solid from <paramref name="element"/> by <paramref name="revitLink"/>.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <param name="revitLink"></param>
+        /// <returns>
+        /// Real <paramref name="element"/> <see cref="Autodesk.Revit.DB.Solid"/> positions in current document.
+        /// </returns>
+        public static Solid GetTransformed(this Element element, RevitLinkInstance revitLink)
+        {
+            var solid = element.Solid();
+
+            var linkTransform = revitLink.GetTotalTransform();
+            if (!linkTransform.AlmostEqual(Transform.Identity))
+            {
+                solid = SolidUtils.CreateTransformed(solid, linkTransform);
+            }
+
+            return solid;
         }
     }
 }

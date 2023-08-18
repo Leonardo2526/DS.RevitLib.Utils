@@ -32,23 +32,22 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
 
 
         /// <inheritdoc/>
-        public override List<ICollision> GetCollisions(Solid checkObject1, List<Element> exludedCheckObjects2 = null)
+        public override List<(Solid, Element)> GetCollisions(Solid checkObject1, List<Element> exludedCheckObjects2 = null)
         {
             Solid checkSolid = GetCheckSolid(checkObject1);
 
             List<Element> elements = new ElementsIntersection(_checkObjects2, _checkObjects2Doc).
                 GetIntersectedElements(checkSolid, exludedCheckObjects2);
 
-            var collisions = new List<ICollision>();
+            var collisions = new List<(Solid, Element)>();
             foreach (Element element in elements)
             {
                 //var s = ElementUtils.GetSolid(element);
                 //new TransactionBuilder(_doc).Build(() => s.ShowShape(element.Document),"show solid");
-                var collision = new SolidElementCollision(checkSolid, element);
+                var collision = (checkSolid, element);
                 if (MinVolume != 0)
                 {
-                    collision.MinVolume = MinVolume;
-                    if (collision.IntersectionSolid != null)
+                    if (collision.GetIntersectionSolid(MinVolume) != null)
                     { collisions.Add(collision); }
                 }
                 else collisions.Add(collision);

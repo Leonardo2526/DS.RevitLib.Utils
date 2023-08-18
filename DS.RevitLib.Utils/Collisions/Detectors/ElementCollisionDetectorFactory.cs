@@ -35,13 +35,13 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
         /// <param name="checkObject1"></param>
         /// <param name="checkObjects2ToExclude"></param>
         /// <returns>Returns collisions list. Returns empty list if no collisions were detected.</returns>
-        public override List<ICollision> GetCollisions(Element checkObject1, List<Element> checkObjects2ToExclude = null)
+        public override List<(Element, Element)> GetCollisions(Element checkObject1, List<Element> checkObjects2ToExclude = null)
         {
-            Collisions = new List<ICollision>();
+            Collisions = new List<(Element, Element)>();
             _modelDetector.MinVolume = MinVolume;
 
             //get colliisons in model
-            var modelCollisions = _modelDetector.GetCollisions(checkObject1, checkObjects2ToExclude).Cast<ElementCollision>().ToList();
+            var modelCollisions = _modelDetector.GetCollisions(checkObject1, checkObjects2ToExclude);
             Collisions.AddRange(modelCollisions);
 
             //get colliisons in links
@@ -50,7 +50,7 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
                 foreach (var linkDetector in _linkDetectors)
                 {
                     linkDetector.MinVolume = MinVolume;
-                    var linkCollisions = linkDetector.GetCollisions(checkObject1, checkObjects2ToExclude).Cast<ElementCollision>().ToList();
+                    var linkCollisions = linkDetector.GetCollisions(checkObject1, checkObjects2ToExclude);
                     Collisions.AddRange(linkCollisions);
                 }
             }

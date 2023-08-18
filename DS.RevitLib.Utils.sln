@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "iUtils", "..\VAR.RevitLib.U
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DS.RVT.ModelSpaceFragmentation", "DS.RVT.ModelSpaceFragmentation\DS.RVT.ModelSpaceFragmentation.csproj", "{9208DCBD-3F74-477C-87E3-9598C551E538}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DS.ClassLib.VarUtils", "..\DS.CommonLib.Utils\DS.ClassLib.VarUtils\DS.ClassLib.VarUtils.csproj", "{97D2548B-BA7F-4C31-8F52-6BF929E0C37B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{9208DCBD-3F74-477C-87E3-9598C551E538}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9208DCBD-3F74-477C-87E3-9598C551E538}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9208DCBD-3F74-477C-87E3-9598C551E538}.Release|Any CPU.Build.0 = Release|Any CPU
+		{97D2548B-BA7F-4C31-8F52-6BF929E0C37B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{97D2548B-BA7F-4C31-8F52-6BF929E0C37B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{97D2548B-BA7F-4C31-8F52-6BF929E0C37B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{97D2548B-BA7F-4C31-8F52-6BF929E0C37B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

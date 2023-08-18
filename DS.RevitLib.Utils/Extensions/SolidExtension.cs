@@ -159,6 +159,6 @@ namespace DS.RevitLib.Utils.Extensions
             }
 
             return intersectionCount % 2 != 0;
-        }
+        }       
     }
 }

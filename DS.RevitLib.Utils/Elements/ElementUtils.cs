@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
+using SolidUtils = Autodesk.Revit.DB.SolidUtils;
 
 namespace DS.RevitLib.Utils
 {
@@ -599,7 +600,7 @@ namespace DS.RevitLib.Utils
                 if (insulation != null)
                 { insulationIds.Add(insulation.Id); }
             });
-            
+
             return insulationIds;
         }
 
