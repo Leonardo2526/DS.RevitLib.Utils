@@ -3,6 +3,7 @@ using DS.ClassLib.VarUtils.Collisions;
 using System.Collections.Generic;
 using System;
 using DS.RevitLib.Utils.Extensions;
+using DS.RevitLib.Utils.Solids.Models;
 
 namespace DS.RevitLib.Utils.Collisions.Models
 {
@@ -10,6 +11,7 @@ namespace DS.RevitLib.Utils.Collisions.Models
     public class ElementCollision : Collision<Element, Element>
     {
         private Solid _intersectionSolid;
+        private Solid _intersectionSolidWithInsulation;
 
         /// <inheritdoc/>
         public ElementCollision(Element object1, Element object2) : base(object1, object2)
@@ -34,6 +36,19 @@ namespace DS.RevitLib.Utils.Collisions.Models
                         GetIntersection(ElementUtils.GetSolid(Object1), ElementUtils.GetSolid(Object2), MinVolume);
                 }
                 return _intersectionSolid;
+            }
+        }
+
+        /// <summary>
+        /// Intersection <see cref="Solid"/> with insulation account.
+        /// </summary>
+        public Solid IntersectionSolidWithInsulation
+        {
+            get
+            {
+                return _intersectionSolidWithInsulation is null ?
+                   _intersectionSolidWithInsulation = GetIntersectionSolidWithInsulation() :
+                    _intersectionSolidWithInsulation;
             }
         }
 
@@ -100,6 +115,6 @@ namespace DS.RevitLib.Utils.Collisions.Models
             }
 
             return comparator1() || comparator2() || comparator3();
-        }      
+        }
     }
 }

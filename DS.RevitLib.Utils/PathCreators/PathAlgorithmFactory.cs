@@ -126,7 +126,7 @@ namespace DS.RevitLib.Utils.PathCreators
 
         private CollisionDetectorByTrace _collisionDetector;
 
-        private static List<PartType> fittingPartTypes = new List<PartType>()
+        private static readonly List<PartType> _fittingPartTypes = new()
             {
                 PartType.Tee,
                    PartType.TapPerpendicular,
@@ -134,11 +134,13 @@ namespace DS.RevitLib.Utils.PathCreators
                     PartType.SpudPerpendicular,
                     PartType.SpudAdjustable
             };
-        private static Dictionary<BuiltInCategory, List<PartType>> stopCategories = new Dictionary<BuiltInCategory, List<PartType>>()
+        private static readonly Dictionary<BuiltInCategory, List<PartType>> _stopCategories = new()
             {
-                { BuiltInCategory.OST_DuctFitting, fittingPartTypes },
-                { BuiltInCategory.OST_PipeFitting, fittingPartTypes }
+                { BuiltInCategory.OST_DuctFitting, _fittingPartTypes },
+                { BuiltInCategory.OST_PipeFitting, _fittingPartTypes }
             };
+
+        public bool InsulationAccount { get; set; }
 
         #endregion
 
@@ -184,13 +186,13 @@ namespace DS.RevitLib.Utils.PathCreators
             var startDir = GetDirection(_startConnectionPoint, _endConnectionPoint, out Point3d startANP);
             var endDir = GetDirection(_endConnectionPoint, _startConnectionPoint, out Point3d endANP, true);
 
-            if (!_startConnectionPoint.Element.IsCategoryElement(stopCategories))
+            if (!_startConnectionPoint.Element.IsCategoryElement(_stopCategories))
             {
                 _algorithm.StartDirection = startDir;
                 _algorithm.StartANP = startANP;
             }
 
-            if (!_endConnectionPoint.Element.IsCategoryElement(stopCategories))
+            if (!_endConnectionPoint.Element.IsCategoryElement(_stopCategories))
             {
                 _algorithm.EndDirection = endDir;
                 _algorithm.EndANP = endANP;
@@ -244,12 +246,12 @@ namespace DS.RevitLib.Utils.PathCreators
             };
 
             _collisionDetector =
-                new CollisionDetectorByTrace(_doc, _baseMEPCurve, _traceSettings, _docElements, _linkElementsDict, PointConverter, _transactionFactory)
+                new CollisionDetectorByTrace(_doc, _baseMEPCurve, _traceSettings, InsulationAccount, _docElements, _linkElementsDict, PointConverter, _transactionFactory)
                 {
                     ObjectsToExclude = _objectsToExclude,
                     OffsetOnEndPoint = false,
                     StartConnectionPoint = _startConnectionPoint,
-                    EndConnectionPoint = _endConnectionPoint
+                    EndConnectionPoint = _endConnectionPoint,
                 };
 
 

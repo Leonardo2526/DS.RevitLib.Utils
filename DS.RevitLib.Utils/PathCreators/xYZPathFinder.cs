@@ -51,6 +51,11 @@ namespace DS.RevitLib.Utils.PathCreators
             _traceSettings = traceSettings;
         }
 
+        /// <summary>
+        /// Add <see cref="Autodesk.Revit.UI.UIDocument"/> to current object.
+        /// </summary>
+        /// <param name="uiDoc"></param>
+        /// <returns></returns>
         public xYZPathFinder AddDoc(UIDocument uiDoc)
         {
             _uiDoc = uiDoc;
@@ -64,20 +69,18 @@ namespace DS.RevitLib.Utils.PathCreators
         /// Build with some additional paramters.
         /// </summary>
         /// <param name="baseMEPCurve"></param>
-        /// <param name="startMEPCurve"></param>
-        /// <param name="endMEPCurve"></param>
         /// <param name="objectsToExclude"></param>
         /// <param name="exludedCathegories"></param>
-        /// <param name="outline"></param>
         /// <param name="allowStartDirection"></param>
         /// <param name="planes"></param>
         /// <param name="basisMEPCurve1"></param>
         /// <param name="basisMEPCurve2"></param>
+        /// <param name="transactionFactory"></param>
         /// <returns></returns>
         public xYZPathFinder Build(MEPCurve baseMEPCurve, List<Element> objectsToExclude,
         List<BuiltInCategory> exludedCathegories,
-            bool allowStartDirection = true, List<PlaneType> planes = null, MEPCurve basisMEPCurve1 = null, MEPCurve basisMEPCurve2 = null, 
-            ITransactionFactory transactionFactory= null)
+            bool allowStartDirection = true, List<PlaneType> planes = null, MEPCurve basisMEPCurve1 = null, MEPCurve basisMEPCurve2 = null,
+            ITransactionFactory transactionFactory = null)
         {
             _baseMEPCurve = baseMEPCurve;
 
@@ -120,6 +123,11 @@ namespace DS.RevitLib.Utils.PathCreators
         /// </summary>
         public CancellationTokenSource TokenSource { get; set; }
 
+        /// <summary>
+        /// Specifies whether allow insulation collisions on resolving or not.
+        /// </summary>
+        public bool InsulationAccount { get; set; }
+
         /// <inheritdoc/>
         public List<XYZ> FindPath(ConnectionPoint startPoint, ConnectionPoint endPoint)
         {
@@ -139,8 +147,12 @@ namespace DS.RevitLib.Utils.PathCreators
             //return _path;
 
             (_docElements, _linkElementsDict) = new ElementsExtractor(_doc, _exludedCathegories, outline).GetAll();
-            _algorithmFactory = new PathAlgorithmFactory(_uiDoc, _basisStrategy, _traceSettings, baseMEPCurveBasis, 
-                _docElements, _linkElementsDict, _transactionFactory);
+            _algorithmFactory = new PathAlgorithmFactory(_uiDoc, _basisStrategy, _traceSettings, baseMEPCurveBasis,
+                _docElements, _linkElementsDict, _transactionFactory)
+            {
+                InsulationAccount = InsulationAccount
+            };
+
             _algorithmFactory.Build(_baseMEPCurve, startPoint, endPoint, outline, _objectsToExclude, _planes);
 
             if(_algorithmFactory.Algorithm is null) { return _path; }
