@@ -1,5 +1,7 @@
 ﻿using Autodesk.Revit.DB;
+using DS.ClassLib.VarUtils;
 using DS.RevitLib.Utils.Collisions.Checkers;
+using DS.RevitLib.Utils.Collisions.Detectors;
 using DS.RevitLib.Utils.Elements.Transfer;
 using DS.RevitLib.Utils.Elements.Transfer.TransformBuilders;
 using DS.RevitLib.Utils.Elements.Transfer.TransformModels;
@@ -23,25 +25,27 @@ namespace DS.RevitLib.Utils.Elements.MEPElements.Transfer
     public class FamilyInstTransferFactory : IFamilyInstTransferFactory
     {
         private readonly Document _doc;
-        private readonly List<ICollisionChecker> _collisionCheckers;
+        private readonly ISolidCollisionDetector _detector;
         private readonly List<XYZ> _path;
         private readonly MEPSystemModel _sourceModel;
         private readonly ITraceSettings _traceSettings;
         private readonly double _elbowRadius;
+        private readonly List<Element> _excludedElements;
         private FamToLineMultipleBuilder _famToLineBuilder;
 
         /// <summary>
         /// Instantiate an object that represents factory to transfer <see cref="Autodesk.Revit.DB.FamilyInstance"/>'s to <see cref="MEPSystemModel"/>.
         /// </summary>
-        public FamilyInstTransferFactory(List<ICollisionChecker> collisionCheckers, List<XYZ> path, MEPSystemModel sourceModel,
-            ITraceSettings traceSettings, double elbowRadius)
+        public FamilyInstTransferFactory(ISolidCollisionDetector detector, List<XYZ> path, MEPSystemModel sourceModel,
+            ITraceSettings traceSettings, double elbowRadius, List<Element> excludedElements)
         {
             _doc = sourceModel.Root.BaseElement.Document;
-            _collisionCheckers = collisionCheckers;
+            _detector = detector;
             _path = path;
             _sourceModel = sourceModel;
             _traceSettings = traceSettings;
             _elbowRadius = elbowRadius;
+            _excludedElements = excludedElements;
         }
 
         /// <inheritdoc/>
@@ -51,7 +55,7 @@ namespace DS.RevitLib.Utils.Elements.MEPElements.Transfer
 
             Debug.WriteLine("Trying to transform families...");
 
-            _famToLineBuilder = new FamToLineMultipleBuilder(_traceSettings.D, _collisionCheckers);
+            _famToLineBuilder = new FamToLineMultipleBuilder(_traceSettings.D, _detector, _excludedElements);
 
             List<TransformModel> transformModels = BuildTransforms(_path, source);
             var famLineModels = transformModels?.Cast<FamToLineTransformModel>().ToList();

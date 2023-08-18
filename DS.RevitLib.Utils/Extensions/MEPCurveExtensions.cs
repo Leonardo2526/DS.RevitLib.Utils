@@ -8,6 +8,7 @@ using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.MEP.Creator;
 using DS.RevitLib.Utils.Models;
 using DS.RevitLib.Utils.Transactions;
+using DS.RevitLib.Utils.Various.Bases;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -49,9 +50,36 @@ namespace DS.RevitLib.Utils.MEP
             var basisZ = basisX.CrossProduct(basisY);
             basePoint ??= line.GetCenter();
             Basis basis = new Basis(basisX, basisY, basisZ, basePoint);
-            basis.Round();
 
             return basis;
+        }
+
+        /// <summary>
+        /// Get basis from <paramref name="mEPCurve"/>.
+        /// <para>
+        /// If <paramref name="origin"/> is set to <see langword="null"/> 
+        /// it'll be replaced with default value as <paramref name="mEPCurve"/> center point.
+        /// </para>
+        /// <para>
+        /// If <paramref name="basisXDir"/> is set to <see langword="null"/> 
+        /// it'll be replaced with default value as <paramref name="mEPCurve"/> direction.
+        /// </para>
+        /// </summary>
+        /// <param name="mEPCurve"></param>
+        /// <param name="basisXDir"></param>
+        /// <param name="origin"></param>
+        /// <returns><see cref="BasisXYZ"/> of <paramref name="mEPCurve"/>.</returns>
+        public static BasisXYZ GetBasisXYZ(this MEPCurve mEPCurve, XYZ basisXDir = null, XYZ origin = null)
+        {
+            Line line = MEPCurveUtils.GetLine(mEPCurve);
+
+            var basisX = basisXDir ?? line.Direction;
+            var orths = ElementUtils.GetOrthoNormVectors(mEPCurve);
+            var basisY = ElementUtils.GetMaxSizeOrth(mEPCurve, orths);
+            var basisZ = basisX.CrossProduct(basisY);
+            origin ??= line.GetCenter();
+
+            return new BasisXYZ(origin, basisX, basisY, basisZ);
         }
 
         /// <summary>

@@ -1,5 +1,6 @@
 ﻿using Autodesk.Revit.DB;
 using DS.ClassLib.VarUtils;
+using DS.ClassLib.VarUtils.Points;
 using DS.RevitLib.Utils.Creation.Transactions;
 using DS.RevitLib.Utils.ModelCurveUtils;
 using DS.RevitLib.Utils.Transactions;
@@ -7,6 +8,7 @@ using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Media;
 using System.Windows.Media.Media3D;
 using Line = Autodesk.Revit.DB.Line;
 using Plane = Autodesk.Revit.DB.Plane;
@@ -258,6 +260,130 @@ namespace DS.RevitLib.Utils.Extensions
         public static Point3d ToPoint3d(this XYZ xYZ)
         {
             return new Point3d(xYZ.X, xYZ.Y, xYZ.Z);
+        }
+
+        /// <summary>
+        /// Convert <paramref name="point"/> to <see cref="Autodesk.Revit.DB.XYZ"/>.
+        /// </summary>
+        /// <param name="point"></param>
+        /// <returns>Returns a new <see cref="Autodesk.Revit.DB.XYZ"/> built by <paramref name="point"/> coordinates.</returns>
+        public static XYZ ToXYZ(this Point3d point)
+        {
+            return new XYZ(point.X, point.Y, point.Z);
+        }
+
+        /// <summary>
+        /// Convert <paramref name="vector"/> to <see cref="Autodesk.Revit.DB.XYZ"/>.
+        /// </summary>
+        /// <param name="vector"></param>
+        /// <returns>Returns a new <see cref="Autodesk.Revit.DB.XYZ"/> built by <paramref name="vector"/> coordinates.</returns>
+        public static XYZ ToXYZ(this Vector3d vector)
+        {
+            return new XYZ(vector.X, vector.Y, vector.Z);
+        }
+
+        /// <summary>
+        /// Transform <paramref name="point"/> with set of <paramref name="transforms"/>.
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="transforms"></param>
+        /// <returns>
+        /// A new transformed <see cref="Autodesk.Revit.DB.XYZ"/>.
+        /// </returns>
+        public static XYZ Transform(this XYZ point, List<Autodesk.Revit.DB.Transform> transforms)
+        {
+            XYZ xYZ = new XYZ(point.X, point.Y, point.Z);
+            foreach (var transform in transforms)
+            {
+                xYZ = transform.OfPoint(xYZ);
+            }
+
+            return xYZ;
+        }
+
+        /// <summary>
+        /// Get distance to closest point on floor under the <paramref name="point"/>.
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="doc"></param>
+        /// <returns>
+        /// Distance to closest point on floor under the <paramref name="point"/>.
+        /// <para>
+        /// If no floors or no floors under the <paramref name="point"/> was found returns <see cref="double.PositiveInfinity"/>.
+        /// </para>
+        /// </returns>
+        public static double GetDistanceToFloor(this XYZ point, Document doc)
+        {
+            var outline = GetOutline(point);
+            var floors= doc.GetFloors(outline);
+            if(floors.Count == 0) { return double.PositiveInfinity; }
+
+            var line = Line.CreateBound(new XYZ(point.X, point.Y, point.Z), new XYZ(point.X, point.Y, point.Z - 50));
+            var opt = new SolidCurveIntersectionOptions() { ResultType = SolidCurveIntersectionMode.CurveSegmentsOutside };
+
+            var intersections = new List<SolidCurveIntersection>();
+            foreach (var f in floors)
+            {
+                var intersectResult = f.Solid().IntersectWithCurve(line, opt);
+                if (intersectResult.SegmentCount > 0)
+                {intersections.Add(intersectResult);}
+            }
+            if (intersections.Count == 0) { return double.PositiveInfinity; ; }
+            intersections.OrderBy(x => x.GetCurveSegment(0).Length);
+
+            var result = intersections.Min(x => x.GetCurveSegment(0).Length);
+
+            return Math.Abs(result - line.Length) < 0.001 ? double.PositiveInfinity : result;
+
+            static Outline GetOutline(XYZ point)
+            {
+                return new Outline(point - new XYZ(0.5, 0.5, 30), point + new XYZ(0.5, 0.5, 0));
+            }
+        }
+
+        /// <summary>
+        /// Specifies if <paramref name="point1"/> is less than <paramref name="point2"/>.
+        /// </summary>
+        /// <returns>
+        /// <see langword="true"/> if each coordinate of <paramref name="point1"/> is less than <paramref name="point2"/>.
+        /// <para>
+        /// Otherwise returns <see langword="false"/>.
+        /// </para>
+        /// </returns>
+        public static bool Less(this XYZ point1, XYZ point2)
+           => point1.X < point2.X && point1.Y < point2.Y && point1.Z < point2.Z;
+
+        /// <summary>
+        /// Specifies if <paramref name="point1"/> is more than <paramref name="point2"/>.
+        /// </summary>
+        /// <returns>
+        /// <see langword="true"/> if each coordinate of <paramref name="point1"/> is more than <paramref name="point2"/>.
+        /// <para>
+        /// Otherwise returns <see langword="false"/>.
+        /// </para>
+        /// </returns>
+        public static bool More(this XYZ point1, XYZ point2)
+           => point1.X > point2.X && point1.Y > point2.Y && point1.Z > point2.Z;
+
+        /// <summary>
+        /// Get normal to <paramref name="dir"/> from 
+        /// <see cref="Autodesk.Revit.DB.XYZ.BasisX"/>, <see cref="Autodesk.Revit.DB.XYZ.BasisY"/> or <see cref="Autodesk.Revit.DB.XYZ.BasisZ"/>.
+        /// </summary>
+        /// <param name="dir"></param>
+        /// <returns>
+        /// Normal vector from XYZ base orths.
+        /// <para>
+        /// Random normal if no normal vectors to <paramref name="dir"/> from XYZ base orths exists.
+        /// </para>
+        /// </returns>
+        public static XYZ GetBaseNormal(this XYZ dir)
+        {
+            var dir3d = dir.ToVector3d().Round(3);           
+            if (dir3d.IsPerpendicularTo(XYZ.BasisX.ToVector3d())) { return XYZ.BasisX; }
+            else if (dir3d.IsPerpendicularTo(XYZ.BasisY.ToVector3d())) { return XYZ.BasisY; }
+            else if (dir3d.IsPerpendicularTo(XYZ.BasisZ.ToVector3d())) { return XYZ.BasisZ; }
+            else
+            { return dir.GetRandomPerpendicular(XYZ.Zero); }
         }
 
     }

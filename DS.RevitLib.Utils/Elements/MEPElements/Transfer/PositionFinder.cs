@@ -12,6 +12,7 @@ using DS.RevitLib.Utils.Elements.Transfer.TransformBuilders;
 using System.Collections.Generic;
 using System.Linq;
 using DS.ClassLib.VarUtils.Collisions;
+using DS.RevitLib.Utils.Collisions.Detectors;
 
 namespace DS.RevitLib.Utils.Elements.Transfer
 {
@@ -21,21 +22,23 @@ namespace DS.RevitLib.Utils.Elements.Transfer
     {
         private readonly TargetPlacementModel _targetModel;
         private SolidModelExt _operationModel;
-        private readonly List<ICollisionChecker> _collisionCheckers;
+        private readonly ISolidCollisionDetector _detector;
         private readonly MEPCurveModel _mEPCurveModel;
         private readonly double _minCurveLength;
+        private readonly List<Element> _excludedElements;
         private bool _isAlwaysVertical = false;
 
         //private readonly MEPCollision _collision;
 
         public PositionFinder(TargetPlacementModel targetLine, SolidModelExt opertationModel,
-            List<ICollisionChecker> collisionCheckers, MEPCurveModel _mEPCurveModel, double minCurveLength)
+            ISolidCollisionDetector detector, MEPCurveModel _mEPCurveModel, double minCurveLength, List<Element> excludedElements)
         {
             _targetModel = targetLine;
             _operationModel = opertationModel;
-            _collisionCheckers = collisionCheckers;
+            _detector = detector;
             this._mEPCurveModel = _mEPCurveModel;
             _minCurveLength = minCurveLength;
+            _excludedElements = excludedElements;
             //this._collision = _collision;
         }
 
@@ -68,38 +71,21 @@ namespace DS.RevitLib.Utils.Elements.Transfer
             //_operationModel.ShowBoundingBox();
             //DocModel.UiDoc.RefreshActiveView();
 
-            if (_collisionCheckers is null)
+            if (_detector is null)
             {
                 return;
             }
 
-            var checkedObjects1 = new List<SolidModelExt>() { _operationModel };
-            var collisions = new List<ICollision>();
-            foreach (ICollisionChecker checker in _collisionCheckers)
-            {
-                List<ICollision> col = null;
-                if (checker is SolidCollisionChecker)
-                {
-                    SolidCollisionChecker solidChecker = (SolidCollisionChecker)checker;
-                    solidChecker.FixNotVailid();
-                    col = solidChecker.GetCollisions(checkedObjects1);
-                }
-                else if (checker is LinkCollisionChecker)
-                {
-                    LinkCollisionChecker solidChecker = (LinkCollisionChecker)checker;
-                    col = solidChecker.GetCollisions(checkedObjects1);
-                }
-                collisions.AddRange(col);
-            }
-
+            var collisions = _detector.GetCollisions(_operationModel.Solid);
             if (!collisions.Any())
             {
                 return;
             }
 
             //Search available position for solid
-            var solidElemCollisions = collisions.Cast<SolidElemTransformCollision>().ToList();
-            var solidCollisionClient = new SolidCollisionClient(solidElemCollisions, _collisionCheckers, _targetModel, _minCurveLength);
+            var solidElemCollisions = collisions.Cast<SolidElementCollision>().ToList();
+            var solidCollisionClient = 
+                new SolidCollisionClient(_operationModel, solidElemCollisions, _detector, _targetModel, _minCurveLength, _excludedElements);
             solidCollisionClient.Resolve();
         }
 

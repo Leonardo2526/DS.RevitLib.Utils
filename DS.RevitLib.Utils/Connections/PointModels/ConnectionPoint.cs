@@ -1,5 +1,7 @@
 ﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.UI;
 using DS.RevitLib.Utils.Connections.PointModels.PointModels;
+using DS.RevitLib.Utils.MEP;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -62,6 +64,9 @@ namespace DS.RevitLib.Utils.Connections.PointModels
             if (collisions is not null && collisions.Any())
             { errors.Add(new ValidationResult("Точка не должна располагаться в зоне коллизии.")); }
 
+            if(!Validator.IsWithinLengthLimits(Point))
+            { errors.Add(new ValidationResult("Точка вне зоны решения коллизии.")); }
+
             return errors;
         }
 
@@ -77,7 +82,41 @@ namespace DS.RevitLib.Utils.Connections.PointModels
         public void Validate()
         {
             Validator.ConnectionPoint = this;
+            if(this.Element is null) { IsValid = false; return; }
             IsValid = Validator.Validate();
+        }
+
+        /// <summary>
+        /// Get direction by <paramref name="refPoint"/> of <paramref name="refElement"/>.
+        /// </summary>
+        /// <param name="refPoint"></param>
+        /// <param name="refElement"></param>
+        /// <param name="uIDocument"></param>
+        /// <remarks>
+        /// Specify <paramref name="uIDocument"/> if get direction manually should be enabled.
+        /// </remarks>
+        /// <returns>
+        /// <see cref="Autodesk.Revit.DB.XYZ"/> direction to connect <see cref="Element"/> at <see cref="Point"/>.
+        /// <para>
+        /// <see langword="null"/> if no direction was found.
+        /// </para>
+        /// </returns>
+        public XYZ GetDirection(XYZ refPoint, Element refElement, UIDocument uIDocument = null)
+        {
+            return new ConnectionDirectionFactory(Point, Element, uIDocument).GetDirection(refPoint, refElement);
+        }
+
+        public MEPCurve GetMEPCurve(IEnumerable<ElementId> excluededIds = null)
+        {
+            if(Element is MEPCurve curve) { return  curve; }
+
+            var connectedMEPCurves = ConnectorUtils.GetConnectedElements(Element)?.Where(e => e is MEPCurve);
+            if(connectedMEPCurves is null || !connectedMEPCurves.Any()) { return null; }
+
+            if(excluededIds is null || !excluededIds.Any()) {  return connectedMEPCurves.FirstOrDefault() as MEPCurve; }
+            var noExeptionIds = connectedMEPCurves.Select(e => e.Id).Except(excluededIds);
+
+            return Element.Document.GetElement(noExeptionIds.FirstOrDefault()) as MEPCurve;
         }
     }
 }

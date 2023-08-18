@@ -69,7 +69,7 @@ namespace DS.RevitLib.Test
 
             trb.Build(() =>
             {
-                _baseMEPCurve.FixNotValidOrientation(trb);
+                _baseMEPCurve.FixNotValidOrientation();
             },
             "Rotate");
         }

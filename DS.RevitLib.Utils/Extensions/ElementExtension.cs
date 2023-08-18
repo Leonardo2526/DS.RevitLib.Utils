@@ -1,5 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Electrical;
+using Autodesk.Revit.DB.Mechanical;
+using Autodesk.Revit.DB.Plumbing;
 using DS.RevitLib.Utils.Connection;
 using DS.RevitLib.Utils.MEP;
 using DS.RevitLib.Utils.Transactions;
@@ -158,6 +160,7 @@ namespace DS.RevitLib.Utils.Extensions
             {
                 FamilyInstance familyInstance = element as FamilyInstance;
                 var (famInstCon1, famInstCon2) = ConnectorUtils.GetMainConnectors(familyInstance);
+                if(famInstCon1 == null || famInstCon2 == null) { return null; }
                 return Line.CreateBound(famInstCon1.Origin, famInstCon2.Origin);
             }
 
@@ -448,15 +451,15 @@ namespace DS.RevitLib.Utils.Extensions
         /// Get <paramref name="element"/>'s  insulation.
         /// </summary>
         /// <param name="element"></param>
-        /// <returns>Returns <paramref name="element"/>'s <see cref="InsulationLiningBase"/> if it has it. 
+        /// <returns>
+        /// Returns <paramref name="element"/>'s <see cref="InsulationLiningBase"/> if it has it. 
         /// Otherwise returns null.</returns>
         public static InsulationLiningBase GetInsulation(this Element element)
         {
-            if (element.GetType() == typeof(CableTray))
-            { return null; }
-
-            return InsulationLiningBase.GetInsulationIds(element.Document, element.Id)
-               .Select(x => element.Document.GetElement(x) as InsulationLiningBase).FirstOrDefault();
+            return element is Pipe || element is Duct ?
+                InsulationLiningBase.GetInsulationIds(element.Document, element.Id)
+               .Select(x => element.Document.GetElement(x) as InsulationLiningBase).FirstOrDefault() :
+               null;
         }
 
         /// <summary>
@@ -489,6 +492,33 @@ namespace DS.RevitLib.Utils.Extensions
         public static Solid Solid(this Element element) => ElementUtils.GetSolid(element);
 
         /// <summary>
+        /// Get <paramref name="element"/>'s solid with it's insulation.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <returns>
+        /// <paramref name="element"/>'s <see cref="Autodesk.Revit.DB.Solid"/> with it's insulation if it has it.
+        /// <para>
+        /// Otherwise returns only <paramref name="element"/>'s <see cref="Autodesk.Revit.DB.Solid"/>.
+        /// </para>
+        /// </returns>
+        public static Solid GetSolidWithInsulation(this Element element)
+        {
+            Solid solid = element.Solid();
+
+            List<Solid> solids = new()
+            {solid};
+
+            Element insulation = element.GetInsulation();
+            if (insulation is not null && insulation.IsValidObject)
+            { 
+                solids.Add(insulation.Solid());
+                solid = Solids.SolidUtils.UniteSolids(solids);
+            }
+
+            return solid;
+        }
+
+        /// <summary>
         /// Get connected elements to <paramref name="element"/>.
         /// </summary>
         /// <param name="element"></param>
@@ -513,9 +543,9 @@ namespace DS.RevitLib.Utils.Extensions
         /// <param name="elements"></param>
         public static void ConvertToValid(this List<Element> elements)
         {
-            if(
-                elements is not null && 
-                elements.Any() && 
+            if (
+                elements is not null &&
+                elements.Any() &&
                 elements.TrueForAll(obj => obj.IsValidObject))
             { return; }
 
@@ -527,6 +557,59 @@ namespace DS.RevitLib.Utils.Extensions
                 { indexesToRemove.Add(i); }
             }
             indexesToRemove.ForEach(elements.RemoveAt);
+        }
+
+        /// <summary>
+        /// Specify if <paramref name="element"/> is MEP element.    
+        /// </summary>
+        /// <param name="element"></param>
+        /// <returns>
+        /// <see langword="true"/> if <paramref name="element"/> is pipe, duct, cable tray, fitting, accessory or equipment.
+        /// </returns>
+        public static bool IsMEPElement(this Element element)
+        {
+            var type = element.GetType();
+            bool validType = type == typeof(Pipe) || type == typeof(Duct) || type == typeof(CableTray) ? true : false;
+            if (validType) { return true; }
+
+            var familyInstance = element as FamilyInstance;
+            if (familyInstance?.MEPModel.ConnectorManager is null) { return false; }
+
+            BuiltInCategory familyInstanceCategory = CategoryExtension.GetBuiltInCategory(element.Category);
+
+            List<BuiltInCategory> builtInCategories = new List<BuiltInCategory>
+            {
+                BuiltInCategory.OST_PipeFitting,
+                BuiltInCategory.OST_DuctFitting,
+                BuiltInCategory.OST_CableTrayFitting,
+            BuiltInCategory.OST_MechanicalEquipment,
+            BuiltInCategory.OST_DuctAccessory,
+            BuiltInCategory.OST_PipeAccessory};
+
+            return ElementUtils.CheckCategory(familyInstanceCategory, builtInCategories);
+        }
+
+        /// <summary>
+        /// Get <see cref="RevitLinkInstance"/> by <paramref name="element"/>.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <param name="doc"></param>
+        /// <returns>
+        /// <see cref="RevitLinkInstance"/> from loaded links in <paramref name="doc"/> if there is any that contains <paramref name="element"/>.
+        /// <para>
+        /// <see langword="null"/> if no loaded links are in <paramref name="doc"/> or no links that contains <paramref name="element"/>.
+        /// </para>
+        /// </returns>
+        public static RevitLinkInstance GetLink(this Element element, Document doc)
+        {
+            var elemDoc = element.Document;
+
+            if(!elemDoc.IsLinked) { return null; }
+            else
+            {
+                var links = doc.GetLoadedLinks();
+                return links.FirstOrDefault(l => l.GetLinkDocument().Title == elemDoc.Title);
+            }
         }
     }
 }

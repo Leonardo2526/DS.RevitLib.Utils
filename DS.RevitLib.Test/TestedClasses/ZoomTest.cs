@@ -40,7 +40,7 @@ namespace DS.RevitLib.Test
             new TransactionBuilder(_doc).Build(() =>
             {
                 var visualizator = new BoundingBoxVisualisator(boxXYZ, _doc);
-                visualizator.Visualise();
+                visualizator.Show();
             }, "show boundingBox");
 
 

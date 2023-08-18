@@ -19,5 +19,15 @@ namespace DS.RevitLib.Utils.Geometry.Points
             XYZ xYZPoint = new XYZ(point.X, point.Y, point.Z);
             Show(xYZPoint);
         }
+
+        public void ShowVector(Point3D point1, Point3D point2)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void ShowVectorByDirection(Point3D origin, Point3D direction)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

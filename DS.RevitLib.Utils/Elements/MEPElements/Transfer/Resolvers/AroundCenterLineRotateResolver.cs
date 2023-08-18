@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using DS.ClassLib.VarUtils;
 using DS.RevitLib.Utils.Collisions.Checkers;
+using DS.RevitLib.Utils.Collisions.Detectors;
 using DS.RevitLib.Utils.Collisions.Models;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.Models;
@@ -13,14 +14,12 @@ namespace DS.RevitLib.Utils.Elements.Transfer.Resolvers
 {
     internal class AroundCenterLineRotateResolver : CollisionResolver
     {
-        private readonly SolidModelExt _operationElement;
         private int _successorUsageCount = 0;
 
-        public AroundCenterLineRotateResolver(Collision<SolidModelExt, Element> collision,
-            List<ICollisionChecker> collisionCheckers) :
-            base(collision, collisionCheckers)
+        public AroundCenterLineRotateResolver(SolidModelExt operationElement, SolidElementCollision collision,
+            ISolidCollisionDetector detector, List<Element> excludedElements) :
+            base(operationElement, collision, detector, excludedElements)
         {
-            _operationElement = collision.Object1;
         }
 
         private bool IsAlwaysVertical
@@ -75,7 +74,7 @@ namespace DS.RevitLib.Utils.Elements.Transfer.Resolvers
 
                 _operationElement.Transform(rotateTransform);
 
-                UnresolvedCollisions = GetCollisions();
+                UnresolvedCollisions = _detector.GetCollisions(_operationElement.Solid, _excludedElements);
 
                 if (!UnresolvedCollisions.Any())
                 {

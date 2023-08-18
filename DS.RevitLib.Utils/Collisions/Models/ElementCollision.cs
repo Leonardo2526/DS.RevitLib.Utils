@@ -2,6 +2,7 @@
 using DS.ClassLib.VarUtils.Collisions;
 using System.Collections.Generic;
 using System;
+using DS.RevitLib.Utils.Extensions;
 
 namespace DS.RevitLib.Utils.Collisions.Models
 {
@@ -34,6 +35,32 @@ namespace DS.RevitLib.Utils.Collisions.Models
                 }
                 return _intersectionSolid;
             }
+        }
+
+        /// <summary>
+        /// Get intersection solid with <see cref="Object1"/> and <see cref="Object2"/> insulations.
+        /// </summary>
+        /// <returns>
+        /// Intersection <see cref="Autodesk.Revit.DB.Solid"/> 
+        /// with <see cref="Object1"/> and <see cref="Object2"/> insulations if thay have it.
+        /// <para>
+        /// Otherwise returns only intersection <see cref="Autodesk.Revit.DB.Solid"/>.
+        /// </para>
+        /// </returns>
+        public Solid GetIntersectionSolidWithInsulation()
+        {
+            var solids = new List<Solid>()
+            {IntersectionSolid};
+
+            var rIns = Object1.GetInsulation();
+            if (rIns is not null && rIns.IsValidObject)
+            { solids.Add(rIns.Solid()); }
+
+            var sIns = Object2.GetInsulation();
+            if (sIns is not null && sIns.IsValidObject)
+            { solids.Add(sIns.Solid()); }
+
+            return DS.RevitLib.Utils.Solids.SolidUtils.UniteSolids(solids);
         }
 
         /// <summary>

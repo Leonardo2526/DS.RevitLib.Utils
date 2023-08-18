@@ -17,7 +17,7 @@ namespace DS.RevitLib.Utils.Collisions.Models
         /// <summary>
         /// Objects to check collisions.
         /// </summary>
-        protected readonly List<Element> _checkObjects2;
+        protected List<Element> _checkObjects2;
 
         /// <summary>
         /// Document of checkObjects2 used for <see cref="Autodesk.Revit.DB.FilteredElementCollector"/>;
@@ -30,6 +30,7 @@ namespace DS.RevitLib.Utils.Collisions.Models
             _checkObjects2Doc = checkObjects2Doc;
         }
 
+        public bool CheckValidity { get; set; } = true;
 
         /// <summary>
         /// Get elements in checkObjects2 that intersect <paramref name="checkSolid"/>.
@@ -39,6 +40,9 @@ namespace DS.RevitLib.Utils.Collisions.Models
         /// <returns>Returns elements that intersect <paramref name="checkSolid"/>.</returns>
         public List<Element> GetIntersectedElements(Solid checkSolid, List<Element> exludedCheckObjects2 = null)
         {
+            if(CheckValidity && !_checkObjects2.TrueForAll(o => o.IsValidObject)) 
+            { _checkObjects2 = _checkObjects2.Where(o => o.IsValidObject).ToList(); }
+            
             var collector = new FilteredElementCollector(_checkObjects2Doc, _checkObjects2.Select(el => el.Id).ToList());
 
             //apply quick filter.

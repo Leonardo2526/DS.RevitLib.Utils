@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DS.RevitLib.Utils.AutoTests
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "iUtils", "..\VAR.RevitLib.Utils\iUtils\iUtils.csproj", "{9B6AC69E-D362-4B7E-A1AC-35EE89CF5D6F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DS.RVT.ModelSpaceFragmentation", "DS.RVT.ModelSpaceFragmentation\DS.RVT.ModelSpaceFragmentation.csproj", "{9208DCBD-3F74-477C-87E3-9598C551E538}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{9B6AC69E-D362-4B7E-A1AC-35EE89CF5D6F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9B6AC69E-D362-4B7E-A1AC-35EE89CF5D6F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9B6AC69E-D362-4B7E-A1AC-35EE89CF5D6F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9208DCBD-3F74-477C-87E3-9598C551E538}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9208DCBD-3F74-477C-87E3-9598C551E538}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9208DCBD-3F74-477C-87E3-9598C551E538}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9208DCBD-3F74-477C-87E3-9598C551E538}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

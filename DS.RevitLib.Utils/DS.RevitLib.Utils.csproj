@@ -46,6 +46,9 @@
     <Reference Include="DS.ClassLib.VarUtils">
       <HintPath>..\..\DS.CommonLib.Utils\DS.ClassLib.VarUtils\bin\Debug\DS.ClassLib.VarUtils.dll</HintPath>
     </Reference>
+    <Reference Include="DS.PathFinder">
+      <HintPath>..\..\DS.CommonLib.Utils\PathFinders\DS.PathFinder\bin\Debug\DS.PathFinder.dll</HintPath>
+    </Reference>
     <Reference Include="iUtils, Version=2.5.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\VAR.RevitLib.Utils\Ivanov.RevitLib.Utils\Assemblies\iUtils.dll</HintPath>
@@ -96,10 +99,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Collisions\Detectors\AbstractDetectors\ISolidCollisionDetector.cs" />
     <Compile Include="Collisions\Detectors\CollisionDetectorByTrace.cs" />
     <Compile Include="Collisions\Resolvers\IResolver.cs" />
     <Compile Include="Collisions\Resolvers\MoveTransformStrategy.cs" />
     <Compile Include="Collisions\Solutions\ISolution.cs" />
+    <Compile Include="Connections\ConnectionDirectionFactory.cs" />
     <Compile Include="Connections\PointModels\BestMEPCurveConnectionPoint.cs" />
     <Compile Include="Connections\PointModels\ConnectionPoint.cs" />
     <Compile Include="Connections\PointModels\ConnectionPointValidator.cs" />
@@ -132,6 +137,7 @@
     <Compile Include="Creation\Transactions\Committers\Committer.cs" />
     <Compile Include="Creation\Transactions\ITransactionFactory.cs" />
     <Compile Include="Creation\Transactions\RevitContextOption.cs" />
+    <Compile Include="Elements\ConnectedElementFinder.cs" />
     <Compile Include="Elements\MEPElements\Connection\ElementConnectionFactory.cs" />
     <Compile Include="Elements\MEPElements\Connection\ElementStrategies\ConnectWithMEPCurve.cs" />
     <Compile Include="Elements\MEPElements\Connection\ElementStrategies\ElbowElementStrategy.cs" />
@@ -147,7 +153,6 @@
     <Compile Include="Elements\MEPElements\Connection\MEPCurveStrategies\TeeWithCutMEPCurveStrategy.cs" />
     <Compile Include="Creation\CreatorExtensions.cs" />
     <Compile Include="Elements\MEPElements\TeeCalc.cs" />
-    <Compile Include="Elements\MEPElements\ITraceSettings.cs" />
     <Compile Include="Elements\MEPElements\MEPSystemElement.cs" />
     <Compile Include="Elements\MEPElements\TraceSettings.cs" />
     <Compile Include="Elements\MEPElements\Transfer\AvailableModels\AbstractAvailableCurveService.cs" />
@@ -196,14 +201,21 @@
     <Compile Include="Extensions\MEPSystemExtensions.cs" />
     <Compile Include="Extensions\ConnectorExtensions.cs" />
     <Compile Include="Extensions\BoxXYZExtensions.cs" />
+    <Compile Include="Geometry\Points\Point3dVisualisator.cs" />
     <Compile Include="Geometry\Points\PointVisualisator.cs" />
     <Compile Include="Geometry\Points\XYZVisualizator.cs" />
+    <Compile Include="Geometry\Solids\SolidOffsetExtractor.cs" />
+    <Compile Include="PathCreators\xYZPathFinder.cs" />
+    <Compile Include="Various\Bases\BasisExtensions.cs" />
+    <Compile Include="Various\Bases\BasisXYZ.cs" />
+    <Compile Include="Various\Bases\IBasisStrategy.cs" />
+    <Compile Include="PathCreators\PathAlgorithmFactory.cs" />
     <Compile Include="UIUtils.cs" />
     <Compile Include="Geometry\GeometryElementsUtils.cs" />
     <Compile Include="Geometry\Lines\LineOverlapResult.cs" />
     <Compile Include="Geometry\Lines\LinesConnector.cs" />
     <Compile Include="Geometry\Points\XYZAlgorithms\FindDistanceStrategies\Strategies\StrategyToFindMinDist.cs" />
-    <Compile Include="Geometry\Solids\SolidOffsetExtractor.cs" />
+    <Compile Include="Geometry\Solids\BestSolidOffsetExtractor.cs" />
     <Compile Include="Creation\FailedTransaction.cs" />
     <Compile Include="Extensions\FamilyInstanceExtensions.cs" />
     <Compile Include="Creation\MEP\Builders\BuilderByPoints.cs" />
@@ -224,8 +236,9 @@
     <Compile Include="Creation\MEP\MEPCurveCutter.cs" />
     <Compile Include="Elements\Models\MEPCurveGeometryModel.cs" />
     <Compile Include="PathCreators\PathFindCreator.cs" />
-    <Compile Include="PathCreators\PathCreator.cs" />
     <Compile Include="Tests\ITestModel.cs" />
+    <Compile Include="Various\Bases\TwoMEPCurvesBasisStrategy.cs" />
+    <Compile Include="Elements\IElementFinder.cs" />
     <Compile Include="Various\IRevitContext.cs" />
     <Compile Include="Various\VectorPointConverter.cs" />
     <Compile Include="Various\Selections\Filters\ElementInLinkSelectionFilter.cs" />
@@ -250,12 +263,12 @@
     <Compile Include="Various\Transforms\BasisTransformModel.cs" />
     <Compile Include="Various\Transforms\TransformBuilder.cs" />
     <Compile Include="Various\Transforms\TransformModel.cs" />
-    <Compile Include="Various\Basisis\Basis.cs" />
-    <Compile Include="Various\Basisis\BasisOrientation.cs" />
+    <Compile Include="Various\Bases\Basis.cs" />
+    <Compile Include="Various\Bases\BasisOrientation.cs" />
     <Compile Include="Various\Transforms\MultipleTransformBuilder.cs" />
     <Compile Include="Extensions\PlaneExtensions.cs" />
     <Compile Include="Various\PlaneUtils.cs" />
-    <Compile Include="Various\Basisis\RotationModel.cs" />
+    <Compile Include="Various\Bases\RotationModel.cs" />
     <Compile Include="Extensions\SolidExtension.cs" />
     <Compile Include="Extensions\XYZExtension.cs" />
     <Compile Include="Various\FamilySymbolUtils.cs" />

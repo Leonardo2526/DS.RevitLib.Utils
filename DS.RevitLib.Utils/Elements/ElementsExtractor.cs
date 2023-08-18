@@ -12,6 +12,7 @@ namespace DS.RevitLib.Utils.Elements
     {
         private readonly Document _doc;
         private readonly List<BuiltInCategory> _exludedCathegories;
+        private readonly Outline _outline;
 
 
         /// <summary>
@@ -19,10 +20,12 @@ namespace DS.RevitLib.Utils.Elements
         /// </summary>
         /// <param name="doc"></param>
         /// <param name="exludedCathegories"></param>
-        public ElementsExtractor(Document doc, List<BuiltInCategory> exludedCathegories = null)
+        /// <param name="outline"></param>
+        public ElementsExtractor(Document doc, List<BuiltInCategory> exludedCathegories = null, Outline outline = null)
         {
             _doc = doc;
             _exludedCathegories = exludedCathegories;
+            _outline = outline;
         }
 
         /// <summary>
@@ -58,7 +61,7 @@ namespace DS.RevitLib.Utils.Elements
         /// <returns></returns>
         public List<Element> GetFromDoc()
         {
-            return _doc.GetGeometryElements(_exludedCathegories);
+            return _doc.GetGeometryElements(null, _exludedCathegories, null, false, _outline);
         }
 
         /// <summary>
@@ -74,8 +77,7 @@ namespace DS.RevitLib.Utils.Elements
 
             foreach (var link in allLinks)
             {
-                Document linkDoc = link.GetLinkDocument();
-                List<Element> geomlinkElems = linkDoc.GetGeometryElements(_exludedCathegories);
+                List<Element> geomlinkElems = _doc.GetGeometryElements(link, _exludedCathegories, null, false, _outline); ;
                 if (geomlinkElems is null || geomlinkElems.Count == 0) { continue; }
                 elements.Add(link, geomlinkElems);
             }
