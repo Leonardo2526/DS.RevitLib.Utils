@@ -80,8 +80,8 @@ namespace DS.RevitLib.Utils
             XYZ centerPoint = GetLocationPoint(element);
 
             double X = UnitUtils.Convert(centerPoint.X,
-                                           DisplayUnitType.DUT_DECIMAL_FEET,
-                                           DisplayUnitType.DUT_MILLIMETERS);
+                                         DisplayUnitType.DUT_DECIMAL_FEET,
+                                         DisplayUnitType.DUT_MILLIMETERS);
             double Y = UnitUtils.Convert(centerPoint.Y,
                                           DisplayUnitType.DUT_DECIMAL_FEET,
                                            DisplayUnitType.DUT_MILLIMETERS);
@@ -102,6 +102,11 @@ namespace DS.RevitLib.Utils
             return SolidExtractor.GetSolids(element);
         }
 
+        /// <summary>
+        /// Get <paramref name="element"/>'s solid.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <returns></returns>
         public static Solid GetSolid(Element element)
         {
             var solids = SolidExtractor.GetSolids(element);
@@ -155,22 +160,6 @@ namespace DS.RevitLib.Utils
             }
 
             return solids;
-        }
-
-        /// <summary>
-        /// Check if element subtype is MEPCurve
-        /// </summary>
-        /// <param name="element"></param>
-        /// <returns></returns>
-        public static bool IsElementMEPCurve(Element element)
-        {
-            if (element.GetType().Name == "Pipe"
-                  || element.GetType().Name == "Duct"
-                  || element.GetType().Name == "Cable")
-            {
-                return true;
-            }
-            return false;
         }
 
         /// <summary>
@@ -547,16 +536,72 @@ namespace DS.RevitLib.Utils
                 points.Add(bb.Max);
             }
 
-            var minx = points.Min(x => x.X);
-            var miny = points.Min(x => x.Y);
-            var minz = points.Min(x => x.Z);
-            var maxx = points.Max(x => x.X);
-            var maxy = points.Max(x => x.Y);
-            var maxz = points.Max(x => x.Z);
-            var min = new XYZ(minx, miny, minz);
-            var max = new XYZ(maxx, maxy, maxz);
+            (XYZ minPoint, XYZ maxPoint) = XYZUtils.CreateMinMaxPoints(points);
 
-            return new BoundingBoxXYZ() { Min = min, Max = max };
+            return new BoundingBoxXYZ() { Min = minPoint, Max = maxPoint };
         }
+
+        /// <summary>
+        /// Get total <see cref="BoundingBoxXYZ"/> by all <paramref name="points"/>.
+        /// </summary>
+        /// <param name="points"></param>
+        /// <param name="offset">Offset from each point from <paramref name="points"/>.</param>
+        /// <returns>Returns <see cref="BoundingBoxXYZ"/> with minPoint and maxPoint by min and max values from 
+        /// <paramref name="points"/> with <paramref name="offset"/>.</returns>
+        public static BoundingBoxXYZ GetBoundingBox(List<XYZ> points, double offset = 0)
+        {
+            //Get offset points
+            var lines = LineUtils.GetLines(points);
+            return GetBoundingBox(lines, offset);
+        }
+
+        /// <summary>
+        /// Get total <see cref="BoundingBoxXYZ"/> by all <paramref name="lines"/>.
+        /// </summary>
+        /// <param name="lines"></param>
+        /// <param name="offset">Offset from each point from <paramref name="lines"/>.</param>
+        /// <returns>Returns <see cref="BoundingBoxXYZ"/> with minPoint and maxPoint by min and max values from 
+        /// <paramref name="lines"/> with <paramref name="offset"/>.</returns>
+        public static BoundingBoxXYZ GetBoundingBox(List<Line> lines, double offset = 0)
+        {
+            //Get offset points
+            var offsetPoints = new List<XYZ>();
+            foreach (var line in lines)
+            {
+                XYZ dir = line.Direction;
+                XYZ p1 = line.GetEndPoint(0);
+                XYZ p2 = line.GetEndPoint(1);
+                Arc circle1 = GeometryElementsUtils.CreateCircle(p1, dir, offset);
+                Arc circle2 = GeometryElementsUtils.CreateCircle(p2, dir, offset);
+                var offsetPoints1 = circle1.Tessellate();
+                var offsetPoints2 = circle2.Tessellate();
+                offsetPoints.AddRange(offsetPoints1);
+                offsetPoints.AddRange(offsetPoints2);
+            }
+
+            (XYZ minPoint, XYZ maxPoint) = XYZUtils.CreateMinMaxPoints(offsetPoints);
+            return new BoundingBoxXYZ() { Min = minPoint, Max = maxPoint };
+        }
+
+        /// <summary>
+        /// Get insulation if for each element if <paramref name="elements"/>.
+        /// </summary>
+        /// <param name="elements"></param>
+        /// <returns>
+        /// List of <see cref="Autodesk.Revit.DB.ElementId"/> insulations.
+        /// </returns>
+        public static List<ElementId> GetInsulation(List<Element> elements)
+        {
+            var insulationIds = new List<ElementId>();
+            elements.ForEach(elem =>
+            {
+                var insulation = elem.GetInsulation();
+                if (insulation != null)
+                { insulationIds.Add(insulation.Id); }
+            });
+            
+            return insulationIds;
+        }
+
     }
 }

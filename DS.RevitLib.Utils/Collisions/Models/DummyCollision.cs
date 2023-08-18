@@ -1,0 +1,13 @@
+﻿using DS.ClassLib.VarUtils.Collisions;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DS.RevitLib.Utils.Collisions.Models
+{
+    public class DummyCollision : ICollision
+    {
+    }
+}

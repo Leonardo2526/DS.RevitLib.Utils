@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.DB;
+using DS.ClassLib.VarUtils.Collisions;
 using DS.RevitLib.Utils.Collisions.Models;
 using DS.RevitLib.Utils.Solids.Models;
 using System;
@@ -36,6 +37,9 @@ namespace DS.RevitLib.Utils.Collisions.Checkers
 
         public override List<ICollision> GetCollisions()
         {
+            if (CheckedObjects1 is null | CheckedObjects2 is null |
+           !CheckedObjects1.Any() | !CheckedObjects2.Any()) return new List<ICollision>();
+
             List<ICollision> collisions = new List<ICollision>();
             foreach (var obj1 in CheckedObjects1)
             {
@@ -94,7 +98,7 @@ namespace DS.RevitLib.Utils.Collisions.Checkers
 
         protected override ICollision BuildCollision(SolidModelExt object1, Element object2)
         {
-            var col = new SolidElemCollision(object1, object2);
+            var col = new SolidElemTransformCollision(object1, object2);
             col.Transform2 = _revitLinkInstance.GetTotalTransform();
             return col;
         }
