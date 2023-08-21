@@ -170,7 +170,7 @@ namespace DS.RevitLib.Utils
         /// <param name="checkingCategory"></param>
         /// <param name="coincidenceCategories"></param>
         /// <returns></returns>
-        public static bool CheckCategory(BuiltInCategory checkingCategory, List<BuiltInCategory> coincidenceCategories)
+        public static bool CheckCategory(BuiltInCategory checkingCategory, IEnumerable<BuiltInCategory> coincidenceCategories)
         {
             foreach (var item in coincidenceCategories)
             {

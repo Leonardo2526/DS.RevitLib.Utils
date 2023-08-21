@@ -104,7 +104,7 @@ namespace DS.RevitLib.Utils.Elements.Transfer
 
         private Solid GetIntersectionSolid(List<(Solid, Element)> collisions)
         {
-            var solid = collisions.Select(obj => obj.GetIntersectionSolid()).ToList();
+            var solid = collisions.Select(obj => obj.GetIntersectionSolid(obj.Item2.Document)).ToList();
             return DS.RevitLib.Utils.Solids.SolidUtils.UniteSolids(solid);
         }
     }

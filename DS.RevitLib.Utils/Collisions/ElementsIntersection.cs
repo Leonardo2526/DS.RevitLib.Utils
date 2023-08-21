@@ -54,7 +54,8 @@ namespace DS.RevitLib.Utils.Collisions.Models
             { collector.WherePasses(GetExclusionFilter(exludedCheckObjects2)); };
 
             //apply slow filter
-            return collector.WherePasses(new ElementIntersectsSolidFilter(checkSolid)).ToElements().ToList();
+            collector = collector.WherePasses(new ElementIntersectsSolidFilter(checkSolid));
+            return collector.ToElements().ToList();
         }
 
 

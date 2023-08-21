@@ -11,6 +11,7 @@ using DS.RevitLib.Utils.MEP;
 using DS.RevitLib.Utils.Models;
 using DS.RevitLib.Utils.Solids;
 using DS.RevitLib.Utils.Various.Bases;
+using MoreLinq;
 using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
@@ -29,6 +30,7 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
     /// </summary>
     public class CollisionDetectorByTrace : ITraceCollisionDetector<Point3d>
     {
+        private static readonly string _wallIntersectionParamName = "OLP_БезПересечений";
         private readonly Document _doc;
         private readonly MEPCurve _baseMEPCurve;
         private readonly ITraceSettings _traceSettings;
@@ -41,6 +43,8 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
         private Point3d _endPoint;
         private ConnectionPoint _startConnectionPoint;
         private ConnectionPoint _endConnectionPoint;
+        private readonly double _aTolerance = 3.DegToRad();
+
 
         /// <summary>
         /// Instantiate an object to create objects for collisions (intersections) detection 
@@ -91,8 +95,8 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
         public ConnectionPoint StartConnectionPoint
         {
             get => _startConnectionPoint;
-            set 
-            { 
+            set
+            {
                 _startConnectionPoint = value;
                 _startPoint = _pointConverter.ConvertToUCS2(value.Point.ToPoint3d());
             }
@@ -108,6 +112,8 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
             }
         }
 
+        public int Punishment { get; set; }
+
         /// <summary>
         /// 
         /// </summary>
@@ -122,17 +128,19 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
         /// </returns>
         public List<(object, object)> GetCollisions(Point3d point1, Point3d point2, Basis3d basis)
         {
+            Punishment = 0;
+
             XYZ p1 = null;
             XYZ p2 = null;
+            var direction = point2 - point1;
+            direction = Vector3d.Divide(direction, direction.Length);
 
             var endSolidPoint = point2;
             if (OffsetOnEndPoint)
             {
-                var v = point2 - point1;
-                v = Vector3d.Divide(v, v.Length);
                 var size = _baseMEPCurve.GetMaxSize();
                 var mult = size + _offset;
-                endSolidPoint += Vector3d.Multiply(v, mult);
+                endSolidPoint += Vector3d.Multiply(direction, mult);
             }
 
             if (_pointConverter is not null)
@@ -151,7 +159,12 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
             var uCS1Basis = _pointConverter.ConvertToUCS1(basis).ToXYZ();
             var checkSolid = SolidExtractor.Extract(p1, p2, uCS1Basis);
 
-            return Collisions = _detectorFactory.GetCollisions(checkSolid, ObjectsToExclude).
+            var collisions = _detectorFactory.GetCollisions(checkSolid, ObjectsToExclude);
+            var excludeWallsIds = GetExcludeWalls(collisions, direction);
+
+            collisions = collisions.Where(c => !excludeWallsIds.Contains(c.Item2.Id)).ToList();
+
+            return Collisions = collisions.
                 Select(x => ((object)x.Item1, (object)x.Item2)).ToList();
 
             _transactionFactory.CreateAsync(() =>
@@ -162,6 +175,27 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
 
             return Collisions = _detectorFactory.GetCollisions(checkSolid, ObjectsToExclude).
                 Select(x => ((object)x.Item1, (object)x.Item2)).ToList();
+        }
+
+        private List<ElementId> GetExcludeWalls(IEnumerable<(Solid, Element)> collisions, Vector3d dir)
+        {
+            var walls = new List<Wall>();
+            List<ElementId> excludeWalls = new();
+
+            var wallsCollisions = collisions.Where(c => c.Item2 is Wall);
+            wallsCollisions.ForEach(wc => walls.Add(wc.Item2 as Wall));
+
+            if(walls.Count > 0)
+            {
+                var uCS1dir = _pointConverter.ConvertToUCS1(dir);
+                foreach (Wall w in walls)
+                {
+                    if (w.IsTraversable(uCS1dir))
+                    { excludeWalls.Add(w.Id); Punishment++; }
+                }
+            }
+
+            return excludeWalls;
         }
 
         public List<(object, object)> GetFirstCollisions(Point3d point2, Basis3d basis)
