@@ -208,7 +208,9 @@ namespace DS.RevitLib.Utils.PathCreators
         private IPathFindAlgorithm<Point3d, Point3d> Create()
         {
             //specify basis.
-            _basisStrategy.GetBasis();
+            //if (_basisStrategy.BasisX == null)
+            //{ _basisStrategy.GetBasis(); }
+
             _pathFindBasis = XYZUtils.ToBasis3d(_basisStrategy.BasisX, _basisStrategy.BasisY, _basisStrategy.BasisZ);
             //basis.ToBasis3d().Show(_uiDoc, 100.MMToFeet(), null, true);
 

@@ -376,7 +376,7 @@ namespace DS.RevitLib.Utils.Extensions
         /// Random normal if no normal vectors to <paramref name="dir"/> from XYZ base orths exists.
         /// </para>
         /// </returns>
-        public static XYZ GetBaseNormal(this XYZ dir)
+        public static XYZ GetPerpendicular(this XYZ dir)
         {
             var dir3d = dir.ToVector3d().Round(3);           
             if (dir3d.IsPerpendicularTo(XYZ.BasisX.ToVector3d())) { return XYZ.BasisX; }

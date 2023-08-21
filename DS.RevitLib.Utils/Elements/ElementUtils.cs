@@ -4,6 +4,7 @@ using DS.RevitLib.Utils.Elements;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.MEP;
 using DS.RevitLib.Utils.Solids;
+using DS.RevitLib.Utils.Various.Bases;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -604,5 +605,48 @@ namespace DS.RevitLib.Utils
             return insulationIds;
         }
 
+
+        /// <summary>
+        /// Get basis vectors by <paramref name="element1"/> and <paramref name="element2"/>.
+        /// <para>
+        /// Build basisX as one of elements lines direction. 
+        /// BasisY, basisZ are as cross products between basisX and second line direction or one of <see cref="Autodesk.Revit.DB.XYZ"/> bases.
+        /// </para>
+        /// </summary>
+        /// <param name="element1"></param>
+        /// <param name="element2"></param>
+        /// <returns>
+        /// Basis vectors built by lines of <paramref name="element1"/> and <paramref name="element2"/>.
+        /// <para>
+        /// Throws <see cref="System.ArgumentException"/> if both elements center lines are <see langword="null"/>.
+        /// </para>
+        /// </returns>
+        /// <exception cref="System.ArgumentException"></exception>
+        public static (XYZ basisX, XYZ basisY, XYZ basisZ) GetBasis(Element element1, Element element2 = null)
+        {
+            var line1 = element1.GetCenterLine();
+            var line2 = element2?.GetCenterLine();
+
+            if (line1 == null && line2 == null)
+            { throw new ArgumentException("Failed to get basis. Both directions to get basis are null"); }
+
+            XYZ basisX;
+            XYZ basisZ;
+            if (line1 != null)
+            {
+                basisX = line1.Direction;
+                basisZ = line2 is null ? null : basisX.CrossProduct(line2.Direction);
+            }
+            else
+            {
+                basisX = line2.Direction;
+                basisZ = line1 is null ? null : basisX.CrossProduct(line1.Direction);
+            }
+
+            basisZ = basisZ is null || basisZ.IsZeroLength() ? basisX.GetPerpendicular() : basisZ;
+            XYZ basisY = basisX.CrossProduct(basisZ);
+
+            return (basisX, basisY, basisZ);
+        }
     }
 }

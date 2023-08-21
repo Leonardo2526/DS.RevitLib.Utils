@@ -11,6 +11,7 @@ using DS.RevitLib.Utils.Creation.Transactions;
 using DS.RevitLib.Utils.Elements;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.MEP;
+using DS.RevitLib.Utils.Models;
 using DS.RevitLib.Utils.Various.Bases;
 using Rhino.Geometry;
 using System;
@@ -27,14 +28,14 @@ namespace DS.RevitLib.Utils.PathCreators
     /// </summary>
     public class xYZPathFinder : IPathFinder<ConnectionPoint, XYZ>
     {
-        private  List<Element> _docElements;
-        private  Dictionary<RevitLinkInstance, List<Element>> _linkElementsDict;
+        private List<Element> _docElements;
+        private Dictionary<RevitLinkInstance, List<Element>> _linkElementsDict;
         private PathAlgorithmFactory _algorithmFactory;
-        private  UIDocument _uiDoc;
+        private UIDocument _uiDoc;
         private readonly IBasisStrategy _basisStrategy;
         private readonly ITraceSettings _traceSettings;
         private List<BuiltInCategory> _exludedCathegories;
-        private Document _doc;      
+        private Document _doc;
         private List<Element> _objectsToExclude = new List<Element>();
         private bool _allowStartDirection;
         private List<PlaneType> _planes;
@@ -46,7 +47,7 @@ namespace DS.RevitLib.Utils.PathCreators
         /// Instantiate an object to find path between <see cref="Autodesk.Revit.DB.XYZ"/> points.
         /// </summary>
         public xYZPathFinder(IBasisStrategy basisStrategy, ITraceSettings traceSettings)
-        {           
+        {
             _basisStrategy = basisStrategy;
             _traceSettings = traceSettings;
         }
@@ -75,11 +76,12 @@ namespace DS.RevitLib.Utils.PathCreators
         /// <param name="planes"></param>
         /// <param name="basisMEPCurve1"></param>
         /// <param name="basisMEPCurve2"></param>
+        /// <param name="basis"></param>
         /// <param name="transactionFactory"></param>
         /// <returns></returns>
         public xYZPathFinder Build(MEPCurve baseMEPCurve, List<Element> objectsToExclude,
         List<BuiltInCategory> exludedCathegories,
-            bool allowStartDirection = true, List<PlaneType> planes = null, MEPCurve basisMEPCurve1 = null, MEPCurve basisMEPCurve2 = null,
+            bool allowStartDirection = true, List<PlaneType> planes = null, MEPCurve basisMEPCurve1 = null, MEPCurve basisMEPCurve2 = null, Basis basis = null,
             ITransactionFactory transactionFactory = null)
         {
             _baseMEPCurve = baseMEPCurve;
@@ -107,8 +109,13 @@ namespace DS.RevitLib.Utils.PathCreators
             _allowStartDirection = allowStartDirection;
             _planes = planes;
 
-            if (_basisStrategy is TwoMEPCurvesBasisStrategy twoMCStrategy)
+            if (_basisStrategy is TwoMEPCurvesBasisStrategy twoMCStrategy
+                && basisMEPCurve1 is not null
+                && basisMEPCurve2 is not null)
             { twoMCStrategy.MEPCurve1 = basisMEPCurve1; twoMCStrategy.MEPCurve2 = basisMEPCurve2; }
+
+            if (basis is not null)
+            { _basisStrategy.SetBasis(basis.X, basis.Y, basis.Z); }
 
             _transactionFactory = transactionFactory;
 
@@ -135,7 +142,7 @@ namespace DS.RevitLib.Utils.PathCreators
             var baseMEPCurveBasis = _baseMEPCurve.GetBasisXYZ(dir, startPoint.Point);
 
             var outline = GetOutline(baseMEPCurveBasis, startPoint.Point, endPoint.Point);
-            if(outline == null) { return _path; }
+            if (outline == null) { return _path; }
 
             //show bb
             //var bb = new BoundingBoxXYZ();
@@ -155,23 +162,24 @@ namespace DS.RevitLib.Utils.PathCreators
 
             _algorithmFactory.Build(_baseMEPCurve, startPoint, endPoint, outline, _objectsToExclude, _planes);
 
-            if(_algorithmFactory.Algorithm is null) { return _path; }
+            if (_algorithmFactory.Algorithm is null) { return _path; }
 
-            if (_allowStartDirection) 
+            if (_allowStartDirection)
             {
                 var startMEPCurve = startPoint.GetMEPCurve(_objectsToExclude.Select(o => o.Id));
                 var endMEPCurve = endPoint.GetMEPCurve(_objectsToExclude.Select(o => o.Id));
-                if(startMEPCurve == null || endMEPCurve == null) 
-                { throw new ArgumentNullException("Failed to find MEPCurve on connection point.");}
-                _algorithmFactory.WithInitialDirections(); 
+                if (startMEPCurve == null || endMEPCurve == null)
+                { throw new ArgumentNullException("Failed to find MEPCurve on connection point."); }
+                _algorithmFactory.WithInitialDirections();
             }
             _algorithmFactory.Algorithm.ExternalTokenSource = TokenSource;
 
-            var dist = startPoint.Point.DistanceTo(endPoint.Point) / 3;
+            var dist = double.MaxValue;
+            //var dist = startPoint.Point.DistanceTo(endPoint.Point) / 3;
             var stepEnumerator = new StepEnumerator(_algorithmFactory.NodeBuilder, dist.FeetToMM(), _traceSettings.Step.FeetToMM(), true);
             var heuristicEnumerator = new HeuristicEnumerator(_algorithmFactory.NodeBuilder, true);
             var toleranceEnumerator = new ToleranceEnumerator(_algorithmFactory, true, _traceSettings.A != 90 && _traceSettings.A != 45);
-            var pathFindEnumerator = new PathFindEnumerator(stepEnumerator, heuristicEnumerator, 
+            var pathFindEnumerator = new PathFindEnumerator(stepEnumerator, heuristicEnumerator,
                 toleranceEnumerator, _algorithmFactory)
             {
                 TokenSource = TokenSource
@@ -182,7 +190,7 @@ namespace DS.RevitLib.Utils.PathCreators
             { path = pathFindEnumerator.Current; }
 
             if (path == null || path.Count == 0)
-            {                
+            {
                 TaskDialog.Show("Error", "No available path exist!");
             }
             else
@@ -278,7 +286,7 @@ namespace DS.RevitLib.Utils.PathCreators
             double offsetZ = 5000.MMToFeet();
 
             (XYZ lowerZBound, XYZ topZBound) = GetOffsetZ(startPoint, endPoint, _baseMEPCurve, basisXYZ, offsetZ);
-            if(lowerZBound is null || topZBound is null) { return null; }
+            if (lowerZBound is null || topZBound is null) { return null; }
 
             var moveVector = new XYZ(XYZ.BasisX.X * offsetX, XYZ.BasisY.Y * offsetY, XYZ.BasisZ.Z * offsetZ);
 
@@ -308,23 +316,27 @@ namespace DS.RevitLib.Utils.PathCreators
                 var hmin = h2 + ins;
 
                 //if no floors
-                if(startHFloor == double.PositiveInfinity && endHFloor == double.PositiveInfinity)
+                if (startHFloor == double.PositiveInfinity && endHFloor == double.PositiveInfinity)
                 { return (bottomZBound, topZBound); }
 
                 var startZOffset = startHFloor - _traceSettings.H;
                 var endZOffset = endHFloor - _traceSettings.H;
 
                 if (startZOffset < hmin)
-                { _transactionFactory.CreateAsync(() => 
+                {
+                    _transactionFactory.CreateAsync(() =>
                 TaskDialog.Show("Ошибка", "Расстояние до пола в начальной точке меньше заданного в настройках значения."), "show message");
-                    TokenSource?.Cancel(); return (null , null);  }
+                    TokenSource?.Cancel(); return (null, null);
+                }
                 else if (endZOffset < hmin)
-                { _transactionFactory.CreateAsync(() => 
+                {
+                    _transactionFactory.CreateAsync(() =>
                 TaskDialog.Show("Ошибка", "Расстояние до пола в конеченой точке меньше заданного в настройках значения."), "show message");
-                    TokenSource?.Cancel(); return (null, null);   }
-                else if(startHFloor != double.PositiveInfinity)
+                    TokenSource?.Cancel(); return (null, null);
+                }
+                else if (startHFloor != double.PositiveInfinity)
                 { return (startPoint - XYZ.BasisZ.Multiply(startHFloor - _traceSettings.H), topZBound); }
-                else if(endHFloor != double.PositiveInfinity)
+                else if (endHFloor != double.PositiveInfinity)
                 { return (endPoint - XYZ.BasisZ.Multiply(endHFloor - _traceSettings.H), topZBound); }
                 else { return (null, null); }
             }

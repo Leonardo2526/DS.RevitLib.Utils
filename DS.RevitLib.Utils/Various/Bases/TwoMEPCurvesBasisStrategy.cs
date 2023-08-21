@@ -72,10 +72,16 @@ namespace DS.RevitLib.Utils.Bases
             var line2 = MEPCurve2.GetCenterLine();
             BasisX = line1.Direction;
             BasisZ = BasisX.CrossProduct(line2.Direction);
-            BasisZ = BasisZ.IsZeroLength() ? BasisX.GetBaseNormal() : BasisZ;
+            BasisZ = BasisZ.IsZeroLength() ? BasisX.GetPerpendicular() : BasisZ;
             BasisY = BasisX.CrossProduct(BasisZ);
 
             return (BasisX, BasisY, BasisZ);
+        }
+
+        /// <inheritdoc/>
+        public (XYZ basisX, XYZ basisY, XYZ basisZ) SetBasis(XYZ basisX, XYZ basisY, XYZ basisZ)
+        {
+           return (BasisX = basisX, BasisY = basisY, BasisZ = basisZ);
         }
     }
 }
