@@ -2,6 +2,7 @@
 using Autodesk.Revit.DB.Electrical;
 using Autodesk.Revit.DB.Mechanical;
 using Autodesk.Revit.DB.Plumbing;
+using DS.ClassLib.VarUtils;
 using DS.RevitLib.Utils.Creation.MEP;
 using DS.RevitLib.Utils.Creation.Transactions;
 using DS.RevitLib.Utils.Extensions;
@@ -9,6 +10,7 @@ using DS.RevitLib.Utils.MEP.Creator;
 using DS.RevitLib.Utils.Models;
 using DS.RevitLib.Utils.Transactions;
 using DS.RevitLib.Utils.Various.Bases;
+using Vector3d =  Rhino.Geometry.Vector3d;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -518,6 +520,37 @@ namespace DS.RevitLib.Utils.MEP
             }
 
             return targetMEPCurve;
+        }
+
+        /// <summary>
+        /// Get direction of <paramref name="mEPCurve"/>.
+        /// </summary>
+        /// <param name="mEPCurve"></param>
+        /// <returns>
+        /// Centerline direction of <paramref name="mEPCurve"/>.
+        /// </returns>
+        public static XYZ Direction(this MEPCurve mEPCurve) => mEPCurve.GetCenterLine().Direction;
+
+        /// <summary>
+        /// Specifies if <paramref name="mEPCurve"/> can be traverse through <see cref="Autodesk.Revit.DB.Floor"/>s.
+        /// </summary>
+        /// <param name="mEPCurve"></param>
+        /// <param name="maxSectionArea"></param>
+        /// <returns>
+        /// <see langword="true"/> if <paramref name="mEPCurve"/>'s direction is parallel to <see cref="Autodesk.Revit.DB.XYZ.BasisZ"/>
+        /// and it's sectionArea is less than <paramref name="maxSectionArea"/>.
+        /// <para>
+        /// Otherwise returns <see langword="false"/>.
+        /// </para>
+        /// </returns>
+        public static bool IsFloorTraversable(this MEPCurve mEPCurve, double maxSectionArea = 0.085)
+        {
+            var dir = mEPCurve.Direction().ToVector3d();
+            if(dir.IsParallelTo(Vector3d.ZAxis, 3.DegToRad()) == 0) {  return false; }
+
+            var area = mEPCurve.GetOuterArea();
+
+            return area < maxSectionArea;
         }
     }
 }

@@ -165,7 +165,8 @@ namespace DS.RevitLib.Utils.Extensions
             {
                 FamilyInstance familyInstance = element as FamilyInstance;
                 var (famInstCon1, famInstCon2) = ConnectorUtils.GetMainConnectors(familyInstance);
-                if (famInstCon1 == null || famInstCon2 == null) { return null; }
+                if (famInstCon1 == null || famInstCon2 == null 
+                    || famInstCon1.Origin.DistanceTo(famInstCon2.Origin) < 0.001) { return null; }
                 return Line.CreateBound(famInstCon1.Origin, famInstCon2.Origin);
             }
             else
@@ -631,6 +632,8 @@ namespace DS.RevitLib.Utils.Extensions
         public static Solid GetTransformed(this Element element, RevitLinkInstance revitLink)
         {
             var solid = element.Solid();
+            if(solid is null)
+            {return null;}
 
             var linkTransform = revitLink.GetTotalTransform();
             if (!linkTransform.AlmostEqual(Transform.Identity))
@@ -699,5 +702,22 @@ namespace DS.RevitLib.Utils.Extensions
         /// </returns>
         public static bool IsTraversable(this Wall wall, XYZ traverseDirection, string parameterName = "OLP_БезПересечений") =>
            wall.IsTraversable(traverseDirection.ToVector3d(), parameterName);
+
+        /// <summary>
+        /// Specifies if <paramref name="element"/> is connected to <paramref name="checkElement"/>.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <param name="checkElement"></param>
+        /// <returns>
+        /// <see langword="true"/> if <paramref name="element"/> has common connectors with <paramref name="checkElement"/>.
+        /// <para>
+        /// Otherwise returns <see langword="false"/>.
+        /// </para>
+        /// </returns>
+        public static bool IsConnected(this Element element, Element checkElement)
+        {
+            var (elem1Con, elem2Con) = ConnectorUtils.GetCommonConnectors(element, checkElement);
+            return (elem1Con is not null && elem2Con is not null);
+        }
     }
 }

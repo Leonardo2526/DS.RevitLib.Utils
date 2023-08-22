@@ -47,7 +47,7 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
                 var collision = (checkSolid, element);
                 if (MinVolume != 0)
                 {
-                    if (collision.GetIntersectionSolid(element.Document, MinVolume) != null)
+                    if (collision.GetIntersectionSolid(_doc, MinVolume) != null)
                     { collisions.Add(collision); }
                 }
                 else collisions.Add(collision);

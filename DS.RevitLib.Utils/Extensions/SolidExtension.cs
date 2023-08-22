@@ -144,8 +144,11 @@ namespace DS.RevitLib.Utils.Extensions
         /// </summary>
         /// <param name="solid"></param>
         /// <param name="point"></param>
-        /// <returns>Returns true if <paramref name="point"/> is inside <paramref name="solid"/>.</returns>
-        public static bool Contains(this Solid solid, XYZ point)
+        /// <param name="allowOnSurface"></param>
+        /// <returns>
+        /// <see langword="true"/> if <paramref name="point"/> is inside <paramref name="solid"/> or 
+        /// on it surface if <paramref name="allowOnSurface"/> is set to <see langword="true"/>.</returns>
+        public static bool Contains(this Solid solid, XYZ point, bool allowOnSurface = false)
         {
             double multiplicator = 100;
             Line line1 = Line.CreateBound(point, point + XYZUtils.GenerateXYZ().Multiply(multiplicator));
@@ -154,6 +157,11 @@ namespace DS.RevitLib.Utils.Extensions
             int intersectionCount = 0;
             foreach (Face face in faces)
             {
+                if (allowOnSurface)
+                {
+                    var prj = face.Project(point)?.XYZPoint;
+                    if(prj is not null && prj.DistanceTo(point) < 0.001) { return true;}
+                }
                 if (face.Intersect(line1) == SetComparisonResult.Overlap)
                 { intersectionCount++; }
             }
