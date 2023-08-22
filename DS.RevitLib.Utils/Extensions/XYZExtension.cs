@@ -4,9 +4,11 @@ using DS.ClassLib.VarUtils.Points;
 using DS.RevitLib.Utils.Creation.Transactions;
 using DS.RevitLib.Utils.ModelCurveUtils;
 using DS.RevitLib.Utils.Transactions;
+using MoreLinq;
 using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
@@ -386,5 +388,59 @@ namespace DS.RevitLib.Utils.Extensions
             { return dir.GetRandomPerpendicular(XYZ.Zero); }
         }
 
+        /// <summary>
+        /// Get collisions between <paramref name="point"/> and <paramref name="inputElements"/>.
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="inputElements"></param>
+        /// <param name="tolerance"></param>
+        /// <returns>
+        /// Collisions between <paramref name="point"/> and <paramref name="inputElements"/>
+        /// by <see cref="Autodesk.Revit.DB.BoundingBoxContainsPointFilter"/>.
+        /// <para>
+        /// Empty list if no collisions was found.
+        /// </para>
+        /// </returns>
+        public static List<(XYZ, Element)> GetBoxXYZCollisions(this XYZ point, List<Element> inputElements, double tolerance = 0.01)
+        {
+            var collisions = new List<(XYZ, Element)>();
+
+            Document doc = inputElements.FirstOrDefault().Document;
+            var collector = new FilteredElementCollector(doc, inputElements.Select(el => el.Id).ToList());
+            var filter = new BoundingBoxContainsPointFilter(point, tolerance);
+            var collisionElements = collector.WherePasses(filter).ToElements();
+
+            collisionElements.ForEach(e => collisions.Add((point, e)));
+
+            return collisions;
+        }
+
+        /// <summary>
+        /// Get collisions between <paramref name="point"/> and <paramref name="inputElements"/>.
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="inputElements"></param>
+        /// <param name="tolerance"></param>
+        /// <returns>
+        ///  Collisions between <paramref name="point"/> and <paramref name="inputElements"/>.
+        /// <para>
+        /// Empty list if no collisions was found.
+        /// </para>
+        /// </returns>
+        public static List<(XYZ, Element)> GetCollisions(this XYZ point, List<Element> inputElements, double tolerance = 0.01)
+        {
+            var collisions = new List<(XYZ, Element)>();
+
+            var boxXYZcollisions = point.GetBoxXYZCollisions(inputElements, tolerance);
+            if (!boxXYZcollisions.Any()) { return collisions; }
+
+            foreach (var collision in boxXYZcollisions)
+            {
+                var solid = ElementUtils.GetSolid(collision.Item2);
+                if(solid.Contains(point, true)) { collisions.Add(collision); }
+            }
+
+            return collisions;
+        }
     }
 }

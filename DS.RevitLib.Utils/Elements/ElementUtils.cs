@@ -5,6 +5,7 @@ using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.MEP;
 using DS.RevitLib.Utils.Solids;
 using DS.RevitLib.Utils.Various.Bases;
+using MoreLinq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -108,10 +109,15 @@ namespace DS.RevitLib.Utils
         /// Get <paramref name="element"/>'s solid.
         /// </summary>
         /// <param name="element"></param>
+        /// <param name="maxSolidsCount"></param>
         /// <returns></returns>
-        public static Solid GetSolid(Element element)
+        public static Solid GetSolid(Element element, int maxSolidsCount = 20)
         {
             var solids = SolidExtractor.GetSolids(element);
+
+            if(solids.Count > maxSolidsCount) 
+            { return solids.OrderByDescending(s => s.Volume).FirstOrDefault(); }
+
             return Solids.SolidUtils.UniteSolids(solids);
         }
 
