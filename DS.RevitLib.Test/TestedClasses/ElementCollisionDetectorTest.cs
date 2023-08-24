@@ -37,11 +37,11 @@ namespace DS.RevitLib.Test.TestedClasses
 
             var (docElements, linkElementsDict) = new ElementsExtractor(_doc).GetAll();
             _factory = new ElementCollisionDetectorFactory(_doc, docElements, linkElementsDict);
-            var collisions = _factory.GetCollisions(element1, checkObjects2ToExclude).Cast<ElementCollision>().ToList();
+            var collisions = _factory.GetCollisions(element1, checkObjects2ToExclude).ToList();
 
             Debug.WriteLine($"\nCollisions count is {collisions.Count}");
             Debug.WriteLine($"Collision objects ids:");
-            collisions.ForEach(obj => Debug.WriteLine($"{obj.Object1.Id} - {obj.Object2.Id}"));
+            collisions.ForEach(obj => Debug.WriteLine($"{obj.Item1.Id} - {obj.Item2.Id}"));
         }
 
         public void RepeatRun()
@@ -51,14 +51,14 @@ namespace DS.RevitLib.Test.TestedClasses
             Solid solid1 = ElementUtils.GetSolid(element1);
 
             var checkObjects2ToExclude = new List<Element>() { element1 };
-            var collisions = _factory.GetCollisions(element1, checkObjects2ToExclude).Cast<ElementCollision>().ToList();
+            var collisions = _factory.GetCollisions(element1, checkObjects2ToExclude).ToList();
 
             //show collisions
             //var collisionElemIds = collisions.Select(obj => obj.Object2.Id).ToList();
             //collisions.ForEach(collision => SelectElementInLink(collision.Object2, factory._linkElementsDict.Keys.ToList()));
             Debug.WriteLine($"\nCollisions count is {collisions.Count}");
             Debug.WriteLine($"Collision objects ids:");
-            collisions.ForEach(obj => Debug.WriteLine($"{obj.Object2.Id}"));
+            collisions.ForEach(obj => Debug.WriteLine($"{obj.Item2.Id}"));
         }
 
         public void SelectElementInLink(Element elemntInLink, List<RevitLinkInstance> revitLinks)

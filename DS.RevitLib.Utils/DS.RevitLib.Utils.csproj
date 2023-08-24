@@ -189,6 +189,8 @@
     <Compile Include="Extensions\MEPSystemExtensions.cs" />
     <Compile Include="Extensions\ConnectorExtensions.cs" />
     <Compile Include="Extensions\BoxXYZExtensions.cs" />
+    <Compile Include="Geometry\IOutlineFactory.cs" />
+    <Compile Include="Geometry\OutlineFactory.cs" />
     <Compile Include="Geometry\Points\Point3dVisualisator.cs" />
     <Compile Include="Geometry\Points\PointVisualisator.cs" />
     <Compile Include="Geometry\Points\XYZVisualizator.cs" />
@@ -225,6 +227,7 @@
     <Compile Include="Elements\Models\MEPCurveGeometryModel.cs" />
     <Compile Include="PathCreators\PathFindCreator.cs" />
     <Compile Include="Tests\ITestModel.cs" />
+    <Compile Include="Various\Bases\OneMEPCurvesBasisStrategy.cs" />
     <Compile Include="Various\Bases\TwoMEPCurvesBasisStrategy.cs" />
     <Compile Include="Elements\IElementFinder.cs" />
     <Compile Include="Various\IRevitContext.cs" />

@@ -234,5 +234,37 @@ namespace DS.RevitLib.Utils.Extensions
             return floors;
         }
 
+        /// <summary>
+        /// Get floors from <see cref="Document"/> and all loaded links.
+        /// </summary>
+        /// <param name="doc"></param>
+        /// <param name="outline"></param>
+        /// <returns>
+        /// All floors.
+        /// Returns empty list if no floors were deteted.
+        /// </returns>
+        public static List<Element> GetCeilings(this Document doc, Outline outline = null)
+        {
+            (var docElements, var linkElementsDict) = new ElementsExtractor(doc, null, outline).GetAll();
+
+            var floors = new List<Element>();
+
+            var docFloors = docElements.Where(el => el is Floor || el is Ceiling || el is RoofBase).ToList();
+            floors.AddRange(docFloors);
+            foreach (var kv in linkElementsDict)
+            {
+                var elems = kv.Value;
+                foreach (var e in elems)
+                {
+                    if (e is Floor || e is Ceiling || e is RoofBase)
+                    {
+                        floors.Add(e);
+                    }
+                }
+            }
+
+            return floors;
+        }
+
     }
 }

@@ -105,7 +105,6 @@
     <Compile Include="TestedClasses\SelectionTest.cs" />
     <Compile Include="TestedClasses\ShowVectorTest.cs" />
     <Compile Include="TestedClasses\SimplePathFinderTest.cs" />
-    <Compile Include="TestedClasses\SolidCollisionCheckerTest.cs" />
     <Compile Include="TestedClasses\GetAllElementsTest.cs" />
     <Compile Include="TestedClasses\SolidContainsPointTest.cs" />
     <Compile Include="TestedClasses\SolidCreatorTest.cs" />
