@@ -82,6 +82,12 @@ namespace DS.RevitLib.Utils.PathCreators
         /// </summary>
         public Outline ExternalOutline { get; set; }
 
+        /// <summary>
+        /// Specifies if account initial connection elements directios to perform correct connection.
+        /// </summary>
+        public bool AccountInitialDirections { get; set; }
+
+
         #endregion
 
 
@@ -114,7 +120,7 @@ namespace DS.RevitLib.Utils.PathCreators
         /// <returns></returns>
         public xYZPathFinder Build(MEPCurve baseMEPCurve, List<Element> objectsToExclude,
         List<BuiltInCategory> exludedCathegories, bool allowSecondElementForBasis = false,
-            bool allowStartDirection = true, List<PlaneType> planes = null, MEPCurve basisMEPCurve1 = null, MEPCurve basisMEPCurve2 = null, Basis basis = null,
+        List<PlaneType> planes = null, MEPCurve basisMEPCurve1 = null, MEPCurve basisMEPCurve2 = null, Basis basis = null,
             ITransactionFactory transactionFactory = null)
         {
             _baseMEPCurve = baseMEPCurve;
@@ -139,7 +145,6 @@ namespace DS.RevitLib.Utils.PathCreators
             objectsToExclude.AddRange(insulations);
             _objectsToExclude = objectsToExclude;
             _exludedCathegories = exludedCathegories;
-            _allowStartDirection = allowStartDirection;
             _planes = planes;
 
             BuildBasisStrategy(basisMEPCurve1, basisMEPCurve2, allowSecondElementForBasis, basis);
@@ -194,7 +199,7 @@ namespace DS.RevitLib.Utils.PathCreators
 
             if (_algorithmFactory.Algorithm is null) { return _path; }
 
-            if (_allowStartDirection)
+            if (AccountInitialDirections)
             {
                 var startMEPCurve = startPoint.GetMEPCurve(_objectsToExclude.Select(o => o.Id));
                 var endMEPCurve = endPoint.GetMEPCurve(_objectsToExclude.Select(o => o.Id));

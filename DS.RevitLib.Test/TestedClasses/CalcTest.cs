@@ -42,11 +42,14 @@ namespace DS.RevitLib.Test
             var solidModel2 = new SolidModel(ElementUtils.GetSolid(mc2));
             MEPCurveModel childModel = new MEPCurveModel(mc2, solidModel2);
 
-            var tee = new TeeCalc(parentModel, childModel);
-            //var elbowRadius = new ElbowRadiusCalc(model, new TransactionBuilder(_doc)).GetRadius(90.DegToRad());
+            //var tee = new TeeCalc(parentModel, childModel);
+            //Debug.WriteLine("Length is " + Math.Round(tee.Length.FytTomm2()));
+            //Debug.WriteLine("Height is " + Math.Round(tee.Height.FytTomm2()));
 
-            Debug.WriteLine("Length is " + Math.Round(tee.Length.FytTomm2()));
-            Debug.WriteLine("Height is " + Math.Round(tee.Height.FytTomm2()));
+            var elbowRadius = new ElbowRadiusCalc(parentModel).GetRadius(90.DegToRad()).Result;
+            //var elbowRadius = new ElbowRadiusCalc(parentModel).GetRadius(90.DegToRad());
+            Debug.WriteLine(elbowRadius);
+
         }
 
     }

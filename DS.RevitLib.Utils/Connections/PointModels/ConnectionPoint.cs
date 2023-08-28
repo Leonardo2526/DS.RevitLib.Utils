@@ -5,6 +5,7 @@ using DS.RevitLib.Utils.MEP;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Runtime.InteropServices.ComTypes;
 
 namespace DS.RevitLib.Utils.Connections.PointModels
 {
@@ -51,6 +52,11 @@ namespace DS.RevitLib.Utils.Connections.PointModels
         /// Validator for point properties.
         /// </summary>
         public ConnectionPointValidator Validator { get; set; }
+
+        /// <summary>
+        /// Direction to connect point.
+        /// </summary>
+        public XYZ Direction { get; private set; }
 
         /// <inheritdoc/>
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
@@ -101,11 +107,17 @@ namespace DS.RevitLib.Utils.Connections.PointModels
         /// <see langword="null"/> if no direction was found.
         /// </para>
         /// </returns>
-        public XYZ GetDirection(XYZ refPoint, Element refElement, UIDocument uIDocument = null)
+        public XYZ GetDirection(XYZ refPoint, Element refElement, IEnumerable<Element> objectsToExclude = null, UIDocument uIDocument = null)
         {
-            return new ConnectionDirectionFactory(Point, Element, uIDocument).GetDirection(refPoint, refElement);
+            var mc = Element is MEPCurve curve ? curve : GetMEPCurve(objectsToExclude.Select(o => o.Id));
+            return Direction = new ConnectionDirectionFactory(Point, mc, uIDocument).GetDirection(refPoint, refElement);
         }
 
+        /// <summary>
+        /// Get <see cref="MEPCurve"/> to connect.
+        /// </summary>
+        /// <param name="excluededIds"></param>
+        /// <returns></returns>
         public MEPCurve GetMEPCurve(IEnumerable<ElementId> excluededIds = null)
         {
             if(Element is MEPCurve curve) { return  curve; }

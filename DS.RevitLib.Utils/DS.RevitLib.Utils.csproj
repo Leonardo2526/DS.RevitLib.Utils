@@ -231,6 +231,8 @@
     <Compile Include="Various\Bases\TwoMEPCurvesBasisStrategy.cs" />
     <Compile Include="Elements\IElementFinder.cs" />
     <Compile Include="Various\IRevitContext.cs" />
+    <Compile Include="Various\Selections\Filters\PointOnElementSelectionFilter.cs" />
+    <Compile Include="Various\Selections\PointOnElementSelector.cs" />
     <Compile Include="Various\VectorPointConverter.cs" />
     <Compile Include="Various\Selections\Filters\ElementInLinkSelectionFilter.cs" />
     <Compile Include="Various\Selections\Filters\PointSelectionFilter.cs" />

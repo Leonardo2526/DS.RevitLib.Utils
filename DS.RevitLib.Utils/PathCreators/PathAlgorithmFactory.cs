@@ -304,8 +304,13 @@ namespace DS.RevitLib.Utils.PathCreators
         private Vector3d GetDirection(ConnectionPoint connectionPoint1, ConnectionPoint connectionPoint2, out Point3d aNP, bool inverse = false)
         {
             var mc = connectionPoint1.Element is MEPCurve curve ? curve : connectionPoint1.GetMEPCurve(_objectsToExclude.Select(o => o.Id));
-            XYZ dirXYZ = new ConnectionDirectionFactory(connectionPoint1.Point, mc, _uiDoc).
-                GetDirection(connectionPoint2.Point, connectionPoint2.Element);
+
+            XYZ dirXYZ = connectionPoint1.Direction ??
+                connectionPoint1.GetDirection(connectionPoint2.Point, connectionPoint2.Element, _objectsToExclude);
+
+           // XYZ dirXYZ1 = new ConnectionDirectionFactory(connectionPoint1.Point, mc, _uiDoc).
+           //GetDirection(connectionPoint2.Point, connectionPoint2.Element);
+
             if (inverse) { dirXYZ = dirXYZ.Negate(); }
             //_visualisator.ShowVectorByDirection(connectionPoint1.Point, dirXYZ);
 
@@ -343,9 +348,9 @@ namespace DS.RevitLib.Utils.PathCreators
         {
             var planes = new List<Plane>();
 
-            PlaneType xyPlaneType = planeTypes.FirstOrDefault(p => p == PlaneType.XY);
-            PlaneType xzPlaneType = planeTypes.FirstOrDefault(p => p == PlaneType.XZ);
-            PlaneType yzPlaneType = planeTypes.FirstOrDefault(p => p == PlaneType.YZ);
+            PlaneType xyPlaneType = planeTypes is null ? default : planeTypes.FirstOrDefault(p => p == PlaneType.XY);
+            PlaneType xzPlaneType = planeTypes is null ? default : planeTypes.FirstOrDefault(p => p == PlaneType.XZ);
+            PlaneType yzPlaneType = planeTypes is null ? default : planeTypes.FirstOrDefault(p => p == PlaneType.YZ);
 
             var xyPlane = Plane.WorldXY;
             var xzPlane = Plane.WorldZX;

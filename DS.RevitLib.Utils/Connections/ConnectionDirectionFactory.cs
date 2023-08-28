@@ -22,7 +22,7 @@ namespace DS.RevitLib.Utils.Connections
         private readonly UIDocument _uiDoc;
         private readonly Line _line;
         private readonly int _tolerance = 3;
-        private readonly double _dTolerance = Math.Pow(0.1 , 3);
+        private readonly double _dTolerance = Math.Pow(0.1, 3);
         private readonly XYZ _center;
 
         /// <summary>
@@ -72,7 +72,7 @@ namespace DS.RevitLib.Utils.Connections
         }
         private XYZ GetDirection(Element refElement)
         {
-            if(_connectionElement.Id == refElement.Id) { return null; }
+            if (_connectionElement.Id == refElement.Id) { return null; }
 
             var connectors = ConnectorUtils.GetConnectors(_connectionElement);
             foreach (var con in connectors)
@@ -89,32 +89,33 @@ namespace DS.RevitLib.Utils.Connections
 
         private XYZ GetDirection(XYZ pointAtConnectionElement)
         {
-            if(!_line.Contains(pointAtConnectionElement, _tolerance)) { return null; }
-            return (pointAtConnectionElement - _connectionPoint).Normalize();   
+            if (!_line.Contains(pointAtConnectionElement, _tolerance)) { return null; }
+            return (pointAtConnectionElement - _connectionPoint).Normalize();
         }
 
         private XYZ GetDirectionAtFreeConnetor()
         {
             var fCons = ConnectorUtils.GetFreeConnector(_connectionElement);
-            if(fCons == null || fCons.Count == 0) { return null; }
+            if (fCons == null || fCons.Count == 0) { return null; }
 
             var con1 = fCons.FirstOrDefault(c => c.Origin.DistanceTo(_connectionPoint) < _dTolerance);
-           if(con1 == null) { return null; }
+            if (con1 == null) { return null; }
 
             return (con1.Origin - _line.GetCenter()).Normalize();
         }
 
         private XYZ GetDirectionManual(UIDocument uiDoc)
         {
-            if(uiDoc == null) { return null; }
+            if (uiDoc == null) { return null; }
 
-            var selector = new PointSelector(uiDoc) { AllowLink = false };
+            var selector = new PointOnElementSelector(uiDoc)
+            { AllowLink = false, SelectionElement = _connectionElement };
 
-            var element = selector.Pick($"Укажите 1 точку направления.");
+            var element = selector.Pick($"Укажите первую точку направления на элементе {_connectionElement.Id}.");
             ConnectionPoint connectionPoint1 = new ConnectionPoint(element, selector.Point);
             if (connectionPoint1.IsValid)
             {
-                element = selector.Pick($"Укажите 2 точку направления..");
+                element = selector.Pick($"Укажите вторую точку направления на элементе {_connectionElement.Id}.");
                 ConnectionPoint connectionPoint2 = new ConnectionPoint(element, selector.Point);
                 return (connectionPoint2.Point - connectionPoint1.Point).Normalize();
             }
