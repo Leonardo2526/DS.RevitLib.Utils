@@ -195,11 +195,12 @@
     <Compile Include="Geometry\Points\PointVisualisator.cs" />
     <Compile Include="Geometry\Points\XYZVisualizator.cs" />
     <Compile Include="Geometry\Solids\SolidOffsetExtractor.cs" />
-    <Compile Include="PathCreators\xYZPathFinder.cs" />
+    <Compile Include="PathCreators\AlgorithmBuilder\Impl.cs" />
+    <Compile Include="PathCreators\XYZPathFinder.cs" />
+    <Compile Include="PathCreators\AlgorithmBuilder\PathAlgorithmBuilder.cs" />
     <Compile Include="Various\Bases\BasisExtensions.cs" />
     <Compile Include="Various\Bases\BasisXYZ.cs" />
     <Compile Include="Various\Bases\IBasisStrategy.cs" />
-    <Compile Include="PathCreators\PathAlgorithmFactory.cs" />
     <Compile Include="UIUtils.cs" />
     <Compile Include="Geometry\GeometryElementsUtils.cs" />
     <Compile Include="Geometry\Lines\LineOverlapResult.cs" />
