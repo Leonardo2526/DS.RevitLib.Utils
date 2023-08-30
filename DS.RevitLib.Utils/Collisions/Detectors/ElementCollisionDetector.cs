@@ -3,6 +3,7 @@ using DS.RevitLib.Utils;
 using DS.ClassLib.VarUtils.Collisions;
 using System.Collections.Generic;
 using DS.RevitLib.Utils.Collisions.Models;
+using DS.RevitLib.Utils.Extensions;
 
 namespace DS.RevitLib.Utils.Collisions.Detectors
 {
@@ -21,7 +22,7 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
         { }
 
         /// <inheritdoc/>
-        public override List<ICollision> GetCollisions(Element checkObject1, List<Element> exludedCheckObjects2 = null)
+        public override List<(Element, Element)> GetCollisions(Element checkObject1, List<Element> exludedCheckObjects2 = null)
         {
             Solid checkTransformedSolid = GetCheckSolid(checkObject1);
 
@@ -31,15 +32,14 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
                 intersection.GetIntersectedElements(checkObject1, exludedCheckObjects2) :
                 intersection.GetIntersectedElements(checkTransformedSolid, exludedCheckObjects2);
 
-            var collisions = new List<ICollision>();
+            var collisions = new List<(Element, Element)>();
 
             foreach (Element element in elements)
             {
-                var collision = new ElementCollision(checkObject1, element);
+                var collision = (checkObject1, element);
                 if (MinVolume != 0)
                 {
-                    collision.MinVolume = MinVolume;
-                    if (collision.IntersectionSolid != null)
+                    if (collision.GetIntersectionSolid(MinVolume) != null)
                     { collisions.Add(collision); }
                 }
                 else collisions.Add(collision);

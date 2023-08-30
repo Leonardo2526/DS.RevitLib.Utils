@@ -39,10 +39,16 @@ namespace DS.RevitLib.Test
         public void Run()
         {
             XYZ point = SelectPoint();
-            var dist = point.GetDistanceToFloor(_doc);
-            Debug.WriteLine(dist);
-            if (dist != double.PositiveInfinity)
-            { Debug.WriteLine(dist.FeetToMM()); }
+            var floorDist = point.GetDistanceToFloor(_doc);
+            var ceilingDist = point.GetDistanceToCeiling(_doc);
+            Debug.WriteLine(floorDist);
+            Debug.WriteLine(ceilingDist);
+
+            if (floorDist != double.PositiveInfinity)
+            { Debug.WriteLine(floorDist.FeetToMM()); }
+
+            if (ceilingDist != double.PositiveInfinity)
+            { Debug.WriteLine(ceilingDist.FeetToMM()); }
         }
 
         public void Run1()

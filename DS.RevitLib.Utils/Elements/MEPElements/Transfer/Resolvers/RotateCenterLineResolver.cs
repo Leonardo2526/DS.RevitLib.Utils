@@ -1,6 +1,6 @@
 ﻿using Autodesk.Revit.DB;
 using DS.ClassLib.VarUtils;
-using DS.RevitLib.Utils.Collisions.Checkers;
+
 using DS.RevitLib.Utils.Collisions.Detectors;
 using DS.RevitLib.Utils.Collisions.Models;
 using DS.RevitLib.Utils.Solids.Models;
@@ -12,7 +12,7 @@ namespace DS.RevitLib.Utils.Elements.Transfer.Resolvers
     internal class RotateCenterLineResolver : CollisionResolver
     {
 
-        public RotateCenterLineResolver(SolidModelExt _operationElement, SolidElementCollision collision, ISolidCollisionDetector detector, List<Element> excludedElements) :
+        public RotateCenterLineResolver(SolidModelExt _operationElement, (Solid, Element) collision, ISolidCollisionDetector detector, List<Element> excludedElements) :
             base(_operationElement ,collision, detector, excludedElements)
         {}
 

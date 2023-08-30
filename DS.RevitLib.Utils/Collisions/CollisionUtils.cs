@@ -1,5 +1,6 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
+using DS.RevitLib.Utils.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -60,8 +61,12 @@ namespace DS.RevitLib.Utils
         /// <exception cref="Exception"></exception>
         public static Solid GetIntersectionSolid(Element element1, Element element2, out Solid solid1, out Solid solid2, double minVolume = 0)
         {
-            solid1 = ElementUtils.GetSolid(element1);
-            solid2 = ElementUtils.GetSolid(element2);
+            solid1 = element1.Document.IsLinked ?
+                element1.GetTransformed(element1.GetLink(element2.Document)) :
+                ElementUtils.GetSolid(element1);
+            solid2 = element2.Document.IsLinked ? 
+                element2.GetTransformed(element2.GetLink(element1.Document)) : 
+                ElementUtils.GetSolid(element2);
 
             Solid intersectionSolid = null;
 

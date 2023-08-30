@@ -1,7 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using DS.ClassLib.VarUtils;
 using DS.RevitLib.Utils;
-using DS.RevitLib.Utils.Collisions.Checkers;
+
 using DS.RevitLib.Utils.Collisions.Models;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.MEP.Models;
@@ -83,9 +83,8 @@ namespace DS.RevitLib.Utils.Elements.Transfer
             }
 
             //Search available position for solid
-            var solidElemCollisions = collisions.Cast<SolidElementCollision>().ToList();
             var solidCollisionClient = 
-                new SolidCollisionClient(_operationModel, solidElemCollisions, _detector, _targetModel, _minCurveLength, _excludedElements);
+                new SolidCollisionClient(_operationModel, collisions, _detector, _targetModel, _minCurveLength, _excludedElements);
             solidCollisionClient.Resolve();
         }
 

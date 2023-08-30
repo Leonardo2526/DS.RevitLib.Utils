@@ -1,6 +1,6 @@
 ﻿using Autodesk.Revit.DB;
 using DS.ClassLib.VarUtils;
-using DS.RevitLib.Utils.Collisions.Checkers;
+
 using DS.RevitLib.Utils.Collisions.Detectors;
 using DS.RevitLib.Utils.Collisions.Models;
 using DS.RevitLib.Utils.Extensions;
@@ -16,7 +16,7 @@ namespace DS.RevitLib.Utils.Elements.Transfer.Resolvers
     {
         private int _successorUsageCount = 0;
 
-        public AroundCenterLineRotateResolver(SolidModelExt operationElement, SolidElementCollision collision,
+        public AroundCenterLineRotateResolver(SolidModelExt operationElement, (Solid, Element) collision,
             ISolidCollisionDetector detector, List<Element> excludedElements) :
             base(operationElement, collision, detector, excludedElements)
         {

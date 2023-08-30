@@ -112,25 +112,12 @@
     <Compile Include="Creation\AbstractCreator.cs" />
     <Compile Include="Collisions\Detectors\AbstractDetectors\CollisionDetector.cs" />
     <Compile Include="Collisions\Detectors\AbstractDetectors\CollisionDetectorFactory.cs" />
-    <Compile Include="Collisions\Detectors\AbstractDetectors\ICollisionDetector.cs" />
     <Compile Include="Collisions\Detectors\ElementCollisionDetector.cs" />
     <Compile Include="Collisions\Detectors\ElementCollisionDetectorFactory.cs" />
     <Compile Include="Collisions\Detectors\SolidElementCollisionDetector.cs" />
     <Compile Include="Collisions\Detectors\SolidElementCollisionDetectorFactory.cs" />
     <Compile Include="Collisions\ElementsIntersection.cs" />
-    <Compile Include="Collisions\Models\Collision.cs" />
-    <Compile Include="Collisions\Models\ElementCollision.cs" />
-    <Compile Include="Collisions\Models\SolidElementCollision.cs" />
-    <Compile Include="Collisions\Checkers\ElementLinkCollisionChecker.cs" />
-    <Compile Include="Collisions\Checkers\LinkCollisionChecker.cs" />
-    <Compile Include="Collisions\Checkers\ElementCollisionChecker.cs" />
     <Compile Include="Collisions\BBCollisionUtils.cs" />
-    <Compile Include="Collisions\Models\DummyCollision.cs" />
-    <Compile Include="Collisions\Models\ElementTransformCollision.cs" />
-    <Compile Include="Collisions\Models\SolidElemTransformCollision.cs" />
-    <Compile Include="Collisions\Checkers\CollisionChecker.cs" />
-    <Compile Include="Collisions\Checkers\ICollisionChecker.cs" />
-    <Compile Include="Collisions\Checkers\SolidCollisionChecker.cs" />
     <Compile Include="Creation\MEP\MEPCurveBreaker.cs" />
     <Compile Include="Creation\Transactions\ContextTransactionFactory.cs" />
     <Compile Include="Creation\Transactions\MessageTransactionFactory.cs" />
@@ -179,6 +166,7 @@
     <Compile Include="Elements\MEPElements\Transfer\TransformConvert.cs" />
     <Compile Include="Elements\MEPElements\Transfer\TransformModels\BasisLineTransformModel.cs" />
     <Compile Include="Elements\MEPElements\Transfer\TransformModels\FamToLineTransformModel.cs" />
+    <Compile Include="Extensions\CollisionExtensions.cs" />
     <Compile Include="Extensions\CurveExtensions.cs" />
     <Compile Include="Elements\Alignments\SolidAngleAlignment.cs" />
     <Compile Include="Elements\Alignments\AngleAlignment.cs" />
@@ -201,15 +189,18 @@
     <Compile Include="Extensions\MEPSystemExtensions.cs" />
     <Compile Include="Extensions\ConnectorExtensions.cs" />
     <Compile Include="Extensions\BoxXYZExtensions.cs" />
+    <Compile Include="Geometry\IOutlineFactory.cs" />
+    <Compile Include="Geometry\OutlineFactory.cs" />
     <Compile Include="Geometry\Points\Point3dVisualisator.cs" />
     <Compile Include="Geometry\Points\PointVisualisator.cs" />
     <Compile Include="Geometry\Points\XYZVisualizator.cs" />
     <Compile Include="Geometry\Solids\SolidOffsetExtractor.cs" />
-    <Compile Include="PathCreators\xYZPathFinder.cs" />
+    <Compile Include="PathCreators\AlgorithmBuilder\Impl.cs" />
+    <Compile Include="PathCreators\XYZPathFinder.cs" />
+    <Compile Include="PathCreators\AlgorithmBuilder\PathAlgorithmBuilder.cs" />
     <Compile Include="Various\Bases\BasisExtensions.cs" />
     <Compile Include="Various\Bases\BasisXYZ.cs" />
     <Compile Include="Various\Bases\IBasisStrategy.cs" />
-    <Compile Include="PathCreators\PathAlgorithmFactory.cs" />
     <Compile Include="UIUtils.cs" />
     <Compile Include="Geometry\GeometryElementsUtils.cs" />
     <Compile Include="Geometry\Lines\LineOverlapResult.cs" />
@@ -237,9 +228,12 @@
     <Compile Include="Elements\Models\MEPCurveGeometryModel.cs" />
     <Compile Include="PathCreators\PathFindCreator.cs" />
     <Compile Include="Tests\ITestModel.cs" />
+    <Compile Include="Various\Bases\OneMEPCurvesBasisStrategy.cs" />
     <Compile Include="Various\Bases\TwoMEPCurvesBasisStrategy.cs" />
     <Compile Include="Elements\IElementFinder.cs" />
     <Compile Include="Various\IRevitContext.cs" />
+    <Compile Include="Various\Selections\Filters\PointOnElementSelectionFilter.cs" />
+    <Compile Include="Various\Selections\PointOnElementSelector.cs" />
     <Compile Include="Various\VectorPointConverter.cs" />
     <Compile Include="Various\Selections\Filters\ElementInLinkSelectionFilter.cs" />
     <Compile Include="Various\Selections\Filters\PointSelectionFilter.cs" />
@@ -342,6 +336,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Collisions\Models\" />
     <Folder Include="Geometry\Points\Models\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

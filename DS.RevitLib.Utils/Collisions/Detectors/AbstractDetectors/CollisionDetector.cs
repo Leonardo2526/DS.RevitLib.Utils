@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace DS.RevitLib.Utils.Collisions.Detectors
 {
     /// <inheritdoc/>
-    public abstract class CollisionDetector<T,P>: ICollisionDetector
+    public abstract class CollisionDetector<T,P>: ICollisionDetector<T,P>
     {
         /// <summary>
         /// Current Revit document.
@@ -66,9 +66,8 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
 
 
         /// <inheritdoc/>
-        public List<ICollision> Collisions { get; }
+        public List<(T,P)> Collisions { get; }
 
-        List<ICollision> ICollisionDetector.Collisions => throw new System.NotImplementedException();
 
         /// <summary>
         /// Get collisions between <paramref name="checkObjects1"/> and checkObjects2/>.
@@ -76,7 +75,7 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
         /// <param name="checkObjects1"></param>
         /// <param name="checkObjects2ToExclude"></param>
         /// <returns>Return <see cref="ICollision"/> if it exitst. Returns null if collision wasn't found between objects.</returns>
-        public abstract List<ICollision> GetCollisions(T checkObjects1, List<P> checkObjects2ToExclude = null);
+        public abstract List<(T, P)> GetCollisions(T checkObjects1, List<P> checkObjects2ToExclude = null);
 
     }
 }

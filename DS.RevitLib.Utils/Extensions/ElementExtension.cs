@@ -2,6 +2,7 @@
 using Autodesk.Revit.DB.Electrical;
 using Autodesk.Revit.DB.Mechanical;
 using Autodesk.Revit.DB.Plumbing;
+using DS.ClassLib.VarUtils;
 using DS.RevitLib.Utils.Connection;
 using DS.RevitLib.Utils.MEP;
 using DS.RevitLib.Utils.Transactions;
@@ -11,6 +12,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Xml.Linq;
 using static System.Windows.Forms.LinkLabel;
+using Vector3d = Rhino.Geometry.Vector3d;
 
 namespace DS.RevitLib.Utils.Extensions
 {
@@ -147,24 +149,31 @@ namespace DS.RevitLib.Utils.Extensions
         /// <summary>
         /// Get center line of element.
         /// </summary>
-        /// <param name="famInst"></param>
-        /// <returns>Returns center line of MEPCurve or family instance created by it's main connecors. 
-        /// Returns null if element is not a MEPCuve or FamilyInstance type.</returns>
+        /// <param name="element"></param>
+        /// <returns>
+        /// <see cref="LocationCurve"/> as <see cref="Line"/> of <paramref name="element"/>.
+        /// <para>
+        /// <see cref="Line"/> between main connectors if <paramref name="element"/> is <see cref="Autodesk.Revit.DB.FamilyInstance"/>.
+        /// </para>
+        /// <para>
+        /// <see langword="null"/> if it was failed to get <see cref="Line"/> from <paramref name="element"/> .
+        /// </para>
+        /// </returns>
         public static Line GetCenterLine(this Element element)
         {
-            if (element is MEPCurve)
-            {
-                return MEPCurveUtils.GetLine(element as MEPCurve);
-            }
-            else if (element is FamilyInstance)
+            if (element is FamilyInstance)
             {
                 FamilyInstance familyInstance = element as FamilyInstance;
                 var (famInstCon1, famInstCon2) = ConnectorUtils.GetMainConnectors(familyInstance);
-                if(famInstCon1 == null || famInstCon2 == null) { return null; }
+                if (famInstCon1 == null || famInstCon2 == null 
+                    || famInstCon1.Origin.DistanceTo(famInstCon2.Origin) < 0.001) { return null; }
                 return Line.CreateBound(famInstCon1.Origin, famInstCon2.Origin);
             }
-
-            return null;
+            else
+            {
+                var lCurve = element.Location as LocationCurve;
+                return lCurve == null ? null : lCurve.Curve as Line;
+            }
         }
 
         /// <summary>
@@ -205,7 +214,7 @@ namespace DS.RevitLib.Utils.Extensions
                     else if (elem is GeometryInstance gi)
                     {
                         var go = gi.GetInstanceGeometry();
-                        return CheckGeometry(go?.Cast<GeometryObject>().ToList());
+                        if (CheckGeometry(go?.Cast<GeometryObject>().ToList())) { return true; };
                     }
                 }
                 return false;
@@ -510,7 +519,7 @@ namespace DS.RevitLib.Utils.Extensions
 
             Element insulation = element.GetInsulation();
             if (insulation is not null && insulation.IsValidObject)
-            { 
+            {
                 solids.Add(insulation.Solid());
                 solid = Solids.SolidUtils.UniteSolids(solids);
             }
@@ -604,12 +613,111 @@ namespace DS.RevitLib.Utils.Extensions
         {
             var elemDoc = element.Document;
 
-            if(!elemDoc.IsLinked) { return null; }
+            if (!elemDoc.IsLinked) { return null; }
             else
             {
                 var links = doc.GetLoadedLinks();
                 return links.FirstOrDefault(l => l.GetLinkDocument().Title == elemDoc.Title);
             }
+        }
+
+        /// <summary>
+        /// Get transformed solid from <paramref name="element"/> by <paramref name="revitLink"/>.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <param name="revitLink"></param>
+        /// <returns>
+        /// Real <paramref name="element"/> <see cref="Autodesk.Revit.DB.Solid"/> positions in current document.
+        /// </returns>
+        public static Solid GetTransformed(this Element element, RevitLinkInstance revitLink)
+        {
+            var solid = element.Solid();
+            if(solid is null)
+            {return null;}
+
+            var linkTransform = revitLink.GetTotalTransform();
+            if (!linkTransform.AlmostEqual(Transform.Identity))
+            {
+                solid = SolidUtils.CreateTransformed(solid, linkTransform);
+            }
+
+            return solid;
+        }
+
+        /// <summary>
+        /// Check if current <paramref name="element"/>'s <see cref="Autodesk.Revit.DB.BuiltInCategory"/> is conform to given <paramref name="builtInCategories"/>.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <param name="builtInCategories"></param>
+        /// <returns>
+        /// <see langword="true"/> if any from <paramref name="builtInCategories"/> contains <paramref name="element"/>'s  <see cref="Autodesk.Revit.DB.BuiltInCategory"/>.
+        /// <para>
+        /// Otherwise <see langword="false"/>.
+        /// </para>
+        /// </returns>
+        public static bool IsCategoryElement(this Element element, IEnumerable<BuiltInCategory> builtInCategories)
+        {
+            BuiltInCategory elementCategory = CategoryExtension.GetBuiltInCategory(element.Category);
+            return ElementUtils.CheckCategory(elementCategory, builtInCategories);
+        }
+
+        /// <summary>
+        /// Specifies if the <paramref name="wall"/> is traversable by <paramref name="traverseDirection"/>.
+        /// </summary>
+        /// <param name="wall"></param>
+        /// <param name="traverseDirection"></param>
+        /// <param name="parameterName"></param>
+        /// <returns>
+        /// <see langword="true"/> if the <paramref name="wall"/> has parameter with <paramref name="parameterName"/> with value as <see langword="false"/>
+        /// and <paramref name="traverseDirection"/> perpendicular to <paramref name="wall"/> direction.
+        /// <para>
+        /// Otherwise <see langword="false"/>.
+        /// </para>
+        /// </returns>
+        public static bool IsTraversable(this Wall wall, Vector3d traverseDirection, string parameterName = "OLP_БезПересечений")
+        {
+            var p = wall.GetParameters(parameterName).FirstOrDefault();
+            if (p == null || p.AsInteger() == 1) { return false; }
+
+            var wDir = wall.GetCenterLine().Direction.ToVector3d();
+            wDir = Vector3d.Divide(wDir, wDir.Length);
+            if (traverseDirection.IsPerpendicularTo(wDir, 3.DegToRad()))
+            { return true; }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Specifies if the <paramref name="wall"/> is traversable by <paramref name="traverseDirection"/>.
+        /// </summary>
+        /// <param name="wall"></param>
+        /// <param name="traverseDirection"></param>
+        /// <param name="parameterName"></param>
+        /// <returns>
+        /// <see langword="true"/> if the <paramref name="wall"/> has parameter with <paramref name="parameterName"/> with value as <see langword="false"/>
+        /// and <paramref name="traverseDirection"/> perpendicular to <paramref name="wall"/> direction.
+        /// <para>
+        /// Otherwise <see langword="false"/>.
+        /// </para>
+        /// </returns>
+        public static bool IsTraversable(this Wall wall, XYZ traverseDirection, string parameterName = "OLP_БезПересечений") =>
+           wall.IsTraversable(traverseDirection.ToVector3d(), parameterName);
+
+        /// <summary>
+        /// Specifies if <paramref name="element"/> is connected to <paramref name="checkElement"/>.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <param name="checkElement"></param>
+        /// <returns>
+        /// <see langword="true"/> if <paramref name="element"/> has common connectors with <paramref name="checkElement"/>.
+        /// <para>
+        /// Otherwise returns <see langword="false"/>.
+        /// </para>
+        /// </returns>
+        public static bool IsConnected(this Element element, Element checkElement)
+        {
+            var (elem1Con, elem2Con) = ConnectorUtils.GetCommonConnectors(element, checkElement);
+            return (elem1Con is not null && elem2Con is not null);
         }
     }
 }

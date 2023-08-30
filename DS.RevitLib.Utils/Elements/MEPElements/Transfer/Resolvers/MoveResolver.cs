@@ -1,6 +1,6 @@
 ﻿using Autodesk.Revit.DB;
 using DS.RevitLib.Utils;
-using DS.RevitLib.Utils.Collisions.Checkers;
+
 using DS.RevitLib.Utils.Collisions.Detectors;
 using DS.RevitLib.Utils.Collisions.Models;
 using DS.RevitLib.Utils.Extensions;
@@ -19,7 +19,7 @@ namespace DS.RevitLib.Utils.Elements.Transfer.Resolvers
         private readonly Solid _totalIntersectionSolid;
         private readonly double _minCurveLength;
 
-        public MoveResolver(SolidModelExt operationElement, SolidElementCollision collision, ISolidCollisionDetector detector,
+        public MoveResolver(SolidModelExt operationElement, (Solid, Element) collision, ISolidCollisionDetector detector,
             XYZ basePoint, TargetPlacementModel targetModel, Solid totalIntersectionSolid, double minCurveLength, List<Element> excludedElements) :
             base(operationElement, collision, detector, excludedElements)
         {

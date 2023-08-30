@@ -89,7 +89,7 @@ namespace DS.RevitLib.Utils.Connections.PointModels.PointModels
         /// <returns>Returns <see langword="true"></see> if point has no collisions.
         /// <para>Otherwise returns <see langword="false"></see>.</para>
         /// </returns>
-        public List<ICollision> GetCollisions()
+        public List<(Element, Element)> GetCollisions()
         {
             if (_docElements is null)
             {
@@ -104,9 +104,9 @@ namespace DS.RevitLib.Utils.Connections.PointModels.PointModels
             if (!collisions.Any()) { return collisions; }
 
             //Specify collision objects
-            var collisionsOnPoint = collisions.Cast<ElementCollision>().
-                TakeWhile(obj => ElementUtils.GetSolid(obj.Object2).Contains(ConnectionPoint.Point));
-            return collisionsOnPoint.Cast<ICollision>().ToList();
+            var collisionsOnPoint = collisions.
+                TakeWhile(obj => ElementUtils.GetSolid(obj.Item2).Contains(ConnectionPoint.Point)).ToList();
+            return collisionsOnPoint;
         }
 
         /// <summary>

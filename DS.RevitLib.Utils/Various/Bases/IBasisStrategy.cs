@@ -42,5 +42,14 @@ namespace DS.RevitLib.Utils.Bases
         /// Three <see cref="Autodesk.Revit.DB.XYZ"/> basis vectors.
         /// </returns>
         (XYZ basisX, XYZ basisY, XYZ basisZ) GetBasis();
+
+      /// <summary>
+      /// Set basis.
+      /// </summary>
+      /// <param name="basisX"></param>
+      /// <param name="basisY"></param>
+      /// <param name="basisZ"></param>
+      /// <returns></returns>
+        (XYZ basisX, XYZ basisY, XYZ basisZ) SetBasis(XYZ basisX, XYZ basisY, XYZ basisZ);
     }
 }

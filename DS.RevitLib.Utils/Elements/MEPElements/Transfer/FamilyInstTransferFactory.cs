@@ -1,6 +1,6 @@
 ﻿using Autodesk.Revit.DB;
 using DS.ClassLib.VarUtils;
-using DS.RevitLib.Utils.Collisions.Checkers;
+
 using DS.RevitLib.Utils.Collisions.Detectors;
 using DS.RevitLib.Utils.Elements.Transfer;
 using DS.RevitLib.Utils.Elements.Transfer.TransformBuilders;

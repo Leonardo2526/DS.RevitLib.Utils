@@ -11,6 +11,7 @@ using DS.RevitLib.Utils.MEP;
 using DS.RevitLib.Utils.Models;
 using DS.RevitLib.Utils.Solids;
 using DS.RevitLib.Utils.Various.Bases;
+using MoreLinq;
 using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
@@ -29,6 +30,7 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
     /// </summary>
     public class CollisionDetectorByTrace : ITraceCollisionDetector<Point3d>
     {
+        private static readonly string _wallIntersectionParamName = "OLP_БезПересечений";
         private readonly Document _doc;
         private readonly MEPCurve _baseMEPCurve;
         private readonly ITraceSettings _traceSettings;
@@ -41,6 +43,8 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
         private Point3d _endPoint;
         private ConnectionPoint _startConnectionPoint;
         private ConnectionPoint _endConnectionPoint;
+        private readonly double _aTolerance = 3.DegToRad();
+
 
         /// <summary>
         /// Instantiate an object to create objects for collisions (intersections) detection 
@@ -49,27 +53,32 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
         /// <param name="doc"></param>
         /// <param name="baseMEPCurve"></param>
         /// <param name="traceSettings"></param>
+        /// <param name="insulationAccount"></param>
         /// <param name="docElements"></param>
         /// <param name="linkElementsDict"></param>
         /// <param name="pointConverter"></param>
-        public CollisionDetectorByTrace(Document doc, MEPCurve baseMEPCurve, ITraceSettings traceSettings,
+        /// <param name="transactionFactory"></param>
+        public CollisionDetectorByTrace(Document doc, MEPCurve baseMEPCurve, ITraceSettings traceSettings, bool insulationAccount,
             List<Element> docElements, Dictionary<RevitLinkInstance, List<Element>> linkElementsDict = null, IPoint3dConverter pointConverter = null,
             ITransactionFactory transactionFactory = null)
         {
             _doc = doc;
             _baseMEPCurve = baseMEPCurve;
-            _offset = baseMEPCurve.GetInsulationThickness() + traceSettings.B - 0.03;
+            var insulation = insulationAccount ? _baseMEPCurve.GetInsulationThickness() : 0;
+            _offset = insulation + traceSettings.B - 0.03;
             _traceSettings = traceSettings;
             _pointConverter = pointConverter;
             _transactionFactory = transactionFactory;
             _transactionFactory ??= new ContextTransactionFactory(_doc);
-            _detectorFactory = new SolidElementCollisionDetectorFactory(doc, docElements, linkElementsDict);
-            _detectorFactory.MinVolume = 0;
+            _detectorFactory = new SolidElementCollisionDetectorFactory(doc, docElements, linkElementsDict)
+            {
+                MinVolume = 0
+            };
             SolidExtractor = new BestSolidOffsetExtractor(baseMEPCurve, _offset);
         }
 
         /// <inheritdoc/>
-        public List<ICollision> Collisions { get; private set; } = new List<ICollision>();
+        public List<(object, object)> Collisions { get; private set; } = new List<(object, object)>();
 
         /// <summary>
         /// Check objects 2 to exclude from collisions detection. 
@@ -86,8 +95,8 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
         public ConnectionPoint StartConnectionPoint
         {
             get => _startConnectionPoint;
-            set 
-            { 
+            set
+            {
                 _startConnectionPoint = value;
                 _startPoint = _pointConverter.ConvertToUCS2(value.Point.ToPoint3d());
             }
@@ -103,6 +112,8 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
             }
         }
 
+        public int Punishment { get; set; }
+
         /// <summary>
         /// 
         /// </summary>
@@ -115,19 +126,21 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
         /// Returns empty list if no collisions were detected.
         /// </para>
         /// </returns>
-        public List<ICollision> GetCollisions(Point3d point1, Point3d point2, Basis3d basis)
+        public List<(object, object)> GetCollisions(Point3d point1, Point3d point2, Basis3d basis)
         {
+            Punishment = 0;
+
             XYZ p1 = null;
             XYZ p2 = null;
+            var direction = point2 - point1;
+            direction = Vector3d.Divide(direction, direction.Length);
 
             var endSolidPoint = point2;
             if (OffsetOnEndPoint)
             {
-                var v = point2 - point1;
-                v = Vector3d.Divide(v, v.Length);
                 var size = _baseMEPCurve.GetMaxSize();
                 var mult = size + _offset;
-                endSolidPoint += Vector3d.Multiply(v, mult);
+                endSolidPoint += Vector3d.Multiply(direction, mult);
             }
 
             if (_pointConverter is not null)
@@ -143,21 +156,49 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
                 p2 = new XYZ(endSolidPoint.X, endSolidPoint.Y, endSolidPoint.Z);
             }
 
-
             var uCS1Basis = _pointConverter.ConvertToUCS1(basis).ToXYZ();
             var checkSolid = SolidExtractor.Extract(p1, p2, uCS1Basis);
-            return Collisions = _detectorFactory.GetCollisions(checkSolid, ObjectsToExclude);
+
+            var collisions = _detectorFactory.GetCollisions(checkSolid, ObjectsToExclude);
+            var excludeWallsIds = GetExcludeWalls(collisions, direction);
+
+            collisions = collisions.Where(c => !excludeWallsIds.Contains(c.Item2.Id)).ToList();
+
+            return Collisions = collisions.
+                Select(x => ((object)x.Item1, (object)x.Item2)).ToList();
 
             _transactionFactory.CreateAsync(() =>
             {
                 checkSolid.ShowShape(_doc);
             }
             , "Show shape");
-            //return new List<ICollision>();
-            return Collisions = _detectorFactory.GetCollisions(checkSolid, ObjectsToExclude);
+
+            return Collisions = _detectorFactory.GetCollisions(checkSolid, ObjectsToExclude).
+                Select(x => ((object)x.Item1, (object)x.Item2)).ToList();
         }
 
-        public List<ICollision> GetFirstCollisions(Point3d point2, Basis3d basis)
+        private List<ElementId> GetExcludeWalls(IEnumerable<(Solid, Element)> collisions, Vector3d dir)
+        {
+            var walls = new List<Wall>();
+            List<ElementId> excludeWalls = new();
+
+            var wallsCollisions = collisions.Where(c => c.Item2 is Wall);
+            wallsCollisions.ForEach(wc => walls.Add(wc.Item2 as Wall));
+
+            if(walls.Count > 0)
+            {
+                var uCS1dir = _pointConverter.ConvertToUCS1(dir);
+                foreach (Wall w in walls)
+                {
+                    if (w.IsTraversable(uCS1dir))
+                    { excludeWalls.Add(w.Id); Punishment++; }
+                }
+            }
+
+            return excludeWalls;
+        }
+
+        public List<(object, object)> GetFirstCollisions(Point3d point2, Basis3d basis)
         {
             var point1 = _startPoint;
 
@@ -190,7 +231,7 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
             return collisions;
         }
 
-        public List<ICollision> GetLastCollisions(Point3d point1, Basis3d basis)
+        public List<(object, object)> GetLastCollisions(Point3d point1, Basis3d basis)
         {
             var point2 = _endPoint;
 
