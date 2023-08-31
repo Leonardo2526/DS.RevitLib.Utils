@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using DS.ClassLib.VarUtils;
-using DS.RevitLib.Utils.Collisions.Checkers;
+
+using DS.RevitLib.Utils.Collisions.Detectors;
 using DS.RevitLib.Utils.Collisions.Models;
 using DS.RevitLib.Utils.Solids.Models;
 using System.Collections.Generic;
@@ -10,13 +11,10 @@ namespace DS.RevitLib.Utils.Elements.Transfer.Resolvers
 {
     internal class RotateCenterLineResolver : CollisionResolver
     {
-        private readonly SolidModelExt _operationElement;
 
-        public RotateCenterLineResolver(Collision<SolidModelExt, Element> collision, List<ICollisionChecker> collisionCheckers) :
-            base(collision, collisionCheckers)
-        {
-            _operationElement = collision.Object1;
-        }
+        public RotateCenterLineResolver(SolidModelExt _operationElement, (Solid, Element) collision, ISolidCollisionDetector detector, List<Element> excludedElements) :
+            base(_operationElement ,collision, detector, excludedElements)
+        {}
 
         public override void Resolve()
         {
@@ -26,7 +24,7 @@ namespace DS.RevitLib.Utils.Elements.Transfer.Resolvers
             Transform rotateTransform = Transform.CreateRotationAtPoint(axis, angle, _operationElement.CentralPoint);
             _operationElement.Transform(rotateTransform);
 
-            UnresolvedCollisions = GetCollisions();
+            UnresolvedCollisions = _detector.GetCollisions(_operationElement.Solid);
 
             if (!UnresolvedCollisions.Any())
             {

@@ -1,0 +1,148 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\Rhino3dm.7.15.0\build\net45\Rhino3dm.props" Condition="Exists('..\packages\Rhino3dm.7.15.0\build\net45\Rhino3dm.props')" />
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+  </PropertyGroup>
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{9208DCBD-3F74-477C-87E3-9598C551E538}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>DS.RVT.ModelSpaceFragmentation</RootNamespace>
+    <AssemblyName>DS.RVT.ModelSpaceFragmentation</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="DS.PathFinder">
+      <HintPath>..\..\DS.CommonLib.Utils\PathFinders\DS.PathFinder\bin\Debug\DS.PathFinder.dll</HintPath>
+    </Reference>
+    <Reference Include="DS.RevitUtils.MEP, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\DS.RevitUtils.MEP.dll</HintPath>
+    </Reference>
+    <Reference Include="iUtils">
+      <HintPath>..\..\VAR.RevitLib.Utils\iUtils\bin\Debug\iUtils.dll</HintPath>
+    </Reference>
+    <Reference Include="PresentationCore" />
+    <Reference Include="RevitAPI">
+      <HintPath>C:\Program Files\Autodesk\Revit 2020\RevitAPI.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="RevitAPIUI">
+      <HintPath>C:\Program Files\Autodesk\Revit 2020\RevitAPIUI.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Rhino3dm, Version=7.15.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Rhino3dm.7.15.0\lib\net45\Rhino3dm.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="BoundingBox\BoundingBoxFilter.cs" />
+    <Compile Include="Element\ElementSize.cs" />
+    <Compile Include="Lines\ILine.cs" />
+    <Compile Include="Lines\ICurves.cs" />
+    <Compile Include="Lines\LineCollision.cs" />
+    <Compile Include="Lines\CurvesByPointsCreator.cs" />
+    <Compile Include="Lines\RayCreator.cs" />
+    <Compile Include="MapCreator.cs" />
+    <Compile Include="BoundingBox\BoundigBoxVizualizator.cs" />
+    <Compile Include="ParallelSort.cs" />
+    <Compile Include="Path\Path.cs" />
+    <Compile Include="Path\Priority.cs" />
+    <Compile Include="BoundingBox\BoundingBoxCreator.cs" />
+    <Compile Include="PointCreator.cs" />
+    <Compile Include="Points\Convertor\PointsConvertor.cs" />
+    <Compile Include="ModelSpace\SpaceZone.cs" />
+    <Compile Include="Points\PointsSeparator.cs" />
+    <Compile Include="Points\StepPoint.cs" />
+    <Compile Include="Path\PathFinder.cs" />
+    <Compile Include="Points\StepPointsList.cs" />
+    <Compile Include="Points\StepsPriority.cs" />
+    <Compile Include="Points\Convertor\PointConvertor.cs" />
+    <Compile Include="Element\ElementInfo.cs" />
+    <Compile Include="ExternalCommand.cs" />
+    <Compile Include="Interfaces\Interfaces.cs" />
+    <Compile Include="Main.cs" />
+    <Compile Include="PickedElement.cs" />
+    <Compile Include="Lines\LineCreator.cs" />
+    <Compile Include="Points\IPoint.cs" />
+    <Compile Include="Points\ModelSpacePointsGenerator.cs" />
+    <Compile Include="Points\PointInSolidChecker.cs" />
+    <Compile Include="Points\TryPointsSeparator.cs" />
+    <Compile Include="Points\PointUtils.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ModelSpace\ModelSolid.cs" />
+    <Compile Include="ModelSpace\SpaceFragmentator.cs" />
+    <Compile Include="Visualization\GraphicOverwriter.cs" />
+    <Compile Include="Visualization\IPointsVisualization.cs" />
+    <Compile Include="Visualization\PointsVisualizator.cs" />
+    <Compile Include="Visualization\VisiblePointsCreator.cs" />
+    <Compile Include="Transactions\ITransaction.cs" />
+    <Compile Include="Transactions\ModelCurveTransaction.cs" />
+    <Compile Include="Transactions\Transactions.cs" />
+    <Compile Include="Path\InputData.cs" />
+    <Compile Include="Visualization\Visualizator.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="DS.RVT.ModelSpaceFragmentation.addin" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\DS.CommonLib.Utils\DS.ClassLib.VarUtils\DS.ClassLib.VarUtils.csproj">
+      <Project>{97D2548B-BA7F-4C31-8F52-6BF929E0C37B}</Project>
+      <Name>DS.ClassLib.VarUtils</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\DS.RevitLib.Utils\DS.RevitLib.Utils\DS.RevitLib.Utils.csproj">
+      <Project>{9873f185-f630-4bb2-94a4-d9665f32b802}</Project>
+      <Name>DS.RevitLib.Utils</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>xcopy /Y  "$(TargetDir)*.*" "C:\ProgramData\Autodesk\Revit\Addins\2020\$(TargetName)\" 
+Copy "$(ProjectDir)$(TargetName).addin" "C:\ProgramData\Autodesk\Revit\Addins\2020"
+</PostBuildEvent>
+  </PropertyGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\Rhino3dm.7.15.0\build\net45\Rhino3dm.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Rhino3dm.7.15.0\build\net45\Rhino3dm.props'))" />
+  </Target>
+</Project>

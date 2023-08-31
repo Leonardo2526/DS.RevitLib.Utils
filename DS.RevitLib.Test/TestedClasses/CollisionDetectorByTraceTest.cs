@@ -33,10 +33,10 @@ namespace DS.RevitLib.Test.TestedClasses
             var (con1, con2) = mEPCurveToExclude.GetMainConnectors();
 
             var (elements, linkElementsDict) = new ElementsExtractor(_doc).GetAll();
-            var detector = new CollisionDetectorByTrace(_doc, baseMEPCurve, new TraceSettings(), elements, linkElementsDict);
+            var detector = new CollisionDetectorByTrace(_doc, baseMEPCurve, new TraceSettings(), false, elements, linkElementsDict);
             detector.ObjectsToExclude = new List<Element>() { mEPCurveToExclude };
 
-            var collisions = detector.GetCollisions(con1.Origin.ToPoint3D(), con2.Origin.ToPoint3D());
+            var collisions = detector.GetCollisions(con1.Origin.ToPoint3d(), con2.Origin.ToPoint3d(), new ClassLib.VarUtils.Basis.Basis3d());
             Debug.WriteLine($"Collisions count is: {collisions.Count}");
         }
     }

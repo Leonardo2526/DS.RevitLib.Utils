@@ -24,7 +24,7 @@ namespace DS.RevitLib.Test.TestedClasses
         {
             Reference reference = _uiDoc.Selection.PickObject(ObjectType.Element, "Select familyInst");
             var topFamInst = _doc.GetElement(reference) as FamilyInstance;
-            _subElementIds = topFamInst.GetSubElements();
+            //_subElementIds = topFamInst.GetSubElements();
 
             Debug.WriteLine($"SubElements count is {_subElementIds.Count}.");
             _subElementIds.ForEach(id => { Debug.WriteLine(id); });

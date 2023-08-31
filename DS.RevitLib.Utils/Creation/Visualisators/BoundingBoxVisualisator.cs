@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.DB;
+using DS.ClassLib.VarUtils;
 using DS.RevitLib.Utils.ModelCurveUtils;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,7 +19,7 @@ namespace DS.RevitLib.Utils.Visualisators
             _document = document;
         }
 
-        public void Visualise()
+        public void Show()
         {
             var transform = _boundingBoxXYZ.Transform;
 

@@ -3,7 +3,6 @@ using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Selection;
 using DS.RevitLib.Utils;
 using DS.RevitLib.Utils.Collisions;
-using DS.RevitLib.Utils.Collisions.Checkers;
 using DS.ClassLib.VarUtils.Collisions;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.Visualisators;
@@ -48,7 +47,7 @@ namespace DS.RevitLib.Test
             _transactionBuilder.Build(() =>
             {
                 var visualizator = new BoundingBoxVisualisator(bb, _doc);
-                visualizator.Visualise();
+                visualizator.Show();
             }, "show BoundingBox");
             //_uiDoc.RefreshActiveView();
 

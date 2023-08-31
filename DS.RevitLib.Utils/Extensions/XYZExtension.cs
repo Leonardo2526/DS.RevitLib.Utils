@@ -1,12 +1,23 @@
 ﻿using Autodesk.Revit.DB;
 using DS.ClassLib.VarUtils;
+using DS.ClassLib.VarUtils.Points;
 using DS.RevitLib.Utils.Creation.Transactions;
+using DS.RevitLib.Utils.Elements.MEPElements;
 using DS.RevitLib.Utils.ModelCurveUtils;
 using DS.RevitLib.Utils.Transactions;
+using MoreLinq;
+using Rhino.Geometry;
+using Rhino.UI;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Drawing;
 using System.Linq;
+using System.Net;
+using System.Windows.Media;
 using System.Windows.Media.Media3D;
+using Line = Autodesk.Revit.DB.Line;
+using Plane = Autodesk.Revit.DB.Plane;
 
 namespace DS.RevitLib.Utils.Extensions
 {
@@ -145,7 +156,7 @@ namespace DS.RevitLib.Utils.Extensions
         public static bool IsBetweenPoints(this XYZ point, XYZ point1, XYZ point2, double tolerance = 3, bool canCoinsidence = true)
         {
             var v1 = (point - point1).Normalize();
-            if(!canCoinsidence && v1.IsZeroLength()) { return false; }
+            if (!canCoinsidence && v1.IsZeroLength()) { return false; }
             var v2 = (point - point2).Normalize();
             if (!canCoinsidence && v2.IsZeroLength()) { return false; }
             if (v1.IsAlmostEqualTo(v2.Negate(), tolerance.DegToRad()))
@@ -234,8 +245,286 @@ namespace DS.RevitLib.Utils.Extensions
         /// <returns>Returns a new <see cref="Point3D"/> built by <paramref name="point"/> coordinates.</returns>
         public static Point3D ToPoint3D(this XYZ point)
         {
-            return new Point3D(point.X , point.Y, point.Z);
+            return new Point3D(point.X, point.Y, point.Z);
         }
+
+        /// <summary>
+        /// Convert <paramref name="xYZ"/> to <see cref="Vector3d"/>.
+        /// </summary>
+        /// <param name="xYZ"></param>
+        /// <returns>Returns a new <see cref="Vector3d"/> built by <paramref name="xYZ"/> coordinates.</returns>
+        public static Vector3d ToVector3d(this XYZ xYZ)
+        {
+            return new Vector3d(xYZ.X, xYZ.Y, xYZ.Z);
+        }
+
+        /// <summary>
+        /// Convert <paramref name="xYZ"/> to <see cref="Point3d"/>.
+        /// </summary>
+        /// <param name="xYZ"></param>
+        /// <returns>Returns a new <see cref="Point3d"/> built by <paramref name="xYZ"/> coordinates.</returns>
+        public static Point3d ToPoint3d(this XYZ xYZ)
+        {
+            return new Point3d(xYZ.X, xYZ.Y, xYZ.Z);
+        }
+
+        /// <summary>
+        /// Convert <paramref name="point"/> to <see cref="Autodesk.Revit.DB.XYZ"/>.
+        /// </summary>
+        /// <param name="point"></param>
+        /// <returns>Returns a new <see cref="Autodesk.Revit.DB.XYZ"/> built by <paramref name="point"/> coordinates.</returns>
+        public static XYZ ToXYZ(this Point3d point)
+        {
+            return new XYZ(point.X, point.Y, point.Z);
+        }
+
+        /// <summary>
+        /// Convert <paramref name="vector"/> to <see cref="Autodesk.Revit.DB.XYZ"/>.
+        /// </summary>
+        /// <param name="vector"></param>
+        /// <returns>Returns a new <see cref="Autodesk.Revit.DB.XYZ"/> built by <paramref name="vector"/> coordinates.</returns>
+        public static XYZ ToXYZ(this Vector3d vector)
+        {
+            return new XYZ(vector.X, vector.Y, vector.Z);
+        }
+
+        /// <summary>
+        /// Transform <paramref name="point"/> with set of <paramref name="transforms"/>.
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="transforms"></param>
+        /// <returns>
+        /// A new transformed <see cref="Autodesk.Revit.DB.XYZ"/>.
+        /// </returns>
+        public static XYZ Transform(this XYZ point, List<Autodesk.Revit.DB.Transform> transforms)
+        {
+            XYZ xYZ = new XYZ(point.X, point.Y, point.Z);
+            foreach (var transform in transforms)
+            {
+                xYZ = transform.OfPoint(xYZ);
+            }
+
+            return xYZ;
+        }
+
+        /// <summary>
+        /// Get distance to closest point on floor under the <paramref name="point"/>.
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="doc"></param>
+        /// <returns>
+        /// Distance to closest point on floor under the <paramref name="point"/>.
+        /// <para>
+        /// If no floors or no floors under the <paramref name="point"/> was found returns <see cref="double.PositiveInfinity"/>.
+        /// </para>
+        /// </returns>
+        public static double GetDistanceToFloor(this XYZ point, Document doc) =>
+            GetDistanceToAnyFloor(point, doc, -30);
+
+        /// <summary>
+        /// Get distance to closest point on ceiling over the <paramref name="point"/>.
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="doc"></param>
+        /// <returns>
+        /// Distance to closest point on ceiling over the <paramref name="point"/>.
+        /// <para>
+        /// If no ceiling or no ceiling over the <paramref name="point"/> was found returns <see cref="double.PositiveInfinity"/>.
+        /// </para>
+        /// </returns>
+        public static double GetDistanceToCeiling(this XYZ point, Document doc) =>
+            GetDistanceToAnyFloor(point, doc, 30);
+
+        /// <summary>
+        /// Get <see cref="Autodesk.Revit.DB.XYZ"/> that specifies bound point to floor or ceiling.
+        /// </summary>
+        /// <remarks>
+        /// By default get bound point to floor.
+        /// </remarks>
+        /// <param name="point"></param>
+        /// <param name="doc"></param>
+        /// <param name="offsetFromFloor"></param>
+        /// <param name="distanceToFindFloor"></param>
+        /// <returns>
+        /// Bound point to floor if <paramref name="distanceToFindFloor"/> is less than 0 and 
+        /// to ceiling if <paramref name="distanceToFindFloor"/> is more than 0.
+        /// <para>
+        /// <see cref="Autodesk.Revit.DB.XYZ"/> with <see cref="double.MaxValue"/> as Z coordinate if no floor or ceiling was found.
+        /// </para>
+        /// <para>
+        /// <see langword="null"/> if <paramref name="point"/> is outside calculated bound point.
+        /// </para>
+        /// </returns>
+        public static XYZ GetXYZBound(this XYZ point, Document doc, double offsetFromFloor, double distanceToFindFloor = -30)
+        {
+            XYZ xYZBound = null;
+
+            var zBound = point + XYZ.BasisZ.Multiply(distanceToFindFloor);
+            var dir = zBound - point;
+            dir = dir.Normalize();
+
+            var hToFloor = distanceToFindFloor > 0 ? point.GetDistanceToCeiling(doc) : point.GetDistanceToFloor(doc);
+
+            //if no floors
+            if (hToFloor == double.PositiveInfinity)
+            { xYZBound = new XYZ(point.X, point.Y, double.MaxValue); }
+            else
+            {
+                var zOffset = hToFloor - offsetFromFloor;
+                if (zOffset >= 0)
+                { xYZBound = point + dir.Multiply(zOffset); }
+            }
+
+            return xYZBound;
+        }
+
+        /// <summary>
+        /// Specifies if <paramref name="point1"/> is less than <paramref name="point2"/>.
+        /// </summary>
+        /// <returns>
+        /// <see langword="true"/> if each coordinate of <paramref name="point1"/> is less than <paramref name="point2"/>.
+        /// <para>
+        /// Otherwise returns <see langword="false"/>.
+        /// </para>
+        /// </returns>
+        public static bool Less(this XYZ point1, XYZ point2)
+           => point1.X < point2.X && point1.Y < point2.Y && point1.Z < point2.Z;
+
+        /// <summary>
+        /// Specifies if <paramref name="point1"/> is more than <paramref name="point2"/>.
+        /// </summary>
+        /// <returns>
+        /// <see langword="true"/> if each coordinate of <paramref name="point1"/> is more than <paramref name="point2"/>.
+        /// <para>
+        /// Otherwise returns <see langword="false"/>.
+        /// </para>
+        /// </returns>
+        public static bool More(this XYZ point1, XYZ point2)
+           => point1.X > point2.X && point1.Y > point2.Y && point1.Z > point2.Z;
+
+        /// <summary>
+        /// Get normal to <paramref name="dir"/> from 
+        /// <see cref="Autodesk.Revit.DB.XYZ.BasisX"/>, <see cref="Autodesk.Revit.DB.XYZ.BasisY"/> or <see cref="Autodesk.Revit.DB.XYZ.BasisZ"/>.
+        /// </summary>
+        /// <param name="dir"></param>
+        /// <returns>
+        /// Normal vector from XYZ base orths.
+        /// <para>
+        /// Random normal if no normal vectors to <paramref name="dir"/> from XYZ base orths exists.
+        /// </para>
+        /// </returns>
+        public static XYZ GetPerpendicular(this XYZ dir)
+        {
+            var dir3d = dir.ToVector3d().Round(3);
+            if (dir3d.IsPerpendicularTo(XYZ.BasisX.ToVector3d())) { return XYZ.BasisX; }
+            else if (dir3d.IsPerpendicularTo(XYZ.BasisY.ToVector3d())) { return XYZ.BasisY; }
+            else if (dir3d.IsPerpendicularTo(XYZ.BasisZ.ToVector3d())) { return XYZ.BasisZ; }
+            else
+            { return dir.GetRandomPerpendicular(XYZ.Zero); }
+        }
+
+        /// <summary>
+        /// Get collisions between <paramref name="point"/> and <paramref name="inputElements"/>.
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="inputElements"></param>
+        /// <param name="tolerance"></param>
+        /// <returns>
+        /// Collisions between <paramref name="point"/> and <paramref name="inputElements"/>
+        /// by <see cref="Autodesk.Revit.DB.BoundingBoxContainsPointFilter"/>.
+        /// <para>
+        /// Empty list if no collisions was found.
+        /// </para>
+        /// </returns>
+        public static List<(XYZ, Element)> GetBoxXYZCollisions(this XYZ point, List<Element> inputElements, double tolerance = 0.01)
+        {
+            var collisions = new List<(XYZ, Element)>();
+
+            Document doc = inputElements.FirstOrDefault().Document;
+            var collector = new FilteredElementCollector(doc, inputElements.Select(el => el.Id).ToList());
+            var filter = new BoundingBoxContainsPointFilter(point, tolerance);
+            var collisionElements = collector.WherePasses(filter).ToElements();
+
+            collisionElements.ForEach(e => collisions.Add((point, e)));
+
+            return collisions;
+        }
+
+        /// <summary>
+        /// Get collisions between <paramref name="point"/> and <paramref name="inputElements"/>.
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="inputElements"></param>
+        /// <param name="tolerance"></param>
+        /// <returns>
+        ///  Collisions between <paramref name="point"/> and <paramref name="inputElements"/>.
+        /// <para>
+        /// Empty list if no collisions was found.
+        /// </para>
+        /// </returns>
+        public static List<(XYZ, Element)> GetCollisions(this XYZ point, List<Element> inputElements, double tolerance = 0.01)
+        {
+            var collisions = new List<(XYZ, Element)>();
+
+            var boxXYZcollisions = point.GetBoxXYZCollisions(inputElements, tolerance);
+            if (!boxXYZcollisions.Any()) { return collisions; }
+
+            foreach (var collision in boxXYZcollisions)
+            {
+                var solid = ElementUtils.GetSolid(collision.Item2);
+                if (solid.Contains(point, true)) { collisions.Add(collision); }
+            }
+
+            return collisions;
+        }
+
+
+        #region Private methods
+
+        /// <summary>
+        /// Get distance to closest point on floor under or over the <paramref name="point"/>.     
+        /// </summary>
+        /// <remarks>
+        /// <paramref name="findDist"/> specifies +/- direction and it's value to find floors.
+        /// </remarks>
+        /// <param name="point"></param>
+        /// <param name="doc"></param>
+        /// <param name="findDist"></param>
+        /// <returns>
+        /// Distance to closest point on floor under or over the <paramref name="point"/>.
+        /// <para>
+        /// If no floors or no floors under or over the <paramref name="point"/> was found returns <see cref="double.PositiveInfinity"/>.
+        /// </para>
+        /// </returns>
+        private static double GetDistanceToAnyFloor(this XYZ point, Document doc, double findDist)
+        {
+            var p1 = point + new XYZ(- 0.5, - 0.5, 0);
+            var p2 = point + new XYZ(0.5, 0.5, findDist);
+
+            var (minPoint, maxPoint) = XYZUtils.CreateMinMaxPoints(new List<XYZ> { p1, p2 });
+            var outline = new Outline(minPoint, maxPoint);
+            var floors = findDist > 0 ? doc.GetCeilings(outline) : doc.GetFloors(outline);
+            if (floors.Count == 0) { return double.PositiveInfinity; }
+
+            var line = Line.CreateBound(new XYZ(point.X, point.Y, point.Z), new XYZ(point.X, point.Y, point.Z + findDist));
+            var opt = new SolidCurveIntersectionOptions() { ResultType = SolidCurveIntersectionMode.CurveSegmentsOutside };
+
+            var intersections = new List<SolidCurveIntersection>();
+            foreach (var f in floors)
+            {
+                var intersectResult = f.Solid().IntersectWithCurve(line, opt);
+                if (intersectResult.SegmentCount > 0)
+                { intersections.Add(intersectResult); }
+            }
+            if (intersections.Count == 0) { return double.PositiveInfinity; ; }
+            intersections.OrderBy(x => x.GetCurveSegment(0).Length);
+
+            var result = intersections.Min(x => x.GetCurveSegment(0).Length);
+
+            return Math.Abs(result - line.Length) < 0.001 ? double.PositiveInfinity : result;
+        }
+
+        #endregion
 
     }
 }

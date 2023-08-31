@@ -48,6 +48,11 @@ namespace DS.RevitLib.Utils.Connections.PointModels.PointModels
         public ConnectionPoint ConnectionPoint { get; set; }
 
         /// <summary>
+        /// Specifies used bound of <see cref="Document"/>.
+        /// </summary>
+        public Outline BoundOutline { get; set; }
+
+        /// <summary>
         /// Specifies whether point is valid for connection.
         /// </summary>
         /// <returns>Returns <see langword="true"></see> if <see cref="_mEPSystemModel"/> contatins point and point has no collisions.
@@ -74,6 +79,7 @@ namespace DS.RevitLib.Utils.Connections.PointModels.PointModels
         /// </returns>
         public bool GetSystemValidity()
         {
+            if(ConnectionPoint.Element is null) { return false; }
             return _mEPSystemModel.AllElements.Select(obj => obj.Id).Contains(ConnectionPoint.Element.Id);
         }
 
@@ -83,7 +89,7 @@ namespace DS.RevitLib.Utils.Connections.PointModels.PointModels
         /// <returns>Returns <see langword="true"></see> if point has no collisions.
         /// <para>Otherwise returns <see langword="false"></see>.</para>
         /// </returns>
-        public List<ICollision> GetCollisions()
+        public List<(Element, Element)> GetCollisions()
         {
             if (_docElements is null)
             {
@@ -98,9 +104,28 @@ namespace DS.RevitLib.Utils.Connections.PointModels.PointModels
             if (!collisions.Any()) { return collisions; }
 
             //Specify collision objects
-            var collisionsOnPoint = collisions.Cast<ElementCollision>().
-                TakeWhile(obj => ElementUtils.GetSolid(obj.Object2).Contains(ConnectionPoint.Point));
-            return collisionsOnPoint.Cast<ICollision>().ToList();
+            var collisionsOnPoint = collisions.
+                TakeWhile(obj => ElementUtils.GetSolid(obj.Item2).Contains(ConnectionPoint.Point)).ToList();
+            return collisionsOnPoint;
+        }
+
+        /// <summary>
+        /// Specifies if <paramref name="point"/> is within <see cref="BoundOutline"/>.
+        /// </summary>
+        /// <param name="point"></param>
+        /// <returns>
+        /// <see langword="true"/> if <paramref name="point"/> is within <see cref="BoundOutline"/>.
+        /// <para>
+        /// 
+        /// Othewise returns <see langword="false"/>.</para>
+        /// </returns>
+        public bool IsWithinLengthLimits(XYZ point) 
+        { 
+            if(BoundOutline is null) { return true; }
+            else
+            {
+                return point.More(BoundOutline.MinimumPoint) && point.Less(BoundOutline.MaximumPoint);
+            }
         }
     }
 }

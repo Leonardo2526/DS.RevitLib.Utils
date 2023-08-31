@@ -1,7 +1,19 @@
-﻿namespace DS.RevitLib.Utils.Visualisators
+﻿using Autodesk.Revit.DB;
+
+namespace DS.RevitLib.Utils.Visualisators
 {
-    public interface IVisualisator
+    public interface ISVisualisator
     {
-        public void Visualise();
+        public void Show();
+    }
+
+    public interface IObjectVisualisator
+    {
+        public void Show(object objectToShow);
+    }
+
+    public interface IPointVisualisator<T>
+    {
+        public void Show(T point);
     }
 }

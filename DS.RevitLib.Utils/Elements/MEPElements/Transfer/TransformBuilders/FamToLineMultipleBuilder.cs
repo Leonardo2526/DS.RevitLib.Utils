@@ -1,5 +1,5 @@
 ﻿using Autodesk.Revit.DB;
-using DS.RevitLib.Utils.Collisions.Checkers;
+
 using DS.RevitLib.Utils.Elements.Models;
 using DS.RevitLib.Utils.Lines;
 using DS.RevitLib.Utils.MEP;
@@ -11,6 +11,7 @@ using DS.RevitLib.Utils.Elements.Transfer.TransformModels;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using DS.RevitLib.Utils.Collisions.Detectors;
 
 namespace DS.RevitLib.Utils.Elements.Transfer.TransformBuilders
 {
@@ -18,17 +19,19 @@ namespace DS.RevitLib.Utils.Elements.Transfer.TransformBuilders
     {
         private readonly double _minFamInstLength = 50.mmToFyt2();
         private readonly double _minCurveLength;
-        private readonly List<ICollisionChecker> _collisionCheckers;
+        private readonly ISolidCollisionDetector _detector;
+        private readonly List<Element> _excludedElements;
         private readonly double _minPlacementLength;
         private AvailableLineService _lineService;
         private double _currentPlacementLength;
         private List<XYZ> _path;
         private MEPCurveModel _mEPCurveModel;
 
-        public FamToLineMultipleBuilder(double minCurveLength, List<ICollisionChecker> collisionCheckers)
+        public FamToLineMultipleBuilder(double minCurveLength, ISolidCollisionDetector detector, List<Element> excludedElements)
         {
             _minCurveLength = minCurveLength;
-            _collisionCheckers = collisionCheckers;
+            _detector = detector;
+            _excludedElements = excludedElements;
             _minPlacementLength = _minFamInstLength + 2 * minCurveLength;
         }
 
@@ -44,7 +47,7 @@ namespace DS.RevitLib.Utils.Elements.Transfer.TransformBuilders
             var operation = (SolidModelExt)operationObject;
             var target = (LineModel)targetObject;
             var builder = new FamToLineTransformBuilder(operation, target,
-                  _collisionCheckers, _currentPlacementLength, _path, _mEPCurveModel, _minCurveLength);
+                  _detector, _currentPlacementLength, _path, _mEPCurveModel, _minCurveLength, _excludedElements);
             var model = builder.Build();
 
             var (line1, line2) =

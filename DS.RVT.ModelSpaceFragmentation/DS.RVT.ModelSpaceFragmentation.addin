@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+	<AddIn Type="Command">
+		<Name>DS.RVT.ModelSpaceFragmentation</Name>
+		<FullClassName>DS.RVT.ModelSpaceFragmentation.ExternalCommand</FullClassName>
+		<Text>DS.RVT.ModelSpaceFragmentation</Text>
+		<Description>ModelSpaceFragmentation.</Description>
+		<VisibilityMode>AlwaysVisible</VisibilityMode>
+		<Assembly>.\DS.RVT.ModelSpaceFragmentation\DS.RVT.ModelSpaceFragmentation.dll</Assembly>
+		<AddInId>fbaaba62-aa95-4fef-bc47-a2b8afc5661f</AddInId>
+		<VendorId>DS</VendorId>
+	</AddIn> 
+</RevitAddIns>

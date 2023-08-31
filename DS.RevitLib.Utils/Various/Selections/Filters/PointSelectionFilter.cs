@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI.Selection;
 using DS.RevitLib.Utils.Extensions;
+using DS.RevitLib.Utils.MEP;
 using DS.RevitLib.Utils.Various.Selections.Filters;
 
 namespace DS.RevitLib.Utils.SelectionFilters
@@ -27,6 +28,7 @@ namespace DS.RevitLib.Utils.SelectionFilters
         /// <inheritdoc/>
         public bool AllowReference(Reference reference, XYZ point)
         {
+            if(!_element.IsMEPElement()) { return false; }
             return (bool)(_element.GetCenterLine()?.Contains(point));
         }
     }

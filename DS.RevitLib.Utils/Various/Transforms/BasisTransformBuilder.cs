@@ -58,7 +58,7 @@ namespace DS.RevitLib.Utils.Transforms
             while (basis1 is not null && i < 3)
             {
                 double angle;
-                XYZ axis = basis1.CrossProduct(basis2).RoundVector();             
+                XYZ axis = basis1.CrossProduct(basis2).RoundVector(2);             
                 if (axis.IsZeroLength())
                 {
                     //if (_isAlwaysVertical && !_operationObject.Y.IsAlmostEqualTo(XYZ.BasisZ))

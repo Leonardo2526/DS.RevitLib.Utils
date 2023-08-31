@@ -23,7 +23,7 @@ namespace DS.RevitLib.Utils.Various
         protected override ISelectionFilter Filter => new ElementSelectionFilter<Element>() { AllowLink = AllowLink};
 
         /// <inheritdoc/>
-        protected override ISelectionFilter FilterInLink => new ElementInLinkSelectionFilter<MEPCurve>(_doc);
+        protected override ISelectionFilter FilterInLink => new ElementInLinkSelectionFilter<Element>(_doc);
 
         /// <inheritdoc/>
         public override Element Pick(string statusPrompt = null, string promptSuffix = null)

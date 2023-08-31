@@ -1,5 +1,8 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Electrical;
+using Autodesk.Revit.DB.Mechanical;
+using Autodesk.Revit.DB.Plumbing;
+using DS.ClassLib.VarUtils;
 using DS.RevitLib.Utils.Connection;
 using DS.RevitLib.Utils.MEP;
 using DS.RevitLib.Utils.Transactions;
@@ -9,6 +12,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Xml.Linq;
 using static System.Windows.Forms.LinkLabel;
+using Vector3d = Rhino.Geometry.Vector3d;
 
 namespace DS.RevitLib.Utils.Extensions
 {
@@ -145,23 +149,31 @@ namespace DS.RevitLib.Utils.Extensions
         /// <summary>
         /// Get center line of element.
         /// </summary>
-        /// <param name="famInst"></param>
-        /// <returns>Returns center line of MEPCurve or family instance created by it's main connecors. 
-        /// Returns null if element is not a MEPCuve or FamilyInstance type.</returns>
+        /// <param name="element"></param>
+        /// <returns>
+        /// <see cref="LocationCurve"/> as <see cref="Line"/> of <paramref name="element"/>.
+        /// <para>
+        /// <see cref="Line"/> between main connectors if <paramref name="element"/> is <see cref="Autodesk.Revit.DB.FamilyInstance"/>.
+        /// </para>
+        /// <para>
+        /// <see langword="null"/> if it was failed to get <see cref="Line"/> from <paramref name="element"/> .
+        /// </para>
+        /// </returns>
         public static Line GetCenterLine(this Element element)
         {
-            if (element is MEPCurve)
-            {
-                return MEPCurveUtils.GetLine(element as MEPCurve);
-            }
-            else if (element is FamilyInstance)
+            if (element is FamilyInstance)
             {
                 FamilyInstance familyInstance = element as FamilyInstance;
                 var (famInstCon1, famInstCon2) = ConnectorUtils.GetMainConnectors(familyInstance);
+                if (famInstCon1 == null || famInstCon2 == null 
+                    || famInstCon1.Origin.DistanceTo(famInstCon2.Origin) < 0.001) { return null; }
                 return Line.CreateBound(famInstCon1.Origin, famInstCon2.Origin);
             }
-
-            return null;
+            else
+            {
+                var lCurve = element.Location as LocationCurve;
+                return lCurve == null ? null : lCurve.Curve as Line;
+            }
         }
 
         /// <summary>
@@ -202,7 +214,7 @@ namespace DS.RevitLib.Utils.Extensions
                     else if (elem is GeometryInstance gi)
                     {
                         var go = gi.GetInstanceGeometry();
-                        return CheckGeometry(go?.Cast<GeometryObject>().ToList());
+                        if (CheckGeometry(go?.Cast<GeometryObject>().ToList())) { return true; };
                     }
                 }
                 return false;
@@ -302,7 +314,7 @@ namespace DS.RevitLib.Utils.Extensions
             transactionBuilder.Build(() =>
             {
                 var visualizator = new BoundingBoxVisualisator(boundingBox, doc);
-                visualizator.Visualise();
+                visualizator.Show();
             }, "show BoundingBox");
         }
 
@@ -330,7 +342,7 @@ namespace DS.RevitLib.Utils.Extensions
             transactionBuilder.Build(() =>
             {
                 var visualizator = new BoundingBoxVisualisator(transformBoundingBox, doc);
-                visualizator.Visualise();
+                visualizator.Show();
             }, "show BoundingBox");
         }
 
@@ -448,15 +460,15 @@ namespace DS.RevitLib.Utils.Extensions
         /// Get <paramref name="element"/>'s  insulation.
         /// </summary>
         /// <param name="element"></param>
-        /// <returns>Returns <paramref name="element"/>'s <see cref="InsulationLiningBase"/> if it has it. 
+        /// <returns>
+        /// Returns <paramref name="element"/>'s <see cref="InsulationLiningBase"/> if it has it. 
         /// Otherwise returns null.</returns>
         public static InsulationLiningBase GetInsulation(this Element element)
         {
-            if (element.GetType() == typeof(CableTray))
-            { return null; }
-
-            return InsulationLiningBase.GetInsulationIds(element.Document, element.Id)
-               .Select(x => element.Document.GetElement(x) as InsulationLiningBase).FirstOrDefault();
+            return element is Pipe || element is Duct ?
+                InsulationLiningBase.GetInsulationIds(element.Document, element.Id)
+               .Select(x => element.Document.GetElement(x) as InsulationLiningBase).FirstOrDefault() :
+               null;
         }
 
         /// <summary>
@@ -489,6 +501,33 @@ namespace DS.RevitLib.Utils.Extensions
         public static Solid Solid(this Element element) => ElementUtils.GetSolid(element);
 
         /// <summary>
+        /// Get <paramref name="element"/>'s solid with it's insulation.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <returns>
+        /// <paramref name="element"/>'s <see cref="Autodesk.Revit.DB.Solid"/> with it's insulation if it has it.
+        /// <para>
+        /// Otherwise returns only <paramref name="element"/>'s <see cref="Autodesk.Revit.DB.Solid"/>.
+        /// </para>
+        /// </returns>
+        public static Solid GetSolidWithInsulation(this Element element)
+        {
+            Solid solid = element.Solid();
+
+            List<Solid> solids = new()
+            {solid};
+
+            Element insulation = element.GetInsulation();
+            if (insulation is not null && insulation.IsValidObject)
+            {
+                solids.Add(insulation.Solid());
+                solid = Solids.SolidUtils.UniteSolids(solids);
+            }
+
+            return solid;
+        }
+
+        /// <summary>
         /// Get connected elements to <paramref name="element"/>.
         /// </summary>
         /// <param name="element"></param>
@@ -513,9 +552,9 @@ namespace DS.RevitLib.Utils.Extensions
         /// <param name="elements"></param>
         public static void ConvertToValid(this List<Element> elements)
         {
-            if(
-                elements is not null && 
-                elements.Any() && 
+            if (
+                elements is not null &&
+                elements.Any() &&
                 elements.TrueForAll(obj => obj.IsValidObject))
             { return; }
 
@@ -527,6 +566,158 @@ namespace DS.RevitLib.Utils.Extensions
                 { indexesToRemove.Add(i); }
             }
             indexesToRemove.ForEach(elements.RemoveAt);
+        }
+
+        /// <summary>
+        /// Specify if <paramref name="element"/> is MEP element.    
+        /// </summary>
+        /// <param name="element"></param>
+        /// <returns>
+        /// <see langword="true"/> if <paramref name="element"/> is pipe, duct, cable tray, fitting, accessory or equipment.
+        /// </returns>
+        public static bool IsMEPElement(this Element element)
+        {
+            var type = element.GetType();
+            bool validType = type == typeof(Pipe) || type == typeof(Duct) || type == typeof(CableTray) ? true : false;
+            if (validType) { return true; }
+
+            var familyInstance = element as FamilyInstance;
+            if (familyInstance?.MEPModel.ConnectorManager is null) { return false; }
+
+            BuiltInCategory familyInstanceCategory = CategoryExtension.GetBuiltInCategory(element.Category);
+
+            List<BuiltInCategory> builtInCategories = new List<BuiltInCategory>
+            {
+                BuiltInCategory.OST_PipeFitting,
+                BuiltInCategory.OST_DuctFitting,
+                BuiltInCategory.OST_CableTrayFitting,
+            BuiltInCategory.OST_MechanicalEquipment,
+            BuiltInCategory.OST_DuctAccessory,
+            BuiltInCategory.OST_PipeAccessory};
+
+            return ElementUtils.CheckCategory(familyInstanceCategory, builtInCategories);
+        }
+
+        /// <summary>
+        /// Get <see cref="RevitLinkInstance"/> by <paramref name="element"/>.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <param name="doc"></param>
+        /// <returns>
+        /// <see cref="RevitLinkInstance"/> from loaded links in <paramref name="doc"/> if there is any that contains <paramref name="element"/>.
+        /// <para>
+        /// <see langword="null"/> if no loaded links are in <paramref name="doc"/> or no links that contains <paramref name="element"/>.
+        /// </para>
+        /// </returns>
+        public static RevitLinkInstance GetLink(this Element element, Document doc)
+        {
+            var elemDoc = element.Document;
+
+            if (!elemDoc.IsLinked) { return null; }
+            else
+            {
+                var links = doc.GetLoadedLinks();
+                return links.FirstOrDefault(l => l.GetLinkDocument().Title == elemDoc.Title);
+            }
+        }
+
+        /// <summary>
+        /// Get transformed solid from <paramref name="element"/> by <paramref name="revitLink"/>.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <param name="revitLink"></param>
+        /// <returns>
+        /// Real <paramref name="element"/> <see cref="Autodesk.Revit.DB.Solid"/> positions in current document.
+        /// </returns>
+        public static Solid GetTransformed(this Element element, RevitLinkInstance revitLink)
+        {
+            var solid = element.Solid();
+            if(solid is null)
+            {return null;}
+
+            var linkTransform = revitLink.GetTotalTransform();
+            if (!linkTransform.AlmostEqual(Transform.Identity))
+            {
+                solid = SolidUtils.CreateTransformed(solid, linkTransform);
+            }
+
+            return solid;
+        }
+
+        /// <summary>
+        /// Check if current <paramref name="element"/>'s <see cref="Autodesk.Revit.DB.BuiltInCategory"/> is conform to given <paramref name="builtInCategories"/>.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <param name="builtInCategories"></param>
+        /// <returns>
+        /// <see langword="true"/> if any from <paramref name="builtInCategories"/> contains <paramref name="element"/>'s  <see cref="Autodesk.Revit.DB.BuiltInCategory"/>.
+        /// <para>
+        /// Otherwise <see langword="false"/>.
+        /// </para>
+        /// </returns>
+        public static bool IsCategoryElement(this Element element, IEnumerable<BuiltInCategory> builtInCategories)
+        {
+            BuiltInCategory elementCategory = CategoryExtension.GetBuiltInCategory(element.Category);
+            return ElementUtils.CheckCategory(elementCategory, builtInCategories);
+        }
+
+        /// <summary>
+        /// Specifies if the <paramref name="wall"/> is traversable by <paramref name="traverseDirection"/>.
+        /// </summary>
+        /// <param name="wall"></param>
+        /// <param name="traverseDirection"></param>
+        /// <param name="parameterName"></param>
+        /// <returns>
+        /// <see langword="true"/> if the <paramref name="wall"/> has parameter with <paramref name="parameterName"/> with value as <see langword="false"/>
+        /// and <paramref name="traverseDirection"/> perpendicular to <paramref name="wall"/> direction.
+        /// <para>
+        /// Otherwise <see langword="false"/>.
+        /// </para>
+        /// </returns>
+        public static bool IsTraversable(this Wall wall, Vector3d traverseDirection, string parameterName = "OLP_БезПересечений")
+        {
+            var p = wall.GetParameters(parameterName).FirstOrDefault();
+            if (p == null || p.AsInteger() == 1) { return false; }
+
+            var wDir = wall.GetCenterLine().Direction.ToVector3d();
+            wDir = Vector3d.Divide(wDir, wDir.Length);
+            if (traverseDirection.IsPerpendicularTo(wDir, 3.DegToRad()))
+            { return true; }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Specifies if the <paramref name="wall"/> is traversable by <paramref name="traverseDirection"/>.
+        /// </summary>
+        /// <param name="wall"></param>
+        /// <param name="traverseDirection"></param>
+        /// <param name="parameterName"></param>
+        /// <returns>
+        /// <see langword="true"/> if the <paramref name="wall"/> has parameter with <paramref name="parameterName"/> with value as <see langword="false"/>
+        /// and <paramref name="traverseDirection"/> perpendicular to <paramref name="wall"/> direction.
+        /// <para>
+        /// Otherwise <see langword="false"/>.
+        /// </para>
+        /// </returns>
+        public static bool IsTraversable(this Wall wall, XYZ traverseDirection, string parameterName = "OLP_БезПересечений") =>
+           wall.IsTraversable(traverseDirection.ToVector3d(), parameterName);
+
+        /// <summary>
+        /// Specifies if <paramref name="element"/> is connected to <paramref name="checkElement"/>.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <param name="checkElement"></param>
+        /// <returns>
+        /// <see langword="true"/> if <paramref name="element"/> has common connectors with <paramref name="checkElement"/>.
+        /// <para>
+        /// Otherwise returns <see langword="false"/>.
+        /// </para>
+        /// </returns>
+        public static bool IsConnected(this Element element, Element checkElement)
+        {
+            var (elem1Con, elem2Con) = ConnectorUtils.GetCommonConnectors(element, checkElement);
+            return (elem1Con is not null && elem2Con is not null);
         }
     }
 }

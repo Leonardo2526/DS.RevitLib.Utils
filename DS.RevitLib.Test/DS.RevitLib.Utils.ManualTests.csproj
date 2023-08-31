@@ -1,8 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\Rhino3dm.7.15.0\build\net45\Rhino3dm.props" Condition="Exists('..\packages\Rhino3dm.7.15.0\build\net45\Rhino3dm.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <LangVersion>latest</LangVersion>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -55,6 +58,9 @@
       <HintPath>C:\Program Files\Autodesk\Revit 2020\RevitAPIUI.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Rhino3dm, Version=7.15.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Rhino3dm.7.15.0\lib\net45\Rhino3dm.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Windows.Forms" />
@@ -66,10 +72,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="TestedClasses\GetFloorDistTest.cs" />
     <Compile Include="TestedClasses\AlignMEPCurvesTest.cs" />
     <Compile Include="TestedClasses\ArcCreationTest.cs" />
+    <Compile Include="TestedClasses\BasisBuilderTest.cs" />
     <Compile Include="TestedClasses\BBCollisionUtilsTest.cs" />
+    <Compile Include="TestedClasses\BestSolidOffsetExtractorTest.cs" />
     <Compile Include="TestedClasses\BuilderByPointsTest.cs" />
+    <Compile Include="TestedClasses\ConnectedElementFinderTest.cs" />
+    <Compile Include="TestedClasses\GetConnectionDirectionTest.cs" />
     <Compile Include="TestedClasses\ReplaceMEPCurveTest.cs" />
     <Compile Include="TestedClasses\GetOverlapResultTest.cs" />
     <Compile Include="TestedClasses\LinesIntersectionTest.cs" />
@@ -92,8 +103,8 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestedClasses\GetSubComponentTest.cs" />
     <Compile Include="TestedClasses\SelectionTest.cs" />
+    <Compile Include="TestedClasses\ShowVectorTest.cs" />
     <Compile Include="TestedClasses\SimplePathFinderTest.cs" />
-    <Compile Include="TestedClasses\SolidCollisionCheckerTest.cs" />
     <Compile Include="TestedClasses\GetAllElementsTest.cs" />
     <Compile Include="TestedClasses\SolidContainsPointTest.cs" />
     <Compile Include="TestedClasses\SolidCreatorTest.cs" />
@@ -111,4 +122,10 @@
 Copy "$(ProjectDir)$(TargetName).addin" "C:\ProgramData\Autodesk\Revit\Addins\2020"
 </PostBuildEvent>
   </PropertyGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\Rhino3dm.7.15.0\build\net45\Rhino3dm.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Rhino3dm.7.15.0\build\net45\Rhino3dm.props'))" />
+  </Target>
 </Project>

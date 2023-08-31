@@ -10,14 +10,16 @@ namespace DS.RevitLib.Utils.Elements.MEPElements
 {
     public class TraceSettings : ITraceSettings
     {
-        private double _a = 90.DegToRad();
+        private double _a = 90;
         private double _b = 100.MMToFeet();
         private double _c = 100.MMToFeet();
         private double _d = 50.MMToFeet();
-        private double _h = 2200.MMToFeet();
+        private double _h = 2000.MMToFeet();
+        private double _s = 500.MMToFeet();
+        private List<int> _aList = new List<int>() { 90, 60, 45, 30, 15 };
 
         ///<inheritdoc/>
-        public List<int> AList { get; } = new List<int>() { 90, 60, 45, 30, 15 };
+        public List<int> AList { get => _aList; set => _aList = value; }
 
         ///<inheritdoc/>
         public double A { get => _a; set => _a = value; }
@@ -33,5 +35,14 @@ namespace DS.RevitLib.Utils.Elements.MEPElements
 
         ///<inheritdoc/>
         public double H { get => _h; set => _h = value; }
+
+        ///<inheritdoc/>
+        public double F { get; set; }
+
+        ///<inheritdoc/>
+        public double R { get; set; }
+
+        ///<inheritdoc/>
+        public double Step { get => _s; set => _s = value; }
     }
 }

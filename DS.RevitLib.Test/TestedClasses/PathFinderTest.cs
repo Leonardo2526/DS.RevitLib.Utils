@@ -60,8 +60,8 @@ namespace DS.RevitLib.Test
             (double width, double heigth) = MEPCurveUtils.GetWidthHeight(mEPCurve1);
             ElementUtils.GetPoints(mEPCurve1, out XYZ p11, out XYZ p12, out XYZ c1);
 
-            startPoint.Show(_doc, 1, _trb);
-            endPoint.Show(_doc, 1, _trb);
+            startPoint.Show(_doc, 1);
+            endPoint.Show(_doc, 1);
             _uIDoc.RefreshActiveView();
 
             List<XYZ> path = IvanovPathFinderTest(mEPCurve1, mEPCurve2, startPoint, endPoint);
@@ -110,7 +110,7 @@ namespace DS.RevitLib.Test
 
             var mEPCurveModel = new MEPCurveModel(mEPCurve1, new SolidModel(ElementUtils.GetSolid(mEPCurve1)));
 
-            double elbowRadius = new ElbowRadiusCalc(mEPCurveModel, _trb).GetRadius(90.DegToRad()).Result;
+            double elbowRadius = new ElbowRadiusCalc(mEPCurveModel).GetRadius(90.DegToRad()).Result;
            
             var pathFinder = new PathFindCreator().Create(_doc, elbowRadius, XYZ.BasisX,
                 mEPCurve1.Height, mEPCurve1.Width);

@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI.Selection;
 using DS.RevitLib.Utils.Extensions;
+using DS.RevitLib.Utils.MEP;
 using DS.RevitLib.Utils.Various.Selections.Filters;
 
 namespace DS.RevitLib.Utils.SelectionFilters
@@ -17,7 +18,7 @@ namespace DS.RevitLib.Utils.SelectionFilters
         public bool AllowElement(Element element)
         {
             if (AllowLink && element is RevitLinkInstance) { return true; }
-            return element is T && element.IsGeometryElement();
+            return element is T && element.IsGeometryElement() && element is not InsulationLiningBase;
         }
 
         /// <inheritdoc/>
