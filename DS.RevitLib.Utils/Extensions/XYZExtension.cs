@@ -215,7 +215,7 @@ namespace DS.RevitLib.Utils.Extensions
         public static void Show(this XYZ point, Document doc, double labelSize = 0, ITransactionFactory transactionBuilder = null)
         {
             transactionBuilder ??= new ContextTransactionFactory(doc);
-            labelSize = labelSize == 0 ? 100.mmToFyt2() : labelSize;
+            labelSize = labelSize == 0 ? 100.MMToFeet() : labelSize;
 
             Line line1 = Line.CreateBound(
                 point + XYZ.BasisX.Multiply(labelSize / 2),
@@ -478,6 +478,23 @@ namespace DS.RevitLib.Utils.Extensions
             return collisions;
         }
 
+        /// <summary>
+        /// Get <see cref="Autodesk.Revit.DB.Outline"/> from <paramref name="point"/> with <paramref name="offset"/>.
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="offset"></param>
+        /// <returns>
+        /// <see cref="Autodesk.Revit.DB.Outline"/> build around <paramref name="point"/>.
+        /// </returns>
+        public static Outline GetOutline(this XYZ point, double offset)
+        {
+            var moveVector = new XYZ(offset, offset, offset);
+            var p1 = point + moveVector;
+            var p2 = point - moveVector;
+
+            var (minPoint, maxPoint) = XYZUtils.CreateMinMaxPoints(new List<XYZ> { p1, p2 });
+            return new Outline(minPoint, maxPoint);
+        }
 
         #region Private methods
 
@@ -498,7 +515,7 @@ namespace DS.RevitLib.Utils.Extensions
         /// </returns>
         private static double GetDistanceToAnyFloor(this XYZ point, Document doc, double findDist)
         {
-            var p1 = point + new XYZ(- 0.5, - 0.5, 0);
+            var p1 = point + new XYZ(-0.5, -0.5, 0);
             var p2 = point + new XYZ(0.5, 0.5, findDist);
 
             var (minPoint, maxPoint) = XYZUtils.CreateMinMaxPoints(new List<XYZ> { p1, p2 });
