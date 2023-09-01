@@ -301,7 +301,7 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
                 bb.Max = _internalOutline.MaximumPoint;
                 var points = bb.GetPoints();
                 //points.ForEach(p => { p.Show(_doc); });
-                //bb.Show(_doc);
+                //_transactionFactory.CreateAsync(() => bb.Show(_doc), "show box");
                 //return null;
 
                 var points3d = new List<Point3d>();

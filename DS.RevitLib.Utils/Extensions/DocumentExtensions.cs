@@ -70,7 +70,7 @@ namespace DS.RevitLib.Utils.Extensions
         public static List<Element> GetGeometryElements(
             this Document doc,
             RevitLinkInstance link = null,
-            List<BuiltInCategory> exludedCathegories = null, 
+            List<BuiltInCategory> exludedCathegories = null,
             List<ElementId> elementIds = null,
             bool includeLines = false, Outline outline = null)
         {
@@ -94,15 +94,15 @@ namespace DS.RevitLib.Utils.Extensions
             var categoryFilter = new ElementMulticategoryFilter(categories.ToList());
             BoundingBoxIntersectsFilter boudingBoxFilter;
             if (link is null)
-            {boudingBoxFilter = outline is null ? null : new BoundingBoxIntersectsFilter(outline);}
+            { boudingBoxFilter = outline is null ? null : new BoundingBoxIntersectsFilter(outline); }
             else
-            {boudingBoxFilter = outline is null ? null : outline.GetBoundingBoxFilter(link);}
+            { boudingBoxFilter = outline is null ? null : outline.GetBoundingBoxFilter(link); }
 
             collector = boudingBoxFilter is null ?
                collector.WhereElementIsNotElementType().WherePasses(categoryFilter) :
                collector.WhereElementIsNotElementType().WherePasses(categoryFilter).WherePasses(boudingBoxFilter);
 
-            return collector.ToElements().Where(x => x.IsGeometryElement(includeLines)).ToList();           
+            return collector.ToElements().Where(x => x.IsGeometryElement(includeLines)).ToList();
         }
 
         /// <summary>
@@ -203,6 +203,62 @@ namespace DS.RevitLib.Utils.Extensions
         }
 
         /// <summary>
+        /// Get elements of <paramref name="types"/> from <see cref="Document"/> and all loaded links.
+        /// </summary>
+        /// <param name="doc"></param>
+        /// <param name="types"></param>
+        /// <param name="outline"></param>
+        /// <returns>
+        /// All elements of <paramref name="types"/>.
+        /// Returns empty list if no elements of <paramref name="types"/> were deteted.
+        /// </returns>
+        public static List<Element> GetElementsOfType(this Document doc, List<Type> types, Outline outline = null)
+        {
+            var elementsOfTypes = new List<Element>();
+            
+            var docFloors = GetFromDoc(types, doc, null, outline);
+            elementsOfTypes.AddRange(docFloors);
+
+            var linkFloors = GetFromLinks(types, doc, outline);
+            elementsOfTypes.AddRange(linkFloors);
+
+            return elementsOfTypes;
+
+            List<Element> GetFromDoc(IList<Type> types, Document currentDoc, RevitLinkInstance link = null, Outline outline= null)
+            {
+                var collector = new FilteredElementCollector(currentDoc);
+
+                BoundingBoxIntersectsFilter boudingBoxFilter;
+                if (link is null)
+                { boudingBoxFilter = outline is null ? null : new BoundingBoxIntersectsFilter(outline); }
+                else
+                { boudingBoxFilter = outline?.GetBoundingBoxFilter(link); }
+                if (boudingBoxFilter is not null) { collector = collector.WherePasses(boudingBoxFilter); }
+
+                var classFilter = new ElementMulticlassFilter(types);
+                collector = collector.WherePasses(classFilter);
+                return collector.ToElements().ToList();
+            }
+
+            List<Element> GetFromLinks(List<Type> types, Document currentDoc, Outline outline)
+            {
+                var elements = new List<Element>();
+
+                var allLinks = currentDoc.GetLoadedLinks();
+                if (allLinks is null || !allLinks.Any()) return elements;
+
+                foreach (var link in allLinks)
+                {
+                    Document linkDoc = link.GetLinkDocument();
+                    var linkFloors = GetFromDoc(types,linkDoc, link, outline);
+                    elements.AddRange(linkFloors);
+                }
+
+                return elements;
+            }
+        }
+
+        /// <summary>
         /// Get floors from <see cref="Document"/> and all loaded links.
         /// </summary>
         /// <param name="doc"></param>
@@ -211,27 +267,11 @@ namespace DS.RevitLib.Utils.Extensions
         /// All floors.
         /// Returns empty list if no floors were deteted.
         /// </returns>
-        public static List<Element> GetFloors(this Document doc, Outline outline= null)
+        public static List<Element> GetFloors(this Document doc, Outline outline = null)
         {
-            (var docElements, var linkElementsDict) = new ElementsExtractor(doc, null, outline).GetAll();
+            var types = new List<Type>() { typeof(Floor) };
+            return GetElementsOfType(doc, types, outline);
 
-            var floors = new List<Element>();
-
-            var docFloors = docElements.Where(el => el is Floor).ToList();
-            floors.AddRange(docFloors);
-            foreach (var kv in linkElementsDict)
-            {
-                var elems = kv.Value;
-                foreach (var e in elems)
-                {
-                    if (e is Floor)
-                    {
-                        floors.Add(e);
-                    }
-                }
-            }
-
-            return floors;
         }
 
         /// <summary>
@@ -245,25 +285,8 @@ namespace DS.RevitLib.Utils.Extensions
         /// </returns>
         public static List<Element> GetCeilings(this Document doc, Outline outline = null)
         {
-            (var docElements, var linkElementsDict) = new ElementsExtractor(doc, null, outline).GetAll();
-
-            var floors = new List<Element>();
-
-            var docFloors = docElements.Where(el => el is Floor || el is Ceiling || el is RoofBase).ToList();
-            floors.AddRange(docFloors);
-            foreach (var kv in linkElementsDict)
-            {
-                var elems = kv.Value;
-                foreach (var e in elems)
-                {
-                    if (e is Floor || e is Ceiling || e is RoofBase)
-                    {
-                        floors.Add(e);
-                    }
-                }
-            }
-
-            return floors;
+            var types = new List<Type>() { typeof(Floor), typeof(Ceiling), typeof(RoofBase) };
+            return GetElementsOfType(doc, types, outline);
         }
 
     }
