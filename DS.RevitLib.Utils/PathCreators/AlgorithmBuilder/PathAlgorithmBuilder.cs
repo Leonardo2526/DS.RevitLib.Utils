@@ -244,7 +244,7 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
         /// 
         /// </summary>
         /// <returns></returns>
-        AStarAlgorithmCDF Build();
+        AStarAlgorithmCDF Build(bool minimizePathNodes = false);
     }
 
     #endregion

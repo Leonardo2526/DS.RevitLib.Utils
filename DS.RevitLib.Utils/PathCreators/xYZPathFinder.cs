@@ -96,6 +96,11 @@ namespace DS.RevitLib.Utils.PathCreators
         public bool AccountInitialDirections { get; set; }
 
         /// <summary>
+        /// Specifies if minimize nodes of path.
+        /// </summary>
+        public bool MinimizePathNodes { get; set; }
+
+        /// <summary>
         /// 
         /// </summary>
         public List<PlaneType> PlaneTypes { get;set; }
@@ -149,7 +154,7 @@ namespace DS.RevitLib.Utils.PathCreators
                  SetCollisionDetector(InsulationAccount).
                  SetNodeBuilder().
                  SetSearchLimit().
-                 Build();
+                 Build(MinimizePathNodes);
 
             if (algorithm is null) { return _path; }
 

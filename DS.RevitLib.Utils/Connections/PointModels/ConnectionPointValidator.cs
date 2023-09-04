@@ -50,7 +50,7 @@ namespace DS.RevitLib.Utils.Connections.PointModels.PointModels
         /// <summary>
         /// Specifies used bound of <see cref="Document"/>.
         /// </summary>
-        public Outline BoundOutline { get; set; }
+        public Outline BoundOutline { get; set; }      
 
         /// <summary>
         /// Specifies whether point is valid for connection.
@@ -91,12 +91,6 @@ namespace DS.RevitLib.Utils.Connections.PointModels.PointModels
         /// </returns>
         public List<(Element, Element)> GetCollisions()
         {
-            if (_docElements is null)
-            {
-                (_docElements, _linkElementsDict) =
-                    new ElementsExtractor(_doc).GetAll();
-            }
-
             //get collisions in freeCon.
             var collisions = new ElementCollisionDetectorFactory(_doc, _docElements, _linkElementsDict).
               GetCollisions(ConnectionPoint.Element);
