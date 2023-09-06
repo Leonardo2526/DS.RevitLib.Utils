@@ -301,7 +301,7 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
                 bb.Max = _internalOutline.MaximumPoint;
                 var points = bb.GetPoints();
                 //points.ForEach(p => { p.Show(_doc); });
-                //bb.Show(_doc);
+                //_transactionFactory.CreateAsync(() => bb.Show(_doc), "show box");
                 //return null;
 
                 var points3d = new List<Point3d>();
@@ -316,13 +316,20 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
                 return this;
             }
 
-            public AStarAlgorithmCDF Build()
-            {
+            public AStarAlgorithmCDF Build(bool minimizePathNodes = false)
+            {                
+                var sourceBasisUCS1 = _baseMEPCurveBasis.ToBasis3d();
+                var sourceBasis = _pointConverter.ConvertToUCS2(sourceBasisUCS1);
+                var refineFactory = new PathRefineFactory(_traceSettings, _collisionDetector, sourceBasis)
+                {
+                    MinNodes = minimizePathNodes
+                };
+
                 _algorithm = new AStarAlgorithmCDF(
                     _traceSettings,
                     _nodeBuilder, _dirIterator,
                     _collisionDetector,
-                    new PathRefineFactory())
+                    refineFactory)
                 {
                     Tolerance = _tolerance,
                     CTolerance = _cTolerance,
@@ -334,8 +341,7 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
                 }.
                 WithBounds(_lowerBound, _upperBound);
 
-                var sourceBasisUCS1 = _baseMEPCurveBasis.ToBasis3d();
-                _algorithm.SourceBasis = _pointConverter.ConvertToUCS2(sourceBasisUCS1);
+                _algorithm.SourceBasis = sourceBasis;
                 _collisionDetector.SolidExtractor.SetSource(sourceBasisUCS1);
                 _algorithmBuilder._algorithm = _algorithm;
                 return _algorithm;
