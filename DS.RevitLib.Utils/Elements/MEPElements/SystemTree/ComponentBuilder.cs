@@ -11,13 +11,11 @@ namespace DS.RevitLib.Utils.MEP.SystemTree
     public class ComponentBuilder
     {
         private readonly Element _baseElement;
-        public XYZ _direction;
         private List<Element> _connectedToBase = new List<Element>();
 
         public ComponentBuilder(Element baseElement)
         {
             _baseElement = baseElement;
-            _direction = ElementUtils.GetDirections(baseElement).First();
         }
 
         public List<NodeElement> Nodes { get; set; } = new List<NodeElement>();

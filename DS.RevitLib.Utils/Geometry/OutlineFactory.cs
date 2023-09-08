@@ -80,7 +80,7 @@ namespace DS.RevitLib.Utils.Geometry
 
             XYZ startFloorBound = startPoint.GetXYZBound(_doc, MinHFloor, -_distnaceToFindFloor);
             if (!IsValid(startFloorBound)) { return null; }
-            if(startFloorBound.Z == double.MaxValue) { startFloorBound = RebuildFloorZ(startPoint, ZOffset);}
+            if (startFloorBound.Z == double.MaxValue) { startFloorBound = RebuildFloorZ(startPoint, ZOffset); }
 
             XYZ startCeilingBound = startPoint.GetXYZBound(_doc, MinHCeiling, _distnaceToFindFloor);
             if (!IsValid(startCeilingBound)) { return null; }
@@ -105,14 +105,12 @@ namespace DS.RevitLib.Utils.Geometry
             var p21 = maxPoint + moveVector;
             var p22 = maxPoint - moveVector;
             (XYZ minP2, XYZ maxP2) = XYZUtils.CreateMinMaxPoints(new List<XYZ> { p21, p22 });
-           
-            var minFloorZ = startFloorBound.DistanceTo(startPoint) < endFloorBound.DistanceTo(endPoint) ? 
-                startFloorBound.Z : endFloorBound.Z;
-            var minCeilingZ = startCeilingBound.DistanceTo(startPoint) < endCeilingBound.DistanceTo(endPoint) ?
-                startCeilingBound.Z : endCeilingBound.Z;
+
+            var minFloorZ = Math.Min(startFloorBound.Z, endFloorBound.Z);
+            var maxCeilingZ = Math.Max(startCeilingBound.Z, endCeilingBound.Z);
 
             minP1 = new XYZ(minP1.X, minP1.Y, minFloorZ);
-            maxP2 = new XYZ(maxP2.X, maxP2.Y, minCeilingZ);
+            maxP2 = new XYZ(maxP2.X, maxP2.Y, maxCeilingZ);
 
             return new Outline(minP1, maxP2);
         }
@@ -152,5 +150,5 @@ namespace DS.RevitLib.Utils.Geometry
         private XYZ RebuildCeilingZ(XYZ point, double defaultZ) => new(point.X, point.Y, point.Z + defaultZ);
 
     }
-    
+
 }
