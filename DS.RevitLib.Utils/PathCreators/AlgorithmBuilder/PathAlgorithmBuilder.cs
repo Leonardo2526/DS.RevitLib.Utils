@@ -27,6 +27,7 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
         private readonly ITraceSettings _traceSettings;
         private readonly IEnumerable<IBasisStrategy> _basisStrategies;
         private AStarAlgorithmCDF _algorithm = new();
+        private QuadrantOriginModel _quadrantModel;
 
         private MEPCurve _baseMEPCurve;
         private ITransactionFactory _transactionFactory;
@@ -37,15 +38,25 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
         /// <param name="uiDoc"></param>
         /// <param name="traceSettings"></param>
         /// <param name="basisStrategies"></param>
+        /// <param name="quadrantModel"></param>
         public PathAlgorithmBuilder(
             UIDocument uiDoc,
             ITraceSettings traceSettings,
-            IEnumerable<IBasisStrategy> basisStrategies)
+            IEnumerable<IBasisStrategy> basisStrategies,
+            QuadrantOriginModel quadrantModel)
         {
             _uiDoc = uiDoc;
             _traceSettings = traceSettings;
             _basisStrategies = basisStrategies;
             _doc = uiDoc.Document;
+
+            quadrantModel.DisableQuadrants();
+            var dir1 = new Vector3d(0, 0, 1);
+            //quadrantModel.EnableQuadrants(OrthoPlane.XY);
+            quadrantModel.EnableQuadrants(dir1, OrthoPlane.XZ);
+            //var dir2 = new Vector3d(0, 0, -1);
+            //quadrantModel.EnableQuadrants(dir2, OrthoPlane.XZ);
+            _quadrantModel = quadrantModel;
         }
 
 

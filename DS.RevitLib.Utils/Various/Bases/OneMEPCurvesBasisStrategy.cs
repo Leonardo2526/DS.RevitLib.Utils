@@ -3,6 +3,7 @@ using Autodesk.Revit.UI;
 using DS.ClassLib.VarUtils;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.Various;
+using Rhino.Geometry;
 using System;
 
 namespace DS.RevitLib.Utils.Bases
@@ -59,7 +60,8 @@ namespace DS.RevitLib.Utils.Bases
             //get basis
             var line1 = MEPCurve1.GetCenterLine();
             BasisX = line1.Direction;
-            BasisZ = BasisX.GetPerpendicular();
+            BasisZ = line1.Direction.ToVector3d().IsPerpendicularTo(Vector3d.ZAxis, Rhino.RhinoMath.ToRadians(3)) ? 
+                XYZ.BasisZ : BasisX.GetPerpendicular();
             BasisY = BasisX.CrossProduct(BasisZ);
 
             return (BasisX, BasisY, BasisZ);
