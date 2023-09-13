@@ -12,12 +12,14 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using DS.RevitLib.Utils.Collisions.Detectors;
+using Rhino;
+using DS.RevitLib.Utils.Extensions;
 
 namespace DS.RevitLib.Utils.Elements.Transfer.TransformBuilders
 {
     public class FamToLineMultipleBuilder
     {
-        private readonly double _minFamInstLength = 50.mmToFyt2();
+        private readonly double _minFamInstLength = 50.MMToFeet();
         private readonly double _minCurveLength;
         private readonly ISolidCollisionDetector _detector;
         private readonly List<Element> _excludedElements;

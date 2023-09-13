@@ -27,7 +27,7 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
         private readonly ITraceSettings _traceSettings;
         private readonly IEnumerable<IBasisStrategy> _basisStrategies;
         private AStarAlgorithmCDF _algorithm = new();
-        private QuadrantOriginModel _quadrantModel;
+        private IDirectionValidator _directionValidator;
 
         private MEPCurve _baseMEPCurve;
         private ITransactionFactory _transactionFactory;
@@ -43,20 +43,20 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
             UIDocument uiDoc,
             ITraceSettings traceSettings,
             IEnumerable<IBasisStrategy> basisStrategies,
-            QuadrantOriginModel quadrantModel)
+            IDirectionValidator quadrantModel)
         {
             _uiDoc = uiDoc;
             _traceSettings = traceSettings;
             _basisStrategies = basisStrategies;
             _doc = uiDoc.Document;
 
-            quadrantModel.DisableQuadrants();
-            var dir1 = new Vector3d(0, 0, 1);
+            //quadrantModel.DisableQuadrants();
+            //var dir1 = new Vector3d(0, 0, 1);
             //quadrantModel.EnableQuadrants(OrthoPlane.XY);
-            quadrantModel.EnableQuadrants(dir1, OrthoPlane.XZ);
+            //quadrantModel.EnableQuadrants(dir1, OrthoPlane.XZ);
             //var dir2 = new Vector3d(0, 0, -1);
             //quadrantModel.EnableQuadrants(dir2, OrthoPlane.XZ);
-            _quadrantModel = quadrantModel;
+            _directionValidator = quadrantModel;
         }
 
 
@@ -163,20 +163,20 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
         /// <param name="objectsToExclude"></param>
         /// <param name="exludedCathegories"></param>
         /// <returns></returns>
-        ISpecifyPointConverter SetExclusions(List<Element> objectsToExclude,
+        ISpecifyToken SetExclusions(List<Element> objectsToExclude,
         List<BuiltInCategory> exludedCathegories);
     }
 
     /// <summary>
     /// The interface to specify point converter.
     /// </summary>
-    public interface ISpecifyPointConverter
+    public interface ISpecifyToken
     {
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        ISpecifyPointConverter SetPointConverter();
+        //ISpecifyToken SetPointConverter(Point3d startPoint);
 
         /// <summary>
         /// 

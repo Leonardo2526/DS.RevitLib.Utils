@@ -136,7 +136,6 @@ namespace DS.RevitLib.Utils.PathCreators
             _algorithmBuilder = _pathAlgorithmBuilder.
                 SetBasis(baseMEPCurve, basisMEPCurve1, basisMEPCurve2, AllowSecondElementForBasis).
                 SetExclusions(objectsToExclude, ExludedCathegories).
-                SetPointConverter().
                 SetExternalToken(ExternalToken);
         }
 

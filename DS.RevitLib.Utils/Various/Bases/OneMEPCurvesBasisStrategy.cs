@@ -62,7 +62,7 @@ namespace DS.RevitLib.Utils.Bases
             BasisX = line1.Direction;
             BasisZ = line1.Direction.ToVector3d().IsPerpendicularTo(Vector3d.ZAxis, Rhino.RhinoMath.ToRadians(3)) ? 
                 XYZ.BasisZ : BasisX.GetPerpendicular();
-            BasisY = BasisX.CrossProduct(BasisZ);
+            BasisY = BasisZ.CrossProduct(BasisX);
 
             return (BasisX, BasisY, BasisZ);
         }
