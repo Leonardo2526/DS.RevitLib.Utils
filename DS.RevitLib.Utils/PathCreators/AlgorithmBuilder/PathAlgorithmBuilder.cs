@@ -237,7 +237,7 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
         /// </summary>
         /// <param name="planeTypes"></param>
         /// <returns></returns>
-        ISpecifyParameter SetDirectionIterator(List<PlaneType> planeTypes);
+        ISpecifyParameter SetDirectionIterator();
 
         /// <summary>
         /// 

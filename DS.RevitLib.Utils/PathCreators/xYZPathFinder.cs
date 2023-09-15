@@ -100,11 +100,6 @@ namespace DS.RevitLib.Utils.PathCreators
         /// </summary>
         public bool MinimizePathNodes { get; set; }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        public List<PlaneType> PlaneTypes { get;set; }
-
         public ITransactionFactory TransactionFactory
         {
             get
@@ -149,7 +144,7 @@ namespace DS.RevitLib.Utils.PathCreators
                  ExternalOutline, 
                  AccountInitialDirections).
                  SetVisualisator().
-                 SetDirectionIterator(PlaneTypes).
+                 SetDirectionIterator().
                  SetCollisionDetector(InsulationAccount).
                  SetNodeBuilder().
                  SetSearchLimit().

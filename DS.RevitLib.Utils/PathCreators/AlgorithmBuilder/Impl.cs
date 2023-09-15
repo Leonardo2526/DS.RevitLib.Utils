@@ -173,7 +173,7 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
             }
 
             private Transform GetTranslation(Point3d initialOrigin, Point3d pathFindBasisOrigin)
-                => Transform.Translation((initialOrigin- pathFindBasisOrigin).Round(_tolerance));
+                => Transform.Translation((initialOrigin - pathFindBasisOrigin).Round(_tolerance));
 
             public ISpecifyBoundaries SetExternalToken(CancellationTokenSource externalCancellationToken)
             {
@@ -272,10 +272,10 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
                 return this;
             }
 
-            public ISpecifyParameter SetDirectionIterator(List<PlaneType> planeTypes)
+            public ISpecifyParameter SetDirectionIterator()
             {
                 var dirs = new List<int>() { (int)_traceSettings.A };
-                var planes = ConvertPlaneTypes(planeTypes);
+                var planes = new List<Plane>() { Plane.WorldXY, Plane.WorldZX, Plane.WorldYZ };
                 _dirIterator = new DirectionIterator(planes, dirs);
                 return this;
             }
@@ -429,33 +429,6 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
                 double gamma = gamma1.RadToDeg();
 
                 return transform;
-            }
-
-            private List<Plane> ConvertPlaneTypes(List<PlaneType> planeTypes)
-            {
-                var planes = new List<Plane>();
-
-                PlaneType xyPlaneType = planeTypes is null ? default : planeTypes.FirstOrDefault(p => p == PlaneType.XY);
-                PlaneType xzPlaneType = planeTypes is null ? default : planeTypes.FirstOrDefault(p => p == PlaneType.XZ);
-                PlaneType yzPlaneType = planeTypes is null ? default : planeTypes.FirstOrDefault(p => p == PlaneType.YZ);
-
-                var xyPlane = Plane.WorldXY;
-                var xzPlane = Plane.WorldZX;
-                var yzPlane = Plane.WorldYZ;
-
-                if (xyPlaneType != default) { planes.Add(xyPlane); }
-                if (xzPlaneType != default) { planes.Add(xzPlane); }
-                if (yzPlaneType != default) { planes.Add(yzPlane); }
-
-                //default planes set
-                if (planes.Count == 0)
-                {
-                    planes.Add(xyPlane);
-                    planes.Add(xzPlane);
-                    planes.Add(yzPlane);
-                }
-
-                return planes;
             }
 
             private Vector3d GetDirection(
