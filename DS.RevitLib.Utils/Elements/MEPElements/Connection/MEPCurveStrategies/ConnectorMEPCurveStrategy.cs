@@ -60,7 +60,8 @@ namespace DS.RevitLib.Utils.Connection.Strategies
                 OrderBy(c => c.Origin.DistanceTo(_elem2Con.Origin)).ToList();
 
             var farhestCon1 = connectors1.Last();
-            var farhestCon2 = connectors2.Last();
+            var farhestCon2 = connectors2.Last();          
+            var line = _mEPCurve2.MEPCurve.GetCenterLine();
 
             var mEPSystem = new BuilderByPoints(_mEPCurve2.MEPCurve, new List<XYZ>() { farhestCon1.Origin, farhestCon2.Origin }).
                 BuildMEPCurves();
@@ -72,8 +73,11 @@ namespace DS.RevitLib.Utils.Connection.Strategies
             var elems2 = ConnectorUtils.GetConnectedElements(_mEPCurve2.MEPCurve);
 
             //get connected to spuds 
-            var spuds1 = elems1.Where(e => e.IsSpud());
-            var spuds2 = elems2.Where(e => e.IsSpud());
+            var spuds1 = elems1.Where(e => e.IsSpud()
+             && line.Project(ConnectorUtils.GetConnectors(e).FirstOrDefault().Origin).XYZPoint.OnLine(line, false));
+            var spuds2 = elems2.Where(e => e.IsSpud()
+            && line.Project(ConnectorUtils.GetConnectors(e).FirstOrDefault().Origin).XYZPoint.OnLine(line, false));
+           
 
             var elemsToSpud1 = new List<Element>();
             spuds1.ForEach(s => elemsToSpud1.
