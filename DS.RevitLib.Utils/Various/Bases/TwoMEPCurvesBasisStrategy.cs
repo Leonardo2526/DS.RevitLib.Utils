@@ -73,7 +73,7 @@ namespace DS.RevitLib.Utils.Bases
             BasisX = line1.Direction;
             BasisZ = BasisX.CrossProduct(line2.Direction);
             BasisZ = BasisZ.IsZeroLength() ? BasisX.GetPerpendicular() : BasisZ;
-            BasisY = BasisX.CrossProduct(BasisZ);
+            BasisY = BasisZ.CrossProduct(BasisX);
 
             return (BasisX, BasisY, BasisZ);
         }

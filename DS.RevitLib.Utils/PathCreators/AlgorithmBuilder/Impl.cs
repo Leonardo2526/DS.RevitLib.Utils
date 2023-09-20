@@ -31,7 +31,7 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
     public partial class PathAlgorithmBuilder
     {
         private class Impl :
-            ISpecifyPointConverter,
+            ISpecifyToken,
             ISpecifyExclusions,
             ISpecifyParameter,
             ISpecifyBoundaries,
@@ -121,7 +121,7 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
 
             #region PublicMethods
 
-            public ISpecifyPointConverter SetExclusions(List<Element> objectsToExclude,
+            public ISpecifyToken SetExclusions(List<Element> objectsToExclude,
                 List<BuiltInCategory> exludedCathegories)
             {
                 //add objectsToExclude with its insulations
@@ -150,22 +150,30 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
                 return this;
             }
 
-            public ISpecifyPointConverter SetPointConverter()
+            public ISpecifyToken SetPointConverter(Point3d startPoint)
             {
                 _pathFindBasis = XYZUtils.ToBasis3d(
                     _basisStrategy.BasisX,
                     _basisStrategy.BasisY,
                     _basisStrategy.BasisZ);
 
-                var (transform, inverseTransform) = GetTransforms(
+                var rotationTransform = GetTransforms(
                     _initialBasis.basisX, _initialBasis.basisY, _initialBasis.basisZ,
                 _pathFindBasis.basisX, _pathFindBasis.basisY, _pathFindBasis.basisZ);
 
+                var initialOrigin = Point3d.Origin;
+                var pathFindBasisOrigin = startPoint;
+                var translationTransform =
+                    GetTranslation(initialOrigin, pathFindBasisOrigin);
+
                 _pointConverter = _algorithmBuilder.PointConverter =
-                    new Point3dConverter(transform, inverseTransform);
+                    new Point3dConverter(rotationTransform, translationTransform);
 
                 return this;
             }
+
+            private Transform GetTranslation(Point3d initialOrigin, Point3d pathFindBasisOrigin)
+                => Transform.Translation((initialOrigin - pathFindBasisOrigin).Round(_tolerance));
 
             public ISpecifyBoundaries SetExternalToken(CancellationTokenSource externalCancellationToken)
             {
@@ -181,8 +189,12 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
             {
                 _startConnectionPoint = startconnectionPoint;
                 _endConnectionPoint = endConnectionPoint;
-                var startPoint = _startConnectionPoint.Point;
-                var endPoint = _endConnectionPoint.Point;
+                var startPoint = _startConnectionPoint.Point.RoundVector(_tolerance);
+                var endPoint = _endConnectionPoint.Point.RoundVector(_tolerance);
+
+
+                SetPointConverter(startPoint.ToPoint3d());
+
 
                 var dir = MEPCurveUtils.GetDirection(_baseMEPCurve);
                 _baseMEPCurveBasis = _baseMEPCurve.GetBasisXYZ(dir, startPoint);
@@ -260,10 +272,10 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
                 return this;
             }
 
-            public ISpecifyParameter SetDirectionIterator(List<PlaneType> planeTypes)
+            public ISpecifyParameter SetDirectionIterator()
             {
                 var dirs = new List<int>() { (int)_traceSettings.A };
-                var planes = ConvertPlaneTypes(planeTypes);
+                var planes = new List<Plane>() { Plane.WorldXY, Plane.WorldZX, Plane.WorldYZ };
                 _dirIterator = new DirectionIterator(planes, dirs);
                 return this;
             }
@@ -317,7 +329,7 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
             }
 
             public AStarAlgorithmCDF Build(bool minimizePathNodes = false)
-            {                
+            {
                 var sourceBasisUCS1 = _baseMEPCurveBasis.ToBasis3d();
                 var sourceBasis = _pointConverter.ConvertToUCS2(sourceBasisUCS1);
                 var refineFactory = new PathRefineFactory(_traceSettings, _collisionDetector, sourceBasis)
@@ -337,7 +349,8 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
                     StartDirection = _startDirection,
                     EndDirection = _endDirection,
                     StartANP = _startANP,
-                    EndANP = _endANP
+                    EndANP = _endANP,
+                    DirectionValidator = _algorithmBuilder._directionValidator
                 }.
                 WithBounds(_lowerBound, _upperBound);
 
@@ -388,7 +401,7 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
 
             }
 
-            private (Transform transform, Transform inversedTransform) GetTransforms(
+            private Transform GetTransforms(
                 Vector3d initialBasisX, Vector3d initialBasisY, Vector3d initialBasisZ,
                 Vector3d finalBasisX, Vector3d finalBasisY, Vector3d finalBasisZ
                 )
@@ -410,40 +423,12 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
                     finalBasisX, finalBasisY, finalBasisZ);
                 transform.GetEulerZYZ(out double alpha1, out double beta1, out double gamma1);
 
-                transform.TryGetInverse(out Transform inverseTransform);
 
                 double alpha = alpha1.RadToDeg();
                 double beta = beta1.RadToDeg();
                 double gamma = gamma1.RadToDeg();
 
-                return (transform, inverseTransform);
-            }
-
-            private List<Plane> ConvertPlaneTypes(List<PlaneType> planeTypes)
-            {
-                var planes = new List<Plane>();
-
-                PlaneType xyPlaneType = planeTypes is null ? default : planeTypes.FirstOrDefault(p => p == PlaneType.XY);
-                PlaneType xzPlaneType = planeTypes is null ? default : planeTypes.FirstOrDefault(p => p == PlaneType.XZ);
-                PlaneType yzPlaneType = planeTypes is null ? default : planeTypes.FirstOrDefault(p => p == PlaneType.YZ);
-
-                var xyPlane = Plane.WorldXY;
-                var xzPlane = Plane.WorldZX;
-                var yzPlane = Plane.WorldYZ;
-
-                if (xyPlaneType != default) { planes.Add(xyPlane); }
-                if (xzPlaneType != default) { planes.Add(xzPlane); }
-                if (yzPlaneType != default) { planes.Add(yzPlane); }
-
-                //default planes set
-                if (planes.Count == 0)
-                {
-                    planes.Add(xyPlane);
-                    planes.Add(xzPlane);
-                    planes.Add(yzPlane);
-                }
-
-                return planes;
+                return transform;
             }
 
             private Vector3d GetDirection(
@@ -456,15 +441,10 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
                 XYZ dirXYZ = connectionPoint1.Direction ??
                     connectionPoint1.GetDirection(connectionPoint2.Point, connectionPoint2.Element, _objectsToExclude);
 
-                // XYZ dirXYZ1 = new ConnectionDirectionFactory(connectionPoint1.Point, mc, _uiDoc).
-                //GetDirection(connectionPoint2.Point, connectionPoint2.Element);
-
                 if (inverse) { dirXYZ = dirXYZ.Negate(); }
                 //_visualisator.ShowVectorByDirection(connectionPoint1.Point, dirXYZ);
 
-                Point3d dirPoint = dirXYZ.ToPoint3d();
-                Point3d dirPointUCS2 = _pointConverter.ConvertToUCS2(dirPoint);
-                Vector3d dir = dirPointUCS2 - Point3d.Origin;
+                Vector3d dir = _pointConverter.ConvertToUCS2(dirXYZ.ToVector3d());
 
                 var dTolerance = Math.Pow(0.1, _cTolerance);
                 var cons = ConnectorUtils.GetConnectors(mc);

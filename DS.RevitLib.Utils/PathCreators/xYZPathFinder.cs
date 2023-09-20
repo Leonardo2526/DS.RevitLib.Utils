@@ -100,11 +100,6 @@ namespace DS.RevitLib.Utils.PathCreators
         /// </summary>
         public bool MinimizePathNodes { get; set; }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        public List<PlaneType> PlaneTypes { get;set; }
-
         public ITransactionFactory TransactionFactory
         {
             get
@@ -136,7 +131,6 @@ namespace DS.RevitLib.Utils.PathCreators
             _algorithmBuilder = _pathAlgorithmBuilder.
                 SetBasis(baseMEPCurve, basisMEPCurve1, basisMEPCurve2, AllowSecondElementForBasis).
                 SetExclusions(objectsToExclude, ExludedCathegories).
-                SetPointConverter().
                 SetExternalToken(ExternalToken);
         }
 
@@ -150,7 +144,7 @@ namespace DS.RevitLib.Utils.PathCreators
                  ExternalOutline, 
                  AccountInitialDirections).
                  SetVisualisator().
-                 SetDirectionIterator(PlaneTypes).
+                 SetDirectionIterator().
                  SetCollisionDetector(InsulationAccount).
                  SetNodeBuilder().
                  SetSearchLimit().
