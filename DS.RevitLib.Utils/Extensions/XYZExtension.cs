@@ -1,5 +1,6 @@
 ﻿using Autodesk.Revit.DB;
 using DS.ClassLib.VarUtils;
+using DS.ClassLib.VarUtils.Collisions;
 using DS.ClassLib.VarUtils.Points;
 using DS.RevitLib.Utils.Creation.Transactions;
 using DS.RevitLib.Utils.Elements.MEPElements;
@@ -529,7 +530,8 @@ namespace DS.RevitLib.Utils.Extensions
             var intersections = new List<SolidCurveIntersection>();
             foreach (var f in floors)
             {
-                var intersectResult = f.Solid().IntersectWithCurve(line, opt);
+                var solid = f.GetSolidInLink(doc);
+                var intersectResult = solid.IntersectWithCurve(line, opt);
                 if (intersectResult.SegmentCount > 0)
                 { intersections.Add(intersectResult); }
             }
