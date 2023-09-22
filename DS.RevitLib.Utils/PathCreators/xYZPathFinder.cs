@@ -142,7 +142,7 @@ namespace DS.RevitLib.Utils.PathCreators
                  startPoint, endPoint, 
                  OutlineFactory, 
                  ExternalOutline, 
-                 AccountInitialDirections).
+                 AccountInitialDirections)?.
                  SetVisualisator().
                  SetDirectionIterator().
                  SetCollisionDetector(InsulationAccount).

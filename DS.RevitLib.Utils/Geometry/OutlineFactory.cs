@@ -73,27 +73,31 @@ namespace DS.RevitLib.Utils.Geometry
         /// </summary>
         public double MinHCeiling { get; set; }
 
+        /// <summary>
+        /// Specifies if outline bound point can be outside floor/ceiling limits.
+        /// </summary>
+        public bool IsPointEnableOutside { get; set; }
+
         /// <inheritdoc/>
         public Outline Create(XYZ startPoint, XYZ endPoint)
         {
             ErrorMessage = null;
 
             XYZ startFloorBound = startPoint.GetXYZBound(_doc, MinHFloor, -_distnaceToFindFloor);
-            if (!IsValid(startFloorBound)) { return null; }
-            if (startFloorBound.Z == double.MaxValue) { startFloorBound = RebuildFloorZ(startPoint, ZOffset); }
+            startFloorBound = RebuildOutsideBound(startFloorBound, startPoint, true);
+            if (startFloorBound is null) { return null; }
 
             XYZ startCeilingBound = startPoint.GetXYZBound(_doc, MinHCeiling, _distnaceToFindFloor);
-            if (!IsValid(startCeilingBound)) { return null; }
-            if (startCeilingBound.Z == double.MaxValue) { startCeilingBound = RebuildCeilingZ(startPoint, ZOffset); }
+            startCeilingBound = RebuildOutsideBound(startCeilingBound, startPoint, false);
+            if (startCeilingBound is null) { return null; }
 
             XYZ endFloorBound = endPoint.GetXYZBound(_doc, MinHFloor, -_distnaceToFindFloor);
-            if (!IsValid(endFloorBound)) { return null; }
-            if (endFloorBound.Z == double.MaxValue) { endFloorBound = RebuildFloorZ(endPoint, ZOffset); }
+            endFloorBound = RebuildOutsideBound(endFloorBound, endPoint, true);
+            if (endFloorBound is null) { return null; }
 
             XYZ endCeilingBound = endPoint.GetXYZBound(_doc, MinHCeiling, _distnaceToFindFloor);
-            if (!IsValid(endCeilingBound)) { return null; }
-            if (endCeilingBound.Z == double.MaxValue) { endCeilingBound = RebuildCeilingZ(endPoint, ZOffset); }
-
+            endCeilingBound = RebuildOutsideBound(endCeilingBound, endPoint, false);
+            if (endCeilingBound is null) { return null; }
 
             var (minPoint, maxPoint) = XYZUtils.CreateMinMaxPoints(new List<XYZ>() { startPoint, endPoint });
             var moveVector = new XYZ(XYZ.BasisX.X * _xOffset, XYZ.BasisY.Y * _yOffset, XYZ.BasisZ.Z * _zOffset);
@@ -148,6 +152,27 @@ namespace DS.RevitLib.Utils.Geometry
 
         private XYZ RebuildFloorZ(XYZ point, double defaultZ) => new(point.X, point.Y, point.Z - defaultZ);
         private XYZ RebuildCeilingZ(XYZ point, double defaultZ) => new(point.X, point.Y, point.Z + defaultZ);
+
+        /// <summary>
+        /// Rebuild bound if it's outside floor/ceiling zone or no floor/ceiling was found
+        /// </summary>
+        /// <param name="bound"></param>
+        /// <param name="point"></param>
+        /// <param name="floor"></param>
+        /// <returns></returns>
+        XYZ RebuildOutsideBound(XYZ bound, XYZ point, bool floor)
+        {
+            Func<XYZ, double, XYZ> rebuild = (p, offset) => floor ?
+            RebuildFloorZ(p, offset) :
+            RebuildCeilingZ(p, offset);
+
+            if (IsPointEnableOutside && bound == null)
+            { return rebuild(point, ZOffset); }
+            else if (!IsValid(bound))
+            { return null; }
+
+            return bound.Z == double.MaxValue ? rebuild(point, ZOffset) : bound;
+        }
 
     }
 
