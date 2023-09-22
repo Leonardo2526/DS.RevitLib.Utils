@@ -13,6 +13,8 @@ using DS.RevitLib.Utils.Extensions;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using DS.ClassLib.VarUtils.Collisions;
+using DS.RevitLib.Utils.Creation.Transactions;
+using Autodesk.Revit.UI;
 
 namespace DS.RevitLib.Utils.Connections.PointModels.PointModels
 {
@@ -23,8 +25,8 @@ namespace DS.RevitLib.Utils.Connections.PointModels.PointModels
     {
         private readonly Document _doc;
         private readonly MEPSystemModel _mEPSystemModel;
-        private  List<Element> _docElements;
-        private  Dictionary<RevitLinkInstance, List<Element>> _linkElementsDict;
+        private List<Element> _docElements;
+        private Dictionary<RevitLinkInstance, List<Element>> _linkElementsDict;
 
         /// <summary>
         /// Instantiate an object to validate <see cref="ConnectionPoint"/>.
@@ -32,7 +34,7 @@ namespace DS.RevitLib.Utils.Connections.PointModels.PointModels
         /// <param name="mEPSystemModel"></param>
         /// <param name="docElements"></param>
         /// <param name="linkElementsDict"></param>
-        public ConnectionPointValidator(MEPSystemModel mEPSystemModel, 
+        public ConnectionPointValidator(MEPSystemModel mEPSystemModel,
             List<Element> docElements = null,
             Dictionary<RevitLinkInstance, List<Element>> linkElementsDict = null)
         {
@@ -50,7 +52,12 @@ namespace DS.RevitLib.Utils.Connections.PointModels.PointModels
         /// <summary>
         /// Specifies used bound of <see cref="Document"/>.
         /// </summary>
-        public Outline BoundOutline { get; set; }      
+        public Outline BoundOutline { get; set; }
+
+        /// <summary>
+        /// Factory to commit transactions.
+        /// </summary>
+        public ITransactionFactory TransactionFactory { get; set; }
 
         /// <summary>
         /// Specifies whether point is valid for connection.
@@ -65,7 +72,10 @@ namespace DS.RevitLib.Utils.Connections.PointModels.PointModels
             if (!Validator.TryValidateObject(ConnectionPoint, context, results, true))
             {
                 foreach (var error in results)
-                { Debug.Fail(error.ErrorMessage); }
+                {
+                    TransactionFactory?.CreateAsync(() => 
+                    TaskDialog.Show("Ошибка", error.ErrorMessage), "show message");
+                }
                 return false;
             }
             else { return true; }
@@ -79,7 +89,7 @@ namespace DS.RevitLib.Utils.Connections.PointModels.PointModels
         /// </returns>
         public bool GetSystemValidity()
         {
-            if(ConnectionPoint.Element is null) { return false; }
+            if (ConnectionPoint.Element is null) { return false; }
             return _mEPSystemModel.AllElements.Select(obj => obj.Id).Contains(ConnectionPoint.Element.Id);
         }
 
@@ -113,9 +123,9 @@ namespace DS.RevitLib.Utils.Connections.PointModels.PointModels
         /// 
         /// Othewise returns <see langword="false"/>.</para>
         /// </returns>
-        public bool IsWithinLengthLimits(XYZ point) 
-        { 
-            if(BoundOutline is null) { return true; }
+        public bool IsWithinLengthLimits(XYZ point)
+        {
+            if (BoundOutline is null) { return true; }
             else
             {
                 return point.More(BoundOutline.MinimumPoint) && point.Less(BoundOutline.MaximumPoint);

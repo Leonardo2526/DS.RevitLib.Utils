@@ -8,10 +8,7 @@ using DS.RevitLib.Utils.MEP;
 using DS.RevitLib.Utils.Transactions;
 using DS.RevitLib.Utils.Visualisators;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Xml.Linq;
-using static System.Windows.Forms.LinkLabel;
 using Vector3d = Rhino.Geometry.Vector3d;
 
 namespace DS.RevitLib.Utils.Extensions
@@ -165,7 +162,7 @@ namespace DS.RevitLib.Utils.Extensions
             {
                 FamilyInstance familyInstance = element as FamilyInstance;
                 var (famInstCon1, famInstCon2) = ConnectorUtils.GetMainConnectors(familyInstance);
-                if (famInstCon1 == null || famInstCon2 == null 
+                if (famInstCon1 == null || famInstCon2 == null
                     || famInstCon1.Origin.DistanceTo(famInstCon2.Origin) < 0.001) { return null; }
                 return Line.CreateBound(famInstCon1.Origin, famInstCon2.Origin);
             }
@@ -501,6 +498,24 @@ namespace DS.RevitLib.Utils.Extensions
         public static Solid Solid(this Element element) => ElementUtils.GetSolid(element);
 
         /// <summary>
+        /// Get <paramref name="element"/>'s <see cref="Autodesk.Revit.DB.Solid"/> if <see cref="RevitLinkInstance"/> contais it.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <param name="document"></param>
+        /// <returns>
+        /// <paramref name="element"/>'s <see cref="Autodesk.Revit.DB.Solid"/> by <see cref="RevitLinkInstance"/> transform.
+        /// <para>
+        /// <paramref name="element"/>'s <see cref="Autodesk.Revit.DB.Solid"/> without any transform if it's <see cref="Document"/> is not a <see cref="RevitLinkInstance"/>.
+        /// </para>
+        /// </returns>
+        public static Solid GetSolidInLink(this Element element, Document document)
+        {
+            return element.Document.IsLinked ?
+                element.GetTransformed(element.GetLink(document)) :
+                element.Solid();
+        }
+
+        /// <summary>
         /// Get <paramref name="element"/>'s solid with it's insulation.
         /// </summary>
         /// <param name="element"></param>
@@ -632,8 +647,8 @@ namespace DS.RevitLib.Utils.Extensions
         public static Solid GetTransformed(this Element element, RevitLinkInstance revitLink)
         {
             var solid = element.Solid();
-            if(solid is null)
-            {return null;}
+            if (solid is null)
+            { return null; }
 
             var linkTransform = revitLink.GetTotalTransform();
             if (!linkTransform.AlmostEqual(Transform.Identity))
