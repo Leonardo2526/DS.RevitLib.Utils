@@ -376,6 +376,7 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
                 outlineFactory.XOffset = defaultOffset;
                 outlineFactory.YOffset = defaultOffset;
                 outlineFactory.ZOffset = defaultOffset;
+                outlineFactory.IsPointEnableOutside = false;
 
                 var h2 = mEPCurve.GetSizeByVector(XYZ.BasisZ);
                 var ins = mEPCurve.GetInsulationThickness();
