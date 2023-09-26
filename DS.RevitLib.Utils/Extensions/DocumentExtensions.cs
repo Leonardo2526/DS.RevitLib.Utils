@@ -102,7 +102,29 @@ namespace DS.RevitLib.Utils.Extensions
                collector.WhereElementIsNotElementType().WherePasses(categoryFilter) :
                collector.WhereElementIsNotElementType().WherePasses(categoryFilter).WherePasses(boudingBoxFilter);
 
-            return collector.ToElements().Where(x => x.IsGeometryElement(includeLines)).ToList();
+            var exclusionFilter = GetExclusion(modelDoc);
+            if(exclusionFilter is not null) { collector.WherePasses(exclusionFilter); }
+          
+            var elems = collector.ToElements();
+            return elems.Where(x => x.IsGeometryElement(includeLines)).ToList();
+
+            static ExclusionFilter GetExclusion(Document modelDoc)
+            {
+                var ecollector = new FilteredElementCollector(modelDoc);
+
+                var excludedTypes = new List<Type>()
+                {
+                    typeof(ImportInstance),
+                    typeof(FilledRegion)
+                };
+
+                var filter = new ElementMulticlassFilter(excludedTypes);
+                var excluded = ecollector.WherePasses(filter);
+                if(excluded is null || !excluded.Any() ) { return null; };
+
+                var excludedIds = excluded.Select(e => e.Id).ToList();
+                return new ExclusionFilter(excludedIds);
+            }
         }
 
         /// <summary>
