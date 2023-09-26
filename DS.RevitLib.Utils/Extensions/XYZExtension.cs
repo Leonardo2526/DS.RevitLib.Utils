@@ -516,8 +516,9 @@ namespace DS.RevitLib.Utils.Extensions
         /// </returns>
         private static double GetDistanceToAnyFloor(this XYZ point, Document doc, double findDist)
         {
-            var p1 = point + new XYZ(-0.5, -0.5, 0);
-            var p2 = point + new XYZ(0.5, 0.5, findDist);
+            var offset = 0.5;
+            var p1 = point + new XYZ(-offset, -offset, 0);
+            var p2 = point + new XYZ(offset, offset, findDist);
 
             var (minPoint, maxPoint) = XYZUtils.CreateMinMaxPoints(new List<XYZ> { p1, p2 });
             var outline = new Outline(minPoint, maxPoint);
