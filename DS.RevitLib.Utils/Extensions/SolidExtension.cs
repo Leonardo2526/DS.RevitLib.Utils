@@ -150,43 +150,20 @@ namespace DS.RevitLib.Utils.Extensions
         /// on it surface if <paramref name="allowOnSurface"/> is set to <see langword="true"/>.</returns>
         public static bool Contains(this Solid solid, XYZ point, bool allowOnSurface = false)
         {
-            var cs = solid.ComputeCentroid();
-            if(cs.DistanceTo(point) < 0.001) { return true; }
-
             double multiplicator = 100;
-            var vector = XYZ.BasisZ;
-            //var vector = XYZUtils.GenerateXYZ();
-            Line line1 = Line.CreateBound(point, point + vector.Multiply(multiplicator));
-            Line line2 = Line.CreateBound(point - vector.Multiply(multiplicator), point + vector.Multiply(multiplicator));
-
-            var opt1 = new SolidCurveIntersectionOptions() { ResultType = SolidCurveIntersectionMode.CurveSegmentsInside };
-            var intersectResult11 = solid.IntersectWithCurve(line1, opt1);
-            var intersectResult21 = solid.IntersectWithCurve(line2, opt1);
-
-            var opt2 = new SolidCurveIntersectionOptions() { ResultType = SolidCurveIntersectionMode.CurveSegmentsOutside };
-            var intersectResult12 = solid.IntersectWithCurve(line1, opt2);
-            var intersectResult22 = solid.IntersectWithCurve(line2, opt2);
-
-            var result = intersectResult11.SegmentCount + intersectResult12.SegmentCount; 
+            Line line1 = Line.CreateBound(point, point + XYZUtils.GenerateXYZ().Multiply(multiplicator));
 
             var faces = solid.Faces;
             int intersectionCount = 0;
-          
             foreach (Face face in faces)
             {
                 if (allowOnSurface)
                 {
                     var prj = face.Project(point)?.XYZPoint;
                     if(prj is not null && prj.DistanceTo(point) < 0.001) { return true;}
-                }               
-                var inter = face.Intersect(line1);
+                }
                 if (face.Intersect(line1) == SetComparisonResult.Overlap)
                 { intersectionCount++; }
-
-                if(inter != SetComparisonResult.Disjoint) 
-                {
-                    var s = face.Area;
-                }
             }
 
             return intersectionCount % 2 != 0;

@@ -35,7 +35,6 @@ namespace DS.RevitLib.Utils.MEP.Creator
                     Insulation.Create(baseElement, familyInstance);
                     AllElements.Insert(i + 1, familyInstance);
                 }
-
             }
             return this;
         }

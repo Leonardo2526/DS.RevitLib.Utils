@@ -29,7 +29,7 @@ namespace DS.RevitLib.Utils.MEP.Creator
 
             ConnectorUtils.GetNeighbourConnectors(out Connector con1, out Connector con2,
             connectors1, connectors2);
-            if(con1 is null ||con2 is null) 
+            if (con1 is null || con2 is null)
             { return null; }
             try
             {

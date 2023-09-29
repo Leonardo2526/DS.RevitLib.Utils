@@ -140,6 +140,7 @@ namespace DS.RevitLib.Utils.Lines
             return new Basis(basisX, basisY, basisZ, basePoint);
         }
 
+
         /// <summary>
         /// Specifies if <paramref name="point"/> lies on <paramref name="line"/>.
         /// </summary>

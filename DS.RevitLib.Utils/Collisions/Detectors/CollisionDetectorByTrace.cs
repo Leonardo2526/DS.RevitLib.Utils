@@ -185,7 +185,7 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
             var wallsCollisions = collisions.Where(c => c.Item2 is Wall);
             wallsCollisions.ForEach(wc => walls.Add(wc.Item2 as Wall));
 
-            if(walls.Count > 0)
+            if (walls.Count > 0)
             {
                 var uCS1dir = _pointConverter.ConvertToUCS1(dir);
                 foreach (Wall w in walls)
@@ -264,8 +264,8 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
             return collisions;
         }
 
-        public List<(object, object)> GetCollisions(Point3d p1, Point3d p2, Basis3d basis, 
-            Point3d firstPoint, Point3d lastPoint, int tolerance = 3)
+        public List<(object, object)> GetCollisions(Point3d p1, Point3d p2, Basis3d basis,
+    Point3d firstPoint, Point3d lastPoint, int tolerance = 3)
         {
             List<(object, object)> collisions;
 
