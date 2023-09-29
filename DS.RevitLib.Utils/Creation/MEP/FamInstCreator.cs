@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace DS.RevitLib.Utils.MEP.Creator
@@ -21,16 +22,23 @@ namespace DS.RevitLib.Utils.MEP.Creator
         public static FamilyInstance CreateElbow(MEPCurve mepCurve1, MEPCurve mepCurve2)
         {
             Document doc = mepCurve1.Document;
-            FamilyInstance familyInstance;
+            FamilyInstance familyInstance = null;
 
             List<Connector> connectors1 = ConnectorUtils.GetConnectors(mepCurve1);
             List<Connector> connectors2 = ConnectorUtils.GetConnectors(mepCurve2);
 
             ConnectorUtils.GetNeighbourConnectors(out Connector con1, out Connector con2,
             connectors1, connectors2);
-            if(con1 is null ||con2 is null) 
+            if (con1 is null || con2 is null)
             { return null; }
-            familyInstance = doc.Create.NewElbowFitting(con1, con2);
+            try
+            {
+                familyInstance = doc.Create.NewElbowFitting(con1, con2);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+            }
 
             return familyInstance;
         }

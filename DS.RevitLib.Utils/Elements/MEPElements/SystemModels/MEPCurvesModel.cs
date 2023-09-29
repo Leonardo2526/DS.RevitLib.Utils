@@ -30,11 +30,11 @@ namespace DS.RevitLib.Utils.MEP.Creator
             for (int i = 0; i < MEPCurves.Count - 1; i++)
             {
                 familyInstance = FamInstCreator.CreateElbow(MEPCurves[i] as MEPCurve, MEPCurves[i + 1] as MEPCurve);
-                if(familyInstance  == null) 
-                { return null; }
-
-                Insulation.Create(baseElement, familyInstance);
-                AllElements.Insert(i + 1, familyInstance);
+                if (familyInstance != null)
+                {
+                    Insulation.Create(baseElement, familyInstance);
+                    AllElements.Insert(i + 1, familyInstance);
+                }
             }
             return this;
         }
