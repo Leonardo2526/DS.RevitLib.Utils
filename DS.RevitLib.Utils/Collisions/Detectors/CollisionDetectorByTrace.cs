@@ -263,5 +263,23 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
 
             return collisions;
         }
+
+        public List<(object, object)> GetCollisions(Point3d p1, Point3d p2, Basis3d basis, 
+            Point3d firstPoint, Point3d lastPoint, int tolerance = 3)
+        {
+            List<(object, object)> collisions;
+
+            bool isFirstPoint = p1.Round(tolerance) == firstPoint.Round(tolerance);
+            bool isLastPoint = p2.Round(tolerance) == lastPoint.Round(tolerance);
+
+            if (isFirstPoint)
+            { collisions = GetFirstCollisions(p2, basis); }
+            else if (isLastPoint)
+            { collisions = GetLastCollisions(p1, basis); }
+            else
+            { collisions = GetCollisions(p1, p2, basis); }
+
+            return collisions;
+        }
     }
 }

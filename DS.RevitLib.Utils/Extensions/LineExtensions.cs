@@ -139,5 +139,24 @@ namespace DS.RevitLib.Utils.Lines
             basePoint ??= line.Origin;
             return new Basis(basisX, basisY, basisZ, basePoint);
         }
+
+        /// <summary>
+        /// Specifies if <paramref name="point"/> lies on <paramref name="line"/>.
+        /// </summary>
+        /// <param name="line"></param>
+        /// <param name="point"></param>
+        /// <returns>
+        /// <see langword="true"/> if <paramref name="point"/> is between <paramref name="line"/>'s end points or coincidense with them.
+        /// <para>
+        /// Otherwise returns <see langword="false"/>.     
+        /// </para>
+        /// </returns>
+        public static bool Contains(this Line line, XYZ point, double tolerance = 1.00e-3)
+        {
+            Rhino.Geometry.Line rline = new(line.GetEndPoint(0).ToPoint3d(), line.GetEndPoint(1).ToPoint3d());
+            var rpoint = point.ToPoint3d();
+            var d = rline.DistanceTo(rpoint, true);
+            return d < tolerance;
+        }
     }
 }
