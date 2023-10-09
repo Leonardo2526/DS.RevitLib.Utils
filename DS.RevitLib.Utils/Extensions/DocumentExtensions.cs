@@ -1,13 +1,9 @@
 ﻿using Autodesk.Revit.DB;
-using DS.RevitLib.Utils.Elements;
 using iUtils;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static System.Windows.Forms.LinkLabel;
 
 namespace DS.RevitLib.Utils.Extensions
 {
@@ -103,8 +99,8 @@ namespace DS.RevitLib.Utils.Extensions
                collector.WhereElementIsNotElementType().WherePasses(categoryFilter).WherePasses(boudingBoxFilter);
 
             var exclusionFilter = GetExclusion(modelDoc);
-            if(exclusionFilter is not null) { collector.WherePasses(exclusionFilter); }
-          
+            if (exclusionFilter is not null) { collector.WherePasses(exclusionFilter); }
+
             var elems = collector.ToElements();
             return elems.Where(x => x.IsGeometryElement(includeLines)).ToList();
 
@@ -120,7 +116,7 @@ namespace DS.RevitLib.Utils.Extensions
 
                 var filter = new ElementMulticlassFilter(excludedTypes);
                 var excluded = ecollector.WherePasses(filter);
-                if(excluded is null || !excluded.Any() ) { return null; };
+                if (excluded is null || !excluded.Any()) { return null; };
 
                 var excludedIds = excluded.Select(e => e.Id).ToList();
                 return new ExclusionFilter(excludedIds);
@@ -237,7 +233,7 @@ namespace DS.RevitLib.Utils.Extensions
         public static List<Element> GetElementsOfType(this Document doc, List<Type> types, Outline outline = null)
         {
             var elementsOfTypes = new List<Element>();
-            
+
             var docFloors = GetFromDoc(types, doc, null, outline);
             elementsOfTypes.AddRange(docFloors);
 
@@ -246,7 +242,7 @@ namespace DS.RevitLib.Utils.Extensions
 
             return elementsOfTypes;
 
-            List<Element> GetFromDoc(IList<Type> types, Document currentDoc, RevitLinkInstance link = null, Outline outline= null)
+            List<Element> GetFromDoc(IList<Type> types, Document currentDoc, RevitLinkInstance link = null, Outline outline = null)
             {
                 var collector = new FilteredElementCollector(currentDoc);
 
@@ -272,7 +268,7 @@ namespace DS.RevitLib.Utils.Extensions
                 foreach (var link in allLinks)
                 {
                     Document linkDoc = link.GetLinkDocument();
-                    var linkFloors = GetFromDoc(types,linkDoc, link, outline);
+                    var linkFloors = GetFromDoc(types, linkDoc, link, outline);
                     elements.AddRange(linkFloors);
                 }
 
@@ -309,6 +305,49 @@ namespace DS.RevitLib.Utils.Extensions
         {
             var types = new List<Type>() { typeof(Floor), typeof(Ceiling), typeof(RoofBase) };
             return GetElementsOfType(doc, types, outline);
+        }
+
+        /// <summary>
+        /// Try to get <see cref="RevitLinkInstance"/> from <paramref name="checkDoc"/>.
+        /// </summary>
+        /// <param name="activeDoc"></param>
+        /// <param name="checkDoc"></param>
+        /// <returns>
+        /// <see cref="RevitLinkInstance"/> if <paramref name="checkDoc"/> is loaded link in <paramref name="activeDoc"/> document.
+        /// <para>
+        /// Otherwise <see langword="null"/>.
+        /// </para>
+        /// </returns>
+        public static RevitLinkInstance TryGetLink(this Document activeDoc, Document checkDoc)
+        {
+            if (!checkDoc.IsLinked) { return null; }
+            else
+            {
+                var links = activeDoc.GetLoadedLinks();
+                return links.FirstOrDefault(l => l.GetLinkDocument().Title == checkDoc.Title);
+            }
+        }
+
+        /// <summary>
+        /// Try to get <see cref="Transform"/> from <paramref name="checkDoc"/>.
+        /// </summary>
+        /// <param name="activeDoc"></param>
+        /// <param name="checkDoc"></param>
+        /// <returns>
+        /// <see cref="Transform"/> if <paramref name="checkDoc"/> is loaded <see cref="RevitLinkInstance"/> in <paramref name="activeDoc"/> document
+        /// and has <see cref="Transform"/> not equal to <see cref="Transform.Identity"/>.
+        /// <para>
+        /// Otherwise <see langword="null"/>.
+        /// </para>
+        /// </returns>
+        public static Transform TryGetTransform(this Document activeDoc, Document checkDoc)
+        {
+            var link = activeDoc.TryGetLink(checkDoc);
+            if (link == null) { return null; }
+
+            var totalLinkTransform = link.GetTotalTransform();
+            return totalLinkTransform.AlmostEqual(Transform.Identity) is true ?
+                null : totalLinkTransform;
         }
 
     }

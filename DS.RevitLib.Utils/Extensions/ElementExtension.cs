@@ -624,17 +624,9 @@ namespace DS.RevitLib.Utils.Extensions
         /// <see langword="null"/> if no loaded links are in <paramref name="doc"/> or no links that contains <paramref name="element"/>.
         /// </para>
         /// </returns>
-        public static RevitLinkInstance GetLink(this Element element, Document doc)
-        {
-            var elemDoc = element.Document;
-
-            if (!elemDoc.IsLinked) { return null; }
-            else
-            {
-                var links = doc.GetLoadedLinks();
-                return links.FirstOrDefault(l => l.GetLinkDocument().Title == elemDoc.Title);
-            }
-        }
+        public static RevitLinkInstance GetLink(this Element element, Document doc) => 
+            doc.TryGetLink(element.Document);
+        
 
         /// <summary>
         /// Get transformed solid from <paramref name="element"/> by <paramref name="revitLink"/>.

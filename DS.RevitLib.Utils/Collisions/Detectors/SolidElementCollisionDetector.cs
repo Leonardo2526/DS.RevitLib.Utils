@@ -36,7 +36,7 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
         {
             Solid checkSolid = GetCheckSolid(checkObject1);
 
-            List<Element> elements = new ElementsIntersection(_checkObjects2, _checkObjects2Doc).
+            List<Element> elements = new ElementsIntersection(_doc, _checkObjects2, _checkObjects2Doc).
                 GetIntersectedElements(checkSolid, exludedCheckObjects2);
 
             var collisions = new List<(Solid, Element)>();

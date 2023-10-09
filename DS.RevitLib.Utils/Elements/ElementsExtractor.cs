@@ -8,7 +8,7 @@ namespace DS.RevitLib.Utils.Elements
     /// <summary>
     /// An object to get geometry elements from document.
     /// </summary>
-    public class ElementsExtractor
+    public class ElementsExtractor : IElementsExtractor
     {
         private readonly Document _doc;
         private readonly List<BuiltInCategory> _exludedCathegories;
@@ -38,15 +38,7 @@ namespace DS.RevitLib.Utils.Elements
         /// </summary>
         public Dictionary<RevitLinkInstance, List<Element>> LinkElements { get; private set; }
 
-        /// <summary>
-        /// Get geometry elements from document and all it's loaded links.
-        /// </summary>
-        /// <returns>
-        /// Elements in document and links. 
-        /// <para>
-        /// Returns empty collecions if document don't contains elements or <see cref="RevitLinkInstance"/>'s.
-        /// </para> 
-        /// </returns>
+        /// <inheritdoc/>
         public (List<Element> elements, Dictionary<RevitLinkInstance, List<Element>> linkElementsDict) GetAll()
         {
             ModelElements = GetFromDoc();
@@ -55,19 +47,13 @@ namespace DS.RevitLib.Utils.Elements
             return (ModelElements, LinkElements);
         }
 
-        /// <summary>
-        /// Get geometry elements from document.
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc/>
         public List<Element> GetFromDoc()
         {
             return _doc.GetGeometryElements(null, _exludedCathegories, null, false, _outline);
         }
 
-        /// <summary>
-        /// Get elements from all loaded links in <see cref="Document"/>.
-        /// </summary>
-        /// <returns>Retruns empty list if no loaded links are in document.</returns>
+       /// <inheritdoc/>
         public Dictionary<RevitLinkInstance, List<Element>> GetFromLinks()
         {
             var elements = new Dictionary<RevitLinkInstance, List<Element>>();

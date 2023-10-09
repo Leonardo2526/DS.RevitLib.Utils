@@ -99,8 +99,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Collisions\Detectors\BestCollisionDetector.cs" />
+    <Compile Include="Collisions\BestElementIntersectionFactory.cs" />
+    <Compile Include="Collisions\Detectors\AbstractDetectors\IElementCollisionDetector.cs" />
     <Compile Include="Collisions\Detectors\AbstractDetectors\ISolidCollisionDetector.cs" />
     <Compile Include="Collisions\Detectors\CollisionDetectorByTrace.cs" />
+    <Compile Include="Collisions\IIntersectionFactory.cs" />
     <Compile Include="Collisions\Resolvers\IResolver.cs" />
     <Compile Include="Collisions\Resolvers\MoveTransformStrategy.cs" />
     <Compile Include="Collisions\Solutions\ISolution.cs" />
@@ -125,6 +129,7 @@
     <Compile Include="Creation\Transactions\ITransactionFactory.cs" />
     <Compile Include="Creation\Transactions\RevitContextOption.cs" />
     <Compile Include="Elements\ConnectedElementFinder.cs" />
+    <Compile Include="Elements\IElementsExtractor.cs" />
     <Compile Include="Elements\MEPElements\Connection\ElementConnectionFactory.cs" />
     <Compile Include="Elements\MEPElements\Connection\ElementStrategies\ConnectWithMEPCurve.cs" />
     <Compile Include="Elements\MEPElements\Connection\ElementStrategies\ElbowElementStrategy.cs" />
