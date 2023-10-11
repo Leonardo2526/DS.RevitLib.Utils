@@ -8,6 +8,20 @@ namespace DS.RevitLib.Utils.Elements
     /// </summary>
     public interface IElementsExtractor
     {
+
+        /// <summary>
+        /// Elements in document.
+        /// </summary>
+        public List<Element> ModelElements { get;  }
+
+        /// <summary>
+        /// Elements in all loaded links.
+        /// </summary>
+        public Dictionary<RevitLinkInstance, List<Element>> LinkElements { get; }
+
+        List<BuiltInCategory> ExludedCathegories { get; set; }
+        Outline Outline { get; set; }   
+
         /// <summary>
         /// Get <see cref="Autodesk.Revit.DB.Element"/>'s from active <see cref="Document"/> and all it's loaded links.
         /// </summary>

@@ -7,6 +7,7 @@ using DS.PathFinder;
 using DS.PathFinder.Algorithms.AStar;
 using DS.RevitLib.Utils.Bases;
 using DS.RevitLib.Utils.Collisions.Detectors;
+using DS.RevitLib.Utils.Collisions.Detectors.AbstractDetectors;
 using DS.RevitLib.Utils.Connections.PointModels;
 using DS.RevitLib.Utils.Creation.Transactions;
 using DS.RevitLib.Utils.Elements;
@@ -91,7 +92,7 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
             private CancellationTokenSource _externalToken;
             private Point3dVisualisator _pointVisualisator;
             private DirectionIterator _dirIterator;
-            private CollisionDetectorByTrace _collisionDetector;
+            private CollisionDetectorByTrace _traceCollisionDetector;
             private ConnectionPoint _startConnectionPoint;
             private ConnectionPoint _endConnectionPoint;
             private NodeBuilder _nodeBuilder;
@@ -104,6 +105,7 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
             private Point3d _startANP;
             private Vector3d _endDirection;
             private Point3d _endANP;
+            private readonly IElementCollisionDetector _collisionDetector;
 
             #endregion
 
@@ -117,6 +119,7 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
                 _basisStrategy = pathAlgorithmBuilder._basisStrategy;
                 _transactionFactory = pathAlgorithmBuilder.TransactionFactory;
                 _baseMEPCurve = pathAlgorithmBuilder._baseMEPCurve;
+                _collisionDetector = pathAlgorithmBuilder._collisionDetector;
             }
 
             #region PublicMethods
@@ -256,13 +259,12 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
 
             public ISpecifyParameter SetCollisionDetector(bool insulationAccount)
             {
-                _collisionDetector =
+                _traceCollisionDetector =
                     new CollisionDetectorByTrace(_doc,
                     _baseMEPCurve,
                     _traceSettings,
-                    insulationAccount,
-                    _docElements,
-                    _linkElementsDict, _pointConverter, _transactionFactory)
+                    insulationAccount, _collisionDetector,
+                    _pointConverter, _transactionFactory)
                     {
                         ObjectsToExclude = _objectsToExclude,
                         OffsetOnEndPoint = false,
@@ -332,7 +334,7 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
             {
                 var sourceBasisUCS1 = _baseMEPCurveBasis.ToBasis3d();
                 var sourceBasis = _pointConverter.ConvertToUCS2(sourceBasisUCS1);
-                var refineFactory = new PathRefineFactory(_traceSettings, _collisionDetector, sourceBasis)
+                var refineFactory = new PathRefineFactory(_traceSettings, _traceCollisionDetector, sourceBasis)
                 {
                     MinNodes = minimizePathNodes
                 };
@@ -340,7 +342,7 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
                 _algorithm = new AStarAlgorithmCDF(
                     _traceSettings,
                     _nodeBuilder, _dirIterator,
-                    _collisionDetector,
+                    _traceCollisionDetector,
                     refineFactory)
                 {
                     Tolerance = _tolerance,
@@ -355,7 +357,7 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
                 WithBounds(_lowerBound, _upperBound);
 
                 _algorithm.SourceBasis = sourceBasis;
-                _collisionDetector.SolidExtractor.SetSource(sourceBasisUCS1);
+                _traceCollisionDetector.SolidExtractor.SetSource(sourceBasisUCS1);
                 _algorithmBuilder._algorithm = _algorithm;
                 return _algorithm;
             }

@@ -8,24 +8,17 @@ namespace DS.RevitLib.Utils.Elements
     /// <summary>
     /// An object to get geometry elements from document.
     /// </summary>
-    public class ElementsExtractor
+    public class GeometryElementsExtractor : IElementsExtractor
     {
         private readonly Document _doc;
-        private readonly List<BuiltInCategory> _exludedCathegories;
-        private readonly Outline _outline;
-
 
         /// <summary>
         /// Instantiate an object to get geometry elements from document.
         /// </summary>
         /// <param name="doc"></param>
-        /// <param name="exludedCathegories"></param>
-        /// <param name="outline"></param>
-        public ElementsExtractor(Document doc, List<BuiltInCategory> exludedCathegories = null, Outline outline = null)
+        public GeometryElementsExtractor(Document doc)
         {
             _doc = doc;
-            _exludedCathegories = exludedCathegories;
-            _outline = outline;
         }
 
         /// <summary>
@@ -37,6 +30,8 @@ namespace DS.RevitLib.Utils.Elements
         /// Elements in all loaded links.
         /// </summary>
         public Dictionary<RevitLinkInstance, List<Element>> LinkElements { get; private set; }
+        public List<BuiltInCategory> ExludedCathegories { get; set; }
+        public Outline Outline { get; set; }
 
         /// <inheritdoc/>
         public (List<Element> elements, Dictionary<RevitLinkInstance, List<Element>> linkElementsDict) GetAll()
@@ -50,7 +45,7 @@ namespace DS.RevitLib.Utils.Elements
         /// <inheritdoc/>
         public List<Element> GetFromDoc()
         {
-            return _doc.GetGeometryElements(null, _exludedCathegories, null, false, _outline);
+            return _doc.GetGeometryElements(null, ExludedCathegories, null, false, Outline);
         }
 
        /// <inheritdoc/>
@@ -63,7 +58,7 @@ namespace DS.RevitLib.Utils.Elements
 
             foreach (var link in allLinks)
             {
-                List<Element> geomlinkElems = _doc.GetGeometryElements(link, _exludedCathegories, null, false, _outline); ;
+                List<Element> geomlinkElems = _doc.GetGeometryElements(link, ExludedCathegories, null, false, Outline); ;
                 if (geomlinkElems is null || geomlinkElems.Count == 0) { continue; }
                 elements.Add(link, geomlinkElems);
             }

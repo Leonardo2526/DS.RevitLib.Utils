@@ -2,6 +2,7 @@
 using DS.ClassLib.VarUtils;
 
 using DS.RevitLib.Utils.Collisions.Detectors;
+using DS.RevitLib.Utils.Collisions.Detectors.AbstractDetectors;
 using DS.RevitLib.Utils.Collisions.Models;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.Models;
@@ -17,7 +18,7 @@ namespace DS.RevitLib.Utils.Elements.Transfer.Resolvers
         private int _successorUsageCount = 0;
 
         public AroundCenterLineRotateResolver(SolidModelExt operationElement, (Solid, Element) collision,
-            ISolidCollisionDetector detector, List<Element> excludedElements) :
+            IElementCollisionDetector detector, List<Element> excludedElements) :
             base(operationElement, collision, detector, excludedElements)
         {
         }
@@ -74,7 +75,8 @@ namespace DS.RevitLib.Utils.Elements.Transfer.Resolvers
 
                 _operationElement.Transform(rotateTransform);
 
-                UnresolvedCollisions = _detector.GetCollisions(_operationElement.Solid, _excludedElements);
+                _detector.ExludedElements = _excludedElements;
+                UnresolvedCollisions = _detector.GetCollisions(_operationElement.Solid);
 
                 if (!UnresolvedCollisions.Any())
                 {

@@ -15,6 +15,7 @@ using System.Diagnostics;
 using DS.ClassLib.VarUtils.Collisions;
 using DS.RevitLib.Utils.Creation.Transactions;
 using Autodesk.Revit.UI;
+using DS.RevitLib.Utils.Collisions.Detectors.AbstractDetectors;
 
 namespace DS.RevitLib.Utils.Connections.PointModels.PointModels
 {
@@ -25,6 +26,7 @@ namespace DS.RevitLib.Utils.Connections.PointModels.PointModels
     {
         private readonly Document _doc;
         private readonly MEPSystemModel _mEPSystemModel;
+        private readonly IElementCollisionDetector _collisionDetector;
         private List<Element> _docElements;
         private Dictionary<RevitLinkInstance, List<Element>> _linkElementsDict;
 
@@ -34,14 +36,11 @@ namespace DS.RevitLib.Utils.Connections.PointModels.PointModels
         /// <param name="mEPSystemModel"></param>
         /// <param name="docElements"></param>
         /// <param name="linkElementsDict"></param>
-        public ConnectionPointValidator(MEPSystemModel mEPSystemModel,
-            List<Element> docElements = null,
-            Dictionary<RevitLinkInstance, List<Element>> linkElementsDict = null)
+        public ConnectionPointValidator(MEPSystemModel mEPSystemModel, IElementCollisionDetector collisionDetector)
         {
             _doc = mEPSystemModel.Root.BaseElement.Document;
             _mEPSystemModel = mEPSystemModel;
-            _docElements = docElements;
-            _linkElementsDict = linkElementsDict;
+            _collisionDetector = collisionDetector;
         }
 
         /// <summary>
@@ -73,7 +72,7 @@ namespace DS.RevitLib.Utils.Connections.PointModels.PointModels
             {
                 foreach (var error in results)
                 {
-                    TransactionFactory?.CreateAsync(() => 
+                    TransactionFactory?.CreateAsync(() =>
                     TaskDialog.Show("Ошибка", error.ErrorMessage), "show message");
                 }
                 return false;
@@ -102,15 +101,18 @@ namespace DS.RevitLib.Utils.Connections.PointModels.PointModels
         public List<(Element, Element)> GetCollisions()
         {
             //get collisions in freeCon.
-            var collisions = new ElementCollisionDetectorFactory(_doc, _docElements, _linkElementsDict).
-              GetCollisions(ConnectionPoint.Element);
-
+            var collisions = _collisionDetector.GetCollisions(ConnectionPoint.Element);
             if (!collisions.Any()) { return collisions; }
 
-            //Specify collision objects
-            var collisionsOnPoint = collisions.
-                TakeWhile(obj => ElementUtils.GetSolid(obj.Item2).Contains(ConnectionPoint.Point)).ToList();
-            return collisionsOnPoint;
+            if (ConnectionPoint.Element is FamilyInstance)
+            { return collisions; }
+            else
+            {
+                //Specify collision objects on point
+                var collisionsOnPoint = collisions.
+                    Where(obj => obj.Item2.GetSolidInLink(_doc).Contains(ConnectionPoint.Point)).ToList();
+                return collisionsOnPoint;
+            }
         }
 
         /// <summary>

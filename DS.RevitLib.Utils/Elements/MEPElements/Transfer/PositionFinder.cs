@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.Linq;
 using DS.ClassLib.VarUtils.Collisions;
 using DS.RevitLib.Utils.Collisions.Detectors;
+using DS.RevitLib.Utils.Collisions.Detectors.AbstractDetectors;
 
 namespace DS.RevitLib.Utils.Elements.Transfer
 {
@@ -22,7 +23,7 @@ namespace DS.RevitLib.Utils.Elements.Transfer
     {
         private readonly TargetPlacementModel _targetModel;
         private SolidModelExt _operationModel;
-        private readonly ISolidCollisionDetector _detector;
+        private readonly IElementCollisionDetector _detector;
         private readonly MEPCurveModel _mEPCurveModel;
         private readonly double _minCurveLength;
         private readonly List<Element> _excludedElements;
@@ -31,7 +32,7 @@ namespace DS.RevitLib.Utils.Elements.Transfer
         //private readonly MEPCollision _collision;
 
         public PositionFinder(TargetPlacementModel targetLine, SolidModelExt opertationModel,
-            ISolidCollisionDetector detector, MEPCurveModel _mEPCurveModel, double minCurveLength, List<Element> excludedElements)
+            IElementCollisionDetector detector, MEPCurveModel _mEPCurveModel, double minCurveLength, List<Element> excludedElements)
         {
             _targetModel = targetLine;
             _operationModel = opertationModel;

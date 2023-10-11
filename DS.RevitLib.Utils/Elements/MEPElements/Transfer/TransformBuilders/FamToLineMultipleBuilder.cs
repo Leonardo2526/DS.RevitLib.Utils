@@ -14,6 +14,7 @@ using System.Linq;
 using DS.RevitLib.Utils.Collisions.Detectors;
 using Rhino;
 using DS.RevitLib.Utils.Extensions;
+using DS.RevitLib.Utils.Collisions.Detectors.AbstractDetectors;
 
 namespace DS.RevitLib.Utils.Elements.Transfer.TransformBuilders
 {
@@ -21,7 +22,7 @@ namespace DS.RevitLib.Utils.Elements.Transfer.TransformBuilders
     {
         private readonly double _minFamInstLength = 50.MMToFeet();
         private readonly double _minCurveLength;
-        private readonly ISolidCollisionDetector _detector;
+        private readonly IElementCollisionDetector _detector;
         private readonly List<Element> _excludedElements;
         private readonly double _minPlacementLength;
         private AvailableLineService _lineService;
@@ -29,7 +30,7 @@ namespace DS.RevitLib.Utils.Elements.Transfer.TransformBuilders
         private List<XYZ> _path;
         private MEPCurveModel _mEPCurveModel;
 
-        public FamToLineMultipleBuilder(double minCurveLength, ISolidCollisionDetector detector, List<Element> excludedElements)
+        public FamToLineMultipleBuilder(double minCurveLength, IElementCollisionDetector detector, List<Element> excludedElements)
         {
             _minCurveLength = minCurveLength;
             _detector = detector;

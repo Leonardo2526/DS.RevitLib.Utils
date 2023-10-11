@@ -9,6 +9,7 @@ using DS.RevitLib.Utils.Collisions.Detectors;
 using DS.ClassLib.VarUtils.Collisions;
 using DS.RevitLib.Utils.Solids.Models;
 using DS.RevitLib.Utils.Extensions;
+using DS.RevitLib.Utils.Collisions.Detectors.AbstractDetectors;
 
 namespace DS.RevitLib.Utils.Elements.Transfer
 {
@@ -16,13 +17,13 @@ namespace DS.RevitLib.Utils.Elements.Transfer
     {
         private readonly SolidModelExt _operationElement;
         private readonly List<(Solid, Element)> _collisions;
-        private readonly ISolidCollisionDetector _detector;
+        private readonly IElementCollisionDetector _detector;
         private readonly TargetPlacementModel _targetModel;
         private XYZ _currentPoint;
         private readonly double _minCurveLength;
         private readonly List<Element> _excludedElements;
 
-        public SolidCollisionClient(SolidModelExt operationElement, List<(Solid, Element)> collisions, ISolidCollisionDetector collisionChecker,
+        public SolidCollisionClient(SolidModelExt operationElement, List<(Solid, Element)> collisions, IElementCollisionDetector collisionChecker,
             TargetPlacementModel targetModel, double minCurveLength, List<Element> excludedElements)
         {
             _operationElement = operationElement;

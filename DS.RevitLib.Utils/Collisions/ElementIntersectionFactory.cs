@@ -10,7 +10,7 @@ namespace DS.RevitLib.Utils.Collisions.Models
     /// <summary>
     /// An object that represents find intersection between <see cref="Autodesk.Revit.DB.Element"/>'s.
     /// </summary>
-    public class BestElementIntersectionFactory : IElementIntersectionFactory
+    public class ElementIntersectionFactory : IElementIntersectionFactory
     {
         private readonly Document _activeDocument;
         private Transform _linkTransform;
@@ -23,7 +23,7 @@ namespace DS.RevitLib.Utils.Collisions.Models
         /// Instantiate an object to find intersection between <see cref="Autodesk.Revit.DB.Element"/>'s.
         /// </summary>
         /// <param name="activeDocument"></param>
-        public BestElementIntersectionFactory(Document activeDocument)
+        public ElementIntersectionFactory(Document activeDocument)
         {
             _activeDocument = activeDocument;
         }

@@ -7,12 +7,13 @@ using DS.RevitLib.Utils.Elements.Transfer.TransformModels;
 using Revit.Async;
 using System.Collections.Generic;
 using DS.RevitLib.Utils.Collisions.Detectors;
+using DS.RevitLib.Utils.Collisions.Detectors.AbstractDetectors;
 
 namespace DS.RevitLib.Utils.Elements.Transfer.TransformBuilders
 {
     internal class FamToLineTransformBuilder : TransformBuilder
     {
-        private readonly ISolidCollisionDetector _detector;
+        private readonly IElementCollisionDetector _detector;
         private readonly double _placementLength;
         private readonly List<XYZ> _points;
         private readonly MEPCurveModel _mEPCurveModel;
@@ -21,7 +22,7 @@ namespace DS.RevitLib.Utils.Elements.Transfer.TransformBuilders
         private readonly SolidModelExt _operationObject;
 
         public FamToLineTransformBuilder(SolidModelExt sourceObject, LineModel targetObject,
-            ISolidCollisionDetector detector, double placementLength, List<XYZ> points,
+            IElementCollisionDetector detector, double placementLength, List<XYZ> points,
             MEPCurveModel mEPCurveModel, double minCurveLength, List<Element> excludedElements) :
             base(sourceObject, targetObject)
         {

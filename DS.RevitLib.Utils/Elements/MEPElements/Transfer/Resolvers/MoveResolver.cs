@@ -2,6 +2,7 @@
 using DS.RevitLib.Utils;
 
 using DS.RevitLib.Utils.Collisions.Detectors;
+using DS.RevitLib.Utils.Collisions.Detectors.AbstractDetectors;
 using DS.RevitLib.Utils.Collisions.Models;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.Lines;
@@ -19,7 +20,7 @@ namespace DS.RevitLib.Utils.Elements.Transfer.Resolvers
         private readonly Solid _totalIntersectionSolid;
         private readonly double _minCurveLength;
 
-        public MoveResolver(SolidModelExt operationElement, (Solid, Element) collision, ISolidCollisionDetector detector,
+        public MoveResolver(SolidModelExt operationElement, (Solid, Element) collision, IElementCollisionDetector detector,
             XYZ basePoint, TargetPlacementModel targetModel, Solid totalIntersectionSolid, double minCurveLength, List<Element> excludedElements) :
             base(operationElement, collision, detector, excludedElements)
         {

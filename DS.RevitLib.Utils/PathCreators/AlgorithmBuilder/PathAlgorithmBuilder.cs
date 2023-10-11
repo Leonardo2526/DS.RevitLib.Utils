@@ -5,6 +5,7 @@ using DS.ClassLib.VarUtils.Points;
 using DS.PathFinder;
 using DS.PathFinder.Algorithms.AStar;
 using DS.RevitLib.Utils.Bases;
+using DS.RevitLib.Utils.Collisions.Detectors.AbstractDetectors;
 using DS.RevitLib.Utils.Connections.PointModels;
 using DS.RevitLib.Utils.Creation.Transactions;
 using DS.RevitLib.Utils.Geometry;
@@ -28,7 +29,7 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
         private readonly IEnumerable<IBasisStrategy> _basisStrategies;
         private AStarAlgorithmCDF _algorithm = new();
         private IDirectionValidator _directionValidator;
-
+        private readonly IElementCollisionDetector _collisionDetector;
         private MEPCurve _baseMEPCurve;
         private ITransactionFactory _transactionFactory;
 
@@ -43,7 +44,8 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
             UIDocument uiDoc,
             ITraceSettings traceSettings,
             IEnumerable<IBasisStrategy> basisStrategies,
-            IDirectionValidator quadrantModel)
+            IDirectionValidator quadrantModel,
+            IElementCollisionDetector collisionDetector)
         {
             _uiDoc = uiDoc;
             _traceSettings = traceSettings;
@@ -57,6 +59,7 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
             //var dir2 = new Vector3d(0, 0, -1);
             //quadrantModel.EnableQuadrants(dir2, OrthoPlane.XZ);
             _directionValidator = quadrantModel;
+            _collisionDetector = collisionDetector;
         }
 
 

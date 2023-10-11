@@ -3,6 +3,7 @@ using DS.ClassLib.VarUtils;
 using DS.ClassLib.VarUtils.Basis;
 using DS.ClassLib.VarUtils.Collisions;
 using DS.ClassLib.VarUtils.Points;
+using DS.RevitLib.Utils.Collisions.Detectors.AbstractDetectors;
 using DS.RevitLib.Utils.Connections.PointModels;
 using DS.RevitLib.Utils.Creation.Transactions;
 using DS.RevitLib.Utils.Elements.MEPElements;
@@ -36,7 +37,7 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
         private readonly ITraceSettings _traceSettings;
         private readonly IPoint3dConverter _pointConverter;
         private readonly ITransactionFactory _transactionFactory;
-        private readonly SolidElementCollisionDetectorFactory _detectorFactory;
+        private readonly IElementCollisionDetector _collisionDetector;
         private readonly double _offset;
         private BasisXYZ _sourceBasis;
         private Point3d _startPoint;
@@ -54,12 +55,11 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
         /// <param name="baseMEPCurve"></param>
         /// <param name="traceSettings"></param>
         /// <param name="insulationAccount"></param>
-        /// <param name="docElements"></param>
-        /// <param name="linkElementsDict"></param>
+        /// <param name="collisionDetector"></param>
         /// <param name="pointConverter"></param>
         /// <param name="transactionFactory"></param>
         public CollisionDetectorByTrace(Document doc, MEPCurve baseMEPCurve, ITraceSettings traceSettings, bool insulationAccount,
-            List<Element> docElements, Dictionary<RevitLinkInstance, List<Element>> linkElementsDict = null, IPoint3dConverter pointConverter = null,
+            IElementCollisionDetector collisionDetector, IPoint3dConverter pointConverter = null,
             ITransactionFactory transactionFactory = null)
         {
             _doc = doc;
@@ -70,10 +70,7 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
             _pointConverter = pointConverter;
             _transactionFactory = transactionFactory;
             _transactionFactory ??= new ContextTransactionFactory(_doc);
-            _detectorFactory = new SolidElementCollisionDetectorFactory(doc, docElements, linkElementsDict)
-            {
-                MinVolume = 0
-            };
+            _collisionDetector = collisionDetector;
             SolidExtractor = new BestSolidOffsetExtractor(baseMEPCurve, _offset);
         }
 
@@ -159,7 +156,8 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
             var uCS1Basis = _pointConverter.ConvertToUCS1(basis).ToXYZ();
             var checkSolid = SolidExtractor.Extract(p1, p2, uCS1Basis);
 
-            var collisions = _detectorFactory.GetCollisions(checkSolid, ObjectsToExclude);
+            _collisionDetector.ExludedElements = ObjectsToExclude;
+            var collisions = _collisionDetector.GetCollisions(checkSolid);
             var excludeWallsIds = GetExcludeWalls(collisions, direction);
 
             collisions = collisions.Where(c => !excludeWallsIds.Contains(c.Item2.Id)).ToList();
@@ -173,7 +171,7 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
             }
             , "Show shape");
 
-            return Collisions = _detectorFactory.GetCollisions(checkSolid, ObjectsToExclude).
+            return Collisions = _collisionDetector.GetCollisions(checkSolid).
                 Select(x => ((object)x.Item1, (object)x.Item2)).ToList();
         }
 

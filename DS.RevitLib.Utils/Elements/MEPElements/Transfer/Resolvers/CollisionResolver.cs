@@ -2,6 +2,7 @@
 using DS.ClassLib.VarUtils.Collisions;
 
 using DS.RevitLib.Utils.Collisions.Detectors;
+using DS.RevitLib.Utils.Collisions.Detectors.AbstractDetectors;
 using DS.RevitLib.Utils.Collisions.Models;
 using DS.RevitLib.Utils.Solids.Models;
 using System.Collections.Generic;
@@ -13,10 +14,10 @@ namespace DS.RevitLib.Utils.Elements.Transfer.Resolvers
     {
         protected CollisionResolver _successor;
         protected readonly SolidModelExt _operationElement;
-        protected readonly ISolidCollisionDetector _detector;
+        protected readonly IElementCollisionDetector _detector;
         protected readonly List<Element> _excludedElements;
 
-        protected CollisionResolver(SolidModelExt operationElement, (Solid, Element) collision, ISolidCollisionDetector detector, List<Element> excludedElements)
+        protected CollisionResolver(SolidModelExt operationElement, (Solid, Element) collision, IElementCollisionDetector detector, List<Element> excludedElements)
         {
             _operationElement = operationElement;
             Collision = collision;

@@ -2,6 +2,7 @@
 using DS.ClassLib.VarUtils;
 
 using DS.RevitLib.Utils.Collisions.Detectors;
+using DS.RevitLib.Utils.Collisions.Detectors.AbstractDetectors;
 using DS.RevitLib.Utils.Collisions.Models;
 using DS.RevitLib.Utils.Solids.Models;
 using System.Collections.Generic;
@@ -12,7 +13,8 @@ namespace DS.RevitLib.Utils.Elements.Transfer.Resolvers
     internal class RotateCenterLineResolver : CollisionResolver
     {
 
-        public RotateCenterLineResolver(SolidModelExt _operationElement, (Solid, Element) collision, ISolidCollisionDetector detector, List<Element> excludedElements) :
+        public RotateCenterLineResolver(SolidModelExt _operationElement, (Solid, Element) collision, 
+            IElementCollisionDetector detector, List<Element> excludedElements) :
             base(_operationElement ,collision, detector, excludedElements)
         {}
 

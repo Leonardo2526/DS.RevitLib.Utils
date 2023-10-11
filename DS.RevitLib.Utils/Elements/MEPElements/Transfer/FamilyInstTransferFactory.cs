@@ -2,6 +2,7 @@
 using DS.ClassLib.VarUtils;
 
 using DS.RevitLib.Utils.Collisions.Detectors;
+using DS.RevitLib.Utils.Collisions.Detectors.AbstractDetectors;
 using DS.RevitLib.Utils.Elements.Transfer;
 using DS.RevitLib.Utils.Elements.Transfer.TransformBuilders;
 using DS.RevitLib.Utils.Elements.Transfer.TransformModels;
@@ -25,7 +26,7 @@ namespace DS.RevitLib.Utils.Elements.MEPElements.Transfer
     public class FamilyInstTransferFactory : IFamilyInstTransferFactory
     {
         private readonly Document _doc;
-        private readonly ISolidCollisionDetector _detector;
+        private readonly IElementCollisionDetector _detector;
         private readonly List<XYZ> _path;
         private readonly MEPSystemModel _sourceModel;
         private readonly ITraceSettings _traceSettings;
@@ -36,7 +37,7 @@ namespace DS.RevitLib.Utils.Elements.MEPElements.Transfer
         /// <summary>
         /// Instantiate an object that represents factory to transfer <see cref="Autodesk.Revit.DB.FamilyInstance"/>'s to <see cref="MEPSystemModel"/>.
         /// </summary>
-        public FamilyInstTransferFactory(ISolidCollisionDetector detector, List<XYZ> path, MEPSystemModel sourceModel,
+        public FamilyInstTransferFactory(IElementCollisionDetector detector, List<XYZ> path, MEPSystemModel sourceModel,
             ITraceSettings traceSettings, double elbowRadius, List<Element> excludedElements)
         {
             _doc = sourceModel.Root.BaseElement.Document;

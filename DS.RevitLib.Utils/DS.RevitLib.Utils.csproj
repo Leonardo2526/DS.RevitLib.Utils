@@ -99,12 +99,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Collisions\Detectors\BestCollisionDetector.cs" />
-    <Compile Include="Collisions\BestElementIntersectionFactory.cs" />
+    <Compile Include="Collisions\Detectors\ElementCollisionDetector.cs" />
+    <Compile Include="Collisions\ElementIntersectionFactory.cs" />
     <Compile Include="Collisions\Detectors\AbstractDetectors\IElementCollisionDetector.cs" />
-    <Compile Include="Collisions\Detectors\AbstractDetectors\ISolidCollisionDetector.cs" />
     <Compile Include="Collisions\Detectors\CollisionDetectorByTrace.cs" />
-    <Compile Include="Collisions\IIntersectionFactory.cs" />
+    <Compile Include="Collisions\IElementIntersectionFactory.cs" />
     <Compile Include="Collisions\Resolvers\IResolver.cs" />
     <Compile Include="Collisions\Resolvers\MoveTransformStrategy.cs" />
     <Compile Include="Collisions\Solutions\ISolution.cs" />
@@ -114,13 +113,6 @@
     <Compile Include="Connections\PointModels\ConnectionPointValidator.cs" />
     <Compile Include="Connections\PointModels\IConnectionPoint.cs" />
     <Compile Include="Creation\AbstractCreator.cs" />
-    <Compile Include="Collisions\Detectors\AbstractDetectors\CollisionDetector.cs" />
-    <Compile Include="Collisions\Detectors\AbstractDetectors\CollisionDetectorFactory.cs" />
-    <Compile Include="Collisions\Detectors\ElementCollisionDetector.cs" />
-    <Compile Include="Collisions\Detectors\ElementCollisionDetectorFactory.cs" />
-    <Compile Include="Collisions\Detectors\SolidElementCollisionDetector.cs" />
-    <Compile Include="Collisions\Detectors\SolidElementCollisionDetectorFactory.cs" />
-    <Compile Include="Collisions\ElementsIntersection.cs" />
     <Compile Include="Collisions\BBCollisionUtils.cs" />
     <Compile Include="Creation\MEP\MEPCurveBreaker.cs" />
     <Compile Include="Creation\Transactions\ContextTransactionFactory.cs" />
@@ -129,6 +121,7 @@
     <Compile Include="Creation\Transactions\ITransactionFactory.cs" />
     <Compile Include="Creation\Transactions\RevitContextOption.cs" />
     <Compile Include="Elements\ConnectedElementFinder.cs" />
+    <Compile Include="Elements\ElementsExtractor.cs" />
     <Compile Include="Elements\IElementsExtractor.cs" />
     <Compile Include="Elements\MEPElements\Connection\ElementConnectionFactory.cs" />
     <Compile Include="Elements\MEPElements\Connection\ElementStrategies\ConnectWithMEPCurve.cs" />
@@ -150,7 +143,6 @@
     <Compile Include="Elements\MEPElements\Transfer\AvailableModels\AbstractAvailableCurveService.cs" />
     <Compile Include="Elements\MEPElements\Transfer\AvailableModels\AvailableLineService.cs" />
     <Compile Include="Elements\MEPElements\Transfer\AvailableModels\AvailableMEPCurveService.cs" />
-    <Compile Include="Elements\MEPElements\Transfer\CollisionCheckerBuilder.cs" />
     <Compile Include="Elements\MEPElements\Transfer\FamilyInstTransferFactory.cs" />
     <Compile Include="Elements\MEPElements\Transfer\IElementsTransferFactory.cs" />
     <Compile Include="Elements\MEPElements\Transfer\LineModel.cs" />
@@ -178,7 +170,7 @@
     <Compile Include="Elements\Alignments\IAlignment.cs" />
     <Compile Include="Elements\Alignments\Strategies\Solids\NormOrthSolidRotator.cs" />
     <Compile Include="Elements\Alignments\Strategies\Solids\CentralLineSolidRotator.cs" />
-    <Compile Include="Elements\ElementsExtractor.cs" />
+    <Compile Include="Elements\GeometryElementsExtractor.cs" />
     <Compile Include="Elements\Models\AbstractElementModel.cs" />
     <Compile Include="Elements\Parameters\CopyParameterOption.cs" />
     <Compile Include="Creation\ElementCreator.cs" />
@@ -341,7 +333,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Collisions\Models\" />
     <Folder Include="Geometry\Points\Models\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
