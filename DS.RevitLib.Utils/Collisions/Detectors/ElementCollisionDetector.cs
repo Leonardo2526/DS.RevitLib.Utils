@@ -4,6 +4,7 @@ using DS.RevitLib.Utils.Collisions.Models;
 using DS.RevitLib.Utils.Elements;
 using DS.RevitLib.Utils.Extensions;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace DS.RevitLib.Utils.Collisions.Detectors
 {
@@ -17,6 +18,7 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
         private IElementsExtractor _elementsExtractor;
         private List<Element> _activeDocElements;
         private Dictionary<RevitLinkInstance, List<Element>> _linkElements;
+        private bool _isInsulationAccount;
 
         /// <summary>
         /// Instantiate a new object to find collisions (intersections) between <see cref="object"/>'s and <see cref="Autodesk.Revit.DB.Element"/>'s.
@@ -66,6 +68,28 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
             _elementsExtractor ??= new GeometryElementsExtractor(_activeDocument);
 
         /// <inheritdoc/>
+        public bool IsInsulationAccount 
+        { 
+            get => _isInsulationAccount;
+            set 
+            { 
+                _isInsulationAccount = value;
+                if(_intersectionFactory is ElementIntersectionFactory factory)
+                {
+                    if (_isInsulationAccount)
+                    {
+                        factory.ExculdedTypes = factory.ExculdedTypes.
+                            Where(t=> t.Name != typeof(InsulationLiningBase).Name).ToList();
+                    }
+                    else 
+                    {
+                        factory.ExculdedTypes.Add(typeof(InsulationLiningBase));
+                    }
+                }
+            } 
+        }
+
+        /// <inheritdoc/>
         public List<(Element, Element)> GetCollisions(Element checkObject) => GetObjectCollisions(checkObject);
 
         /// <inheritdoc/>
@@ -97,7 +121,7 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
             if (checkModel2.Item2.Count == 0) { return new List<(object, Element)>(); }
 
             _intersectionFactory.Build(checkModel2);
-            _intersectionFactory.ExludedElements = ExludedElements;
+            _intersectionFactory.ExcludedElements = ExludedElements;
             List<Element> intersectionElements = GetIntersections(_intersectionFactory, checkObject);
 
             var collisions = new List<(object, Element)>();

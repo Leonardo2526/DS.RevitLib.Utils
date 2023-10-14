@@ -11,7 +11,7 @@ namespace DS.RevitLib.Utils.Collisions.Models
         /// <summary>
         /// Elements to exclude intersections.
         /// </summary>
-        List<Element> ExludedElements { get; set; }
+        List<Element> ExcludedElements { get; set; }
 
         /// <summary>
         /// Build factory.

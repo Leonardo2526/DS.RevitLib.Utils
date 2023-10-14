@@ -2,6 +2,8 @@
 using Autodesk.Revit.DB.Mechanical;
 using Autodesk.Revit.DB.Plumbing;
 using DS.RevitLib.Utils.Extensions;
+using Rhino.UI;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -28,11 +30,37 @@ namespace DS.RevitLib.Utils.Collisions.Models
             _activeDocument = activeDocument;
         }
 
+
+        /// <summary>
+        /// Types to exclude from intersections.
+        /// </summary>
+        public List<BuiltInCategory> ExculdedCategories { get; set; } = new List<BuiltInCategory>();
+
+        /// <summary>
+        /// Types to exclude from intersections.
+        /// </summary>
+        public List<Type> ExculdedTypes { get; set; } = new List<Type>();
+
         /// <inheritdoc/>
-        public List<Element> ExludedElements { get; set; }
+        public List<Element> ExcludedElements { get; set; } = new List<Element>();
 
         /// <inheritdoc/>
         public List<Element> Intersections { get; private set; }
+
+
+        private bool _IsInsulationAccount => !ExculdedTypes.Contains(typeof(InsulationLiningBase));
+
+        private List<ElementId> _ExcludedCategoriesIds
+        { 
+            get
+            {
+                if(ExculdedCategories is null || ExculdedCategories.Any()) { return null; }
+
+                var excludedCategoriesIds = new List<ElementId>();
+                ExculdedCategories.ForEach(c => excludedCategoriesIds.Add(new ElementId((int)c)));
+                return excludedCategoriesIds;
+            }
+        }
 
         /// <inheritdoc/>
         public IElementIntersectionFactory Build((Document, List<Element>) checkModel2)
@@ -59,8 +87,22 @@ namespace DS.RevitLib.Utils.Collisions.Models
             _slowFilters.Clear();
 
             _quickFilters.Add(GetBoundingBoxIntersectsFilter(checkObject));
-            var exclusionFilter = GetExclusionFilter(ExludedElements);
+
+            //set exclusionFilter
+            var exclusionFilter = GetExclusionFilter(ExcludedElements);
             if (exclusionFilter != null) { _quickFilters.Add(exclusionFilter); }
+
+            //set multiClassFilter
+            var multiClassFilter = !ExculdedTypes.Any() ? 
+                null : new ElementMulticlassFilter(ExculdedTypes, true);
+            if(multiClassFilter != null) { _quickFilters.Add(multiClassFilter); }
+
+            //set multicategoryFilter
+            var multiCategoryFilter = !_ExcludedCategoriesIds.Any() ?
+                null : new ElementMulticategoryFilter(_ExcludedCategoriesIds, true);
+            if (multiCategoryFilter != null) { _quickFilters.Add(multiCategoryFilter); }
+
+            //apply quick filters
             _quickFilters.ForEach(filter => _collector.WherePasses(filter));
             var elems2 = _collector.ToElements().ToList();
 
@@ -132,18 +174,20 @@ namespace DS.RevitLib.Utils.Collisions.Models
             if (excludedElements is null || excludedElements.Count == 0) { return null; }
 
             var excludedElementsIds = excludedElements.Select(el => el.Id).ToList();
-            var excludedElementsInsulationIds = new List<ElementId>();
-            excludedElements.ForEach(obj =>
+
+            if (_IsInsulationAccount)
             {
-                if (obj is Pipe || obj is Duct)
+                var excludedElementsInsulationIds = new List<ElementId>();
+                excludedElements.ForEach(obj =>
                 {
-                    Document doc = obj.Document;
-                    Element insulation = InsulationLiningBase.GetInsulationIds(doc, obj.Id)?
-                      .Select(x => doc.GetElement(x)).FirstOrDefault();
-                    if (insulation != null) { excludedElementsInsulationIds.Add(insulation.Id); }
-                }
-            });
-            excludedElementsIds.AddRange(excludedElementsInsulationIds);
+                    if (obj is Pipe || obj is Duct)
+                    {
+                        Element insulation = obj.GetInsulation();
+                        if (insulation != null) { excludedElementsInsulationIds.Add(insulation.Id); }
+                    }
+                });
+                excludedElementsIds.AddRange(excludedElementsInsulationIds);
+            }
 
             return excludedElementsIds is null || !excludedElementsIds.Any() ?
                  null : new ExclusionFilter(excludedElementsIds);

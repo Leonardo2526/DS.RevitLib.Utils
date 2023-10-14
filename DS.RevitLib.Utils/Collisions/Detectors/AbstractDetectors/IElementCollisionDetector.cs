@@ -17,6 +17,8 @@ namespace DS.RevitLib.Utils.Collisions.Detectors.AbstractDetectors
         /// </summary>
         double MinVolume { get; }
 
+        bool IsInsulationAccount { get; set; }
+
         /// <summary>
         /// Get collisions of <paramref name="checkObject"/>.
         /// </summary>
