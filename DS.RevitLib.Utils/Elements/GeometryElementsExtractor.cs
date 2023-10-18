@@ -11,6 +11,10 @@ namespace DS.RevitLib.Utils.Elements
     public class GeometryElementsExtractor : IElementsExtractor
     {
         private readonly Document _doc;
+        private List<Element> _activeDocElements;
+        private List<(RevitLinkInstance, Transform, List<Element>)> _linkElements;
+        private List<BuiltInCategory> _exludedCategories;
+        private Outline _outline;
 
         /// <summary>
         /// Instantiate an object to get geometry elements from document.
@@ -21,51 +25,68 @@ namespace DS.RevitLib.Utils.Elements
             _doc = doc;
         }
 
-        /// <summary>
-        /// Elements in document.
-        /// </summary>
-        public List<Element> ModelElements { get; private set; }
-
-        /// <summary>
-        /// Elements in all loaded links.
-        /// </summary>
-        public Dictionary<RevitLinkInstance, List<Element>> LinkElements { get; private set; }
-        public List<BuiltInCategory> ExludedCathegories { get; set; }
-        public Outline Outline { get; set; }
+        /// <inheritdoc/>
+        public List<Element> ActiveDocElements
+        { get => _activeDocElements ??= GetFromDoc(); set => _activeDocElements = value; }
 
         /// <inheritdoc/>
-        public (List<Element> elements, Dictionary<RevitLinkInstance, List<Element>> linkElementsDict) GetAll()
-        {
-            ModelElements = GetFromDoc();
-            LinkElements = GetFromLinks();
+        public List<(RevitLinkInstance, Transform, List<Element>)> LinkElements
+        { get => _linkElements ??= GetFromLinks(); set => _linkElements = value; }
 
-            return (ModelElements, LinkElements);
+        /// <summary>
+        /// Categories to exclude from extraction result.
+        /// <para>
+        /// Setting of this property will clear <see cref="ActiveDocElements"/> and <see cref="LinkElements"/>.
+        /// </para>
+        /// </summary>
+        public List<BuiltInCategory> ExludedCategories
+        {
+            get => _exludedCategories;
+            set { _exludedCategories = value; ClearElements(); }
+        }
+
+        /// <summary>
+        /// Only elements inside this outline will be include to extraction result.
+        /// <para>
+        /// Setting of this property will clear <see cref="ActiveDocElements"/> and <see cref="LinkElements"/>.
+        /// </para>
+        /// </summary>
+        public Outline Outline
+        {
+            get => _outline;
+            set { _outline = value; ClearElements(); }
         }
 
         /// <inheritdoc/>
-        public List<Element> GetFromDoc()
+        private List<Element> GetFromDoc()
         {
-            return _doc.GetGeometryElements(null, ExludedCathegories, null, false, Outline);
+            return _doc.GetGeometryElements(null, ExludedCategories, null, false, Outline);
         }
 
-       /// <inheritdoc/>
-        public Dictionary<RevitLinkInstance, List<Element>> GetFromLinks()
+        /// <inheritdoc/>
+        private List<(RevitLinkInstance, Transform, List<Element>)> GetFromLinks()
         {
-            var elements = new Dictionary<RevitLinkInstance, List<Element>>();
+            var elements = new List<(RevitLinkInstance, Transform, List<Element>)>();
 
             var allLinks = _doc.GetLoadedLinks();
             if (allLinks is null || !allLinks.Any()) return elements;
 
             foreach (var link in allLinks)
             {
-                List<Element> geomlinkElems = _doc.GetGeometryElements(link, ExludedCathegories, null, false, Outline); ;
+                List<Element> geomlinkElems = _doc.GetGeometryElements(link, ExludedCategories, null, false, Outline);
                 if (geomlinkElems is null || geomlinkElems.Count == 0) { continue; }
-                elements.Add(link, geomlinkElems);
+                var model = (link, link.GetLinkTransform(), geomlinkElems);
+                elements.Add(model);
             }
 
             return elements;
         }
 
+        private void ClearElements()
+        {
+            _activeDocElements = null;
+            _linkElements = null;
+        }
 
     }
 }

@@ -12,44 +12,23 @@ namespace DS.RevitLib.Utils.Elements
         /// <summary>
         /// Elements in document.
         /// </summary>
-        public List<Element> ModelElements { get;  }
+        public List<Element> ActiveDocElements { get; set; }
 
         /// <summary>
         /// Elements in all loaded links.
         /// </summary>
-        public Dictionary<RevitLinkInstance, List<Element>> LinkElements { get; }
-
-        List<BuiltInCategory> ExludedCathegories { get; set; }
-        Outline Outline { get; set; }   
+        public List<(RevitLinkInstance, Transform, List<Element>)> LinkElements { get; }
 
         /// <summary>
-        /// Get <see cref="Autodesk.Revit.DB.Element"/>'s from active <see cref="Document"/> and all it's loaded links.
+        /// Categories to exclude from extraction result.
         /// </summary>
-        /// <returns>
-        /// <see cref="Autodesk.Revit.DB.Element"/>'s in active <see cref="Document"/> and links. 
-        /// <para>
-        /// Returns empty collecions if document don't contains elements or <see cref="RevitLinkInstance"/>'s.
-        /// </para> 
-        /// </returns>
-        (List<Element> elements, Dictionary<RevitLinkInstance, List<Element>> linkElementsDict) GetAll();
+        List<BuiltInCategory> ExludedCategories { get; set; }
 
         /// <summary>
-        /// Get <see cref="Autodesk.Revit.DB.Element"/>'s from active <see cref="Document"/>.
+        /// Only elements inside this outline will be include to extraction result.
         /// </summary>
-        /// <returns>
-        /// <see cref="Autodesk.Revit.DB.Element"/>'s from active <see cref="Document"/>.
-        /// </returns>
-        List<Element> GetFromDoc();
+        Outline Outline { get; set; }
 
-        /// <summary>
-        /// Get <see cref="Autodesk.Revit.DB.Element"/>'s  from all loaded links in <see cref="Document"/>.
-        /// </summary>
-        /// <returns>
-        /// <see cref="Autodesk.Revit.DB.Element"/>'s from all loaded links.
-        /// <para>
-        /// Empty list if no loaded links exist in active <see cref="Document"/>.
-        /// </para>
-        /// </returns>
-        Dictionary<RevitLinkInstance, List<Element>> GetFromLinks();
+
     }
 }

@@ -27,8 +27,6 @@ namespace DS.RevitLib.Utils.Connections.PointModels.PointModels
         private readonly Document _doc;
         private readonly MEPSystemModel _mEPSystemModel;
         private readonly IElementCollisionDetector _collisionDetector;
-        private List<Element> _docElements;
-        private Dictionary<RevitLinkInstance, List<Element>> _linkElementsDict;
 
         /// <summary>
         /// Instantiate an object to validate <see cref="ConnectionPoint"/>.

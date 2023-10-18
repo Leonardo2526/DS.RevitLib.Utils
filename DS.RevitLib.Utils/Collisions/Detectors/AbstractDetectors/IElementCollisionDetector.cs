@@ -5,19 +5,29 @@ using System.Collections.Generic;
 namespace DS.RevitLib.Utils.Collisions.Detectors.AbstractDetectors
 {
     /// <inheritdoc/>
-    public interface IElementCollisionDetector : ICollisionDetector<object, Element>
+    public interface IElementCollisionDetector : ICollisionDetector<object, Element>, IExclusion
     {
-        /// <summary>
-        /// <see cref="Autodesk.Revit.DB.Element"/>'s to exclude from collisions.
-        /// </summary>
-        List<Element> ExludedElements { get; set; }
+        //IElementsExtractor ElementsExtractor { get; set; }
 
         /// <summary>
         /// Minimum intersection volume in <see cref="Autodesk.Revit.DB.DisplayUnitType.DUT_CUBIC_CENTIMETERS"/>.
         /// </summary>
         double MinVolume { get; }
 
+        /// <summary>
+        /// Specifies whether allow insulation collisions.
+        /// </summary>
         bool IsInsulationAccount { get; set; }
+
+        /// <summary>
+        /// Current active <see cref="Document"/> <see cref="Autodesk.Revit.DB.Element"/>'s to check collisions.
+        /// </summary>
+        List<Element> ActiveDocElements { get; set; }
+
+        /// <summary>
+        /// <see cref="RevitLinkInstance"/>'s <see cref="Autodesk.Revit.DB.Element"/>'s to check collisions.
+        /// </summary>
+        List<(RevitLinkInstance, Transform, List<Element>)> LinkElements { get; set; }
 
         /// <summary>
         /// Get collisions of <paramref name="checkObject"/>.
@@ -28,11 +38,5 @@ namespace DS.RevitLib.Utils.Collisions.Detectors.AbstractDetectors
         /// Get collisions of <paramref name="checkObject"/>.
         /// </summary>
         List<(Solid, Element)> GetCollisions(Solid checkObject);
-
-        /// <summary>
-        /// Update <see cref="Autodesk.Revit.DB.Element"/>'s to check collisions from active <see cref="Document"/>.
-        /// </summary>
-        /// <param name="activeDocElements"></param>
-        void Rebuild(List<Element> activeDocElements);
     }
 }

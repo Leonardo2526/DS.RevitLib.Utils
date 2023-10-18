@@ -4,8 +4,10 @@ using DS.ClassLib.VarUtils;
 using DS.ClassLib.VarUtils.Points;
 using DS.PathFinder;
 using DS.PathFinder.Algorithms.Enumeratos;
+using DS.RevitLib.Utils.Collisions.Detectors.AbstractDetectors;
 using DS.RevitLib.Utils.Connections.PointModels;
 using DS.RevitLib.Utils.Creation.Transactions;
+using DS.RevitLib.Utils.Elements;
 using DS.RevitLib.Utils.Elements.MEPElements;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.Geometry;
@@ -31,6 +33,7 @@ namespace DS.RevitLib.Utils.PathCreators
         private readonly Document _doc;
         private readonly PathAlgorithmBuilder _pathAlgorithmBuilder;
         private ISpecifyBoundaries _algorithmBuilder;
+        private IElementCollisionDetector _collisionDetector;
         private List<XYZ> _path = new List<XYZ>();
         private ITransactionFactory _transactionFactory;
 
@@ -110,6 +113,7 @@ namespace DS.RevitLib.Utils.PathCreators
             set => _transactionFactory = value;
         }
 
+        public IElementsExtractor ElementsExtractor { get; set; }
 
         #endregion
 
@@ -120,11 +124,12 @@ namespace DS.RevitLib.Utils.PathCreators
         /// <param name="basisMEPCurve1"></param>
         /// <param name="basisMEPCurve2"></param>
         /// <param name="objectsToExclude"></param>
+        /// <param name="collisionDetector"></param>
         public void Build(
             MEPCurve baseMEPCurve, 
             MEPCurve basisMEPCurve1, 
             MEPCurve basisMEPCurve2, 
-            List<Element> objectsToExclude)
+            List<Element> objectsToExclude, IElementCollisionDetector collisionDetector)
         {
             _pathAlgorithmBuilder.TransactionFactory = _transactionFactory;
 
@@ -132,6 +137,8 @@ namespace DS.RevitLib.Utils.PathCreators
                 SetBasis(baseMEPCurve, basisMEPCurve1, basisMEPCurve2, AllowSecondElementForBasis).
                 SetExclusions(objectsToExclude, ExludedCathegories).
                 SetExternalToken(ExternalToken);
+
+            _collisionDetector = collisionDetector;
         }
 
         /// <inheritdoc/>
@@ -145,7 +152,7 @@ namespace DS.RevitLib.Utils.PathCreators
                  AccountInitialDirections)?.
                  SetVisualisator().
                  SetDirectionIterator().
-                 SetCollisionDetector(InsulationAccount).
+                 SetCollisionDetector(_collisionDetector, InsulationAccount, ElementsExtractor).
                  SetNodeBuilder().
                  SetSearchLimit().
                  Build(MinimizePathNodes);

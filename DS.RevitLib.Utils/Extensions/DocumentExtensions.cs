@@ -312,6 +312,7 @@ namespace DS.RevitLib.Utils.Extensions
         /// </summary>
         /// <param name="activeDoc"></param>
         /// <param name="checkDoc"></param>
+        /// <remarks>This is long operation.</remarks>
         /// <returns>
         /// <see cref="RevitLinkInstance"/> if <paramref name="checkDoc"/> is loaded link in <paramref name="activeDoc"/> document.
         /// <para>
@@ -344,7 +345,18 @@ namespace DS.RevitLib.Utils.Extensions
         {
             var link = activeDoc.TryGetLink(checkDoc);
             if (link == null) { return null; }
+            return GetLinkTransform(link);
+        }
 
+        /// <summary>
+        /// Get <see cref="Transform"/> from <paramref name="link"/>.
+        /// </summary>
+        /// <param name="link"></param>
+        /// <returns>
+        /// Total <see cref="Transform"/> if it's not equal to <see cref="Transform.Identity"/>.
+        /// </returns>
+        public static Transform GetLinkTransform(this RevitLinkInstance link)
+        {
             var totalLinkTransform = link.GetTotalTransform();
             return totalLinkTransform.AlmostEqual(Transform.Identity) is true ?
                 null : totalLinkTransform;

@@ -75,7 +75,7 @@ namespace DS.RevitLib.Utils.Elements.Transfer.Resolvers
 
                 _operationElement.Transform(rotateTransform);
 
-                _detector.ExludedElements = _excludedElements;
+                _detector.ExcludedElements = _excludedElements;
                 UnresolvedCollisions = _detector.GetCollisions(_operationElement.Solid);
 
                 if (!UnresolvedCollisions.Any())

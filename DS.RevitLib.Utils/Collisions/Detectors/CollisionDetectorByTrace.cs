@@ -6,23 +6,14 @@ using DS.ClassLib.VarUtils.Points;
 using DS.RevitLib.Utils.Collisions.Detectors.AbstractDetectors;
 using DS.RevitLib.Utils.Connections.PointModels;
 using DS.RevitLib.Utils.Creation.Transactions;
-using DS.RevitLib.Utils.Elements.MEPElements;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.MEP;
-using DS.RevitLib.Utils.Models;
-using DS.RevitLib.Utils.Solids;
 using DS.RevitLib.Utils.Various.Bases;
 using MoreLinq;
 using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
-using System.Net;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Media.Media3D;
 
 namespace DS.RevitLib.Utils.Collisions.Detectors
 {
@@ -156,7 +147,7 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
             var uCS1Basis = _pointConverter.ConvertToUCS1(basis).ToXYZ();
             var checkSolid = SolidExtractor.Extract(p1, p2, uCS1Basis);
 
-            _collisionDetector.ExludedElements = ObjectsToExclude;
+            _collisionDetector.ExcludedElements = ObjectsToExclude;
             var collisions = _collisionDetector.GetCollisions(checkSolid);
             var excludeWallsIds = GetExcludeWalls(collisions, direction);
 

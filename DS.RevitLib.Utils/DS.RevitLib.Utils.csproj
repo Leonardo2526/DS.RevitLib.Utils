@@ -104,6 +104,7 @@
     <Compile Include="Collisions\Detectors\AbstractDetectors\IElementCollisionDetector.cs" />
     <Compile Include="Collisions\Detectors\CollisionDetectorByTrace.cs" />
     <Compile Include="Collisions\IElementIntersectionFactory.cs" />
+    <Compile Include="Collisions\IExclusion.cs" />
     <Compile Include="Collisions\Resolvers\IResolver.cs" />
     <Compile Include="Collisions\Resolvers\MoveTransformStrategy.cs" />
     <Compile Include="Collisions\Solutions\ISolution.cs" />

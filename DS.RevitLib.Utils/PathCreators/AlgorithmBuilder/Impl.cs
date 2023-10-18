@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using DS.ClassLib.VarUtils;
+using DS.ClassLib.VarUtils.Collisions;
 using DS.ClassLib.VarUtils.Enumerables;
 using DS.ClassLib.VarUtils.Points;
 using DS.PathFinder;
@@ -76,8 +77,6 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
             private readonly UIDocument _uiDoc;
             private readonly ITraceSettings _traceSettings;
             private readonly PathAlgorithmBuilder _algorithmBuilder;
-            private List<Element> _docElements;
-            private Dictionary<RevitLinkInstance, List<Element>> _linkElementsDict;
             private readonly MEPCurve _baseMEPCurve;
             private readonly IBasisStrategy _basisStrategy;
             private IPoint3dConverter _pointConverter;
@@ -105,7 +104,6 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
             private Point3d _startANP;
             private Vector3d _endDirection;
             private Point3d _endANP;
-            private readonly IElementCollisionDetector _collisionDetector;
 
             #endregion
 
@@ -119,7 +117,6 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
                 _basisStrategy = pathAlgorithmBuilder._basisStrategy;
                 _transactionFactory = pathAlgorithmBuilder.TransactionFactory;
                 _baseMEPCurve = pathAlgorithmBuilder._baseMEPCurve;
-                _collisionDetector = pathAlgorithmBuilder._collisionDetector;
             }
 
             #region PublicMethods
@@ -211,8 +208,7 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
                     outlineFactory);
                 if (_internalOutline == null) { return null; }
 
-                (_docElements, _linkElementsDict) =
-                    new ElementsExtractor(_doc, _exludedCathegories, _internalOutline).GetAll();
+                //_collisionDetector.ElementsExtractor.Outline = _internalOutline;
 
                 //convert start and end points.
                 var sp = new Point3d(startPoint.X, startPoint.Y, startPoint.Z);
@@ -257,13 +253,22 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
                 return this;
             }
 
-            public ISpecifyParameter SetCollisionDetector(bool insulationAccount)
+            public ISpecifyParameter SetCollisionDetector(IElementCollisionDetector collisionDetector, bool insulationAccount, 
+                IElementsExtractor elementsExtractor)
             {
+                elementsExtractor.ExludedCategories = _exludedCathegories;
+                elementsExtractor.Outline = _internalOutline;
+
+                collisionDetector.IsInsulationAccount = insulationAccount;
+                collisionDetector.ExcludedElements = _objectsToExclude;
+                collisionDetector.ActiveDocElements = elementsExtractor.ActiveDocElements;
+                collisionDetector.LinkElements = elementsExtractor.LinkElements;
+
                 _traceCollisionDetector =
                     new CollisionDetectorByTrace(_doc,
                     _baseMEPCurve,
                     _traceSettings,
-                    insulationAccount, _collisionDetector,
+                    insulationAccount, collisionDetector,
                     _pointConverter, _transactionFactory)
                     {
                         ObjectsToExclude = _objectsToExclude,

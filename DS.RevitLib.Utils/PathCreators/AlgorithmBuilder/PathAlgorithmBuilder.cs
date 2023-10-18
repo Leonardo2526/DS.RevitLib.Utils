@@ -8,6 +8,7 @@ using DS.RevitLib.Utils.Bases;
 using DS.RevitLib.Utils.Collisions.Detectors.AbstractDetectors;
 using DS.RevitLib.Utils.Connections.PointModels;
 using DS.RevitLib.Utils.Creation.Transactions;
+using DS.RevitLib.Utils.Elements;
 using DS.RevitLib.Utils.Geometry;
 using DS.RevitLib.Utils.Models;
 using Rhino.Geometry;
@@ -29,7 +30,6 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
         private readonly IEnumerable<IBasisStrategy> _basisStrategies;
         private AStarAlgorithmCDF _algorithm = new();
         private IDirectionValidator _directionValidator;
-        private readonly IElementCollisionDetector _collisionDetector;
         private MEPCurve _baseMEPCurve;
         private ITransactionFactory _transactionFactory;
 
@@ -44,8 +44,7 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
             UIDocument uiDoc,
             ITraceSettings traceSettings,
             IEnumerable<IBasisStrategy> basisStrategies,
-            IDirectionValidator quadrantModel,
-            IElementCollisionDetector collisionDetector)
+            IDirectionValidator quadrantModel)
         {
             _uiDoc = uiDoc;
             _traceSettings = traceSettings;
@@ -59,7 +58,6 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
             //var dir2 = new Vector3d(0, 0, -1);
             //quadrantModel.EnableQuadrants(dir2, OrthoPlane.XZ);
             _directionValidator = quadrantModel;
-            _collisionDetector = collisionDetector;
         }
 
 
@@ -231,9 +229,11 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="collisionDetector"></param>
         /// <param name="insulationAccount"></param>
         /// <returns></returns>
-        ISpecifyParameter SetCollisionDetector(bool insulationAccount);
+        ISpecifyParameter SetCollisionDetector(IElementCollisionDetector collisionDetector, bool insulationAccount, 
+            IElementsExtractor elementsExtractor);
 
         /// <summary>
         /// 

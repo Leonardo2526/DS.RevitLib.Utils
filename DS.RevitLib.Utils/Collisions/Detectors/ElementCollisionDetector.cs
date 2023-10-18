@@ -1,8 +1,8 @@
 ﻿using Autodesk.Revit.DB;
 using DS.RevitLib.Utils.Collisions.Detectors.AbstractDetectors;
 using DS.RevitLib.Utils.Collisions.Models;
-using DS.RevitLib.Utils.Elements;
 using DS.RevitLib.Utils.Extensions;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -12,45 +12,31 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
     /// An object to find collisions (intersections) between <see cref="object"/>'s and <see cref="Autodesk.Revit.DB.Element"/>'s.
     /// </summary>
     public class ElementCollisionDetector : IElementCollisionDetector
-    {       
+    {
         private readonly Document _activeDocument;
         private readonly IElementIntersectionFactory _intersectionFactory;
-        private IElementsExtractor _elementsExtractor;
-        private List<Element> _activeDocElements;
-        private Dictionary<RevitLinkInstance, List<Element>> _linkElements;
-        private bool _isInsulationAccount;
+        private readonly List<(RevitLinkInstance, Transform, List<Element>)> _loadedLinksDict = new();
 
         /// <summary>
         /// Instantiate a new object to find collisions (intersections) between <see cref="object"/>'s and <see cref="Autodesk.Revit.DB.Element"/>'s.
         /// </summary>
         /// <param name="activeDocument"></param>
         /// <param name="intersectionFactory">Factory to find intersecrtions between elements.</param>
-        /// <param name="elementsExtractor">Object to get documents elements.</param>
-        public ElementCollisionDetector(Document activeDocument, IElementIntersectionFactory intersectionFactory,
-            IElementsExtractor elementsExtractor = null)
+        public ElementCollisionDetector(Document activeDocument, IElementIntersectionFactory intersectionFactory)
         {
             _activeDocument = activeDocument;
             _intersectionFactory = intersectionFactory;
-            _elementsExtractor = elementsExtractor;
+            var loadedLinks = activeDocument.GetLoadedLinks() ?? new List<RevitLinkInstance>();
+
+            foreach (var link in loadedLinks)
+            {
+                (RevitLinkInstance, Transform, List<Element>) model = (link, link.GetLinkTransform(), null);
+                _loadedLinksDict.Add(model);
+            }
         }
 
-        /// <summary>
-        /// Elements in active document.
-        /// </summary>
-        public List<Element> ActiveDocElements
-        {
-            get => _activeDocElements ??= ElementsExtractor.ModelElements ?? ElementsExtractor.GetFromDoc();
-            set => _activeDocElements = value;
-        }
 
-        /// <summary>
-        /// Elements in all loaded links.
-        /// </summary>
-        public Dictionary<RevitLinkInstance, List<Element>> LinkElements
-        {
-            get => _linkElements ??= ElementsExtractor.LinkElements ?? ElementsExtractor.GetFromLinks();
-            set => _linkElements = value;
-        }
+        #region Properties
 
         /// <inheritdoc/>
         public List<(object, Element)> Collisions { get; } = new List<(object, Element)>();
@@ -59,41 +45,62 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
         public double MinVolume { get; set; }
 
         /// <inheritdoc/>
-        public List<Element> ExludedElements { get; set; }
-
-
-        #region PrivateMethods
-
-        private IElementsExtractor ElementsExtractor =>
-            _elementsExtractor ??= new GeometryElementsExtractor(_activeDocument);
+        public List<BuiltInCategory> ExculdedCategories
+        {
+            get => _intersectionFactory.ExculdedCategories;
+            set => _intersectionFactory.ExculdedCategories = value;
+        }
 
         /// <inheritdoc/>
-        public bool IsInsulationAccount 
-        { 
-            get => _isInsulationAccount;
-            set 
-            { 
-                _isInsulationAccount = value;
-                if(_intersectionFactory is ElementIntersectionFactory factory)
-                {
-                    if (_isInsulationAccount)
-                    {
-                        factory.ExculdedTypes = factory.ExculdedTypes.
-                            Where(t=> t.Name != typeof(InsulationLiningBase).Name).ToList();
-                    }
-                    else 
-                    {
-                        factory.ExculdedTypes.Add(typeof(InsulationLiningBase));
-                    }
-                }
-            } 
+        public List<Type> ExculdedTypes
+        {
+            get => _intersectionFactory.ExculdedTypes;
+            set => _intersectionFactory.ExculdedTypes = value;
         }
+
+        /// <inheritdoc/>
+        public List<Element> ExcludedElements
+        {
+            get => _intersectionFactory.ExcludedElements;
+            set => _intersectionFactory.ExcludedElements = value;
+        }
+
+        /// <inheritdoc/>
+        public List<Element> ActiveDocElements { get; set; }
+
+        /// <inheritdoc/>
+        public List<(RevitLinkInstance, Transform, List<Element>)> LinkElements { get; set; }
+
+        /// <inheritdoc/>
+        public bool IsInsulationAccount
+        {
+            get => _intersectionFactory.IsInsulationAccount;
+            set
+            {
+                if (value)
+                {
+                    _intersectionFactory.ExculdedTypes = _intersectionFactory.ExculdedTypes.
+                            Where(t => t.Name != typeof(InsulationLiningBase).Name).ToList();
+                }
+                else if (_intersectionFactory.IsInsulationAccount)
+                {
+                    _intersectionFactory.ExculdedTypes.Add(typeof(InsulationLiningBase));
+                }
+
+            }
+        }
+
+        #endregion
+
 
         /// <inheritdoc/>
         public List<(Element, Element)> GetCollisions(Element checkObject) => GetObjectCollisions(checkObject);
 
         /// <inheritdoc/>
         public List<(Solid, Element)> GetCollisions(Solid checkObject) => GetObjectCollisions(checkObject);
+
+
+        #region PrivateMethods
 
         private List<(T, Element)> GetObjectCollisions<T>(T checkObject)
         {
@@ -105,10 +112,11 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
 
             Collisions.AddRange(activeDocCollisions);
 
-            foreach (var linkElem in LinkElements)
+            var links = LinkElements ?? _loadedLinksDict;
+
+            foreach (var link in links)
             {
-                var linkModel = (linkElem.Key.GetLinkDocument(), linkElem.Value);
-                var linkCollisions = GetDocCollisions(linkModel, checkObject);
+                var linkCollisions = GetLinkCollisions(link, checkObject);
                 Collisions.AddRange(linkCollisions);
             }
 
@@ -118,10 +126,18 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
 
         private List<(object, Element)> GetDocCollisions((Document, List<Element>) checkModel2, object checkObject)
         {
-            if (checkModel2.Item2.Count == 0) { return new List<(object, Element)>(); }
-
             _intersectionFactory.Build(checkModel2);
-            _intersectionFactory.ExcludedElements = ExludedElements;
+            return GetModelCollisions(checkObject);
+        }
+
+        private List<(object, Element)> GetLinkCollisions((RevitLinkInstance, Transform, List<Element>) checkModel2, object checkObject)
+        {
+            _intersectionFactory.Build(checkModel2);
+            return GetModelCollisions(checkObject);
+        }
+
+        private List<(object, Element)> GetModelCollisions(object checkObject)
+        {
             List<Element> intersectionElements = GetIntersections(_intersectionFactory, checkObject);
 
             var collisions = new List<(object, Element)>();
@@ -159,12 +175,6 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
                 return intersectionElements;
             }
 
-        }
-
-        /// <inheritdoc/>
-        public void Rebuild(List<Element> activeDocElements)
-        {
-            _activeDocElements = activeDocElements;
         }
 
         #endregion

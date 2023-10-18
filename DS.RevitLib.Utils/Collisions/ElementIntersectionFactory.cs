@@ -2,7 +2,6 @@
 using Autodesk.Revit.DB.Mechanical;
 using Autodesk.Revit.DB.Plumbing;
 using DS.RevitLib.Utils.Extensions;
-using Rhino.UI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -47,14 +46,14 @@ namespace DS.RevitLib.Utils.Collisions.Models
         /// <inheritdoc/>
         public List<Element> Intersections { get; private set; }
 
-
-        private bool _IsInsulationAccount => !ExculdedTypes.Contains(typeof(InsulationLiningBase));
+        /// <inheritdoc/>
+        public bool IsInsulationAccount => !ExculdedTypes.Contains(typeof(InsulationLiningBase));
 
         private List<ElementId> _ExcludedCategoriesIds
-        { 
+        {
             get
             {
-                if(ExculdedCategories is null || ExculdedCategories.Any()) { return null; }
+                if (ExculdedCategories.Any()) { return new List<ElementId>(); }
 
                 var excludedCategoriesIds = new List<ElementId>();
                 ExculdedCategories.ForEach(c => excludedCategoriesIds.Add(new ElementId((int)c)));
@@ -66,7 +65,16 @@ namespace DS.RevitLib.Utils.Collisions.Models
         public IElementIntersectionFactory Build((Document, List<Element>) checkModel2)
         {
             _checkModel2 = checkModel2;
-            _linkTransform = _activeDocument.TryGetTransform(checkModel2.Item1);
+            _linkTransform = null;
+            return this;
+        }
+
+        /// <inheritdoc/>
+        public IElementIntersectionFactory Build((RevitLinkInstance, Transform, List<Element>) checkModel2)
+        {
+            var link = checkModel2.Item1;
+            _checkModel2 = (link.GetLinkDocument(), checkModel2.Item3);
+            _linkTransform = checkModel2.Item2;
             return this;
         }
 
@@ -81,7 +89,12 @@ namespace DS.RevitLib.Utils.Collisions.Models
 
         private List<Element> GetObjectIntersections(object checkObject)
         {
-            _collector = new FilteredElementCollector(_checkModel2.Item1, _checkModel2.Item2.Select(el => el.Id).ToList());
+            if (_checkModel2.Item2 is not null && _checkModel2.Item2.Count == 0)
+            { return new List<Element>(); }
+
+            _collector = _checkModel2.Item2 is null ?
+                new FilteredElementCollector(_checkModel2.Item1) :
+                new FilteredElementCollector(_checkModel2.Item1, _checkModel2.Item2.Select(el => el.Id).ToList());
 
             _quickFilters.Clear();
             _slowFilters.Clear();
@@ -93,9 +106,9 @@ namespace DS.RevitLib.Utils.Collisions.Models
             if (exclusionFilter != null) { _quickFilters.Add(exclusionFilter); }
 
             //set multiClassFilter
-            var multiClassFilter = !ExculdedTypes.Any() ? 
+            var multiClassFilter = !ExculdedTypes.Any() ?
                 null : new ElementMulticlassFilter(ExculdedTypes, true);
-            if(multiClassFilter != null) { _quickFilters.Add(multiClassFilter); }
+            if (multiClassFilter != null) { _quickFilters.Add(multiClassFilter); }
 
             //set multicategoryFilter
             var multiCategoryFilter = !_ExcludedCategoriesIds.Any() ?
@@ -104,13 +117,14 @@ namespace DS.RevitLib.Utils.Collisions.Models
 
             //apply quick filters
             _quickFilters.ForEach(filter => _collector.WherePasses(filter));
-            var elems2 = _collector.ToElements().ToList();
+
+            _collector.WhereElementIsNotElementType();
 
             _slowFilters.Add(GetElementIntersectsFilter(checkObject));
-
             _slowFilters.ForEach(filter => _collector.WherePasses(filter));
 
-            return Intersections = _collector.ToElements().ToList();
+            var elements = _collector.ToElements();
+            return Intersections = elements.Where(e => e.IsGeometryElement()).ToList();
         }
 
         private ElementQuickFilter GetBoundingBoxIntersectsFilter(object checkObject)
@@ -123,8 +137,8 @@ namespace DS.RevitLib.Utils.Collisions.Models
 
             if (_linkTransform != null)
             {
-                p1 = _linkTransform.Inverse.OfPoint(boxXYZ.Min);
-                p2 = _linkTransform.Inverse.OfPoint(boxXYZ.Max);
+                p1 = _linkTransform.Inverse.OfPoint(p1);
+                p2 = _linkTransform.Inverse.OfPoint(p2);
             }
 
             (XYZ minPoint, XYZ maxPoint) = DS.RevitLib.Utils.XYZUtils.CreateMinMaxPoints(new List<XYZ> { p1, p2 });
@@ -175,7 +189,7 @@ namespace DS.RevitLib.Utils.Collisions.Models
 
             var excludedElementsIds = excludedElements.Select(el => el.Id).ToList();
 
-            if (_IsInsulationAccount)
+            if (IsInsulationAccount)
             {
                 var excludedElementsInsulationIds = new List<ElementId>();
                 excludedElements.ForEach(obj =>
@@ -192,6 +206,7 @@ namespace DS.RevitLib.Utils.Collisions.Models
             return excludedElementsIds is null || !excludedElementsIds.Any() ?
                  null : new ExclusionFilter(excludedElementsIds);
         }
+
 
         #endregion
 

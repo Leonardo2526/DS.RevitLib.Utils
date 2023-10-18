@@ -6,21 +6,30 @@ using System.Collections.Generic;
 namespace DS.RevitLib.Utils.Collisions.Models
 {
     /// <inheritdoc/>
-    public interface IElementIntersectionFactory : IIntersectionFactory<Element>
+    public interface IElementIntersectionFactory : IIntersectionFactory<Element>, IExclusion
     {
         /// <summary>
-        /// Elements to exclude intersections.
+        /// Specifies whether allow insulation intersections.
         /// </summary>
-        List<Element> ExcludedElements { get; set; }
+        bool IsInsulationAccount { get; }
 
         /// <summary>
-        /// Build factory.
+        /// Build factory to get intersections with active <see cref="Document"/> elements.
         /// </summary>
         /// <param name="checkModel2"></param>
         /// <returns>
         /// Factory that is ready to get inersections.
         /// </returns>
         IElementIntersectionFactory Build((Document, List<Element>) checkModel2);
+
+        /// <summary>
+        /// Build factory to get intersections with <see cref="RevitLinkInstance"/> elements.
+        /// </summary>
+        /// <param name="checkModel2"></param>
+        /// <returns>
+        /// Factory that is ready to get inersections.
+        /// </returns>
+        IElementIntersectionFactory Build((RevitLinkInstance, Transform, List<Element>) checkModel2);
 
         /// <summary>
         /// Get collisions of <paramref name="checkObject"/>.
