@@ -5,7 +5,7 @@ using DS.RevitLib.Utils.MEP;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Runtime.InteropServices.ComTypes;
+using System.Text;
 
 namespace DS.RevitLib.Utils.Connections.PointModels
 {
@@ -68,9 +68,12 @@ namespace DS.RevitLib.Utils.Connections.PointModels
 
             var collisions = Validator.GetCollisions();
             if (collisions is not null && collisions.Any())
-            { errors.Add(new ValidationResult("В точке не должно быть коллизий.")); }
+            {
+                var report = GetCollisionsReport(collisions);
+                errors.Add(new ValidationResult(report));
+            }
 
-            if(!Validator.IsWithinLengthLimits(Point))
+            if (!Validator.IsWithinLengthLimits(Point))
             { errors.Add(new ValidationResult("Точка вне зоны решения коллизии.")); }
 
             return errors;
@@ -88,7 +91,7 @@ namespace DS.RevitLib.Utils.Connections.PointModels
         public void Validate()
         {
             Validator.ConnectionPoint = this;
-            if(this.Element is null) { IsValid = false; return; }
+            if (this.Element is null) { IsValid = false; return; }
             IsValid = Validator.Validate();
         }
 
@@ -120,15 +123,37 @@ namespace DS.RevitLib.Utils.Connections.PointModels
         /// <returns></returns>
         public MEPCurve GetMEPCurve(IEnumerable<ElementId> excluededIds = null)
         {
-            if(Element is MEPCurve curve) { return  curve; }
+            if (Element is MEPCurve curve) { return curve; }
 
             var connectedMEPCurves = ConnectorUtils.GetConnectedElements(Element)?.Where(e => e is MEPCurve);
-            if(connectedMEPCurves is null || !connectedMEPCurves.Any()) { return null; }
+            if (connectedMEPCurves is null || !connectedMEPCurves.Any()) { return null; }
 
-            if(excluededIds is null || !excluededIds.Any()) {  return connectedMEPCurves.FirstOrDefault() as MEPCurve; }
+            if (excluededIds is null || !excluededIds.Any()) { return connectedMEPCurves.FirstOrDefault() as MEPCurve; }
             var noExeptionIds = connectedMEPCurves.Select(e => e.Id).Except(excluededIds);
 
             return Element.Document.GetElement(noExeptionIds.FirstOrDefault()) as MEPCurve;
+        }
+
+        private string GetCollisionsReport(List<(XYZ, Element)> collisions)
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine("В точке не должно быть коллизий.");
+
+            var elements = collisions.Select(c => c.Item2);
+            var groups = elements.GroupBy(e => e.Document);
+
+            foreach (var group in groups)
+            {
+                sb.AppendLine();
+                sb.AppendLine($"Модель: '{group.Key.Title}': ");
+                foreach (var g in group)
+                {
+                    sb.AppendLine("  Id: " + g.Id.IntegerValue.ToString());
+                }
+            }
+            sb.AppendLine("\nИтого: " + collisions.Count);
+
+            return sb.ToString();
         }
     }
 }

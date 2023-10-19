@@ -1,21 +1,11 @@
 ﻿using Autodesk.Revit.DB;
-using DS.RevitLib.Utils.Collisions.Detectors;
-using DS.RevitLib.Utils.Collisions.Models;
-using DS.RevitLib.Utils.Elements;
-using DS.RevitLib.Utils.MEP.SystemTree;
-using DS.RevitLib.Utils;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using DS.RevitLib.Utils.Extensions;
-using System.ComponentModel.DataAnnotations;
-using System.Diagnostics;
-using DS.ClassLib.VarUtils.Collisions;
-using DS.RevitLib.Utils.Creation.Transactions;
-using Autodesk.Revit.UI;
 using DS.RevitLib.Utils.Collisions.Detectors.AbstractDetectors;
+using DS.RevitLib.Utils.Creation.Transactions;
+using DS.RevitLib.Utils.Extensions;
+using DS.RevitLib.Utils.MEP.SystemTree;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
 
 namespace DS.RevitLib.Utils.Connections.PointModels.PointModels
 {
@@ -57,6 +47,11 @@ namespace DS.RevitLib.Utils.Connections.PointModels.PointModels
         public ITransactionFactory TransactionFactory { get; set; }
 
         /// <summary>
+        /// Messenger to show errors.
+        /// </summary>
+        public IWindowMessenger Messenger { get; set; }
+
+        /// <summary>
         /// Specifies whether point is valid for connection.
         /// </summary>
         /// <returns>Returns <see langword="true"></see> if <see cref="_mEPSystemModel"/> contatins point and point has no collisions.
@@ -68,11 +63,8 @@ namespace DS.RevitLib.Utils.Connections.PointModels.PointModels
             var context = new ValidationContext(ConnectionPoint);
             if (!Validator.TryValidateObject(ConnectionPoint, context, results, true))
             {
-                foreach (var error in results)
-                {
-                    TransactionFactory?.CreateAsync(() =>
-                    TaskDialog.Show("Ошибка", error.ErrorMessage), "show message");
-                }
+                if (Messenger != null)
+                { results.ForEach(r => Messenger.Show(r.ErrorMessage, "Ошибка")); }
                 return false;
             }
             else { return true; }
@@ -96,20 +88,28 @@ namespace DS.RevitLib.Utils.Connections.PointModels.PointModels
         /// <returns>Returns <see langword="true"></see> if point has no collisions.
         /// <para>Otherwise returns <see langword="false"></see>.</para>
         /// </returns>
-        public List<(Element, Element)> GetCollisions()
+        public List<(XYZ, Element)> GetCollisions()
         {
+            var collisions = new List<(XYZ, Element)>();
+
             //get collisions in freeCon.
-            var collisions = _collisionDetector.GetCollisions(ConnectionPoint.Element);
-            if (!collisions.Any()) { return collisions; }
+            var elemCollisions = _collisionDetector.GetCollisions(ConnectionPoint.Element);
+            if (!elemCollisions.Any()) { return collisions; }
 
             if (ConnectionPoint.Element is FamilyInstance)
             { return collisions; }
             else
             {
                 //Specify collision objects on point
-                var collisionsOnPoint = collisions.
-                    Where(obj => obj.Item2.GetSolidInLink(_doc).Contains(ConnectionPoint.Point)).ToList();
-                return collisionsOnPoint;
+                foreach (var c in elemCollisions)
+                {
+                    if (c.Item2.GetSolidInLink(_doc).Contains(ConnectionPoint.Point))
+                    {
+                        var pc = (ConnectionPoint.Point, c.Item2);
+                        collisions.Add(pc);
+                    }
+                }
+                return collisions;
             }
         }
 

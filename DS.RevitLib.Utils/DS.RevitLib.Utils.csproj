@@ -123,6 +123,7 @@
     <Compile Include="Creation\Transactions\RevitContextOption.cs" />
     <Compile Include="Elements\ConnectedElementFinder.cs" />
     <Compile Include="Elements\ElementsExtractor.cs" />
+    <Compile Include="Elements\ElementSorter.cs" />
     <Compile Include="Elements\IElementsExtractor.cs" />
     <Compile Include="Elements\MEPElements\Connection\ElementConnectionFactory.cs" />
     <Compile Include="Elements\MEPElements\Connection\ElementStrategies\ConnectWithMEPCurve.cs" />
@@ -193,6 +194,7 @@
     <Compile Include="Geometry\Points\PointVisualisator.cs" />
     <Compile Include="Geometry\Points\XYZVisualizator.cs" />
     <Compile Include="Geometry\Solids\SolidOffsetExtractor.cs" />
+    <Compile Include="Various\IWindowMessenger.cs" />
     <Compile Include="PathCreators\AlgorithmBuilder\Impl.cs" />
     <Compile Include="PathCreators\XYZPathFinder.cs" />
     <Compile Include="PathCreators\AlgorithmBuilder\PathAlgorithmBuilder.cs" />
