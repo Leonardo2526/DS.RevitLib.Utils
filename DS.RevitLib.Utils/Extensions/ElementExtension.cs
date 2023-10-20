@@ -4,6 +4,7 @@ using Autodesk.Revit.DB.Mechanical;
 using Autodesk.Revit.DB.Plumbing;
 using DS.ClassLib.VarUtils;
 using DS.RevitLib.Utils.Connection;
+using DS.RevitLib.Utils.Connections.PointModels;
 using DS.RevitLib.Utils.MEP;
 using DS.RevitLib.Utils.Transactions;
 using DS.RevitLib.Utils.Visualisators;
@@ -629,9 +630,9 @@ namespace DS.RevitLib.Utils.Extensions
         /// <see langword="null"/> if no loaded links are in <paramref name="doc"/> or no links that contains <paramref name="element"/>.
         /// </para>
         /// </returns>
-        public static RevitLinkInstance GetLink(this Element element, Document doc) => 
+        public static RevitLinkInstance GetLink(this Element element, Document doc) =>
             doc.TryGetLink(element.Document);
-        
+
 
         /// <summary>
         /// Get transformed solid from <paramref name="element"/> by <paramref name="revitLink"/>.
@@ -730,6 +731,47 @@ namespace DS.RevitLib.Utils.Extensions
         {
             var (elem1Con, elem2Con) = ConnectorUtils.GetCommonConnectors(element, checkElement);
             return (elem1Con is not null && elem2Con is not null);
+        }
+
+        /// <summary>
+        /// Get (<see cref="Autodesk.Revit.DB.XYZ"/> , <see cref="Autodesk.Revit.DB.XYZ"/>) 
+        /// that specify <see cref="Autodesk.Revit.DB.XYZ"/>'s on floor and ceiling that are closest to <see cref="ConnectionPoint"/>.
+        /// <para>
+        /// If <see cref="Autodesk.Revit.DB.Element"/> of <paramref name="pointElement"/> is <see langword="null"/> the distance to floor/ceiling
+        /// will be checked from <see cref="Autodesk.Revit.DB.XYZ"/> of <paramref name="pointElement"/>.
+        /// </para>
+        /// </summary>
+        /// <returns>
+        /// (<see cref="Autodesk.Revit.DB.XYZ"/> , <see cref="Autodesk.Revit.DB.XYZ"/>)
+        /// if <see cref="ConnectionPoint"/> is within floor and ceiling limits.
+        /// <para> 
+        /// (<see langword="null"/>, <see langword="null"/>) 
+        /// if <see cref="ConnectionPoint"/> is outside floor and ceiling limits.</para>
+        /// </returns>
+        public static (XYZ pointFloorBound, XYZ pointCeilingBound) GetFloorBounds(this (Element element, XYZ point) pointElement,
+            Document doc,
+            double minDistToFloor, double minDistToCeiling,
+            bool isInsulationAccount = true,
+            int distnaceToFindFloor = 30)
+        {
+            var element = pointElement.element;
+            var point = pointElement.point;
+
+            double h2 = element is null ? 0 : element.GetSizeByVector(XYZ.BasisZ, point);
+            var ins = isInsulationAccount && element is not null && element is MEPCurve mEPCurve ?
+                mEPCurve.GetInsulationThickness() : 0;
+            var hmin = h2 + ins;
+
+            double offsetFromFloor = hmin + minDistToFloor;
+            double offsetFromCeiling = hmin + minDistToCeiling;
+
+            var minHFloor = offsetFromFloor;
+            var minHCeiling = offsetFromCeiling;
+
+            XYZ pointFloorBound = point.GetXYZBound(doc, minHFloor, -distnaceToFindFloor);
+            XYZ pointCeilingBound = point.GetXYZBound(doc, minHCeiling, distnaceToFindFloor);
+
+            return (pointFloorBound, pointCeilingBound);
         }
     }
 }

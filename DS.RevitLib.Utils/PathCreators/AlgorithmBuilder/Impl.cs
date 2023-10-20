@@ -18,8 +18,10 @@ using DS.RevitLib.Utils.Geometry.Points;
 using DS.RevitLib.Utils.MEP;
 using DS.RevitLib.Utils.Various.Bases;
 using Rhino.Geometry;
+using Rhino.UI;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using Plane = Rhino.Geometry.Plane;
@@ -200,10 +202,8 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
                 _baseMEPCurveBasis = _baseMEPCurve.GetBasisXYZ(dir, startPoint);
 
                 _internalOutline = BuildOutline(
-                    _traceSettings,
-                    _baseMEPCurve,
-                    startPoint,
-                    endPoint,
+                    startconnectionPoint,
+                    endConnectionPoint,
                     externalOutline,
                     outlineFactory);
                 if (_internalOutline == null) { return null; }
@@ -371,9 +371,8 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
 
             #region PrivateMethods
 
-            private Outline BuildOutline(ITraceSettings traceSettings,
-                MEPCurve mEPCurve,
-                XYZ point1, XYZ point2,
+            private Outline BuildOutline(
+                ConnectionPoint point1, ConnectionPoint point2,
                 Outline externalOutline, IOutlineFactory outlineFactoryBase)
             {
                 outlineFactoryBase ??= new OutlineFactory(_doc);
@@ -385,16 +384,8 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
                 outlineFactory.ZOffset = defaultOffset;
                 outlineFactory.IsPointEnableOutside = false;
 
-                var h2 = mEPCurve.GetSizeByVector(XYZ.BasisZ);
-                var ins = mEPCurve.GetInsulationThickness();
-                var hmin = h2 + ins;
-                double offsetFromFloor = hmin + traceSettings.H;
-                double offsetFromCeiling = hmin + traceSettings.B;
-
-                outlineFactory.MinHFloor = offsetFromFloor;
-                outlineFactory.MinHCeiling = offsetFromCeiling;
-
                 var outline = outlineFactory.Create(point1, point2);
+                //outline.Show(_doc, _transactionFactory);
                 if (String.IsNullOrEmpty(outlineFactory.ErrorMessage))
                 {
                     if (externalOutline is null) { return outline; }
@@ -402,11 +393,9 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
                 }
                 else
                 {
-                    _transactionFactory.CreateAsync(() =>
-                   TaskDialog.Show("Ошибка", outlineFactory.ErrorMessage), "show message"); ;
+                    Debug.WriteLine(outlineFactory.ErrorMessage);
                     _externalToken?.Cancel(); return null;
                 }
-
             }
 
             private Transform GetTransforms(

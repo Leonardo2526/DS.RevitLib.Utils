@@ -23,8 +23,6 @@ namespace DS.RevitLib.Utils.Connections.PointModels.PointModels
         private readonly Document _doc;
         private readonly MEPSystemModel _mEPSystemModel;
         private readonly IElementCollisionDetector _collisionDetector;
-        private readonly int _distnaceToFindFloor = 30;
-
 
         /// <summary>
         /// Instantiate an object to validate <see cref="ConnectionPoint"/>.
@@ -38,6 +36,8 @@ namespace DS.RevitLib.Utils.Connections.PointModels.PointModels
             _mEPSystemModel = mEPSystemModel;
             _collisionDetector = collisionDetector;
         }
+
+        #region Properties
 
         /// <summary>
         /// Validated point.
@@ -64,6 +64,8 @@ namespace DS.RevitLib.Utils.Connections.PointModels.PointModels
         public bool IsInsulationAccount { get; set; }
 
         public bool CheckFloorLimits { get; set; }
+
+        #endregion
 
         /// <summary>
         /// Specifies whether point is valid for connection.
@@ -92,7 +94,6 @@ namespace DS.RevitLib.Utils.Connections.PointModels.PointModels
 
                     if (messageBuilder.Length > 0) { Messenger.Show(messageBuilder.ToString(), "Ошибка"); }
                 }
-                //{ results.ForEach(r => Messenger.Show(r.ErrorMessage, "Ошибка")); }
                 return false;
             }
             else { return true; }
@@ -172,19 +173,8 @@ namespace DS.RevitLib.Utils.Connections.PointModels.PointModels
         /// </returns>
         public (bool withinFloor, bool withinCeiling) IsWithinFloorLimits(ConnectionPoint connectionPoint)
         {
-            var h2 = connectionPoint.Element.GetSizeByVector(XYZ.BasisZ, connectionPoint.Point);
-            var ins = IsInsulationAccount && connectionPoint.Element is MEPCurve mEPCurve ?
-                mEPCurve.GetInsulationThickness() : 0;
-            var hmin = h2 + ins;
-          
-            double offsetFromFloor = hmin + TraceSettings.H;
-            double offsetFromCeiling = hmin + TraceSettings.B;
-
-            var minHFloor = offsetFromFloor;
-            var minHCeiling = offsetFromCeiling;
-
-            XYZ pointFloorBound = connectionPoint.Point.GetXYZBound(_doc, minHFloor, -_distnaceToFindFloor);
-            XYZ pointCeilingBound = connectionPoint.Point.GetXYZBound(_doc, minHCeiling, _distnaceToFindFloor);
+            (XYZ pointFloorBound, XYZ pointCeilingBound) = 
+                connectionPoint.GetFloorBounds(_doc, TraceSettings.H, TraceSettings.B, IsInsulationAccount);
 
             return (pointFloorBound is not null, pointCeilingBound is not null);
         }

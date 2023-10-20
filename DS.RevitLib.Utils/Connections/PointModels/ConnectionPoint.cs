@@ -1,6 +1,8 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using DS.RevitLib.Utils.Connections.PointModels.PointModels;
+using DS.RevitLib.Utils.Elements.MEPElements;
+using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.MEP;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -57,6 +59,12 @@ namespace DS.RevitLib.Utils.Connections.PointModels
         /// Direction to connect point.
         /// </summary>
         public XYZ Direction { get; private set; }
+
+        /// <summary>
+        /// (<see cref="Autodesk.Revit.DB.XYZ"/> , <see cref="Autodesk.Revit.DB.XYZ"/>) 
+        /// that specify <see cref="Autodesk.Revit.DB.XYZ"/>'s on floor and ceiling that are closest to <see cref="ConnectionPoint"/>.
+        /// </summary>
+        public (XYZ pointFloorBound, XYZ pointCeilingBound) FloorBounds { get; set; }
 
         /// <inheritdoc/>
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
@@ -141,6 +149,30 @@ namespace DS.RevitLib.Utils.Connections.PointModels
             var noExeptionIds = connectedMEPCurves.Select(e => e.Id).Except(excluededIds);
 
             return Element.Document.GetElement(noExeptionIds.FirstOrDefault()) as MEPCurve;
+        }
+
+
+        /// <summary>
+        /// Get (<see cref="Autodesk.Revit.DB.XYZ"/> , <see cref="Autodesk.Revit.DB.XYZ"/>) 
+        /// that specify <see cref="Autodesk.Revit.DB.XYZ"/>'s on floor and ceiling that are closest to <see cref="ConnectionPoint"/>.
+        /// </summary>
+        /// <returns>
+        /// (<see cref="Autodesk.Revit.DB.XYZ"/> , <see cref="Autodesk.Revit.DB.XYZ"/>)
+        /// if <see cref="ConnectionPoint"/> is within floor and ceiling limits.
+        /// <para> 
+        /// (<see langword="null"/>, <see langword="null"/>) 
+        /// if <see cref="ConnectionPoint"/> is outside floor and ceiling limits.</para>
+        /// </returns>
+        public (XYZ pointFloorBound, XYZ pointCeilingBound) GetFloorBounds(
+            Document doc,
+            double minDistToFloor, double minDistToCeiling,
+            bool isInsulationAccount = true, 
+            int distnaceToFindFloor = 30)
+        {
+            var pointElement = (Element, Point);
+            return FloorBounds = 
+                pointElement.GetFloorBounds(doc, minDistToFloor, minDistToCeiling, 
+                isInsulationAccount, distnaceToFindFloor);
         }
 
         private string GetCollisionsReport(List<(XYZ, Element)> collisions)
