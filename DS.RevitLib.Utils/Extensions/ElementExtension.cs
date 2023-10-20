@@ -422,22 +422,27 @@ namespace DS.RevitLib.Utils.Extensions
         }
 
         /// <summary>
-        /// Get element's size by vector of element's center point.
+        /// Get element's size by vector of element's center point or by <paramref name="innerPoint"/> if it was specified.
         /// </summary>
         /// <param name="element"></param>
         /// <param name="normVector"></param>
+        /// <param name="innerPoint"></param>
         /// <returns>Return distance between element's center point and intersection point between vector and element's solid.</returns>
-        public static double GetSizeByVector(this Element element, XYZ normVector)
+        public static double GetSizeByVector(this Element element, XYZ normVector, XYZ innerPoint = null)
         {
             List<Solid> elemSolids = ElementUtils.GetSolids(element);
             Solid elemSolid = elemSolids.First();
 
-            XYZ centerPoint = GetLocationPoint(element);
+            XYZ centerPoint = innerPoint ?? element.GetCenterPoint();
             Line centerLine = element.GetCenterLine();
+            centerPoint = centerLine.Project(centerPoint).XYZPoint;
 
             Line intersectLine = Line.CreateBound(centerPoint, centerPoint + normVector.Multiply(100));
 
-            var intersectOptions = new SolidCurveIntersectionOptions();
+            var intersectOptions = new SolidCurveIntersectionOptions()
+            {
+                ResultType = SolidCurveIntersectionMode.CurveSegmentsInside
+            };
             SolidCurveIntersection intersection = elemSolid.IntersectWithCurve(intersectLine, intersectOptions);
 
             XYZ intersectionPoint = null;

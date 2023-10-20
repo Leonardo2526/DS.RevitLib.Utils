@@ -73,8 +73,17 @@ namespace DS.RevitLib.Utils.Connections.PointModels
                 errors.Add(new ValidationResult(report));
             }
 
-            if (!Validator.IsWithinLengthLimits(Point))
+            if (!Validator.IsWithinOutlineLimits(Point))
             { errors.Add(new ValidationResult("Точка вне зоны решения коллизии.")); }
+
+            if (Validator.CheckFloorLimits)
+            {
+                var (withinFloor, withinCeiling) = Validator.IsWithinFloorLimits(this);
+                if (!withinFloor)
+                { errors.Add(new ValidationResult("Расстояние от точки до пола меньше минимального.")); }
+                if (!withinCeiling)
+                { errors.Add(new ValidationResult("Расстояние от точки до потолка меньше минимального.")); }
+            }
 
             return errors;
         }
@@ -151,7 +160,7 @@ namespace DS.RevitLib.Utils.Connections.PointModels
                     sb.AppendLine("  Id: " + g.Id.IntegerValue.ToString());
                 }
             }
-            sb.AppendLine("\nИтого: " + collisions.Count);
+            sb.Append("\nИтого коллизий: " + collisions.Count);
 
             return sb.ToString();
         }
