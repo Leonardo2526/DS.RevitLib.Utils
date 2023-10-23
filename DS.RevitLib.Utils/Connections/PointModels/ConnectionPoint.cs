@@ -47,13 +47,15 @@ namespace DS.RevitLib.Utils.Connections.PointModels
             }
         }
 
+
+        private bool _isValid = true;
         /// <inheritdoc/>
-        public bool IsValid { get; set; } = true;
+        public bool IsValid { get => _isValid= Validate(); set => _isValid = value; } 
 
         /// <summary>
         /// Validator for point properties.
         /// </summary>
-        public ConnectionPointValidator Validator { get; set; }
+        public IConnectionPointValidator Validator { get; set; }
 
         /// <summary>
         /// Direction to connect point.
@@ -68,33 +70,7 @@ namespace DS.RevitLib.Utils.Connections.PointModels
 
         /// <inheritdoc/>
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
-        {
-            List<ValidationResult> errors = new List<ValidationResult>();
-
-            if (!Validator.GetSystemValidity())
-            { errors.Add(new ValidationResult("Неверная система объекта.")); }
-
-            var collisions = Validator.GetCollisions();
-            if (collisions is not null && collisions.Any())
-            {
-                var report = GetCollisionsReport(collisions);
-                errors.Add(new ValidationResult(report));
-            }
-
-            if (!Validator.IsWithinOutlineLimits(Point))
-            { errors.Add(new ValidationResult("Точка вне зоны решения коллизии.")); }
-
-            if (Validator.CheckFloorLimits)
-            {
-                var (withinFloor, withinCeiling) = Validator.IsWithinFloorLimits(this);
-                if (!withinFloor)
-                { errors.Add(new ValidationResult("Расстояние от точки до пола меньше минимального.")); }
-                if (!withinCeiling)
-                { errors.Add(new ValidationResult("Расстояние от точки до потолка меньше минимального.")); }
-            }
-
-            return errors;
-        }
+            => Validator?.GetValidationResults(this);
 
         /// <summary>
         /// Specifies whether point is valid for connection.
@@ -105,11 +81,11 @@ namespace DS.RevitLib.Utils.Connections.PointModels
         /// <returns>Returns <see langword="true"></see> if <paramref name="mEPSystemModel"/> contatins point and point has no collisions.
         /// <para>Otherwise returns <see langword="false"></see>.</para>
         /// </returns>
-        public void Validate()
+        private bool Validate()
         {
-            Validator.ConnectionPoint = this;
-            if (this.Element is null) { IsValid = false; return; }
-            IsValid = Validator.Validate();
+            if(Validator is null) { return true; }         
+            if (Element is null) { return false; }
+            return Validator.Validate(this);
         }
 
         /// <summary>
@@ -173,28 +149,6 @@ namespace DS.RevitLib.Utils.Connections.PointModels
             return FloorBounds = 
                 pointElement.GetFloorBounds(doc, minDistToFloor, minDistToCeiling, 
                 isInsulationAccount, distnaceToFindFloor);
-        }
-
-        private string GetCollisionsReport(List<(XYZ, Element)> collisions)
-        {
-            var sb = new StringBuilder();
-            sb.AppendLine("В точке не должно быть коллизий.");
-
-            var elements = collisions.Select(c => c.Item2);
-            var groups = elements.GroupBy(e => e.Document);
-
-            foreach (var group in groups)
-            {
-                sb.AppendLine();
-                sb.AppendLine($"Модель: '{group.Key.Title}': ");
-                foreach (var g in group)
-                {
-                    sb.AppendLine("  Id: " + g.Id.IntegerValue.ToString());
-                }
-            }
-            sb.Append("\nИтого коллизий: " + collisions.Count);
-
-            return sb.ToString();
         }
     }
 }

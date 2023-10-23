@@ -19,7 +19,7 @@ namespace DS.RevitLib.Utils.Connections.PointModels
         public XYZ Point { get; }
 
         /// <summary>
-        /// Specify if point is valid to connect. 
+        /// Specify if point is valid. 
         /// </summary>
         public bool IsValid { get; set; }
     }

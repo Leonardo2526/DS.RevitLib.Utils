@@ -293,11 +293,12 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
                 { _initialBasis.basisX, _initialBasis.basisY, _initialBasis.basisZ };
 
                 _nodeBuilder = _algorithmBuilder.NodeBuilder = new NodeBuilder(
-               _heuristicFormula, _startPoint, _endPoint,
-               _traceSettings.Step, orths, _pointConverter, _mCompactPath, _punishChangeDirection)
+               _heuristicFormula, _startPoint, _endPoint, 
+               _traceSettings.Step, orths, _pointConverter, _traceSettings, _mCompactPath, _punishChangeDirection)
                 {
                     Tolerance = _tolerance,
-                    PointVisualisator = _pointVisualisator
+                    PointVisualisator = _pointVisualisator,
+                    EndDirection = _endDirection
                     //CTolerance = _cTolerance
                 };
 
@@ -357,7 +358,8 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
                     EndDirection = _endDirection,
                     StartANP = _startANP,
                     EndANP = _endANP,
-                    DirectionValidator = _algorithmBuilder._directionValidator
+                    DirectionValidator = _algorithmBuilder._directionValidator,
+                    ExternalTokenSource = _externalToken
                 }.
                 WithBounds(_lowerBound, _upperBound);
 

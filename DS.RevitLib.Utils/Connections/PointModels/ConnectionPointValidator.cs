@@ -18,31 +18,34 @@ namespace DS.RevitLib.Utils.Connections.PointModels.PointModels
     /// <summary>
     /// An object that represents <see cref="ConnectionPoint"/> validator.
     /// </summary>
-    public class ConnectionPointValidator
+    public class ConnectionPointValidator : IConnectionPointValidator
     {
         private readonly Document _doc;
-        private readonly MEPSystemModel _mEPSystemModel;
+        private readonly ITraceSettings _traceSettings;
         private readonly IElementCollisionDetector _collisionDetector;
 
         /// <summary>
         /// Instantiate an object to validate <see cref="ConnectionPoint"/>.
         /// </summary>
+        /// <param name="doc"></param>
+        /// <param name="traceSettings"></param>
+        /// <param name="collisionDetector"></param>
         /// <param name="mEPSystemModel"></param>
         /// <param name="docElements"></param>
         /// <param name="linkElementsDict"></param>
-        public ConnectionPointValidator(MEPSystemModel mEPSystemModel, IElementCollisionDetector collisionDetector)
+        public ConnectionPointValidator(Document doc, ITraceSettings traceSettings, IElementCollisionDetector collisionDetector)
         {
-            _doc = mEPSystemModel.Root.BaseElement.Document;
-            _mEPSystemModel = mEPSystemModel;
+            _doc = doc;
+            _traceSettings = traceSettings;
             _collisionDetector = collisionDetector;
         }
 
         #region Properties
 
         /// <summary>
-        /// Validated point.
+        /// System to check validity.
         /// </summary>
-        public ConnectionPoint ConnectionPoint { get; set; }
+        public MEPSystemModel MEPSystemModel { get; set; }
 
         /// <summary>
         /// Specifies used bound of <see cref="Document"/>.
@@ -59,30 +62,29 @@ namespace DS.RevitLib.Utils.Connections.PointModels.PointModels
         /// </summary>
         public IWindowMessenger Messenger { get; set; }
 
-        public ITraceSettings TraceSettings { get; set; }
 
         public bool IsInsulationAccount { get; set; }
 
-        public bool CheckFloorLimits { get; set; }
+        public bool CheckFloorLimits { get; set; } = true;
 
         #endregion
 
         /// <summary>
         /// Specifies whether point is valid for connection.
         /// </summary>
-        /// <returns>Returns <see langword="true"></see> if <see cref="_mEPSystemModel"/> contatins point and point has no collisions.
+        /// <returns>Returns <see langword="true"></see> if <see cref="MEPSystemModel"/> contatins point and point has no collisions.
         /// <para>Otherwise returns <see langword="false"></see>.</para>
         /// </returns>
-        public bool Validate()
+        public bool Validate(ConnectionPoint connectionPoint)
         {
             var results = new List<ValidationResult>();
-            var context = new ValidationContext(ConnectionPoint);
-            if (!Validator.TryValidateObject(ConnectionPoint, context, results, true))
+            var context = new ValidationContext(connectionPoint);
+            if (!Validator.TryValidateObject(connectionPoint, context, results, true))
             {
                 if (Messenger != null)
                 {
                     var messageBuilder = new StringBuilder();
-                    if (results.Count == 1) 
+                    if (results.Count == 1)
                     { messageBuilder.AppendLine(results.First().ErrorMessage); }
                     else if (results.Count > 1)
                         for (int i = 0; i < results.Count; i++)
@@ -100,15 +102,55 @@ namespace DS.RevitLib.Utils.Connections.PointModels.PointModels
         }
 
         /// <summary>
-        /// Specifies whether <see cref="_mEPSystemModel"/> contatins point.
+        /// Get results of validation.
         /// </summary>
-        /// <returns>Returns <see langword="true"></see> if <see cref="_mEPSystemModel"/> contatins point.
+        /// <param name="connectionPoint"></param>
+        /// <returns>
+        /// Errors of validation.
+        /// <para>
+        /// Empty list if no errors occured.
+        /// </para>
+        /// </returns>
+        public IEnumerable<ValidationResult> GetValidationResults(ConnectionPoint connectionPoint)
+        {
+            var errors = new List<ValidationResult>();
+
+            if (!GetSystemValidity(connectionPoint))
+            { errors.Add(new ValidationResult("Неверная система объекта.")); }
+
+            var collisions = GetCollisions(connectionPoint);
+            if (collisions is not null && collisions.Any())
+            {
+                var report = GetCollisionsReport(collisions);
+                errors.Add(new ValidationResult(report));
+            }
+
+            if (!IsWithinOutlineLimits(connectionPoint.Point))
+            { errors.Add(new ValidationResult("Точка вне зоны решения коллизии.")); }
+
+            if (CheckFloorLimits)
+            {
+                var (withinFloor, withinCeiling) = IsWithinFloorLimits(connectionPoint);
+                if (!withinFloor)
+                { errors.Add(new ValidationResult("Расстояние от точки до пола меньше минимального.")); }
+                if (!withinCeiling)
+                { errors.Add(new ValidationResult("Расстояние от точки до потолка меньше минимального.")); }
+            }
+
+            return errors;
+        }
+
+        /// <summary>
+        /// Specifies whether <see cref="MEPSystemModel"/> contatins point.
+        /// </summary>
+        /// <returns>Returns <see langword="true"></see> if <see cref="MEPSystemModel"/> contatins point.
         /// <para>Otherwise returns <see langword="false"></see>.</para>
         /// </returns>
-        public bool GetSystemValidity()
+        private bool GetSystemValidity(ConnectionPoint connectionPoint)
         {
-            if (ConnectionPoint.Element is null) { return false; }
-            return _mEPSystemModel.AllElements.Select(obj => obj.Id).Contains(ConnectionPoint.Element.Id);
+            if (MEPSystemModel is null) { return true; }
+            if (connectionPoint.Element is null) { return false; }
+            return MEPSystemModel.AllElements.Select(obj => obj.Id).Contains(connectionPoint.Element.Id);
         }
 
         /// <summary>
@@ -117,24 +159,24 @@ namespace DS.RevitLib.Utils.Connections.PointModels.PointModels
         /// <returns>Returns <see langword="true"></see> if point has no collisions.
         /// <para>Otherwise returns <see langword="false"></see>.</para>
         /// </returns>
-        public List<(XYZ, Element)> GetCollisions()
+        private List<(XYZ, Element)> GetCollisions(ConnectionPoint connectionPoint)
         {
             var collisions = new List<(XYZ, Element)>();
 
             //get collisions in freeCon.
-            var elemCollisions = _collisionDetector.GetCollisions(ConnectionPoint.Element);
+            var elemCollisions = _collisionDetector.GetCollisions(connectionPoint.Element);
             if (!elemCollisions.Any()) { return collisions; }
 
-            if (ConnectionPoint.Element is FamilyInstance)
+            if (connectionPoint.Element is FamilyInstance)
             { return collisions; }
             else
             {
                 //Specify collision objects on point
                 foreach (var c in elemCollisions)
                 {
-                    if (c.Item2.GetSolidInLink(_doc).Contains(ConnectionPoint.Point))
+                    if (c.Item2.GetSolidInLink(_doc).Contains(connectionPoint.Point))
                     {
-                        var pc = (ConnectionPoint.Point, c.Item2);
+                        var pc = (connectionPoint.Point, c.Item2);
                         collisions.Add(pc);
                     }
                 }
@@ -151,7 +193,7 @@ namespace DS.RevitLib.Utils.Connections.PointModels.PointModels
         /// <para> 
         /// Othewise returns <see langword="false"/>.</para>
         /// </returns>
-        public bool IsWithinOutlineLimits(XYZ point)
+        private bool IsWithinOutlineLimits(XYZ point)
         {
             if (BoundOutline is null) { return true; }
             else
@@ -171,12 +213,34 @@ namespace DS.RevitLib.Utils.Connections.PointModels.PointModels
         /// (<see langword="false"/>, <see langword="false"/>) 
         /// if <paramref name="connectionPoint"/> is outside floor and ceiling limits.</para>
         /// </returns>
-        public (bool withinFloor, bool withinCeiling) IsWithinFloorLimits(ConnectionPoint connectionPoint)
+        private (bool withinFloor, bool withinCeiling) IsWithinFloorLimits(ConnectionPoint connectionPoint)
         {
-            (XYZ pointFloorBound, XYZ pointCeilingBound) = 
-                connectionPoint.GetFloorBounds(_doc, TraceSettings.H, TraceSettings.B, IsInsulationAccount);
+            (XYZ pointFloorBound, XYZ pointCeilingBound) =
+                connectionPoint.GetFloorBounds(_doc, _traceSettings.H, _traceSettings.B, IsInsulationAccount);
 
             return (pointFloorBound is not null, pointCeilingBound is not null);
+        }
+
+        private string GetCollisionsReport(List<(XYZ, Element)> collisions)
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine("В точке не должно быть коллизий.");
+
+            var elements = collisions.Select(c => c.Item2);
+            var groups = elements.GroupBy(e => e.Document);
+
+            foreach (var group in groups)
+            {
+                sb.AppendLine();
+                sb.AppendLine($"Модель: '{group.Key.Title}': ");
+                foreach (var g in group)
+                {
+                    sb.AppendLine("  Id: " + g.Id.IntegerValue.ToString());
+                }
+            }
+            sb.Append("\nИтого коллизий: " + collisions.Count);
+
+            return sb.ToString();
         }
     }
 }
