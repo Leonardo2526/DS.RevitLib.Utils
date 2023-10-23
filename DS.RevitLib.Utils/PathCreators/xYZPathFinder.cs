@@ -115,6 +115,13 @@ namespace DS.RevitLib.Utils.PathCreators
 
         public IElementsExtractor ElementsExtractor { get; set; }
 
+        public IWindowMessenger Messenger { get; set; }
+
+        /// <summary>
+        /// Specifies if it was failed to exit from startPoint.
+        /// </summary>
+        public bool IsFailedOnStart { get; private set; }
+
         #endregion
 
         /// <summary>
@@ -168,7 +175,7 @@ namespace DS.RevitLib.Utils.PathCreators
 
             if (path == null || path.Count == 0)
             {
-                TaskDialog.Show("Error", "No available path exist!");
+                IsFailedOnStart = algorithm.IsFailedOnStart;               
             }
             else
             { _path = ConvertPath(path, _pathAlgorithmBuilder.PointConverter); }
