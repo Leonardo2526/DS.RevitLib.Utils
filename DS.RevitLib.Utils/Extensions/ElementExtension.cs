@@ -552,7 +552,12 @@ namespace DS.RevitLib.Utils.Extensions
         /// Get connected elements to <paramref name="element"/>.
         /// </summary>
         /// <param name="element"></param>
-        /// <returns>Returns connected elements by one from each <paramref name="element"/>'s connector.</returns>
+        /// <returns>
+        /// Returns connected elements by one from each <paramref name="element"/>'s connector.
+        /// <para>
+        /// Returns empty list if no connected elements was found.       
+        /// </para>
+        /// </returns>
         public static List<Element> GetConnected(this Element element) => ConnectorUtils.GetConnectedElements(element);
 
         /// <summary>

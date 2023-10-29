@@ -50,6 +50,18 @@
       <HintPath>..\packages\Nito.Collections.Deque.1.1.1\lib\net461\Nito.Collections.Deque.dll</HintPath>
     </Reference>
     <Reference Include="PresentationCore" />
+    <Reference Include="QuickGraph, Version=3.6.61114.0, Culture=neutral, PublicKeyToken=f3fb40175eec2af3, processorArchitecture=MSIL">
+      <HintPath>..\packages\QuickGraph.3.6.61119.7\lib\net4\QuickGraph.dll</HintPath>
+    </Reference>
+    <Reference Include="QuickGraph.Data, Version=3.6.61114.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\QuickGraph.3.6.61119.7\lib\net4\QuickGraph.Data.dll</HintPath>
+    </Reference>
+    <Reference Include="QuickGraph.Graphviz, Version=3.6.61114.0, Culture=neutral, PublicKeyToken=f3fb40175eec2af3, processorArchitecture=MSIL">
+      <HintPath>..\packages\QuickGraph.3.6.61119.7\lib\net4\QuickGraph.Graphviz.dll</HintPath>
+    </Reference>
+    <Reference Include="QuickGraph.Serialization, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\QuickGraph.3.6.61119.7\lib\net4\QuickGraph.Serialization.dll</HintPath>
+    </Reference>
     <Reference Include="RevitAPI">
       <HintPath>C:\Program Files\Autodesk\Revit 2020\RevitAPI.dll</HintPath>
       <Private>False</Private>
@@ -72,7 +84,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="TestedClasses\CollisionDetectorTest.cs" />
     <Compile Include="TestedClasses\GetFloorDistTest.cs" />
     <Compile Include="TestedClasses\AlignMEPCurvesTest.cs" />
     <Compile Include="TestedClasses\ArcCreationTest.cs" />
@@ -82,6 +93,7 @@
     <Compile Include="TestedClasses\BuilderByPointsTest.cs" />
     <Compile Include="TestedClasses\ConnectedElementFinderTest.cs" />
     <Compile Include="TestedClasses\GetConnectionDirectionTest.cs" />
+    <Compile Include="TestedClasses\MEPSystemGraphFactoryTest.cs" />
     <Compile Include="TestedClasses\ReplaceMEPCurveTest.cs" />
     <Compile Include="TestedClasses\GetOverlapResultTest.cs" />
     <Compile Include="TestedClasses\LinesIntersectionTest.cs" />
@@ -95,7 +107,6 @@
     <Compile Include="TestedClasses\ElementsExtractorTest.cs" />
     <Compile Include="TestedClasses\GetAssociatedParameterTest.cs" />
     <Compile Include="TestedClasses\GetConnectedElementsTest.cs" />
-    <Compile Include="TestedClasses\GetElementsIntersectionTest.cs" />
     <Compile Include="TestedClasses\GetJunctionTest.cs" />
     <Compile Include="TestedClasses\MEPCurveSolidCreatorTest.cs" />
     <Compile Include="TestedClasses\MEPSystemBuilderTest.cs" />
@@ -109,8 +120,6 @@
     <Compile Include="TestedClasses\GetAllElementsTest.cs" />
     <Compile Include="TestedClasses\SolidContainsPointTest.cs" />
     <Compile Include="TestedClasses\SolidCreatorTest.cs" />
-    <Compile Include="TestedClasses\SolidElementCollisionDetectorTest.cs" />
-    <Compile Include="TestedClasses\ElementCollisionDetectorTest.cs" />
     <Compile Include="TestedClasses\ZoomTest.cs" />
   </ItemGroup>
   <ItemGroup>

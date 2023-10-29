@@ -19,7 +19,7 @@ namespace DS.RevitLib.Test
             Autodesk.Revit.ApplicationServices.Application application = uiapp.Application;
             UIDocument uidoc = uiapp.ActiveUIDocument;
 
-            new CollisionDetectorTest( uidoc);
+            new MEPSystemGraphFactoryTest( uidoc);
 
             return Autodesk.Revit.UI.Result.Succeeded;
         }
