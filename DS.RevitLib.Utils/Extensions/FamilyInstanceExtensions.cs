@@ -41,9 +41,11 @@ namespace DS.RevitLib.Utils.Extensions
         /// </summary>
         /// <param name="familyInstance"></param>
         /// <returns>Returns parents and child connected to current familyInstance.</returns>
-        public static (List<Element> parents, Element child) GetConnectedElements(this FamilyInstance familyInstance)
+        public static (List<Element> parents, Element child) GetConnectedElements(this FamilyInstance familyInstance, bool onlySuperd = false)
         {
-            List<Element> connectedElements = ConnectorUtils.GetConnectedElements(familyInstance).ToList();
+            List<Element> connectedElements = onlySuperd ?
+                ConnectorUtils.GetConnectedSuperbElements(familyInstance) :
+                ConnectorUtils.GetConnectedElements(familyInstance);
 
             var relationBuilder = new FamInstRelationBuilder(familyInstance);
             if (relationBuilder.Builer is null)
@@ -116,6 +118,82 @@ namespace DS.RevitLib.Utils.Extensions
             }
 
             return subElementIds;
+        }
+
+
+        /// <summary>
+        /// Specifies if <paramref name="famInst"/> is elbow.
+        /// </summary>
+        /// <param name="famInst"></param>
+        /// <returns>
+        /// <see langword="true"/> if <paramref name="famInst"/> is elbow.
+        /// <para>
+        /// Otherwise <see langword="false"/>.
+        /// </para>
+        /// </returns>
+        public static bool IsElbow(this FamilyInstance famInst)
+        {
+            PartType partType = ElementUtils.GetPartType(famInst);
+            switch (partType)
+            {
+                case PartType.Elbow:
+                    { return true; }
+                default:
+                    break;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Specifies if <paramref name="famInst"/> is tee.
+        /// </summary>
+        /// <param name="famInst"></param>
+        /// <returns>
+        /// <see langword="true"/> if <paramref name="famInst"/> is tee.
+        /// <para>
+        /// Otherwise <see langword="false"/>.
+        /// </para>
+        /// </returns>
+        public static bool IsTee(this FamilyInstance famInst)
+        {
+            PartType partType = ElementUtils.GetPartType(famInst);
+            switch (partType)
+            {
+                case PartType.Tee:
+                    { return true; }
+                default:
+                    break;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Specifies if <paramref name="famInst"/> is spud.
+        /// </summary>
+        /// <param name="famInst"></param>
+        /// <returns>
+        /// <see langword="true"/> if <paramref name="famInst"/> is spud.
+        /// <para>
+        /// Otherwise <see langword="false"/>.
+        /// </para>
+        /// </returns>
+        public static bool IsSpud(this FamilyInstance famInst)
+        {
+            PartType partType = ElementUtils.GetPartType(famInst);
+            switch (partType)
+            {
+                case PartType.SpudPerpendicular:
+                case PartType.SpudAdjustable:
+                case PartType.TapAdjustable:
+                case PartType.TapPerpendicular:
+                    { return true; }
+                default:
+                    break;
+            }
+
+            return false;
         }
     }
 }

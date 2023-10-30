@@ -34,9 +34,62 @@ namespace DS.RevitLib.Utils.MEP
                         connectedElements.Add(con.Owner);
                         if (includeSubElements && con.Owner is FamilyInstance)
                         {
-                            var family = (FamilyInstance) con.Owner;
+                            var family = (FamilyInstance)con.Owner;
                             var subElementIds = family.GetSubAllElementIds();
                             subElementIds.ForEach(id => connectedElements.Add(doc.GetElement(id)));
+                        }
+                    }
+                }
+            }
+            return connectedElements;
+        }
+
+        public static List<Element> GetConnectedElements1(Element element, bool includeSubElements = false)
+        {
+            Document doc = element.Document;
+
+            var connectedElements = new List<Element>();
+
+            var elementsToCheck = new List<Element>() { element };
+            if (element is FamilyInstance familyInstance)
+            {
+                var subElementIds = familyInstance.GetSubAllElementIds();
+                subElementIds.ForEach(id => elementsToCheck.Add(doc.GetElement(id)));
+            }
+
+            foreach (var item in elementsToCheck)
+            {
+                var connected = GetConnectedElements(item);
+                connectedElements.AddRange(connected);
+            }
+
+            return connectedElements;
+        }
+
+        public static List<Element> GetConnectedSuperbElements(Element element)
+        {
+            Document doc = element.Document;
+            List<Connector> connectors = GetConnectors(element);
+            List<Element> connectedElements = new List<Element>();
+
+            foreach (Connector connector in connectors)
+            {
+                ConnectorSet connectorSet = connector.AllRefs;
+
+                foreach (Connector con in connectorSet)
+                {
+                    ElementId elementId = con.Owner.Id;
+                    if (elementId != element.Id && MEPElementUtils.IsValidType(con.Owner))
+                    {
+                        var famInst = con.Owner as FamilyInstance;
+                        if (famInst is null)
+                        { connectedElements.Add(con.Owner); }
+                        else
+                        {
+                            if (famInst.SuperComponent != null)
+                            { connectedElements.Add(famInst.SuperComponent); }
+                            else
+                            { connectedElements.Add(con.Owner); }
                         }
                     }
                 }

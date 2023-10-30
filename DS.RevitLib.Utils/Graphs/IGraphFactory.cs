@@ -17,12 +17,14 @@ namespace DS.RevitLib.Utils.Graphs
     public abstract class MEPSystemGraphFactoryBase<TGraph> : IGraphFactory<TGraph, Element>
     {
         protected readonly Document _doc;
+        protected TGraph _graph;
 
         public MEPSystemGraphFactoryBase(Document doc)
         {
             _doc = doc;
         }
-        public TGraph Graph { get; private set; }
+        public TGraph Graph => _graph;
+       
 
         public abstract TGraph Create(Element element);
         public abstract TGraph Create(Element element1, Element element2);
