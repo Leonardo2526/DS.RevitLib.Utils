@@ -44,11 +44,26 @@ namespace DS.RevitLib.Utils.MEP
             return connectedElements;
         }
 
-        public static List<Element> GetConnectedElements1(Element element, bool includeSubElements = false)
+        /// <summary>
+        /// Get <see cref="Autodesk.Revit.DB.Element"/>'s connected to <paramref name="element"/>.
+        /// <para>
+        /// Get only super connected <see cref="Autodesk.Revit.DB.Element"/>'s if <paramref name="onlySuperb"/> is set to it's default <see langword="true"/> value.
+        /// It's also checks <paramref name="element"/>'s subelements for connection.    
+        /// </para>
+        /// </summary>
+        /// <param name="element"></param>
+        /// <param name="onlySuperb"></param>
+        /// <returns>
+        /// <see cref="Autodesk.Revit.DB.Element"/>'s list that has common <see cref="Autodesk.Revit.DB.Connector"/>'s with <paramref name="element"/>.
+        /// <para>
+        /// Empty list if <paramref name="element"/> hasn't connected <see cref="Autodesk.Revit.DB.Element"/>'s.
+        /// </para>
+        /// </returns>
+        public static List<Element> GetBestConnectedElements(Element element, bool onlySuperb = true)
         {
-            Document doc = element.Document;
-
             var connectedElements = new List<Element>();
+
+            Document doc = element.Document;
 
             var elementsToCheck = new List<Element>() { element };
             if (element is FamilyInstance familyInstance)
@@ -59,43 +74,41 @@ namespace DS.RevitLib.Utils.MEP
 
             foreach (var item in elementsToCheck)
             {
-                var connected = GetConnectedElements(item);
+                var connected = GetConnectedElements(item, onlySuperb);
                 connectedElements.AddRange(connected);
             }
 
             return connectedElements;
-        }
 
-        public static List<Element> GetConnectedSuperbElements(Element element)
-        {
-            Document doc = element.Document;
-            List<Connector> connectors = GetConnectors(element);
-            List<Element> connectedElements = new List<Element>();
-
-            foreach (Connector connector in connectors)
+            static List<Element> GetConnectedElements(Element element, bool onlySuperb)
             {
-                ConnectorSet connectorSet = connector.AllRefs;
+                Document doc = element.Document;
+                List<Connector> connectors = GetConnectors(element);
+                var connectedElements = new List<Element>();
 
-                foreach (Connector con in connectorSet)
+                foreach (Connector connector in connectors)
                 {
-                    ElementId elementId = con.Owner.Id;
-                    if (elementId != element.Id && MEPElementUtils.IsValidType(con.Owner))
+                    ConnectorSet connectorSet = connector.AllRefs;
+
+                    foreach (Connector con in connectorSet)
                     {
-                        var famInst = con.Owner as FamilyInstance;
-                        if (famInst is null)
-                        { connectedElements.Add(con.Owner); }
-                        else
+                        ElementId elementId = con.Owner.Id;
+                        if (elementId != element.Id && MEPElementUtils.IsValidType(con.Owner))
                         {
-                            if (famInst.SuperComponent != null)
+                            if (con.Owner is FamilyInstance famInst
+                                && onlySuperb
+                                && famInst.SuperComponent != null)
                             { connectedElements.Add(famInst.SuperComponent); }
                             else
                             { connectedElements.Add(con.Owner); }
+
                         }
                     }
                 }
+                return connectedElements;
             }
-            return connectedElements;
         }
+
 
         /// <summary>
         /// Get all sysytem elements connected to current element. 
@@ -590,8 +603,53 @@ namespace DS.RevitLib.Utils.MEP
         /// </summary>
         /// <param name="element"></param>
         /// <returns>If element is MEPCurve returns two connectors of it with max distance between them.
-        /// If element is FamilyInstance returns two connectors if element's location point is on line between them.</returns>
+        /// If element is FamilyInstance returns two connectors if element's location point is on line between them.
+        /// <para>
+        /// Otherwise (<see langword="null"/>, <see langword="null"/>).
+        /// </para>
+        /// </returns>
         public static (Connector con1, Connector con2) GetMainConnectors(Element element)
+        {
+            var connectors = GetConnectors(element);
+            XYZ lp = ElementUtils.GetLocationPoint(element);
+
+            if (element is FamilyInstance)
+            {
+                if (connectors.Count == 2) { return (connectors[0], connectors[1]); }
+                for (int i = 0; i < connectors.Count - 1; i++)
+                {
+                    for (int j = i + 1; j < connectors.Count; j++)
+                    {
+                        XYZ dir1 = (connectors[i].Origin - lp).RoundVector();
+                        XYZ dir2 = (connectors[j].Origin - lp).RoundVector();
+                        if (XYZUtils.Collinearity(dir1, dir2))
+                        {
+                            return (connectors[i], connectors[j]);
+                        }
+                    }
+                }
+            }
+            else if (element is MEPCurve)
+            {
+                List<XYZ> points = connectors.Select(obj => obj.Origin).ToList();
+                var (point1, point2) = XYZUtils.GetMaxDistancePoints(points, out double dist);
+
+                var con1 = connectors.Where(c => Math.Round(c.Origin.DistanceTo(point1), 3) == 0).First();
+                var con2 = connectors.Where(c => Math.Round(c.Origin.DistanceTo(point2), 3) == 0).First();
+                return (con1, con2);
+            }
+
+
+            return (null, null);
+        }
+
+        /// <summary>
+        /// Get main connectors of element. 
+        /// </summary>
+        /// <param name="element"></param>
+        /// <returns>If element is MEPCurve returns two connectors of it with max distance between them.
+        /// If element is FamilyInstance returns two connectors if element's location point is on line between them.</returns>
+        public static (Connector con1, Connector con2) GetMainConnectors1(Element element)
         {
             var connectors = GetConnectors(element);
             XYZ lp = ElementUtils.GetLocationPoint(element);

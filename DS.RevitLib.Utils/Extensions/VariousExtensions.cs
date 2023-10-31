@@ -53,7 +53,7 @@ namespace DS.RevitLib.Utils.Extensions
                 Max = outline.MaximumPoint
             };
             var points = bb.GetPoints();
-            points.ForEach(p => p.Show(doc, labelSize, transactionFactory));
+            points.ForEach(p => p.ShowWithTransaction(doc, labelSize, transactionFactory));
             transactionFactory.CreateAsync(() => bb.Show(doc), "showBoxXYZ");
         }
 

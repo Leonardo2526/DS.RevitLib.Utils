@@ -40,7 +40,7 @@ namespace DS.RevitLib.Test
             Solid solid2 = ElementUtils.GetSolid(element2);
 
             var points = solid2.ExtractPoints();
-            points.ForEach(p => { p.Show(_doc, 0.2); });
+            points.ForEach(p => { p.ShowWithTransaction(_doc, 0.2); });
 
             var intersect = IsIntersect(solid1, points);
             Debug.WriteLine(intersect);

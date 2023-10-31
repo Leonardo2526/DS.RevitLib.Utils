@@ -84,6 +84,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="TestedClasses\GetFamInstLocationTest.cs" />
     <Compile Include="TestedClasses\GetFloorDistTest.cs" />
     <Compile Include="TestedClasses\AlignMEPCurvesTest.cs" />
     <Compile Include="TestedClasses\ArcCreationTest.cs" />

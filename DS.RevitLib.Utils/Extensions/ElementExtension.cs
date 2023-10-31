@@ -249,10 +249,12 @@ namespace DS.RevitLib.Utils.Extensions
         }
 
         /// <summary>
-        /// Get center point of any types of elements
+        /// Get center point of any types of elements without concider main connectors and its directions.
         /// </summary>
         /// <param name="element"></param>
-        /// <returns></returns>
+        /// <returns>
+        /// <paramref name="element"/>'s location point based on it's <see cref="Location"/>.
+        /// </returns>
         public static XYZ GetLocationPoint(this Element element)
         {
             // Get the Location property and judge whether it exists
@@ -561,12 +563,31 @@ namespace DS.RevitLib.Utils.Extensions
         public static List<Element> GetConnected(this Element element) => ConnectorUtils.GetConnectedElements(element);
 
         /// <summary>
+        /// Get <see cref="Autodesk.Revit.DB.Element"/>'s connected to <paramref name="element"/>.
+        /// <para>
+        /// Get only super connected <see cref="Autodesk.Revit.DB.Element"/>'s if <paramref name="onlySuperb"/> is set to it's default <see langword="true"/> value.
+        /// It's also checks <paramref name="element"/>'s subelements for connection.    
+        /// </para>
+        /// </summary>
+        /// <param name="element"></param>
+        /// <param name="onlySuperb"></param>
+        /// <returns>
+        /// <see cref="Autodesk.Revit.DB.Element"/>'s list that has common <see cref="Autodesk.Revit.DB.Connector"/>'s with <paramref name="element"/>.
+        /// <para>
+        /// Empty list if <paramref name="element"/> hasn't connected <see cref="Autodesk.Revit.DB.Element"/>'s.
+        /// </para>
+        /// </returns>
+        public static List<Element> GetBestConnected(this Element element, bool onlySuperb = true ) =>
+            ConnectorUtils.GetBestConnectedElements(element, onlySuperb);
+
+        /// <summary>
         /// Get main connectors of element. 
         /// </summary>
         /// <param name="element"></param>
-        /// <returns>If element is <see cref="Autodesk.Revit.DB.MEPCurve"/> type returns two connectors of it with max distance between them.
-        /// <para>        
-        /// If element is <see cref="Autodesk.Revit.DB.FamilyInstance"/> type returns two connectors on line through <paramref name="element"/>'s location point.
+        /// <returns>If element is MEPCurve returns two connectors of it with max distance between them.
+        /// If element is FamilyInstance returns two connectors if element's location point is on line between them.
+        /// <para>
+        /// Otherwise (<see langword="null"/>, <see langword="null"/>).
         /// </para>
         /// </returns>
         public static (Connector con1, Connector con2) GetMainConnectors(this Element element) =>

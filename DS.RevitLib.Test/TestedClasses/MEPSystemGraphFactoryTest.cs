@@ -33,11 +33,8 @@ namespace DS.RevitLib.Test.TestedClasses
             _trfOut = new ContextTransactionFactory(_doc, Utils.RevitContextOption.Outside);
             AdjacencyGraph<LVertex, Edge<LVertex>> graph = CreateGraph();
 
-
             Print(graph);
-
-            var view = GetUIView();
-            Task task = Task.Run(() => ShowAsync(graph, _doc, view, _trfOut));
+            Show(graph, _doc, _trfOut);
         }
 
         public AdjacencyGraph<LVertex, Edge<LVertex>> CreateGraph()
@@ -67,50 +64,51 @@ namespace DS.RevitLib.Test.TestedClasses
             }
         }
 
-        private async void ShowAsync(AdjacencyGraph<LVertex, Edge<LVertex>> graph, Document doc, UIView view, ITransactionFactory trf)
+        private void Show(AdjacencyGraph<LVertex, Edge<LVertex>> graph, Document doc, ITransactionFactory trf)
         {
-            var vector = new XYZ(0, 0, 0);
+            var view = GetUIView();
 
-            foreach (var vertex in graph.Vertices)
+            Task task = Task.Run(async () =>
+            await trf.CreateAsync(() => ShowGraph(graph, doc, view),
+            "show"));
+
+            static void ShowGraph(AdjacencyGraph<LVertex, Edge<LVertex>> graph, Document doc, UIView view)
             {
-                foreach (var edge in graph.OutEdges(vertex))
+                var vector = new XYZ(0, 0, 0);
+
+                foreach (var vertex in graph.Vertices)
                 {
-                    var v1 = edge.Source;
-                    var v2 = edge.Target;
-                    var edgeTag = edge is TaggedEdge<LVertex, int> taggedEdge ? taggedEdge.Tag : 0;
-                    var sTag = v1 is TaggedLVertex<int> taggedSource ? taggedSource.Tag : 0;
-                    var tTag = v2 is TaggedLVertex<int> taggedTarget ? taggedTarget.Tag : 0;
-
-                    var xyz1 = v1.Location.ToXYZ();
-                    var xyz2 = v2.Location.ToXYZ();
-
-                    ElementId defaultTypeId = doc.GetDefaultElementTypeId(ElementTypeGroup.TextNoteType);
-
-                    xyz1.Show(doc, 0, trf);
-                    if (sTag != 0)
+                    foreach (var edge in graph.OutEdges(vertex))
                     {
-                        await trf.CreateAsync(() =>
-                       { TextNote.Create(doc, view.ViewId, xyz1 + vector, sTag.ToString(), defaultTypeId); }, "showVertexTag");
-                    }
+                        var v1 = edge.Source;
+                        var v2 = edge.Target;
+                        var edgeTag = edge is TaggedEdge<LVertex, int> taggedEdge ? taggedEdge.Tag : 0;
+                        var sTag = v1 is TaggedLVertex<int> taggedSource ? taggedSource.Tag : 0;
+                        var tTag = v2 is TaggedLVertex<int> taggedTarget ? taggedTarget.Tag : 0;
 
-                    xyz2.Show(doc, 0, trf);
-                    if (tTag != 0)
-                    {
-                        await trf.CreateAsync(() =>
-                        { TextNote.Create(doc, view.ViewId, xyz2 + vector, tTag.ToString(), defaultTypeId); }, "showVertexTag");
-                    }
+                        var xyz1 = v1.Location.ToXYZ();
+                        var xyz2 = v2.Location.ToXYZ();
 
-                    var line = Line.CreateBound(xyz1, xyz2);
-                    await trf.CreateAsync(() => line.Show(doc), "showEdge");
-                    if (edgeTag != 0)
-                    {
-                        await trf.CreateAsync(() =>
-                        { TextNote.Create(doc, view.ViewId, line.GetCenter() + vector, edgeTag.ToString(), defaultTypeId); }, "showEdgeTags");
+                        ElementId defaultTypeId = doc.GetDefaultElementTypeId(ElementTypeGroup.TextNoteType);
+
+                        xyz1.Show(doc, 0);
+                        if (sTag != 0)
+                        { TextNote.Create(doc, view.ViewId, xyz1 + vector, sTag.ToString(), defaultTypeId); }
+
+                        xyz2.Show(doc, 0);
+                        if (tTag != 0)
+                        { TextNote.Create(doc, view.ViewId, xyz2 + vector, tTag.ToString(), defaultTypeId); }
+
+                        var line = Line.CreateBound(xyz1, xyz2);
+                        line.Show(doc);
+                        if (edgeTag != 0)
+                        { TextNote.Create(doc, view.ViewId, line.GetCenter() + vector, edgeTag.ToString(), defaultTypeId); }
                     }
                 }
-            }
 
+            }
         }
+
 
         private UIView GetUIView()
         {

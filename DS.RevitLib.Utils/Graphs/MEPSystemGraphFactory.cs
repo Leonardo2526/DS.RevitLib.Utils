@@ -79,7 +79,7 @@ namespace DS.RevitLib.Utils.Graphs
                     foreach (var taggedChildVertex in taggedChildVertices)
                     {
                         var chElement = _doc.GetElement(new ElementId(taggedChildVertex.Tag));
-                        var cvConnected = ConnectorUtils.GetConnectedSuperbElements(chElement).
+                        var cvConnected = chElement.GetBestConnected().
                             Where(e => e.Id != excludeElementId);
                         if (cvConnected.Any())
                         {
@@ -102,7 +102,7 @@ namespace DS.RevitLib.Utils.Graphs
             if (firstVertex is TaggedLVertex<int> taggedLVertex)
             {
                 var vertexElement = _doc.GetElement(new ElementId(taggedLVertex.Tag));
-                list = ConnectorUtils.GetConnectedElements1(vertexElement, true);
+                list = ConnectorUtils.GetBestConnectedElements(vertexElement);
             }
             else
             {
@@ -177,7 +177,7 @@ namespace DS.RevitLib.Utils.Graphs
                     {
                         //Show(childConnected);
                         var parentElementId = parentVertex is TaggedLVertex<int> taggedLVertex ? taggedLVertex.Tag : 0;
-                        var childConnected = ConnectorUtils.GetConnectedSuperbElements(childElement).Cast<FamilyInstance>();
+                        var childConnected = mEPCurve.GetBestConnected().Cast<FamilyInstance>();
                         childConnected = parentElementId == 0 ?
                             childConnected :
                             childConnected.Where(c => c.Id.IntegerValue != parentElementId).ToList();
@@ -208,9 +208,7 @@ namespace DS.RevitLib.Utils.Graphs
         }
 
         private List<(ElementId id, Point3d location)> GetOrderedPoints(IEnumerable<FamilyInstance> connectedFamInst, MEPCurve mEPCurve, LVertex parentVertex)
-        {
-            var line = mEPCurve.GetCenterLine();
-            var mainCons = mEPCurve.GetMainConnectors();
+        {           
             var freeCons = ConnectorUtils.GetFreeConnector(mEPCurve).
                 Where(c => c.Origin.ToPoint3d().DistanceTo(parentVertex.Location) > 0.001);
 
@@ -233,15 +231,6 @@ namespace DS.RevitLib.Utils.Graphs
             throw new NotImplementedException();
         }
 
-        private TaggedEdge<LVertex, int> CreateEdge(MEPCurve mEPCurve)
-        {
-            var freeCons = ConnectorUtils.GetFreeConnector(mEPCurve);
-            var v1 = new LVertex(0, freeCons[0].Origin.ToPoint3d());
-            var v2 = new LVertex(1, freeCons[1].Origin.ToPoint3d());
-            var edge = new TaggedEdge<LVertex, int>(v1, v2, mEPCurve.Id.IntegerValue);
-            return edge;
-        }
-
         private TaggedLVertex<int> CreateVertex(int vertexId, FamilyInstance familyInstance)
         {
             var point = GetLocation(familyInstance);
@@ -250,29 +239,18 @@ namespace DS.RevitLib.Utils.Graphs
 
         private static Point3d GetLocation(FamilyInstance familyInstance)
         {
-            var location = familyInstance.GetCenterPoint();
+            var location = familyInstance.GetLocation();
 
-            XYZ point;
-            if (familyInstance.IsElbow())
-            {
-                point = location;
-            }
-            else if (familyInstance.IsSpud())
+            if (familyInstance.IsSpud())
             {
                 (List<Element> parents, Element child) = familyInstance.GetConnectedElements(true);
                 var parent = parents.FirstOrDefault();
                 var mainLine = parent == null ? familyInstance.GetCenterLine() : parent.GetCenterLine();
                 var lineOnProject = mainLine.IncreaseLength(100);
-                point = lineOnProject.Project(location).XYZPoint;
-            }
-            else
-            {
-                var mainLine = familyInstance.GetCenterLine();
-                var lineOnProject = mainLine.IncreaseLength(100);
-                point = lineOnProject.Project(location).XYZPoint;
-            }
+                location = lineOnProject.Project(location).XYZPoint;
+            }           
 
-            return point.ToPoint3d();
+            return location.ToPoint3d();
         }
 
         //Show vertex

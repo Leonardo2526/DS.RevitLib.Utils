@@ -213,9 +213,20 @@ namespace DS.RevitLib.Utils.Extensions
         /// <param name="transactionBuilder"></param>
         /// <param name="doc"></param>
         /// <param name="labelSize">Size of label's line to show.</param>
-        public static void Show(this XYZ point, Document doc, double labelSize = 0, ITransactionFactory transactionBuilder = null)
+        public static void ShowWithTransaction(this XYZ point, Document doc, double labelSize = 0, ITransactionFactory transactionBuilder = null)
         {
             transactionBuilder ??= new ContextTransactionFactory(doc);
+            transactionBuilder.CreateAsync(() => Show(point, doc, labelSize), "ShowPoint");
+        }
+
+        /// <summary>
+        /// Show current point in model as 3 crossing line in this <paramref name="point"/>.
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="doc"></param>
+        /// <param name="labelSize">Size of label's line to show.</param>
+        public static void Show(this XYZ point, Document doc, double labelSize = 0)
+        {
             labelSize = labelSize == 0 ? 100.MMToFeet() : labelSize;
 
             Line line1 = Line.CreateBound(
@@ -230,13 +241,11 @@ namespace DS.RevitLib.Utils.Extensions
                point + XYZ.BasisZ.Multiply(labelSize / 2),
                point - XYZ.BasisZ.Multiply(labelSize / 2));
 
-            transactionBuilder.CreateAsync(() =>
-            {
-                var creator = new ModelCurveCreator(doc);
-                creator.Create(line1);
-                creator.Create(line2);
-                creator.Create(line3);
-            }, "ShowPoint");
+            var creator = new ModelCurveCreator(doc);
+            creator.Create(line1);
+            creator.Create(line2);
+            creator.Create(line3);
+
         }
 
         /// <summary>

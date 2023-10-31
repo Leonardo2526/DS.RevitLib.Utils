@@ -1,7 +1,11 @@
 ﻿using Autodesk.Revit.DB;
+using DS.ClassLib.VarUtils;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.MEP;
 using DS.RevitLib.Utils.MEP.SystemTree.Relatives;
+using Rhino.Geometry;
+using Rhino.Geometry.Intersect;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -40,12 +44,11 @@ namespace DS.RevitLib.Utils.Extensions
         /// Get elements connected to current familyInstance.
         /// </summary>
         /// <param name="familyInstance"></param>
+        /// <param name="onlySuperd"></param>
         /// <returns>Returns parents and child connected to current familyInstance.</returns>
         public static (List<Element> parents, Element child) GetConnectedElements(this FamilyInstance familyInstance, bool onlySuperd = false)
         {
-            List<Element> connectedElements = onlySuperd ?
-                ConnectorUtils.GetConnectedSuperbElements(familyInstance) :
-                ConnectorUtils.GetConnectedElements(familyInstance);
+            var connectedElements = familyInstance.GetBestConnected(onlySuperd);
 
             var relationBuilder = new FamInstRelationBuilder(familyInstance);
             if (relationBuilder.Builer is null)
@@ -194,6 +197,80 @@ namespace DS.RevitLib.Utils.Extensions
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Get <paramref name="familyInstance"/> location point that specifies middle <see cref="Autodesk.Revit.DB.Connector"/>'s point.
+        /// </summary>
+        /// <param name="familyInstance"></param>
+        /// <returns>
+        /// Middle point between <paramref name="familyInstance"/> <see cref="Autodesk.Revit.DB.Connector"/>'s or
+        /// intersection point between <see cref="Autodesk.Revit.DB.Connector"/>'s vetors.
+        /// <para>
+        /// <see langword="null"/> if <paramref name="familyInstance"/> hasn't <see cref="Autodesk.Revit.DB.Connector"/>'s.
+        /// </para>
+        /// <para>
+        /// <see cref="Autodesk.Revit.DB.Connector"/>'s origin if <paramref name="familyInstance"/> has only one <see cref="Autodesk.Revit.DB.Connector"/>.   
+        /// </para>
+        /// </returns>
+        public static XYZ GetLocation(this FamilyInstance familyInstance)
+        {
+            XYZ location = null;
+
+            var cons = ConnectorUtils.GetConnectors(familyInstance);
+
+            switch (cons.Count)
+            {
+                case 0:
+                    break;
+                case 1:
+                    {
+                        location = cons[0].Origin;
+                        break;
+                    }
+                case 2:
+                    {
+                        var d1 = cons[0].CoordinateSystem.BasisZ.ToVector3d();
+                        var o1 = cons[0].Origin.ToPoint3d();
+                        var d2 = cons[1].CoordinateSystem.BasisZ.ToVector3d();
+                        var o2 = cons[1].Origin.ToPoint3d();
+
+                        var at = 3.DegToRad();
+                        double ct = Math.Pow(0.1, 3);
+                        if (d1.IsParallelTo(d2, at) == 0)
+                        {
+                            var line1 = new Rhino.Geometry.Line(o1, d1, 1);
+                            var line2 = new Rhino.Geometry.Line(o2, d2, 2);
+                            Intersection.LineLine(line1, line2, out double a, out double b, ct, false);
+                            location = line1.PointAt(a).ToXYZ();
+                        }
+                        else
+                        {
+                            var line = new Rhino.Geometry.Line(o1, o2);
+                            location = line.PointAtLength(line.Length / 2).ToXYZ();
+                        }
+                        break;
+                    }
+                default:
+                    {
+                        var (con1, con2) = familyInstance.GetMainConnectors();
+                        if (con1 == null || con2 == null)
+                        {
+                            var points = cons.Select(c => c.Origin).ToList();
+                            location = XYZUtils.GetAverage(points);
+                        }
+                        else
+                        {
+                            var o1 = con1.Origin.ToPoint3d();
+                            var o2 = con2.Origin.ToPoint3d();
+                            var line = new Rhino.Geometry.Line(o1, o2);
+                            location = line.PointAtLength(line.Length / 2).ToXYZ();
+                        }
+                    }
+                    break;
+            }
+
+            return location;
         }
     }
 }
