@@ -53,10 +53,16 @@ namespace DS.RevitLib.Utils.Graphs
                 //Show(current);
 
                 var parentVertex = current.parent;
+                var graphTaggedVertices = _graph.Vertices.OfType<TaggedLVertex<int>>().Select(v => v.Tag).ToList();
+                var graphTaggedEdges = _graph.Edges.OfType<TaggedEdge<LVertex,int>>().Select(v => v.Tag).ToList();
+
                 var childElements = current.childElements;
 
                 foreach (var childElement in childElements)
                 {
+                    if (graphTaggedEdges.Contains(childElement.Id.IntegerValue) || 
+                        graphTaggedVertices.Contains(childElement.Id.IntegerValue))
+                    { continue; }
                     var mEPCurve = childElement as MEPCurve;
                     var edgeTag = mEPCurve is not null ? childElement.Id.IntegerValue : 0;
                     var mainLine = mEPCurve?.GetCenterLine();
@@ -77,7 +83,7 @@ namespace DS.RevitLib.Utils.Graphs
 
                         var edge = edgeTag == 0 || isNullEdge ?
                             new Edge<LVertex>(v1, v2) :
-                            new TaggedEdge<LVertex, int>(v1, v2, edgeTag);                       
+                            new TaggedEdge<LVertex, int>(v1, v2, edgeTag);
                         _graph.AddEdge(edge);
                     }
                     //return _graph;
@@ -87,8 +93,15 @@ namespace DS.RevitLib.Utils.Graphs
                     foreach (var taggedChildVertex in taggedChildVertices)
                     {
                         var chElement = _doc.GetElement(new ElementId(taggedChildVertex.Tag));
+                        var excludedGraph = new List<int>();
+
+                        var taggedEdges = _graph.Edges.OfType<TaggedEdge<LVertex, int>>().Select(e => e.Tag);
+                        var taggedGraphVerices = _graph.Vertices.OfType<TaggedLVertex<int>>().Select(v => v.Tag).ToList();
+                        excludedGraph.AddRange(taggedGraphVerices);
+                        excludedGraph.AddRange(taggedEdges);
+
                         var cvConnected = chElement.GetBestConnected().
-                            Where(e => e.Id != excludeElementId);
+                            Where(e => e.Id != excludeElementId && !excludedGraph.Contains(e.Id.IntegerValue));
                         if (cvConnected.Any())
                         {
                             var item = (taggedChildVertex, cvConnected);
@@ -147,9 +160,9 @@ namespace DS.RevitLib.Utils.Graphs
                         }
                         else
                         {
-                            var connected = mEPCurve.GetConnected();
-                            var familyInstance = connected.FirstOrDefault();
-                            var location = familyInstance.GetCenterPoint().ToPoint3d();
+                            var connected = mEPCurve.GetBestConnected();
+                            var familyInstance = connected.FirstOrDefault() as FamilyInstance;
+                            var location = GetLocation(familyInstance);
                             vertex = new TaggedLVertex<int>(0, location, familyInstance.Id.IntegerValue);
                         }
                     }
@@ -194,9 +207,17 @@ namespace DS.RevitLib.Utils.Graphs
 
                         foreach (var item in list)
                         {
-                            var vertex = item.id == null ?
-                                new LVertex(currentId, item.location) :
-                                new TaggedLVertex<int>(currentId, item.location, item.id.IntegerValue);
+                            LVertex vertex;
+                            if (item.id == null)
+                            {
+                                vertex = new LVertex(currentId, item.location);
+                            }
+                            else
+                            {
+                                vertex = _graph.Vertices.OfType<TaggedLVertex<int>>().
+                                    FirstOrDefault(v => v.Tag == item.id.IntegerValue);
+                                vertex ??= new TaggedLVertex<int>(currentId, item.location, item.id.IntegerValue);
+                            }
                             vertices.Add(vertex);
                             currentId++;
                         }
@@ -209,7 +230,7 @@ namespace DS.RevitLib.Utils.Graphs
                         if (parentVertex is TaggedLVertex<int> taggedParent)
                         {
                             var parentElem = _doc.GetElement(new ElementId(taggedParent.Tag));
-                            
+
                             var common = GetCommonConnector(parentElem, familyInstance);
                             if (common != null)
                             {
@@ -259,7 +280,7 @@ namespace DS.RevitLib.Utils.Graphs
             var longLine = mainLine.IncreaseLength(100);
 
             var ap1 = TryGetAxiliaryPoint(parentVertex.Location, longLine);
-            if (ap1 != null) 
+            if (ap1 != null)
             { list.Add((null, ap1.ToPoint3d())); }
 
             foreach (var famInst in connectedFamInst)
@@ -267,7 +288,7 @@ namespace DS.RevitLib.Utils.Graphs
                 var pointToAdd = GetLocation(famInst);
 
                 var ap = TryGetAxiliaryPoint(pointToAdd, longLine);
-                if (ap != null) 
+                if (ap != null)
                 { list.Add((null, ap.ToPoint3d())); }
 
                 list.Add((famInst.Id, pointToAdd));

@@ -7,8 +7,10 @@ using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.Graphs;
 using DS.RevitLib.Utils.Various;
 using QuickGraph;
+using QuickGraph.Algorithms;
 using Rhino.UI;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -62,6 +64,27 @@ namespace DS.RevitLib.Test.TestedClasses
                     Debug.WriteLine($"v{edge.Source.Id} elId: {sTag} -> v{edge.Target.Id} elId: {tTag}. Edge: ({edgeTag})");
                 }
             }
+
+            Debug.WriteLine("Verices count is: " + graph.Vertices.Count());
+            Debug.WriteLine("Edges count is: " + graph.Edges.Count());
+
+            var emptyTagVertices = graph.Vertices.Where(v => v is not TaggedLVertex<int>).ToList();
+            var taggedVertices = graph.Vertices.OfType<TaggedLVertex<int>>();
+            var distinctVericies = taggedVertices.Distinct(new CompareTaggedVertex()).ToList();
+            var duplicateVertices = taggedVertices.Where(v => !distinctVericies.Contains(v)).ToList();
+
+            Debug.WriteLine("Duplicate vertices count is: " + duplicateVertices.Count);
+            duplicateVertices.ForEach(v => Debug.WriteLine(v.Id));
+
+            //Debug.WriteLine("Empty verices count is: " + emptyTagVertices.Count);
+            //emptyTagVertices.ForEach(v => Debug.WriteLine(v.Id));
+
+
+            var taggedEdges = graph.Edges.OfType<TaggedEdge<LVertex, int>>();
+            var distinctsEdges = taggedEdges.Distinct(new CompareTaggedEdge()).ToList();
+            var duplicateEdges = taggedEdges.Where(e => !distinctsEdges.Contains(e)).ToList();
+            Debug.WriteLine("Duplicate edges count is: " + duplicateEdges.Count);
+            duplicateEdges.ForEach(v => Debug.WriteLine(v.Tag));
         }
 
         private void Show(AdjacencyGraph<LVertex, Edge<LVertex>> graph, Document doc, ITransactionFactory trf)
@@ -75,6 +98,8 @@ namespace DS.RevitLib.Test.TestedClasses
             static void ShowGraph(AdjacencyGraph<LVertex, Edge<LVertex>> graph, Document doc, UIView view)
             {
                 var vector = new XYZ(0, 0, 0);
+
+                bool printElementIds = false;
 
                 foreach (var vertex in graph.Vertices)
                 {
@@ -91,18 +116,25 @@ namespace DS.RevitLib.Test.TestedClasses
 
                         ElementId defaultTypeId = doc.GetDefaultElementTypeId(ElementTypeGroup.TextNoteType);
 
+                        var txt1 = printElementIds ? sTag : v1.Id;
+                        var txt2 = printElementIds ? tTag : v2.Id;
+
                         xyz1.Show(doc, 0);
-                        if (sTag != 0)
-                        { TextNote.Create(doc, view.ViewId, xyz1 + vector, sTag.ToString(), defaultTypeId); }
+                        if (!printElementIds || sTag != 0)
+                        { TextNote.Create(doc, view.ViewId, xyz1 + vector, txt1.ToString(), defaultTypeId); }
 
                         xyz2.Show(doc, 0);
-                        if (tTag != 0)
-                        { TextNote.Create(doc, view.ViewId, xyz2 + vector, tTag.ToString(), defaultTypeId); }
+                        if (!printElementIds || tTag != 0)
+                        { TextNote.Create(doc, view.ViewId, xyz2 + vector, txt2.ToString(), defaultTypeId); }
 
                         var line = Line.CreateBound(xyz1, xyz2);
                         line.Show(doc);
-                        if (edgeTag != 0)
-                        { TextNote.Create(doc, view.ViewId, line.GetCenter() + vector, edgeTag.ToString(), defaultTypeId); }
+
+                        if (printElementIds)
+                        {
+                            if (edgeTag != 0)
+                            { TextNote.Create(doc, view.ViewId, line.GetCenter() + vector, edgeTag.ToString(), defaultTypeId); }
+                        }
                     }
                 }
 
@@ -125,6 +157,34 @@ namespace DS.RevitLib.Test.TestedClasses
                 }
             }
             return uiview;
+        }
+    }
+
+    internal class CompareTaggedVertex : IEqualityComparer<TaggedLVertex<int>>
+    {
+        public bool Equals(TaggedLVertex<int> x, TaggedLVertex<int> y)
+        {
+            return x.Tag == y.Tag;
+        }
+
+        public int GetHashCode(TaggedLVertex<int> obj)
+        {
+            return obj.Tag.GetHashCode();
+        }
+    }
+
+    internal class CompareTaggedEdge : IEqualityComparer<TaggedEdge<LVertex, int>>
+    {
+        public bool Equals(TaggedEdge<LVertex, int> x, TaggedEdge<LVertex, int> y)
+        {
+            var equalVerex = (x.Source.Id == y.Source.Id && x.Target.Id == y.Target.Id) 
+                || (x.Target.Id == y.Source.Id && x.Source.Id == y.Target.Id);
+            return (x.Tag == y.Tag && equalVerex);
+        }
+
+        public int GetHashCode(TaggedEdge<LVertex, int> obj)
+        {
+            return obj.Tag.GetHashCode();
         }
     }
 }
