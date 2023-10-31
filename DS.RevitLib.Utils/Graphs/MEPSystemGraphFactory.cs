@@ -1,5 +1,6 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.DirectContext3D;
+using Autodesk.Revit.DB.Structure;
 using Autodesk.Revit.UI;
 using DS.ClassLib.VarUtils;
 using DS.ClassLib.VarUtils.Graphs;
@@ -56,7 +57,10 @@ namespace DS.RevitLib.Utils.Graphs
 
                 foreach (var childElement in childElements)
                 {
-                    var edgeTag = childElement is MEPCurve ? childElement.Id.IntegerValue : 0;
+                    var mEPCurve = childElement as MEPCurve;
+                    var edgeTag = mEPCurve is not null ? childElement.Id.IntegerValue : 0;
+                    var mainLine = mEPCurve?.GetCenterLine();
+                    var longLine = mainLine?.IncreaseLength(100);
 
                     //add to graph
                     var childVertices = GetVertices(childElement, parentVertex).ToList();
@@ -67,9 +71,13 @@ namespace DS.RevitLib.Utils.Graphs
                         var v2 = childVertices[i];
                         _graph.AddVertex(v2);
 
-                        var edge = edgeTag == 0 ?
+                        var isNullEdge = longLine is not null
+                            && (longLine.Distance(v2.Location.ToXYZ()) > 0.001 ||
+                            longLine.Distance(v1.Location.ToXYZ()) > 0.001);
+
+                        var edge = edgeTag == 0 || isNullEdge ?
                             new Edge<LVertex>(v1, v2) :
-                            new TaggedEdge<LVertex, int>(v1, v2, edgeTag);
+                            new TaggedEdge<LVertex, int>(v1, v2, edgeTag);                       
                         _graph.AddEdge(edge);
                     }
                     //return _graph;
@@ -197,6 +205,29 @@ namespace DS.RevitLib.Utils.Graphs
                 case FamilyInstance familyInstance:
                     {
                         var vertex = CreateVertex(currentId, familyInstance);
+
+                        if (parentVertex is TaggedLVertex<int> taggedParent)
+                        {
+                            var parentElem = _doc.GetElement(new ElementId(taggedParent.Tag));
+                            
+                            var common = GetCommonConnector(parentElem, familyInstance);
+                            if (common != null)
+                            {
+                                var d1 = common.CoordinateSystem.BasisZ;
+                                var o1 = common.Origin;
+                                var line = Autodesk.Revit.DB.Line.CreateBound(o1, o1 + d1);
+                                var longLine = line.IncreaseLength(100);
+                                var location = familyInstance.GetLocation().ToPoint3d();
+
+                                var ap = TryGetAxiliaryPoint(location, longLine);
+                                if (ap != null)
+                                {
+                                    var av = new LVertex(currentId, common.Origin.ToPoint3d());
+                                    vertices.Add(av);
+                                }
+                            }
+                        }
+
                         vertices.Add(vertex);
                     }
                     break;
@@ -207,23 +238,51 @@ namespace DS.RevitLib.Utils.Graphs
             return vertices;
         }
 
-        private List<(ElementId id, Point3d location)> GetOrderedPoints(IEnumerable<FamilyInstance> connectedFamInst, MEPCurve mEPCurve, LVertex parentVertex)
-        {           
+        private Connector GetCommonConnector(Element element1, Element element2)
+        {
+            var elem1Connectors = ConnectorUtils.GetConnectors(element1);
+            var elem2Connectors = ConnectorUtils.GetConnectors(element2);
+
+            return ConnectorUtils.GetClosest(elem1Connectors[0], elem2Connectors);
+        }
+
+        private List<(ElementId id, Point3d location)> GetOrderedPoints(
+            IEnumerable<FamilyInstance> connectedFamInst, MEPCurve mEPCurve, LVertex parentVertex)
+        {
+            var list = new List<(ElementId id, Point3d location)>();
+
             var freeCons = ConnectorUtils.GetFreeConnector(mEPCurve).
                 Where(c => c.Origin.ToPoint3d().DistanceTo(parentVertex.Location) > 0.001);
-
-
-            var list = new List<(ElementId id, Point3d location)>();
             freeCons.ForEach(c => list.Add((null, c.Origin.ToPoint3d())));
 
+            var mainLine = mEPCurve.GetCenterLine();
+            var longLine = mainLine.IncreaseLength(100);
+
+            var ap1 = TryGetAxiliaryPoint(parentVertex.Location, longLine);
+            if (ap1 != null) 
+            { list.Add((null, ap1.ToPoint3d())); }
+
             foreach (var famInst in connectedFamInst)
-            {              
+            {
                 var pointToAdd = GetLocation(famInst);
+
+                var ap = TryGetAxiliaryPoint(pointToAdd, longLine);
+                if (ap != null) 
+                { list.Add((null, ap.ToPoint3d())); }
+
                 list.Add((famInst.Id, pointToAdd));
             }
             var refPoint = parentVertex.Location;
             list = list.OrderBy(l => l.location.DistanceTo(refPoint)).ToList();
+
             return list;
+        }
+
+        private XYZ TryGetAxiliaryPoint(Point3d location, Autodesk.Revit.DB.Line line)
+        {
+            var xyzPoint = location.ToXYZ();
+            var proj = line.Project(xyzPoint).XYZPoint;
+            return proj.DistanceTo(xyzPoint) > 0.003 ? proj : null;
         }
 
         public override AdjacencyGraph<LVertex, Edge<LVertex>> Create(Element element1, Element element2)
@@ -248,7 +307,7 @@ namespace DS.RevitLib.Utils.Graphs
                 var mainLine = parent == null ? familyInstance.GetCenterLine() : parent.GetCenterLine();
                 var lineOnProject = mainLine.IncreaseLength(100);
                 location = lineOnProject.Project(location).XYZPoint;
-            }           
+            }
 
             return location.ToPoint3d();
         }
