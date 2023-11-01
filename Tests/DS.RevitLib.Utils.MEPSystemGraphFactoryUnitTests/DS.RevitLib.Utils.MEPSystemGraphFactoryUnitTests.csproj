@@ -3,6 +3,7 @@
   <Import Project="..\..\packages\NUnit.3.13.3\build\NUnit.props" Condition="Exists('..\..\packages\NUnit.3.13.3\build\NUnit.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
+    <LangVersion>latest</LangVersion>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{130E75AC-1970-44EE-AF9E-657DD9BEFEF9}</ProjectGuid>
@@ -76,6 +77,7 @@
   <ItemGroup>
     <Compile Include="GraphBuilder.cs" />
     <Compile Include="GraphTester.cs" />
+    <Compile Include="DuctTest.cs" />
     <Compile Include="PipesTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -53,16 +53,24 @@ namespace DS.RevitLib.Utils.Graphs
                 //Show(current);
 
                 var parentVertex = current.parent;
-                var graphTaggedVertices = _graph.Vertices.OfType<TaggedLVertex<int>>().Select(v => v.Tag).ToList();
+                var graphTaggedVertices = _graph.Vertices.OfType<TaggedLVertex<int>>().ToList();
                 var graphTaggedEdges = _graph.Edges.OfType<TaggedEdge<LVertex,int>>().Select(v => v.Tag).ToList();
 
                 var childElements = current.childElements;
 
                 foreach (var childElement in childElements)
                 {
-                    if (graphTaggedEdges.Contains(childElement.Id.IntegerValue) || 
-                        graphTaggedVertices.Contains(childElement.Id.IntegerValue))
+                    if (graphTaggedEdges.Contains(childElement.Id.IntegerValue))
                     { continue; }
+
+                    var existVertex = graphTaggedVertices.FirstOrDefault(v => v.Tag == childElement.Id.IntegerValue);
+                    if (existVertex is not null)
+                    {
+                        var e = new Edge<LVertex>(parentVertex, existVertex);
+                        _graph.AddEdge(e);
+                        continue; 
+                    }
+
                     var mEPCurve = childElement as MEPCurve;
                     var edgeTag = mEPCurve is not null ? childElement.Id.IntegerValue : 0;
                     var mainLine = mEPCurve?.GetCenterLine();

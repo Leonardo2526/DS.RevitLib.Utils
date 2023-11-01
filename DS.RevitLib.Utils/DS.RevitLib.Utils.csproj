@@ -206,6 +206,7 @@
     <Compile Include="Geometry\Points\PointVisualisator.cs" />
     <Compile Include="Geometry\Points\XYZVisualizator.cs" />
     <Compile Include="Geometry\Solids\SolidOffsetExtractor.cs" />
+    <Compile Include="Graphs\CompareTaggedItems.cs" />
     <Compile Include="Graphs\IGraphFactory.cs" />
     <Compile Include="Graphs\MEPSystemGraphFactory.cs" />
     <Compile Include="Various\IWindowMessenger.cs" />

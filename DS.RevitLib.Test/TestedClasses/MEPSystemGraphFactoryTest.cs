@@ -99,7 +99,7 @@ namespace DS.RevitLib.Test.TestedClasses
             {
                 var vector = new XYZ(0, 0, 0);
 
-                bool printElementIds = false;
+                bool printElementIds = true;
 
                 foreach (var vertex in graph.Vertices)
                 {
@@ -120,12 +120,12 @@ namespace DS.RevitLib.Test.TestedClasses
                         var txt2 = printElementIds ? tTag : v2.Id;
 
                         xyz1.Show(doc, 0);
-                        if (!printElementIds || sTag != 0)
-                        { TextNote.Create(doc, view.ViewId, xyz1 + vector, txt1.ToString(), defaultTypeId); }
+                        //if (!printElementIds || sTag != 0)
+                        //{ TextNote.Create(doc, view.ViewId, xyz1 + vector, txt1.ToString(), defaultTypeId); }
 
                         xyz2.Show(doc, 0);
-                        if (!printElementIds || tTag != 0)
-                        { TextNote.Create(doc, view.ViewId, xyz2 + vector, txt2.ToString(), defaultTypeId); }
+                        //if (!printElementIds || tTag != 0)
+                        //{ TextNote.Create(doc, view.ViewId, xyz2 + vector, txt2.ToString(), defaultTypeId); }
 
                         var line = Line.CreateBound(xyz1, xyz2);
                         line.Show(doc);
@@ -157,34 +157,6 @@ namespace DS.RevitLib.Test.TestedClasses
                 }
             }
             return uiview;
-        }
-    }
-
-    internal class CompareTaggedVertex : IEqualityComparer<TaggedLVertex<int>>
-    {
-        public bool Equals(TaggedLVertex<int> x, TaggedLVertex<int> y)
-        {
-            return x.Tag == y.Tag;
-        }
-
-        public int GetHashCode(TaggedLVertex<int> obj)
-        {
-            return obj.Tag.GetHashCode();
-        }
-    }
-
-    internal class CompareTaggedEdge : IEqualityComparer<TaggedEdge<LVertex, int>>
-    {
-        public bool Equals(TaggedEdge<LVertex, int> x, TaggedEdge<LVertex, int> y)
-        {
-            var equalVerex = (x.Source.Id == y.Source.Id && x.Target.Id == y.Target.Id) 
-                || (x.Target.Id == y.Source.Id && x.Source.Id == y.Target.Id);
-            return (x.Tag == y.Tag && equalVerex);
-        }
-
-        public int GetHashCode(TaggedEdge<LVertex, int> obj)
-        {
-            return obj.Tag.GetHashCode();
         }
     }
 }
