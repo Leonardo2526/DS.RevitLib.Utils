@@ -10,7 +10,7 @@ using DS.RevitLib.Utils.MEP.Creator;
 using DS.RevitLib.Utils.Models;
 using DS.RevitLib.Utils.Transactions;
 using DS.RevitLib.Utils.Various.Bases;
-using Vector3d =  Rhino.Geometry.Vector3d;
+using Vector3d = Rhino.Geometry.Vector3d;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -18,6 +18,7 @@ using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Windows.Media.Media3D;
+using DS.RevitLib.Utils.Lines;
 
 namespace DS.RevitLib.Utils.MEP
 {
@@ -223,7 +224,7 @@ namespace DS.RevitLib.Utils.MEP
                     break;
                 case ConnectorProfileType.Round:
                     {
-                        Parameter diameter = mEPCurve.get_Parameter(BuiltInParameter.RBS_PIPE_OUTER_DIAMETER);                        
+                        Parameter diameter = mEPCurve.get_Parameter(BuiltInParameter.RBS_PIPE_OUTER_DIAMETER);
                         return diameter is null ? mEPCurve.Diameter : diameter.AsDouble();
                     }
                 case ConnectorProfileType.Rectangular:
@@ -286,7 +287,7 @@ namespace DS.RevitLib.Utils.MEP
             {
                 case ConnectorProfileType.Invalid:
                     break;
-                case ConnectorProfileType.Round:                 
+                case ConnectorProfileType.Round:
                     return Math.PI * Math.Pow(width, 2) / 4;
                 case ConnectorProfileType.Rectangular:
                     return width * height;
@@ -414,7 +415,7 @@ namespace DS.RevitLib.Utils.MEP
 
             var orths = ElementUtils.GetOrthoNormVectors(mEPCurve);
             var zOrth = orths.FirstOrDefault(obj => XYZUtils.Collinearity(XYZ.BasisZ, obj));
-            if(zOrth == null) 
+            if (zOrth == null)
             { /*Debug.WriteLine($"Warning: failed to check MEPCurve {mEPCurve.Id} orientation."); */ return true; }
 
             var height = mEPCurve.GetSizeByVector(zOrth) * 2;
@@ -429,7 +430,7 @@ namespace DS.RevitLib.Utils.MEP
         /// <param name="trb"></param>
         public static void FixNotValidOrientation(this MEPCurve mEPCurve, ITransactionFactory trb = null)
         {
-            if(mEPCurve.HasValidOrientation()) { return; }
+            if (mEPCurve.HasValidOrientation()) { return; }
 
             Document doc = mEPCurve.Document;
             void action()
@@ -472,7 +473,7 @@ namespace DS.RevitLib.Utils.MEP
             List<Element> connectedElements = GetConnectedWithoutSpuds(sourceMEPCurve, out List<Element> spuds);
             doc.Delete(sourceMEPCurve.Id);
 
-            if(connectedElements.Count == 0) { return targetMEPCurve; }
+            if (connectedElements.Count == 0) { return targetMEPCurve; }
 
             spuds.ForEach(spud => { doc.Delete(spud.Id); });
 
@@ -481,7 +482,7 @@ namespace DS.RevitLib.Utils.MEP
             {
                 try
                 {
-                    if(elem is MEPCurve)
+                    if (elem is MEPCurve)
                     {
                         (var mc1ToConnect, var mc2ToConnect) = MEPCurveUtils.GetRelation(targetMEPCurve, elem as MEPCurve, out _);
                         mc2ToConnect.Connect(mc1ToConnect);
@@ -493,7 +494,7 @@ namespace DS.RevitLib.Utils.MEP
                 }
                 //{targetMEPCurve.Connect(elem); }
                 catch (Exception)
-                { return null;}
+                { return null; }
             }
 
             static List<Element> GetConnectedWithoutSpuds(MEPCurve sourceMEPCurve, out List<Element> spuds)
@@ -546,11 +547,61 @@ namespace DS.RevitLib.Utils.MEP
         public static bool IsFloorTraversable(this MEPCurve mEPCurve, double maxSectionArea = 0.085)
         {
             var dir = mEPCurve.Direction().ToVector3d();
-            if(dir.IsParallelTo(Vector3d.ZAxis, 3.DegToRad()) == 0) {  return false; }
+            if (dir.IsParallelTo(Vector3d.ZAxis, 3.DegToRad()) == 0) { return false; }
 
             var area = mEPCurve.GetOuterArea();
 
             return area < maxSectionArea;
+        }
+
+        /// <summary>
+        /// Get first occurence of <see cref="Autodesk.Revit.DB.FamilyInstance"/> on <paramref name="mEPCurve"/> 
+        /// beteween it's <paramref name="basePoint"/> and <paramref name="mainConnector"/>.
+        /// </summary>
+        /// <param name="mEPCurve"></param>
+        /// <param name="basePoint"></param>
+        /// <param name="mainConnector"></param>
+        /// <returns>
+        /// Closest occurence of <see cref="Autodesk.Revit.DB.FamilyInstance"/> location if any exist between given point or connected to <paramref name="mainConnector"/>.   
+        /// <para>
+        /// Otherwise <see langword="null"/>.
+        /// </para>
+        /// </returns>
+        public static FamilyInstance GetFirst(this MEPCurve mEPCurve, XYZ basePoint, Connector mainConnector, List<ElementId> excluded = null)
+        {
+            var mainLine = mEPCurve.GetCenterLine().IncreaseLength(100);
+            var projPoint = mainLine.Project(basePoint).XYZPoint;            
+
+            var connectedFamInst = mEPCurve.GetBestConnected().OfType<FamilyInstance>();
+
+            excluded ??= new List<ElementId>();
+            connectedFamInst = connectedFamInst.Where(e => !excluded.Contains(e.Id));
+            var distances = new Dictionary<FamilyInstance, double>();
+
+            foreach (var famInst in connectedFamInst)
+            {
+                XYZ point = famInst.GetLocation();
+                if (point.IsBetweenPoints(projPoint, mainConnector.Origin))
+                {
+                    double distance = projPoint.DistanceTo(point);
+                    distances.Add(famInst, distance);
+                }
+            }
+
+            if (distances.Count == 0)
+            {
+                if (ConnectorUtils.GetConnectedByConnector(mainConnector, mEPCurve) is FamilyInstance famInstOnMain)
+                {
+                    if (famInstOnMain.SuperComponent is not null)
+                    { famInstOnMain = famInstOnMain.SuperComponent as FamilyInstance; }
+                    return famInstOnMain;
+                }
+            }
+
+            distances = distances.OrderBy(x => x.Value).
+            ToDictionary(x => x.Key, x => x.Value);
+
+            return distances.Keys.ToList().FirstOrDefault();
         }
     }
 }

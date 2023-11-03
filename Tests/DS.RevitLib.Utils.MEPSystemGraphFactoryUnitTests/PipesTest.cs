@@ -283,8 +283,8 @@ namespace DS.RevitLib.Utils.MEPSystemGraphFactoryUnitTests
             var graph = _graphBuilder.CreateGraph(elId);
 
             GraphTester.IsSimple(graph);
-            GraphTester.IsSpecificVerticesCount(graph, 48);
-            GraphTester.IsSpecificEdgesCount(graph, 50);
+            GraphTester.IsSpecificVerticesCount(graph, 40);
+            GraphTester.IsSpecificEdgesCount(graph, 42);
         }
     }
 }

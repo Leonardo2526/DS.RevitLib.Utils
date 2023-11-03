@@ -20,7 +20,8 @@ namespace DS.RevitLib.Test
             UIDocument uidoc = uiapp.ActiveUIDocument;
 
             //new GetFamInstLocationTest( uidoc);
-            new MEPSystemGraphFactoryTest(uidoc);
+            //new MEPSystemGraphFactoryTest(uidoc);
+            new BestMEPSystemGraphFactoryTest(uidoc);
 
             return Autodesk.Revit.UI.Result.Succeeded;
         }

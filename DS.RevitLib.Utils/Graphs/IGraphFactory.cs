@@ -27,6 +27,5 @@ namespace DS.RevitLib.Utils.Graphs
        
 
         public abstract TGraph Create(Element element);
-        public abstract TGraph Create(Element element1, Element element2);
     }
 }

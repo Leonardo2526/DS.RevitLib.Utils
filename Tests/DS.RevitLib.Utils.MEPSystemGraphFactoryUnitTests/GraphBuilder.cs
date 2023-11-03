@@ -23,11 +23,13 @@ namespace DS.RevitLib.Utils.MEPSystemGraphFactoryUnitTests
             _doc = uiDoc.Document;
         }
 
-        public AdjacencyGraph<LVertex, Edge<LVertex>> CreateGraph(ElementId elementId)
+        public AdjacencyGraph<GVertex, Edge<GVertex>> CreateGraph(ElementId elementId)
         {
             var e1 = _doc.GetElement(elementId);
 
-            var factory = new MEPSystemGraphFactory(_doc)
+            var vertexBuilder = new GVertexBuilder(_doc);
+            var edgeBuilder = new GEdgeBuilder();
+            var factory = new BestMEPSystemGraphFactory(_doc, vertexBuilder, edgeBuilder)
             {
                 UIDoc = _uiDoc
             };

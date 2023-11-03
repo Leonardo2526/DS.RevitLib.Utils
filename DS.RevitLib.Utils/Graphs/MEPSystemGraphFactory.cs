@@ -314,10 +314,6 @@ namespace DS.RevitLib.Utils.Graphs
             return proj.DistanceTo(xyzPoint) > 0.003 ? proj : null;
         }
 
-        public override AdjacencyGraph<LVertex, Edge<LVertex>> Create(Element element1, Element element2)
-        {
-            throw new NotImplementedException();
-        }
 
         private TaggedLVertex<int> CreateVertex(int vertexId, FamilyInstance familyInstance)
         {

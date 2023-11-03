@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using DS.ClassLib.VarUtils;
 using DS.RevitLib.Utils.Extensions;
+using DS.RevitLib.Utils.Lines;
 using DS.RevitLib.Utils.MEP;
 using DS.RevitLib.Utils.MEP.SystemTree.Relatives;
 using Rhino.Geometry;
@@ -270,7 +271,39 @@ namespace DS.RevitLib.Utils.Extensions
                     break;
             }
 
+            if (familyInstance.IsSpud())
+            {
+                (List<Element> parents, Element child) = familyInstance.GetConnectedElements(true);
+                var parent = parents.FirstOrDefault();
+                var mainLine = parent == null ? familyInstance.GetCenterLine() : parent.GetCenterLine();
+                var lineOnProject = mainLine.IncreaseLength(100);
+                location = lineOnProject.Project(location).XYZPoint;
+            }
+
             return location;
         }
+
+        /// <summary>
+        /// Order elements list by base point.
+        /// </summary>
+        /// <param name="basePoint"></param>
+        /// <param name="famInstances"></param>
+        /// <returns>Return ordered elements by descending distances from location points to base point.</returns>       
+        public static List<FamilyInstance> OrderByPoint(this IEnumerable<FamilyInstance> famInstances, XYZ basePoint)
+        {
+            var distances = new Dictionary<FamilyInstance, double>();
+
+            foreach (var famInst in famInstances)
+            {
+                XYZ point = famInst.GetLocation();
+                double distance = basePoint.DistanceTo(point);
+                distances.Add(famInst, distance);
+            }
+
+            distances = distances.OrderBy(x => x.Value).
+                ToDictionary(x => x.Key, x => x.Value);
+
+            return distances.Keys.ToList();
+        }    
     }
 }
