@@ -94,7 +94,6 @@
     <Compile Include="TestedClasses\BuilderByPointsTest.cs" />
     <Compile Include="TestedClasses\ConnectedElementFinderTest.cs" />
     <Compile Include="TestedClasses\GetConnectionDirectionTest.cs" />
-    <Compile Include="TestedClasses\BestMEPSystemGraphFactoryTest.cs" />
     <Compile Include="TestedClasses\MEPSystemGraphFactoryTest.cs" />
     <Compile Include="TestedClasses\ReplaceMEPCurveTest.cs" />
     <Compile Include="TestedClasses\GetOverlapResultTest.cs" />

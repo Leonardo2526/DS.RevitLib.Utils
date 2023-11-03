@@ -16,7 +16,7 @@ namespace DS.RevitLib.Utils.MEPSystemGraphFactoryUnitTests
 {
     internal class GraphTester
     {
-        public static void IsValidSimpleChainOrTreeItemsCount(AdjacencyGraph<GVertex, Edge<GVertex>> graph)
+        public static void IsValidSimpleChainOrTreeItemsCount(AdjacencyGraph<IVertex, Edge<IVertex>> graph)
         {
             var b = graph.VertexCount - graph.EdgeCount == 1;
 
@@ -25,33 +25,33 @@ namespace DS.RevitLib.Utils.MEPSystemGraphFactoryUnitTests
             Assert.AreEqual(true, b);
         }
 
-        public static void IsSpecificVerticesCount(AdjacencyGraph<GVertex, Edge<GVertex>> graph, int verticesCount)
+        public static void IsSpecificVerticesCount(AdjacencyGraph<IVertex, Edge<IVertex>> graph, int verticesCount)
         {
             Assert.Greater(graph.VertexCount, 0);
             Assert.AreEqual(verticesCount, graph.VertexCount);
         }
 
-        public static void IsSpecificEdgesCount(AdjacencyGraph<GVertex, Edge<GVertex>> graph, int edgesCount)
+        public static void IsSpecificEdgesCount(AdjacencyGraph<IVertex, Edge<IVertex>> graph, int edgesCount)
         {
             Assert.Greater(graph.EdgeCount, 0);
             Assert.AreEqual(edgesCount, graph.EdgeCount);
         }
 
-        public static void IsSpecificTaggedVerticesCount(AdjacencyGraph<GVertex, Edge<GVertex>> graph, int verticesCount)
+        public static void IsSpecificTaggedVerticesCount(AdjacencyGraph<IVertex, Edge<IVertex>> graph, int verticesCount)
         {
             var taggedVertices = graph.Vertices.OfType<TaggedGVertex<int>>();
             Assert.Greater(taggedVertices.Count(), 0);
             Assert.AreEqual(verticesCount, taggedVertices.Count());
         }
 
-        public static void IsSpecificTaggedEdgesCount(AdjacencyGraph<GVertex, Edge<GVertex>> graph, int edgesCount)
+        public static void IsSpecificTaggedEdgesCount(AdjacencyGraph<IVertex, Edge<IVertex>> graph, int edgesCount)
         {
-            var taggedEdges = graph.Vertices.OfType<TaggedEdge<GVertex, int>>();
+            var taggedEdges = graph.Vertices.OfType<TaggedEdge<IVertex, int>>();
             Assert.Greater(taggedEdges.Count(), 0);
             Assert.AreEqual(edgesCount, taggedEdges.Count());
         }
 
-        public static void IsSimpleCycle(AdjacencyGraph<GVertex, Edge<GVertex>> graph)
+        public static void IsSimpleCycle(AdjacencyGraph<IVertex, Edge<IVertex>> graph)
         {
             Assert.Greater(graph.VertexCount, 0);
             Assert.Greater(graph.EdgeCount, 0);
@@ -62,7 +62,7 @@ namespace DS.RevitLib.Utils.MEPSystemGraphFactoryUnitTests
         /// Graph that hasn't duplicate verices or edges.
         /// </summary>
         /// <param name="graph"></param>
-        public static void IsSimple(AdjacencyGraph<GVertex, Edge<GVertex>> graph)
+        public static void IsSimple(AdjacencyGraph<IVertex, Edge<IVertex>> graph)
         {
             //check duplicate vertices
             var vertices= graph.Vertices;
@@ -85,19 +85,19 @@ namespace DS.RevitLib.Utils.MEPSystemGraphFactoryUnitTests
             }
 
             //check duplicate edges
-            var taggedEdges = graph.Edges.OfType<TaggedEdge<GVertex, int>>();
+            var taggedEdges = graph.Edges.OfType<TaggedEdge<IVertex, int>>();
             var distinctsEdges = taggedEdges.Distinct(new CompareGTaggedEdge()).ToList();
             var duplicateEdges = taggedEdges.Where(e => !distinctsEdges.Contains(e)).ToList();
             Assert.Greater(taggedEdges.Count(), 0);
             Assert.AreEqual(duplicateEdges.Count, 0);
         }
 
-        public static void IsEmptyVertices(AdjacencyGraph<GVertex, Edge<GVertex>> graph)
+        public static void IsEmptyVertices(AdjacencyGraph<IVertex, Edge<IVertex>> graph)
         {
             Assert.IsTrue(graph.VertexCount == 0);
         }
 
-        public static void IsFailEmptyVertices(AdjacencyGraph<GVertex, Edge<GVertex>> graph)
+        public static void IsFailEmptyVertices(AdjacencyGraph<IVertex, Edge<IVertex>> graph)
         {
             Assert.IsFalse(graph.VertexCount == 0);
         }

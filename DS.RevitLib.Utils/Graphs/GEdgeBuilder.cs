@@ -1,18 +1,12 @@
-﻿using Autodesk.Revit.DB;
-using DS.ClassLib.VarUtils.Graphs;
+﻿using DS.ClassLib.VarUtils.Graphs;
 using QuickGraph;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.Graphs
 {
     /// <summary>
-    /// Represents builder for graph with <see cref="GVertex"/> vertices and <see cref="Edge{TVertex}"/> edges.
+    /// Represents builder for graph with <see cref="IVertex"/> vertices and <see cref="Edge{TVertex}"/> edges.
     /// </summary>
-    public class GEdgeBuilder : IEdgeBuilder<GVertex, Edge<GVertex>>
+    public class GEdgeBuilder : IEdgeBuilder<IVertex, Edge<IVertex>>
     {
 
         /// <summary>
@@ -24,10 +18,10 @@ namespace DS.RevitLib.Utils.Graphs
         /// <returns>
         /// A new edge.
         /// </returns>
-        public Edge<GVertex> GetEdge(GVertex vertex1, GVertex vertex2, int edgeTag)
-            => edgeTag == 0 ? 
-            new Edge<GVertex>(vertex1, vertex2) :
-            new TaggedEdge<GVertex, int>(vertex1, vertex2, edgeTag);
+        public Edge<IVertex> GetEdge(IVertex vertex1, IVertex vertex2, int edgeTag)
+            => edgeTag == 0 ?
+            new Edge<IVertex>(vertex1, vertex2) :
+            new TaggedEdge<IVertex, int>(vertex1, vertex2, edgeTag);
 
     }
 }
