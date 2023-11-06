@@ -21,7 +21,8 @@ namespace DS.RevitLib.Test
 
             //new GetFamInstLocationTest( uidoc);
             //new MEPSystemGraphFactoryTest(uidoc);
-            new MEPSystemGraphFactoryTest(uidoc);
+            var test = new MEPSystemGraphFactoryTest(uidoc);
+            //test.Iterate(test.Graph);
 
             return Autodesk.Revit.UI.Result.Succeeded;
         }

@@ -1,5 +1,4 @@
 ﻿using Autodesk.Revit.DB;
-using Autodesk.Revit.DB.DirectContext3D;
 using DS.ClassLib.VarUtils.Graphs;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.Lines;
@@ -10,9 +9,6 @@ using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.Graphs
 {
@@ -78,6 +74,9 @@ namespace DS.RevitLib.Utils.Graphs
                 null :
                 CreateVertex(_graph.VertexCount, familyInstance);
         }
+
+        public TaggedGVertex<int> CreateVertex(int vertexId, FamilyInstance familyInstance)
+        => new(vertexId, familyInstance.Id.IntegerValue);
 
 
         #region PrivateMethods
@@ -192,8 +191,6 @@ namespace DS.RevitLib.Utils.Graphs
             }
         }
 
-        private TaggedGVertex<int> CreateVertex(int vertexId, FamilyInstance familyInstance)
-        => new(vertexId, familyInstance.Id.IntegerValue);
 
         private List<Edge<IVertex>> GetIncidentEdges(TaggedGVertex<int> vertex, AdjacencyGraph<IVertex, Edge<IVertex>> graph)
         {

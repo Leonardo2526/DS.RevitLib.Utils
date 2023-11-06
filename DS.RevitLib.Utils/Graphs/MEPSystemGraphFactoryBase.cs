@@ -31,5 +31,15 @@ namespace DS.RevitLib.Utils.Graphs
 
         /// <inheritdoc/>
         public abstract TGraph Create(Element element);
+
+        /// <summary>
+        /// Create <typeparamref name="TGraph"/> by <paramref name="pointOnMEPCurve"/> root.
+        /// </summary>
+        /// <param name="mEPCurve"></param>
+        /// <param name="pointOnMEPCurve"></param>
+        /// <returns>
+        /// A new <typeparamref name="TGraph"/>.
+        /// </returns>
+        public abstract TGraph Create(MEPCurve mEPCurve, XYZ pointOnMEPCurve);
     }
 }

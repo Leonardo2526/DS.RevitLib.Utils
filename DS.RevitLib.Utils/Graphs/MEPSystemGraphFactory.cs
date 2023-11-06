@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.DirectContext3D;
 using Autodesk.Revit.UI;
 using DS.ClassLib.VarUtils.Graphs;
 using DS.RevitLib.Utils.Creation.Transactions;
@@ -8,7 +9,9 @@ using MoreLinq.Extensions;
 using QuickGraph;
 using Rhino.Geometry;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
+using System.Security.Cryptography;
 
 namespace DS.RevitLib.Utils.Graphs
 {
@@ -42,19 +45,103 @@ namespace DS.RevitLib.Utils.Graphs
         public override AdjacencyGraph<IVertex, Edge<IVertex>> Create(Element element)
         {
             _graph = new AdjacencyGraph<IVertex, Edge<IVertex>>();
-
-            var open = new Stack<TaggedGVertex<int>>();
             _vertexBuilder.Instansiate(_graph);
+
+            var initialVertices = new List<IVertex>();
+            var initialEdges = new List<Edge<IVertex>>();
 
             var gBuilder = _vertexBuilder as GVertexBuilder;
             var firstTaggedVertex = gBuilder?.TryGetVertex(element) is TaggedGVertex<int> firstTagged ?
                 firstTagged : default;
             if (firstTaggedVertex.Tag == 0)
-            { return _graph = CreateUntaggedGraph(element as MEPCurve); }
+            {
+                var freeEdge = GetFreeEdge(element as MEPCurve);
 
-            _graph.AddVertex(firstTaggedVertex);
+                initialVertices.Add(freeEdge.Source);
+                initialVertices.Add(freeEdge.Target);
+                initialEdges.Add(freeEdge);
+            }
+            else
+            {
+                initialVertices.Add(firstTaggedVertex);
+            }
 
-            open.Push(firstTaggedVertex);
+
+            _graph = Create(initialVertices, initialEdges);
+            return _graph;
+        }
+
+        /// <inheritdoc/>
+        public override AdjacencyGraph<IVertex, Edge<IVertex>> Create(MEPCurve mEPCurve, XYZ pointOnMEPCurve)
+        {
+            _graph = new AdjacencyGraph<IVertex, Edge<IVertex>>();
+            _vertexBuilder.Instansiate(_graph);
+
+            var initialVertices = new List<IVertex>();
+            var initialEdges = new List<Edge<IVertex>>();
+
+            var v0 = new TaggedGVertex<Point3d>(0, pointOnMEPCurve.ToPoint3d());
+            initialVertices.Add(v0);
+
+            var (con1, con2) = mEPCurve.GetMainConnectors();
+            var famInstOnCon1 = mEPCurve.GetFirst(pointOnMEPCurve, con1);
+            var famInstOnCon2 = mEPCurve.GetFirst(pointOnMEPCurve, con2);
+
+            var gBuilder = _vertexBuilder as GVertexBuilder;
+
+            IVertex v1 = GetVertex(initialVertices.Count, con1, famInstOnCon1, gBuilder);
+            initialVertices.Add(v1);
+            IVertex v2 = GetVertex(initialVertices.Count, con2, famInstOnCon2, gBuilder);
+            initialVertices.Add(v2);
+
+
+            var e1 = _edgeBuilder.GetEdge(v0, v1, mEPCurve.Id.IntegerValue);
+            var e2 = _edgeBuilder.GetEdge(v0, v2, mEPCurve.Id.IntegerValue);
+
+            initialEdges.Add(e1); initialEdges.Add(e2);
+
+            _graph = Create(initialVertices, initialEdges);
+            return _graph;
+            
+            static IVertex GetVertex(int initialVerticesCount, Connector con, FamilyInstance famInstOnCon, GVertexBuilder gBuilder)
+            {
+                IVertex vertex;
+
+                if (famInstOnCon == null) 
+                { vertex = new TaggedGVertex<Point3d>(initialVerticesCount, con.Origin.ToPoint3d()); }
+                else
+                {
+                    vertex = gBuilder?.CreateVertex(initialVerticesCount, famInstOnCon) is TaggedGVertex<int> firstTagged ?
+                        firstTagged :
+                        default;
+                }
+
+                return vertex;
+            }
+        }
+
+        private Edge<IVertex> GetFreeEdge(MEPCurve mEPCurve)
+        {
+            var freeCons = ConnectorUtils.GetFreeConnector(mEPCurve);
+
+            var v1 = new TaggedGVertex<Point3d>(0, freeCons[0].Origin.ToPoint3d());
+            var v2 = new TaggedGVertex<Point3d>(1, freeCons[1].Origin.ToPoint3d());
+
+            return _edgeBuilder.GetEdge(v1, v2, mEPCurve.Id.IntegerValue);
+        }
+
+        private AdjacencyGraph<IVertex, Edge<IVertex>> Create(
+            IEnumerable<IVertex> initialVertices,
+            IEnumerable<Edge<IVertex>> initialEdges = null)
+        {           
+            var open = new Stack<TaggedGVertex<int>>();
+
+            initialVertices.ForEach(vertex => _graph.AddVertex(vertex));
+            (initialEdges ?? new List<Edge<IVertex>>()).ForEach(e => _graph.AddEdge(e));
+
+            var taggedVerices = initialVertices.OfType<TaggedGVertex<int>>();
+            taggedVerices.ForEach(open.Push);
+
             while (open.Count > 0)
             {
                 var v1 = open.Pop();
@@ -82,23 +169,6 @@ namespace DS.RevitLib.Utils.Graphs
             }
 
             return _graph;
-        }
-
-        private AdjacencyGraph<IVertex, Edge<IVertex>> CreateUntaggedGraph(MEPCurve mEPCurve)
-        {
-            var untagged = new AdjacencyGraph<IVertex, Edge<IVertex>>();
-            var freeCons = ConnectorUtils.GetFreeConnector(mEPCurve);
-
-            var v1 = new TaggedGVertex<Point3d>(0, freeCons[0].Origin.ToPoint3d());
-            var v2 = new TaggedGVertex<Point3d>(1, freeCons[1].Origin.ToPoint3d());
-
-            untagged.AddVertex(v1);
-            untagged.AddVertex(v2);
-
-            var edge = _edgeBuilder.GetEdge(v1, v2, mEPCurve.Id.IntegerValue);
-            untagged.AddEdge(edge);
-
-            return untagged;
         }
     }
 }

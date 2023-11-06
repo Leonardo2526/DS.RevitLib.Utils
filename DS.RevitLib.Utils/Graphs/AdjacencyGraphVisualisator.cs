@@ -4,6 +4,7 @@ using DS.ClassLib.VarUtils.Graphs;
 using DS.RevitLib.Utils.Extensions;
 using QuickGraph;
 using Rhino.Geometry;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace DS.RevitLib.Utils.Graphs
 {
@@ -15,7 +16,8 @@ namespace DS.RevitLib.Utils.Graphs
         private readonly Document _doc;
         private AdjacencyGraph<IVertex, Edge<IVertex>> _graph;
         private readonly UIView _view;
-        private readonly XYZ  _moveVector = new XYZ();
+        private readonly XYZ _moveVector = new XYZ();
+        private readonly static double _labelSize = 100.MMToFeet();
 
         /// <summary>
         /// Instansiate a visualisator.
@@ -50,6 +52,13 @@ namespace DS.RevitLib.Utils.Graphs
         }
 
         /// <inheritdoc/>
+        public void ShowLocation(IVertex vertex)
+        {
+            XYZ xYZPoint = vertex.GetLocation(_doc);
+            xYZPoint?.Show(_doc, _labelSize);
+        }
+
+        /// <inheritdoc/>
         public void Show()
         {
             foreach (var vertex in _graph.Vertices)
@@ -70,21 +79,21 @@ namespace DS.RevitLib.Utils.Graphs
                     var slTag = v1 is TaggedGVertex<Point3d> ltaggedSource ? ltaggedSource.Tag : defaultPoint;
                     var tlTag = v2 is TaggedGVertex<Point3d> ttaggedSource ? ttaggedSource.Tag : defaultPoint;
 
-                    var xyz1 = sTag == 0 ? slTag.ToXYZ() : GetLocation(sTag);
-                    var xyz2 = tTag == 0 ? tlTag.ToXYZ() : GetLocation(tTag);
+                    var xyz1 = v1.GetLocation(_doc);
+                    var xyz2 = v2.GetLocation(_doc);
 
                     ElementId defaultTypeId = _doc.GetDefaultElementTypeId(ElementTypeGroup.TextNoteType);
 
-                    xyz1?.Show(_doc, 0);
+                    ShowLocation(v1);
+                    ShowLocation(v2);
+
                     if (ShowElementIds && sTag != 0)
                     { TextNote.Create(_doc, _view.ViewId, xyz1 + _moveVector, sTag.ToString(), defaultTypeId); }
 
-
-                    xyz2?.Show(_doc, 0);
                     if (ShowElementIds && tTag != 0)
                     { TextNote.Create(_doc, _view.ViewId, xyz2 + _moveVector, tTag.ToString(), defaultTypeId); }
 
-                    if(ShowVerticesIds)
+                    if (ShowVerticesIds)
                     {
                         TextNote.Create(_doc, _view.ViewId, xyz1 + _moveVector, v1.Id.ToString(), defaultTypeId);
                         TextNote.Create(_doc, _view.ViewId, xyz2 + _moveVector, v2.Id.ToString(), defaultTypeId);
