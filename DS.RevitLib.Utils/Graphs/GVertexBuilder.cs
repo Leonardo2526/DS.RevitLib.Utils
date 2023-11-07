@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.DB;
+using DS.ClassLib.VarUtils;
 using DS.ClassLib.VarUtils.Graphs;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.Lines;
@@ -8,6 +9,7 @@ using QuickGraph;
 using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 
 namespace DS.RevitLib.Utils.Graphs
@@ -31,10 +33,16 @@ namespace DS.RevitLib.Utils.Graphs
         /// <inheritdoc/>
         public int EdgeTag { get; private set; }
 
+        /// <summary>
+        /// Validator to check vertices for boundarty conditions.
+        /// </summary>
+        public IVertexLimitsValidator Validatator { get; set; }
+
         /// <inheritdoc/>
         public void Instansiate(AdjacencyGraph<IVertex, Edge<IVertex>> graph)
         {
             _graph = graph;
+            Validatator?.Instansiate(graph);
         }
 
         /// <summary>
@@ -75,6 +83,12 @@ namespace DS.RevitLib.Utils.Graphs
                 CreateVertex(_graph.VertexCount, familyInstance);
         }
 
+        /// <summary>
+        /// Create new <see cref="TaggedGVertex{TTag}"/>.
+        /// </summary>
+        /// <param name="vertexId"></param>
+        /// <param name="familyInstance"></param>
+        /// <returns></returns>
         public TaggedGVertex<int> CreateVertex(int vertexId, FamilyInstance familyInstance)
         => new(vertexId, familyInstance.Id.IntegerValue);
 
@@ -113,10 +127,9 @@ namespace DS.RevitLib.Utils.Graphs
                         break;
                     }
                 default: throw new NotImplementedException();
-            }
+            }           
 
-            return v2;
-
+            return  IsValid(v2, parentVertex) ? v2 : null;
         }
 
 
@@ -127,6 +140,7 @@ namespace DS.RevitLib.Utils.Graphs
             var ex = new List<ElementId>() { new ElementId(parentVertex.Tag) };
             var famInstOnCon = mEPCurve.GetFirst(pvLocation, con, ex);
             if (famInstOnCon == null) { return null; }
+
             return pVExcluded.Contains(famInstOnCon.Id) ?
                     null :
                     famInstOnCon;
@@ -246,6 +260,17 @@ namespace DS.RevitLib.Utils.Graphs
 
                 return excluded;
             }
+        }
+
+        private bool IsValid(IVertex vertex, IVertex parentVertex)
+        {
+            if (vertex == null) { return false; }
+            if(Validatator is null) { return true; }
+
+            var context = new ValidationContext(vertex);
+            var results = Validatator.SetParent(parentVertex).Validate(context);
+
+            return results.Count() == 0;
         }
 
 

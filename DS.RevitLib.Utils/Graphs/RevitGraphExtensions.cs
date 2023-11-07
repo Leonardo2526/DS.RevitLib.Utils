@@ -1,8 +1,10 @@
 ﻿using Autodesk.Revit.DB;
 using DS.ClassLib.VarUtils.Graphs;
+using DS.ClassLib.VarUtils.GridMap;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.Various.Selections;
 using QuickGraph;
+using QuickGraph.Algorithms;
 using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
@@ -42,7 +44,7 @@ namespace DS.RevitLib.Utils.Graphs
             if (edgeTag > 0)
             { edges = edges.Where(e => e.Tag == edgeTag); }
 
-            if(edges.Count() == 0) { return null; }
+            if (edges.Count() == 0) { return null; }
 
             var xYZLocation = location.ToXYZ();
             foreach (var e in edges)
@@ -78,7 +80,7 @@ namespace DS.RevitLib.Utils.Graphs
         /// Otherwise <see langword="false"/>.
         /// </para>
         /// </returns>
-        public static bool TryInsert(this AdjacencyGraph<IVertex, 
+        public static bool TryInsert(this AdjacencyGraph<IVertex,
             Edge<IVertex>> graph, MEPCurve mEPCurve, XYZ pointOnMEPCurve)
         {
             var doc = mEPCurve.Document;
@@ -88,7 +90,7 @@ namespace DS.RevitLib.Utils.Graphs
             var ap = new TaggedGVertex<Point3d>(graph.VertexCount, location);
 
             TaggedEdge<IVertex, int> edgeToRemove = graph.TryGetEdge(location, doc, tag);
-            if(edgeToRemove == null) { return false; }
+            if (edgeToRemove == null) { return false; }
 
             var v0 = edgeToRemove.Source;
             var v1 = edgeToRemove.Target;
@@ -102,5 +104,55 @@ namespace DS.RevitLib.Utils.Graphs
 
             return true;
         }
+
+        /// <summary>
+        /// Get path of <paramref name="graph"/> from <paramref name="root"/> to <paramref name="target"/> 
+        /// and return it's length and verices count.
+        /// <para>
+        /// Get first <paramref name="graph"/>'s root if it isn't specified.
+        /// In this case throw exeption if <paramref name="graph"/> roots count is not equal to 0.
+        /// </para>
+        /// </summary>
+        /// <param name="graph"></param>
+        /// <param name="target"></param>
+        /// <param name="doc"></param>
+        /// <param name="root"></param>
+        /// <returns>
+        /// Sum of edges lengths and vertices count.
+        /// <para>
+        /// (0, 0) if path is <see langword="null"/> or it's count is 0;
+        /// </para>
+        /// </returns>
+        /// <exception cref="ArgumentException"></exception>
+        public static (double length, int verticesCount) GetLengthToRoot(this IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> graph,
+            IVertex target, Document doc, IVertex root = null)
+        {
+            root ??= GetRoot();
+
+            double length = 0;
+            int count = 0;
+
+            var path = graph.GetPath(root, target);
+            if (path == null) { return (length, count); }
+
+            foreach (var e in path)
+            {
+                var l = e.GetLength(doc);
+                length += l;
+            }
+
+            if (path is not null && path.Count() > 0)
+            {count = path.Count() + 1;}
+
+            return (length, count);
+
+            IVertex GetRoot()
+            {
+                var roots = graph.Roots();
+                if (roots.Count() != 1) { throw new ArgumentException(); }
+                else { return roots.First(); }
+            }
+        }
+
     }
 }

@@ -8,6 +8,7 @@ using DS.RevitLib.Utils.Connections.PointModels;
 using DS.RevitLib.Utils.MEP;
 using DS.RevitLib.Utils.Transactions;
 using DS.RevitLib.Utils.Visualisators;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Vector3d = Rhino.Geometry.Vector3d;
@@ -379,7 +380,7 @@ namespace DS.RevitLib.Utils.Extensions
 
 
             return false;
-        }
+        }       
 
         /// <summary>
         /// Connect <paramref name="elements"/> by common connectors.

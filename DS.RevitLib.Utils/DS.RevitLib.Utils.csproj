@@ -207,12 +207,14 @@
     <Compile Include="Geometry\Points\XYZVisualizator.cs" />
     <Compile Include="Geometry\Solids\SolidOffsetExtractor.cs" />
     <Compile Include="Graphs\AdjacencyGraphVisualisator.cs" />
+    <Compile Include="Graphs\EdgeExtensions.cs" />
     <Compile Include="Graphs\GEdgeBuilder.cs" />
     <Compile Include="Graphs\MEPSystemGraphFactoryBase.cs" />
     <Compile Include="Graphs\MEPSystemGraphFactory.cs" />
     <Compile Include="Graphs\GVertexBuilder.cs" />
     <Compile Include="Graphs\RevitGraphExtensions.cs" />
     <Compile Include="Graphs\VertexExtensions.cs" />
+    <Compile Include="Graphs\VertexLimitsValidator.cs" />
     <Compile Include="Various\IWindowMessenger.cs" />
     <Compile Include="PathCreators\AlgorithmBuilder\Impl.cs" />
     <Compile Include="PathCreators\XYZPathFinder.cs" />

@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.Mechanical;
 using Autodesk.Revit.UI;
 using DS.ClassLib.VarUtils.Graphs;
 using DS.ClassLib.VarUtils.GridMap;
@@ -11,6 +12,7 @@ using QuickGraph;
 using QuickGraph.Algorithms;
 using QuickGraph.Algorithms.Search;
 using Rhino.Geometry;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -41,29 +43,81 @@ namespace DS.RevitLib.Test.TestedClasses
 
             Print(Graph);
 
-            AddAxiliaryPoint(Graph);
+            //AddAxiliaryPoint(Graph);
             Show(Graph, _doc, _trfOut);
         }
 
 
         public AdjacencyGraph<IVertex, Edge<IVertex>> CreateGraph()
         {
-            //var e1 = new ElementSelector(_uiDoc).Pick();
+            var e1 = new ElementSelector(_uiDoc).Pick();
 
-            var selector = new PointSelector(_uiDoc) { AllowLink = true };
-            var mEPCurve = selector.Pick() as MEPCurve;
-            var point = selector.Point;
+            //var selector = new PointSelector(_uiDoc) { AllowLink = true };
+            //var mEPCurve = selector.Pick() as MEPCurve;
+            //var point = selector.Point;
 
-            var vertexBuilder = new GVertexBuilder(_doc);
+            //GVertexBuilder vertexBuilder = GetVertexBuilder();
+            GVertexBuilder vertexBuilder = GetVertexBuilderWithValidator();
+
             var edgeBuilder = new GEdgeBuilder();
+
+            var stopTypes = new List<Type>
+            {
+               //typeof(MechanicalEquipment)
+            };
+            var fittingPartTypes = new List<PartType>()
+            {
+                PartType.Tee,
+                   PartType.TapPerpendicular,
+                    PartType.TapAdjustable,
+                    PartType.SpudPerpendicular,
+                    PartType.SpudAdjustable
+            };
+            var accessoryPartTypes = new List<PartType>() { PartType.Undefined };
+            var stopCategories = new Dictionary<BuiltInCategory, List<PartType>>()
+            {
+                //{ BuiltInCategory.OST_DuctFitting, fittingPartTypes },
+                //{ BuiltInCategory.OST_PipeFitting, fittingPartTypes },
+                { BuiltInCategory.OST_MechanicalEquipment, accessoryPartTypes }
+            };
+
             var facrory = new MEPSystemGraphFactory(_doc, vertexBuilder, edgeBuilder)
             {
                 TransactionFactory = _trfIn,
-                UIDoc = _uiDoc
+                UIDoc = _uiDoc,
+                StopTypes = stopTypes,
+                StopCategories = stopCategories
             };
 
-            //return facrory.Create(e1);
-            return facrory.Create(mEPCurve, point);
+            return facrory.Create(e1);
+            //return facrory.Create(mEPCurve, point);
+
+            GVertexBuilder GetVertexBuilderWithValidator()
+            {
+                var maxLength = 10000.MMToFeet();
+                var maxCount = 100;
+
+                var validator = new VertexLimitsValidator(_doc)
+                {
+                    MaxLength = maxLength,
+                    MaxVerticesCount = maxCount,
+                    BoundOutline = null,
+                    ExcludedTypes = null,
+                    ExculdedCategories = null
+                };
+
+                var vertexBuilder = new GVertexBuilder(_doc)
+                {
+                    Validatator = validator
+                };
+                return vertexBuilder;
+            }
+
+            GVertexBuilder GetVertexBuilder()
+            {
+                var vertexBuilder = new GVertexBuilder(_doc);
+                return vertexBuilder;
+            }
         }
 
         private AdjacencyGraph<IVertex, Edge<IVertex>> AddAxiliaryPoint(AdjacencyGraph<IVertex, Edge<IVertex>> graph)

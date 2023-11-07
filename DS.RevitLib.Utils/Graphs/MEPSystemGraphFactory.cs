@@ -8,6 +8,7 @@ using DS.RevitLib.Utils.MEP;
 using MoreLinq.Extensions;
 using QuickGraph;
 using Rhino.Geometry;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -40,6 +41,16 @@ namespace DS.RevitLib.Utils.Graphs
         /// </summary>
         public ITransactionFactory TransactionFactory { get; set; }
 
+
+        /// <summary>
+        /// Veritces <see cref="Type"/>'s to stop for graph building.
+        /// </summary>
+        public IEnumerable<Type> StopTypes { get; set; }
+
+        /// <summary>
+        /// Veritces <see cref="Autodesk.Revit.DB.BuiltInCategory"/>'s to stop for graph building.
+        /// </summary>
+        public Dictionary<BuiltInCategory, List<PartType>> StopCategories { get; set; }
 
         /// <inheritdoc/>
         public override AdjacencyGraph<IVertex, Edge<IVertex>> Create(Element element)
@@ -102,12 +113,12 @@ namespace DS.RevitLib.Utils.Graphs
 
             _graph = Create(initialVertices, initialEdges);
             return _graph;
-            
+
             static IVertex GetVertex(int initialVerticesCount, Connector con, FamilyInstance famInstOnCon, GVertexBuilder gBuilder)
             {
                 IVertex vertex;
 
-                if (famInstOnCon == null) 
+                if (famInstOnCon == null)
                 { vertex = new TaggedGVertex<Point3d>(initialVerticesCount, con.Origin.ToPoint3d()); }
                 else
                 {
@@ -133,7 +144,7 @@ namespace DS.RevitLib.Utils.Graphs
         private AdjacencyGraph<IVertex, Edge<IVertex>> Create(
             IEnumerable<IVertex> initialVertices,
             IEnumerable<Edge<IVertex>> initialEdges = null)
-        {           
+        {
             var open = new Stack<TaggedGVertex<int>>();
 
             initialVertices.ForEach(vertex => _graph.AddVertex(vertex));
@@ -158,7 +169,11 @@ namespace DS.RevitLib.Utils.Graphs
                         if (foundInOpen.Tag > 0)
                         { v2 = foundInOpen; }
                         else
-                        { open.Push(tagged); }
+                        {
+                            if (!v2.ContainsTypes(StopTypes, _doc)
+                                && !v2.ContainsCategories(StopCategories, _doc))
+                            { open.Push(tagged); }
+                        }
                     };
 
                     _graph.AddVertex(v2);
