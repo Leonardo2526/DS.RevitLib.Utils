@@ -23,6 +23,7 @@ namespace DS.RevitLib.Test
             //new MEPSystemGraphFactoryTest(uidoc);
             var test = new MEPSystemGraphFactoryTest(uidoc);
             //test.Iterate(test.Graph);
+            test.PairIterate(test.Graph);
 
             return Autodesk.Revit.UI.Result.Succeeded;
         }

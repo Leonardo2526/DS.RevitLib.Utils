@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Mechanical;
 using Autodesk.Revit.UI;
+using DS.ClassLib.VarUtils;
 using DS.ClassLib.VarUtils.Graphs;
 using DS.ClassLib.VarUtils.GridMap;
 using DS.RevitLib.Utils.Creation.Transactions;
@@ -12,6 +13,7 @@ using QuickGraph;
 using QuickGraph.Algorithms;
 using QuickGraph.Algorithms.Search;
 using Rhino.Geometry;
+using Rhino.UI;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -41,20 +43,27 @@ namespace DS.RevitLib.Test.TestedClasses
             _trfOut = new ContextTransactionFactory(_doc, Utils.RevitContextOption.Outside);
             Graph = CreateGraph();
 
+            _visualisator = new AdjacencyGraphVisualisator(_doc)
+            {
+                ShowElementIds = false,
+                ShowVerticesIds = true,
+            }
+               .Build(Graph);
+
             Print(Graph);
 
             //AddAxiliaryPoint(Graph);
-            Show(Graph, _doc, _trfOut);
+            //Show(Graph, _doc, _trfOut);
         }
 
 
         public AdjacencyGraph<IVertex, Edge<IVertex>> CreateGraph()
         {
-            var e1 = new ElementSelector(_uiDoc).Pick();
+            //var e1 = new ElementSelector(_uiDoc).Pick();
 
-            //var selector = new PointSelector(_uiDoc) { AllowLink = true };
-            //var mEPCurve = selector.Pick() as MEPCurve;
-            //var point = selector.Point;
+            var selector = new PointSelector(_uiDoc) { AllowLink = true };
+            var mEPCurve = selector.Pick() as MEPCurve;
+            var point = selector.Point;
 
             //GVertexBuilder vertexBuilder = GetVertexBuilder();
             GVertexBuilder vertexBuilder = GetVertexBuilderWithValidator();
@@ -63,7 +72,7 @@ namespace DS.RevitLib.Test.TestedClasses
 
             var stopTypes = new List<Type>
             {
-               //typeof(MechanicalEquipment)
+                //typeof(MechanicalEquipment)
             };
             var fittingPartTypes = new List<PartType>()
             {
@@ -89,8 +98,8 @@ namespace DS.RevitLib.Test.TestedClasses
                 StopCategories = stopCategories
             };
 
-            return facrory.Create(e1);
-            //return facrory.Create(mEPCurve, point);
+            //return facrory.Create(e1);
+            return facrory.Create(mEPCurve, point);
 
             GVertexBuilder GetVertexBuilderWithValidator()
             {
@@ -151,6 +160,33 @@ namespace DS.RevitLib.Test.TestedClasses
             }
         }
 
+        public void PairIterate(IVertexListGraph<IVertex, Edge<IVertex>> graph)
+        {
+            //var algorithm = new DepthFirstSearchAlgorithm<IVertex, Edge<IVertex>>(graph);
+            var algorithm = new BreadthFirstSearchAlgorithm<IVertex, Edge<IVertex>>(graph);
+            var iterator = new GraphVertexIterator(algorithm);
+            var pairIterator = new VertexPairIterator(iterator, (AdjacencyGraph<IVertex, Edge<IVertex>>)graph);
+
+
+            while (pairIterator.MoveNext())
+            {
+                using (Transaction transaction = new(_doc, "showPair"))
+                {
+                    transaction.Start();
+
+                    _visualisator.ShowLocation(pairIterator.Current.Item1);
+                    _visualisator.ShowLocation(pairIterator.Current.Item2);
+                    _doc.Regenerate();
+                    _uiDoc.RefreshActiveView();
+
+                    transaction.RollBack();
+                }
+                Debug.WriteLine(pairIterator.Current.Item1.Id+ " - " + pairIterator.Current.Item2.Id);
+            }
+
+            Debug.WriteLine("Total visited pairs count is: " + pairIterator.Close.Count);
+        }
+
         private void Print(AdjacencyGraph<IVertex, Edge<IVertex>> graph)
         {
             foreach (var vertex in graph.Vertices)
@@ -188,16 +224,10 @@ namespace DS.RevitLib.Test.TestedClasses
 
         private void Show(AdjacencyGraph<IVertex, Edge<IVertex>> graph, Document doc, ITransactionFactory trf)
         {
-            _visualisator = new AdjacencyGraphVisualisator(doc)
-            {
-                ShowElementIds = false,
-                ShowVerticesIds = true,
-            }
-                .Build(graph);
-
             Task task = Task.Run(async () =>
             await trf.CreateAsync(() => _visualisator.Show(),
             "show"));
+            _uiDoc.RefreshActiveView();
         }
 
         private List<AdjacencyGraph<IVertex, Edge<IVertex>>> Split(AdjacencyGraph<IVertex, Edge<IVertex>> graph, IVertex splitVertex)

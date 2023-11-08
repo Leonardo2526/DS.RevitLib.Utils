@@ -113,7 +113,7 @@ namespace DS.RevitLib.Utils.Graphs
                             TryGetFamilyInstToAdd(mEPCurve, pvLocation, con2, pVExcluded, parentVertex);
                         if (famInstToAdd == null)
                         {
-                            var location = TryGetFreePoint(mEPCurve, _graph, EdgeTag, parentVertex);
+                            var location = TryGetFreePoint(mEPCurve, _graph, EdgeTag, parentVertex, pvFamInst, pvLocation);
                             if (!double.IsNaN(location.X))
                             { v2 = new TaggedGVertex<Point3d>(_graph.VertexCount, location); }
                         }
@@ -221,7 +221,7 @@ namespace DS.RevitLib.Utils.Graphs
 
         private Point3d TryGetFreePoint(MEPCurve mEPCurve,
             AdjacencyGraph<IVertex, Edge<IVertex>> graph, int edgeTag,
-            TaggedGVertex<int> parentVertex)
+            TaggedGVertex<int> parentVertex, FamilyInstance pvFamInst, XYZ pvLocation)
         {
             var freeCons = ConnectorUtils.GetFreeConnector(mEPCurve);
             if (freeCons.Count > 0)
@@ -229,10 +229,12 @@ namespace DS.RevitLib.Utils.Graphs
                 var excludedVertexPoins = GetExcludedPoints(graph, edgeTag, parentVertex);
                 if (excludedVertexPoins.Count() == 0) { return freeCons[0].Origin.ToPoint3d(); }
 
+                var excluded = new List<ElementId>() { pvFamInst.Id };
                 foreach (var c in freeCons)
                 {
-                    var conPoint = c.Origin.ToPoint3d();
-                    if (excludedVertexPoins.Any(p => p.Tag.DistanceTo(conPoint) < 0.001))
+                    var conPoint = c.Origin.ToPoint3d();                  
+                    if (excludedVertexPoins.Any(p => p.Tag.DistanceTo(conPoint) < 0.001) 
+                        || mEPCurve.GetFirst(pvLocation, c, excluded) != null)
                     { continue; }
                     else
                     { return conPoint; }
@@ -247,10 +249,10 @@ namespace DS.RevitLib.Utils.Graphs
             {
                 var excluded = new List<TaggedGVertex<Point3d>>();
 
-                var existEdgesWithUntaggedTarget = graph.Edges.
+                var existEdges = graph.Edges.
                     OfType<TaggedEdge<IVertex, int>>().
                     Where(e => e.Tag == edgeTag);
-                foreach (var e in existEdgesWithUntaggedTarget)
+                foreach (var e in existEdges)
                 {
                     if (e.Target is TaggedGVertex<Point3d> tTagget)
                     { excluded.Add(tTagget); }
