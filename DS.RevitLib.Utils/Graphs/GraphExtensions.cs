@@ -3,8 +3,10 @@ using DS.ClassLib.VarUtils.Graphs;
 using DS.ClassLib.VarUtils.GridMap;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.Various.Selections;
+using MoreLinq;
 using QuickGraph;
 using QuickGraph.Algorithms;
+using QuickGraph.Algorithms.Search;
 using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
@@ -17,7 +19,7 @@ namespace DS.RevitLib.Utils.Graphs
     /// <summary>
     /// Extension methods for graph in Revit.
     /// </summary>
-    public static class RevitGraphExtensions
+    public static class GraphExtensions
     {
         /// <summary>
         /// Try get <see cref="Edge{TVertex}"/> from <paramref name="graph"/>.
@@ -142,7 +144,7 @@ namespace DS.RevitLib.Utils.Graphs
             }
 
             if (path is not null && path.Count() > 0)
-            {count = path.Count() + 1;}
+            { count = path.Count() + 1; }
 
             return (length, count);
 
@@ -152,6 +154,70 @@ namespace DS.RevitLib.Utils.Graphs
                 if (roots.Count() != 1) { throw new ArgumentException(); }
                 else { return roots.First(); }
             }
+        }
+
+        /// <summary>
+        /// Trim <paramref name="graph"/> with <paramref name="trimCategories"/>.
+        /// </summary>
+        /// <param name="graph"></param>
+        /// <param name="doc"></param>
+        /// <param name="trimCategories"></param>
+        /// <returns>
+        /// A new graph with sink vertices that are not of <paramref name="trimCategories"/>.
+        /// <para>
+        /// <paramref name="graph"/> if <paramref name="trimCategories"/> are <see langword="null"/> or empty.
+        /// </para>
+        /// </returns>
+        public static AdjacencyGraph<IVertex, Edge<IVertex>> Trim(this AdjacencyGraph<IVertex, Edge<IVertex>> graph, Document doc,
+            Dictionary<BuiltInCategory, List<PartType>> trimCategories)
+        {
+            if(trimCategories is null ||  trimCategories.Count == 0) { return graph; }
+
+            var clonedGraph = graph.Clone();
+            var root = graph.Roots().First();
+
+            IVertex catVertex = null;
+            BreadthFirstSearchAlgorithm<IVertex, Edge<IVertex>> bfsToFindCategory;
+
+            CheckCategoryVertex(doc, trimCategories, clonedGraph);
+            while (catVertex is not null)
+            {
+                clonedGraph.ClearOutEdges(catVertex);
+                var bfsToRemoveVerices = new BreadthFirstSearchAlgorithm<IVertex, Edge<IVertex>>(clonedGraph);
+                bfsToRemoveVerices.SetRootVertex(root);
+                bfsToRemoveVerices.Compute();
+
+                var blackVerices = bfsToRemoveVerices.VertexColors.Where(c => c.Value != GraphColor.Black).ToList();              
+                blackVerices.ForEach(v => clonedGraph.RemoveVertex(v.Key));
+
+                catVertex = null;
+                CheckCategoryVertex(doc, trimCategories, clonedGraph);
+            }
+
+            return clonedGraph;
+
+            void CheckCategoryVertex(Document doc, Dictionary<BuiltInCategory,
+                List<PartType>> trimCategories, AdjacencyGraph<IVertex, Edge<IVertex>> clonedGraph)
+            {
+                bfsToFindCategory = new BreadthFirstSearchAlgorithm<IVertex, Edge<IVertex>>(clonedGraph);
+                bfsToFindCategory.SetRootVertex(root);
+                bfsToFindCategory.FinishVertex += Bfs_FinishVertex;
+                bfsToFindCategory.Compute();
+
+                void Bfs_FinishVertex(IVertex vertex)
+                {
+                    if (vertex is TaggedGVertex<int> tagged)
+                    {
+                        var famInst = tagged.TryGetFamilyInstance(doc);
+                        if (famInst.IsCategoryElement(trimCategories) && !clonedGraph.IsOutEdgesEmpty(vertex))
+                        {
+                            catVertex = tagged;
+                            bfsToFindCategory.Abort();
+                        }
+                    }
+                }
+            }
+
         }
 
     }

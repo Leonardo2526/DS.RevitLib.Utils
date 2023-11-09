@@ -271,7 +271,7 @@ namespace DS.RevitLib.Utils.Graphs
 
             var context = new ValidationContext(vertex);
             var results = Validatator.SetParent(parentVertex).Validate(context);
-
+       
             return results.Count() == 0;
         }
 

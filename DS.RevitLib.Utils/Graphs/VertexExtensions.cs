@@ -1,6 +1,8 @@
 ﻿using Autodesk.Revit.DB;
 using DS.ClassLib.VarUtils.Graphs;
+using DS.ClassLib.VarUtils.GridMap;
 using DS.RevitLib.Utils.Extensions;
+using QuickGraph;
 using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
@@ -118,6 +120,47 @@ namespace DS.RevitLib.Utils.Graphs
             if (famInst == null) { return false; }
 
             return famInst.IsCategoryElement(categories);
+        }
+
+        /// <summary>
+        /// Get inpust <see cref="Autodesk.Revit.DB.Element"/>'s of <paramref name="vertex"/>.
+        /// </summary>
+        /// <param name="vertex"></param>
+        /// <param name="bdGraph"></param>
+        /// <param name="doc"></param>
+        /// <returns>
+        /// <see cref="Autodesk.Revit.DB.Element"/>'s of input edges 
+        /// (<see cref="TaggedEdge{TVertex, TTag}"/>) or input vertices (<see cref="TaggedGVertex{TTag}"/>) if input edge is untagged.
+        /// <para>
+        /// Empty list if no input <see cref="Autodesk.Revit.DB.Element"/>'s was found.
+        /// </para>
+        /// </returns>
+        public static IEnumerable<Element> GetInElements(this IVertex vertex,
+            IBidirectionalGraph<IVertex, Edge<IVertex>> bdGraph, Document doc)
+        {
+            var inElements = new List<Element>();
+
+            bdGraph.TryGetInEdges(vertex, out var inEdges);
+            if(inEdges is null) return inElements;
+
+            foreach (var inEdge in inEdges)
+            {
+                Element inElement = null;
+                if (inEdge is TaggedEdge<IVertex, int> tagged)
+                {
+                    inElement = doc.GetElement(new ElementId(tagged.Tag));
+                }
+                else if (inEdge is Edge<IVertex> untagged)
+                {
+                    if (untagged.Source is TaggedGVertex<int> taggedVertex)
+                    { inElement = doc.GetElement(new ElementId(taggedVertex.Tag)); }
+                }
+
+                if (inElement != null)
+                { inElements.Add(inElement); }
+            }
+
+            return inElements;
         }
     }
 }

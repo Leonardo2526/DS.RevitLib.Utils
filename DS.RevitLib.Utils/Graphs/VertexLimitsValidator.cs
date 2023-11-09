@@ -80,16 +80,16 @@ namespace DS.RevitLib.Utils.Graphs
             var vertex = validationContext.ObjectInstance as IVertex;
 
             if (!IsWithinOutlineLimits(BoundOutline, vertex))
-            { results.Add(new ValidationResult("Vertex is outside bound limits.")); return results; }
+            { results.Add(new ValidationResult("Vertex is outside bound limits."));  }
 
             if (!IsWithinMaxLength(_graph, _parentVertex, vertex))
-            { results.Add(new ValidationResult("Vertex is outside MaxLength.")); return results; }
+            { results.Add(new ValidationResult("Vertex is outside MaxLength.")); }
 
             if (vertex.ContainsCategories(ExculdedCategories, _doc))
-            { results.Add(new ValidationResult("Excluded categories contains vertex.")); return results; }
+            { results.Add(new ValidationResult("Excluded categories contains vertex.")); }
 
             if (vertex.ContainsTypes(ExcludedTypes, _doc))
-            { results.Add(new ValidationResult("Excluded types contains vertex.")); return results; }
+            { results.Add(new ValidationResult("Excluded types contains vertex.")); }
 
             return results;
         }

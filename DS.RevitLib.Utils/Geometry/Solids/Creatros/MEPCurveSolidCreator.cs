@@ -11,11 +11,12 @@ namespace DS.RevitLib.Utils.Solids
     public class MEPCurveSolidCreator : SolidCreatorBase
     {
         private readonly MEPCurve _baseMEPCurve;
-        private readonly double _insulationThickness;
-        private readonly double _connectedInsulationThickness;
         private readonly double _minConnectedMEPCurveSize;
         private readonly double _minMEPCurveSize;
         private readonly double _elementClearance;
+        private readonly MEPCurve _connectedMEPCurve;
+        private double _insulationThickness;
+        private double _connectedInsulationThickness;
 
         /// <summary>
         /// Instantiate an object to create <see cref="Solid"/> to check collisions at point.
@@ -23,16 +24,20 @@ namespace DS.RevitLib.Utils.Solids
         public MEPCurveSolidCreator(MEPCurve baseMEPCurve, MEPCurve connectedMEPCurve = null, double elementClearance = 0)
         {
             _baseMEPCurve = baseMEPCurve;
-            _insulationThickness = baseMEPCurve.GetInsulationThickness();
             (double width, double heigth) = baseMEPCurve.GetOuterWidthHeight();
             _minMEPCurveSize = Math.Min(width, heigth);
 
             _elementClearance = elementClearance;
-            connectedMEPCurve ??= baseMEPCurve;
-            _connectedInsulationThickness = connectedMEPCurve.GetInsulationThickness();
-            (double cwidth, double cheigth) = connectedMEPCurve.GetOuterWidthHeight();
+            _connectedMEPCurve ??= baseMEPCurve;
+            (double cwidth, double cheigth) = _connectedMEPCurve.GetOuterWidthHeight();
             _minConnectedMEPCurveSize = Math.Min(cwidth, cheigth);
         }
+
+        /// <summary>
+        /// Specifies whether allow insulation to get offset distanse from point.
+        /// </summary>
+        public bool IsInsulationAccount { get; set; }
+
 
         /// <summary>
         /// Create <see cref="Solid"/> at given <paramref name="point"/>.
@@ -41,7 +46,10 @@ namespace DS.RevitLib.Utils.Solids
         /// <returns></returns>
         public override Solid CreateSolid(XYZ point)
         {
-            double distFromPoint= _minMEPCurveSize / 2 + _insulationThickness + _elementClearance;
+            _insulationThickness = IsInsulationAccount ? _baseMEPCurve.GetInsulationThickness() : 0;
+            _connectedInsulationThickness = IsInsulationAccount ? _connectedMEPCurve.GetInsulationThickness() : 0;
+
+            double distFromPoint = _minMEPCurveSize / 2 + _insulationThickness + _elementClearance;
             double connectedDistFromPoint = _minConnectedMEPCurveSize / 2 + _connectedInsulationThickness + _elementClearance;
             double max = Math.Max(distFromPoint, connectedDistFromPoint);
 

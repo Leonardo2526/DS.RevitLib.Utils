@@ -111,7 +111,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Collisions\Detectors\AbstractDetectors\IXYZCollisionDetector.cs" />
     <Compile Include="Collisions\Detectors\ElementCollisionDetector.cs" />
+    <Compile Include="Collisions\Detectors\XYZCollisionDetector.cs" />
     <Compile Include="Collisions\ElementIntersectionFactory.cs" />
     <Compile Include="Collisions\Detectors\AbstractDetectors\IElementCollisionDetector.cs" />
     <Compile Include="Collisions\Detectors\CollisionDetectorByTrace.cs" />
@@ -212,9 +214,12 @@
     <Compile Include="Graphs\MEPSystemGraphFactoryBase.cs" />
     <Compile Include="Graphs\MEPSystemGraphFactory.cs" />
     <Compile Include="Graphs\GVertexBuilder.cs" />
-    <Compile Include="Graphs\RevitGraphExtensions.cs" />
+    <Compile Include="Graphs\GraphExtensions.cs" />
+    <Compile Include="Graphs\VertexCollisionValidator.cs" />
     <Compile Include="Graphs\VertexExtensions.cs" />
     <Compile Include="Graphs\VertexLimitsValidator.cs" />
+    <Compile Include="Graphs\VertexFamInstCategoryValidator.cs" />
+    <Compile Include="Graphs\VertexRelationValidator.cs" />
     <Compile Include="Various\IWindowMessenger.cs" />
     <Compile Include="PathCreators\AlgorithmBuilder\Impl.cs" />
     <Compile Include="PathCreators\XYZPathFinder.cs" />

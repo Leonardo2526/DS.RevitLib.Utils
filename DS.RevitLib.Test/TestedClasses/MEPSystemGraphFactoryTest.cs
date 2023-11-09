@@ -3,12 +3,17 @@ using Autodesk.Revit.DB.Mechanical;
 using Autodesk.Revit.UI;
 using DS.ClassLib.VarUtils;
 using DS.ClassLib.VarUtils.Graphs;
+using DS.ClassLib.VarUtils.Graphs.Vertices;
 using DS.ClassLib.VarUtils.GridMap;
+using DS.RevitLib.Utils.Collisions.Detectors;
+using DS.RevitLib.Utils.Collisions.Models;
 using DS.RevitLib.Utils.Creation.Transactions;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.Graphs;
+using DS.RevitLib.Utils.MEP.SystemTree.Relatives;
 using DS.RevitLib.Utils.Various;
 using DS.RevitLib.Utils.Various.Selections;
+using DS.RevitLib.Utils.Visualisators;
 using QuickGraph;
 using QuickGraph.Algorithms;
 using QuickGraph.Algorithms.Search;
@@ -41,7 +46,8 @@ namespace DS.RevitLib.Test.TestedClasses
 
             _trfIn = new ContextTransactionFactory(_doc, Utils.RevitContextOption.Inside);
             _trfOut = new ContextTransactionFactory(_doc, Utils.RevitContextOption.Outside);
-            Graph = CreateGraph();
+            //Graph = CreateGraphByElelment();
+            Graph = CreateGraphByPoint();
 
             _visualisator = new AdjacencyGraphVisualisator(_doc)
             {
@@ -52,15 +58,61 @@ namespace DS.RevitLib.Test.TestedClasses
 
             Print(Graph);
 
+            //var trimmedGraph = TrimTest(Graph);
+            //Print(trimmedGraph);
+
+            //_visualisator.Build(trimmedGraph);
             //AddAxiliaryPoint(Graph);
             //Show(Graph, _doc, _trfOut);
         }
 
-
-        public AdjacencyGraph<IVertex, Edge<IVertex>> CreateGraph()
+        public AdjacencyGraph<IVertex, Edge<IVertex>> CreateGraphByElelment()
         {
-            //var e1 = new ElementSelector(_uiDoc).Pick();
+            var e1 = new ElementSelector(_uiDoc).Pick();
 
+            GVertexBuilder vertexBuilder = GetVertexBuilder();
+
+            var edgeBuilder = new GEdgeBuilder();
+
+            var stopTypes = new List<Type>
+            {
+                //typeof(MechanicalEquipment)
+            };
+            var fittingPartTypes = new List<PartType>()
+            {
+                PartType.Tee,
+                   PartType.TapPerpendicular,
+                    PartType.TapAdjustable,
+                    PartType.SpudPerpendicular,
+                    PartType.SpudAdjustable
+            };
+            var accessoryPartTypes = new List<PartType>() { PartType.Undefined };
+            var stopCategories = new Dictionary<BuiltInCategory, List<PartType>>()
+            {
+                //{ BuiltInCategory.OST_DuctFitting, fittingPartTypes },
+                //{ BuiltInCategory.OST_PipeFitting, fittingPartTypes },
+                { BuiltInCategory.OST_MechanicalEquipment, accessoryPartTypes }
+            };
+
+            var facrory = new MEPSystemGraphFactory(_doc, vertexBuilder, edgeBuilder)
+            {
+                TransactionFactory = _trfIn,
+                UIDoc = _uiDoc,
+                StopTypes = stopTypes,
+                StopCategories = stopCategories
+            };        
+
+            return facrory.Create(e1);
+
+            GVertexBuilder GetVertexBuilder()
+            {
+                var vertexBuilder = new GVertexBuilder(_doc);
+                return vertexBuilder;
+            }
+        }
+
+        public AdjacencyGraph<IVertex, Edge<IVertex>> CreateGraphByPoint()
+        {
             var selector = new PointSelector(_uiDoc) { AllowLink = true };
             var mEPCurve = selector.Pick() as MEPCurve;
             var point = selector.Point;
@@ -98,12 +150,17 @@ namespace DS.RevitLib.Test.TestedClasses
                 StopCategories = stopCategories
             };
 
-            //return facrory.Create(e1);
+            var relationValidator = new VertexRelationValidator(_doc, facrory.Graph.ToBidirectionalGraph())
+            {
+                InElementRelation = Relation.Parent
+            };
+            facrory.StopRelationValidator = relationValidator;
+
             return facrory.Create(mEPCurve, point);
 
             GVertexBuilder GetVertexBuilderWithValidator()
             {
-                var maxLength = 10000.MMToFeet();
+                var maxLength = 100000.MMToFeet();
                 var maxCount = 100;
 
                 var validator = new VertexLimitsValidator(_doc)
@@ -160,12 +217,35 @@ namespace DS.RevitLib.Test.TestedClasses
             }
         }
 
-        public void PairIterate(IVertexListGraph<IVertex, Edge<IVertex>> graph)
+        public void PairIterate(AdjacencyGraph<IVertex, Edge<IVertex>> graph)
         {
-            //var algorithm = new DepthFirstSearchAlgorithm<IVertex, Edge<IVertex>>(graph);
+            //var trimmedGraph = graph;
+            //var trimmedGraph = graph.Trim(_doc, stopCategories);
+
+            var cats = GetIterationCategories();
+
             var algorithm = new BreadthFirstSearchAlgorithm<IVertex, Edge<IVertex>>(graph);
-            var iterator = new GraphVertexIterator(algorithm);
-            var pairIterator = new VertexPairIterator(iterator, (AdjacencyGraph<IVertex, Edge<IVertex>>)graph);
+
+            var startRoot = graph.Vertices.ToList()[1];
+            var catValidator = new VertexFamInstCategoryValidator(_doc, cats);
+
+            var bdGraph = graph.ToBidirectionalGraph();
+            var relationValidator = new VertexRelationValidator(_doc, bdGraph)
+            {
+                InElementRelation = Relation.Child
+            };
+
+            var collisionValidator = GetCollisionValidator(_doc, bdGraph);
+
+            var iterator = new GraphVertexIterator(algorithm)
+            {
+                StartIndex = 1
+            };
+            iterator.Validators.Add(catValidator);
+            iterator.Validators.Add(relationValidator);
+            iterator.Validators.Add(collisionValidator);
+
+            var pairIterator = new VertexPairIterator(iterator, graph);
 
 
             while (pairIterator.MoveNext())
@@ -181,10 +261,31 @@ namespace DS.RevitLib.Test.TestedClasses
 
                     transaction.RollBack();
                 }
-                Debug.WriteLine(pairIterator.Current.Item1.Id+ " - " + pairIterator.Current.Item2.Id);
+                Debug.WriteLine(pairIterator.Current.Item1.Id + " - " + pairIterator.Current.Item2.Id);
             }
 
             Debug.WriteLine("Total visited pairs count is: " + pairIterator.Close.Count);
+        }
+
+        private AdjacencyGraph<IVertex, Edge<IVertex>> TrimTest(AdjacencyGraph<IVertex, Edge<IVertex>> graph)
+        {
+            var fittingPartTypes = new List<PartType>()
+            {
+                PartType.Tee,
+                   PartType.TapPerpendicular,
+                    PartType.TapAdjustable,
+                    PartType.SpudPerpendicular,
+                    PartType.SpudAdjustable
+            };
+            var accessoryPartTypes = new List<PartType>() { PartType.Undefined };
+            var stopCategories = new Dictionary<BuiltInCategory, List<PartType>>()
+            {
+                { BuiltInCategory.OST_DuctFitting, fittingPartTypes },
+                { BuiltInCategory.OST_PipeFitting, fittingPartTypes },
+                //{ BuiltInCategory.OST_MechanicalEquipment, accessoryPartTypes }
+            };
+
+            return graph.Trim(_doc, stopCategories);
         }
 
         private void Print(AdjacencyGraph<IVertex, Edge<IVertex>> graph)
@@ -250,6 +351,35 @@ namespace DS.RevitLib.Test.TestedClasses
             }
 
             return list;
+        }
+
+        private Dictionary<BuiltInCategory, List<PartType>> GetIterationCategories()
+        {
+            var fittingPartTypes = new List<PartType>()
+            {
+                PartType.Elbow,
+                PartType.Tee,
+                PartType.TapPerpendicular,
+                PartType.TapAdjustable,
+                PartType.SpudPerpendicular,
+                PartType.SpudAdjustable
+            };
+            var verificationCategories = new Dictionary<BuiltInCategory, List<PartType>>()
+            {               
+                { BuiltInCategory.OST_DuctFitting, fittingPartTypes },
+                { BuiltInCategory.OST_PipeFitting, fittingPartTypes },
+            };
+
+            return verificationCategories;
+        }
+
+        private IValidator<IVertex> GetCollisionValidator(Document doc, IBidirectionalGraph<IVertex, Edge<IVertex>> bdGraph)
+        {
+            var factory = new ElementIntersectionFactory(doc);
+            var elementCollisionDetector = new ElementCollisionDetector(doc, factory);
+            var xYZCollisionDetector = new XYZCollisionDetector(elementCollisionDetector);
+
+            return new VertexCollisionValidator(_doc, bdGraph, elementCollisionDetector, xYZCollisionDetector);
         }
     }
 }

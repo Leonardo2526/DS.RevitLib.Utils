@@ -2,6 +2,7 @@
 using Autodesk.Revit.DB.DirectContext3D;
 using Autodesk.Revit.UI;
 using DS.ClassLib.VarUtils.Graphs;
+using DS.ClassLib.VarUtils.Graphs.Vertices;
 using DS.RevitLib.Utils.Creation.Transactions;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.MEP;
@@ -29,6 +30,7 @@ namespace DS.RevitLib.Utils.Graphs
         {
             _vertexBuilder = vertexBuilder;
             _edgeBuilder = edgeBuilder;
+            _graph = new AdjacencyGraph<IVertex, Edge<IVertex>>();
         }
 
         /// <summary>
@@ -51,6 +53,11 @@ namespace DS.RevitLib.Utils.Graphs
         /// Veritces <see cref="Autodesk.Revit.DB.BuiltInCategory"/>'s to stop for graph building.
         /// </summary>
         public Dictionary<BuiltInCategory, List<PartType>> StopCategories { get; set; }
+
+        /// <summary>
+        /// Stop on spuds and tees with specified relation.
+        /// </summary>
+        public IValidator<IVertex> StopRelationValidator { get; set; }
 
         /// <inheritdoc/>
         public override AdjacencyGraph<IVertex, Edge<IVertex>> Create(Element element)
@@ -150,14 +157,17 @@ namespace DS.RevitLib.Utils.Graphs
             initialVertices.ForEach(vertex => _graph.AddVertex(vertex));
             (initialEdges ?? new List<Edge<IVertex>>()).ForEach(e => _graph.AddEdge(e));
 
-            var taggedVerices = initialVertices.OfType<TaggedGVertex<int>>();
+            var taggedVerices = initialVertices.OfType<TaggedGVertex<int>>().
+                Where(v => !v.ContainsTypes(StopTypes, _doc)
+                && !v.ContainsCategories(StopCategories, _doc));
+            if (StopRelationValidator is not null)
+            { taggedVerices = taggedVerices.Where(v => StopRelationValidator.IsValid(v)); }
+
             taggedVerices.ForEach(open.Push);
 
             while (open.Count > 0)
             {
                 var v1 = open.Pop();
-                //if (v1.Tag == 714760)
-                //{ }
                 while (true)
                 {
                     var v2 = _vertexBuilder.TryGetVertex(v1);
@@ -170,8 +180,10 @@ namespace DS.RevitLib.Utils.Graphs
                         { v2 = foundInOpen; }
                         else
                         {
-                            if (!v2.ContainsTypes(StopTypes, _doc)
-                                && !v2.ContainsCategories(StopCategories, _doc))
+                            var t1 = !v2.ContainsTypes(StopTypes, _doc);
+                            var t2 = !v2.ContainsCategories(StopCategories, _doc);
+                            var t3 = StopRelationValidator is null || StopRelationValidator.IsValid(v2);
+                            if (t1 && t2 && t3)
                             { open.Push(tagged); }
                         }
                     };
