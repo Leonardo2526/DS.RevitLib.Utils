@@ -4,6 +4,7 @@ using DS.ClassLib.VarUtils.GridMap;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.Various.Selections;
 using MoreLinq;
+using MoreLinq.Extensions;
 using QuickGraph;
 using QuickGraph.Algorithms;
 using QuickGraph.Algorithms.Search;
@@ -171,7 +172,7 @@ namespace DS.RevitLib.Utils.Graphs
         public static AdjacencyGraph<IVertex, Edge<IVertex>> Trim(this AdjacencyGraph<IVertex, Edge<IVertex>> graph, Document doc,
             Dictionary<BuiltInCategory, List<PartType>> trimCategories)
         {
-            if(trimCategories is null ||  trimCategories.Count == 0) { return graph; }
+            if (trimCategories is null || trimCategories.Count == 0) { return graph; }
 
             var clonedGraph = graph.Clone();
             var root = graph.Roots().First();
@@ -187,7 +188,7 @@ namespace DS.RevitLib.Utils.Graphs
                 bfsToRemoveVerices.SetRootVertex(root);
                 bfsToRemoveVerices.Compute();
 
-                var blackVerices = bfsToRemoveVerices.VertexColors.Where(c => c.Value != GraphColor.Black).ToList();              
+                var blackVerices = bfsToRemoveVerices.VertexColors.Where(c => c.Value != GraphColor.Black).ToList();
                 blackVerices.ForEach(v => clonedGraph.RemoveVertex(v.Key));
 
                 catVertex = null;
@@ -220,5 +221,55 @@ namespace DS.RevitLib.Utils.Graphs
 
         }
 
+        /// <summary>
+        /// Sort vertices pairs by relation length of <see cref="TaggedGVertex{TTag}"/> from <paramref name="graph"/> root.
+        /// <para>
+        /// Vertices on <see cref="Autodesk.Revit.DB.FamilyInstance"/>'s 
+        /// will have high priority with relation length less than <paramref name="maxRelLength"/>.
+        /// </para>
+        /// </summary>
+        /// <param name="vertexPair"></param>
+        /// <param name="graph"></param>
+        /// <param name="doc"></param>
+        /// <param name="maxRelLength"></param>
+        /// <param name="sizeFactor"></param>
+        /// <returns>
+        /// Sorted list where vertices on <see cref="Autodesk.Revit.DB.FamilyInstance"/>'s have highest priority.
+        /// </returns>
+        public static IEnumerable<(IVertex, IVertex)> SortByTaggedLength(this IEnumerable<(IVertex, IVertex)> vertexPair,
+            AdjacencyGraph<IVertex, Edge<IVertex>> graph, Document doc, double maxRelLength = 25, double sizeFactor = 1)
+        {
+            var dict = new Dictionary<(IVertex, IVertex), double>();
+
+            foreach (var pair in vertexPair)
+            {
+                var rl1 = GetPriority(pair.Item1);
+                var rl2 = GetPriority(pair.Item2);
+                var sum = rl1 + rl2;
+                dict.Add(pair, sum);
+            }
+
+            var result = dict.OrderBy(kv => kv.Value);
+            return result.ToList().Select(k => k.Key);
+
+            double GetPriority(IVertex vertex)
+            {
+                (double length, int verticesCount) = graph.GetLengthToRoot(vertex, doc);
+                switch (vertex)
+                {
+                    case TaggedGVertex<int> taggedInt:
+                        {
+                            var relLength = length / sizeFactor;
+                            if (relLength < maxRelLength)
+                            { length = 0; }
+                            break;
+                        }
+                    default:
+                        break;
+                }
+
+                return length;
+            }
+        }
     }
 }

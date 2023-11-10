@@ -10,6 +10,7 @@ using DS.RevitLib.Utils.Collisions.Models;
 using DS.RevitLib.Utils.Creation.Transactions;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.Graphs;
+using DS.RevitLib.Utils.MEP;
 using DS.RevitLib.Utils.MEP.SystemTree.Relatives;
 using DS.RevitLib.Utils.Various;
 using DS.RevitLib.Utils.Various.Selections;
@@ -53,10 +54,11 @@ namespace DS.RevitLib.Test.TestedClasses
             {
                 ShowElementIds = false,
                 ShowVerticesIds = true,
+                ShowDirecionts = true
             }
                .Build(Graph);
 
-            Print(Graph);
+            //Print(Graph);
 
             //var trimmedGraph = TrimTest(Graph);
             //Print(trimmedGraph);
@@ -100,7 +102,7 @@ namespace DS.RevitLib.Test.TestedClasses
                 UIDoc = _uiDoc,
                 StopTypes = stopTypes,
                 StopCategories = stopCategories
-            };        
+            };
 
             return facrory.Create(e1);
 
@@ -323,12 +325,13 @@ namespace DS.RevitLib.Test.TestedClasses
             duplicateEdges.ForEach(v => Debug.WriteLine(v.Tag));
         }
 
-        private void Show(AdjacencyGraph<IVertex, Edge<IVertex>> graph, Document doc, ITransactionFactory trf)
+        private async void Show(AdjacencyGraph<IVertex, Edge<IVertex>> graph, Document doc, ITransactionFactory trf)
         {
             Task task = Task.Run(async () =>
             await trf.CreateAsync(() => _visualisator.Show(),
             "show"));
             _uiDoc.RefreshActiveView();
+            await task;
         }
 
         private List<AdjacencyGraph<IVertex, Edge<IVertex>>> Split(AdjacencyGraph<IVertex, Edge<IVertex>> graph, IVertex splitVertex)
@@ -365,7 +368,7 @@ namespace DS.RevitLib.Test.TestedClasses
                 PartType.SpudAdjustable
             };
             var verificationCategories = new Dictionary<BuiltInCategory, List<PartType>>()
-            {               
+            {
                 { BuiltInCategory.OST_DuctFitting, fittingPartTypes },
                 { BuiltInCategory.OST_PipeFitting, fittingPartTypes },
             };
@@ -380,6 +383,82 @@ namespace DS.RevitLib.Test.TestedClasses
             var xYZCollisionDetector = new XYZCollisionDetector(elementCollisionDetector);
 
             return new VertexCollisionValidator(_doc, bdGraph, elementCollisionDetector, xYZCollisionDetector);
+        }
+
+
+        public void SortTest(AdjacencyGraph<IVertex, Edge<IVertex>> graph)
+        {
+            AddAxiliaryPoint(graph);
+            AddAxiliaryPoint(graph);
+
+            //Print(graph);
+            Show(graph, _doc, _trfOut);
+            //return;
+
+            var algorithm = new BreadthFirstSearchAlgorithm<IVertex, Edge<IVertex>>(graph);
+
+            var cats = GetIterationCategories();
+            var catValidator = new VertexFamInstCategoryValidator(_doc, cats);
+            var bdGraph = graph.ToBidirectionalGraph();
+            var relationValidator = new VertexRelationValidator(_doc, bdGraph)
+            {
+                InElementRelation = Relation.Child
+            };
+            var iterator = new GraphVertexIterator(algorithm)
+            {
+                StartIndex = 1
+            };
+            iterator.Validators.Add(catValidator);
+            iterator.Validators.Add(relationValidator);
+
+            var pairIterator = new VertexPairIterator(iterator, graph);
+
+
+            List<(IVertex, IVertex)> list = new();
+
+            while (list.Count != 4 && pairIterator.MoveNext())
+            { list.Add(pairIterator.Current); }
+
+            var firstEdge = graph.Edges.First() as TaggedEdge<IVertex, int>;
+            //return;
+            var baseElement = _doc.GetElement(new ElementId(firstEdge.Tag)) as MEPCurve;
+            double sizeFactor = baseElement.GetMaxSize();
+            var sortedList = list.SortByTaggedLength(graph, _doc, 25, sizeFactor).ToList();
+
+            foreach (var pair in sortedList)
+            {
+                using (Transaction transaction = new(_doc, "showPair"))
+                {
+                    transaction.Start();
+
+                    _visualisator.ShowLocation(pair.Item1);
+                    _visualisator.ShowLocation(pair.Item2);
+                    _doc.Regenerate();
+                    _uiDoc.RefreshActiveView();
+
+                    transaction.RollBack();
+                }
+                Debug.WriteLine(pair.Item1.Id + " - " + pair.Item2.Id);
+            }
+
+
+            while (pairIterator.MoveNext())
+            {
+                using (Transaction transaction = new(_doc, "showPair"))
+                {
+                    transaction.Start();
+
+                    _visualisator.ShowLocation(pairIterator.Current.Item1);
+                    _visualisator.ShowLocation(pairIterator.Current.Item2);
+                    _doc.Regenerate();
+                    _uiDoc.RefreshActiveView();
+
+                    transaction.RollBack();
+                }
+                Debug.WriteLine(pairIterator.Current.Item1.Id + " - " + pairIterator.Current.Item2.Id);
+            }
+
+            Debug.WriteLine("Total visited pairs count is: " + pairIterator.Close.Count);
         }
     }
 }

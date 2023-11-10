@@ -36,8 +36,8 @@ namespace DS.RevitLib.Utils.Geometry.Points
         /// <param name="labelSize"></param>
         /// <param name="transactionFactory"></param>
         /// <param name="refresh"></param>
-        public XYZVisualizator(UIDocument uiDoc, double labelSize = 0, ITransactionFactory transactionFactory = null, bool refresh = false) 
-        {            
+        public XYZVisualizator(UIDocument uiDoc, double labelSize = 0, ITransactionFactory transactionFactory = null, bool refresh = false)
+        {
             _uiDoc = uiDoc;
             _doc = uiDoc.Document;
             _refresh = refresh;
@@ -60,7 +60,7 @@ namespace DS.RevitLib.Utils.Geometry.Points
         public void Show(XYZ point)
         {
             XYZ xYZ = (XYZ)point;
-            if(xYZ == null ) { throw new ArgumentException(); }
+            if (xYZ == null) { throw new ArgumentException(); }
 
             Line line1 = Line.CreateBound(
                 xYZ + XYZ.BasisX.Multiply(_labelSize / 2),
@@ -93,12 +93,12 @@ namespace DS.RevitLib.Utils.Geometry.Points
         {
             XYZ endPoint = new XYZ(p2.X, p2.Y, p2.Z);
 
-            var vector = (p2- p1);
+            var vector = (p2 - p1);
             var length = vector.GetLength();
-            if(length < _minLineLength) 
+            if (length < _minLineLength)
             {
                 var offsetVector = vector.Normalize().Multiply(_minLineLength);
-                endPoint = p1 + offsetVector; 
+                endPoint = p1 + offsetVector;
             }
 
             Line mainLine = Line.CreateBound(p1, endPoint);
@@ -116,6 +116,40 @@ namespace DS.RevitLib.Utils.Geometry.Points
                 vectorLabel.ForEach(l => creator.Create(l));
                 if (_refresh) { _doc.Regenerate(); _uiDoc?.RefreshActiveView(); }
             }, "ShowVector");
+        }
+
+
+
+        /// <summary>
+        /// Show vector between <paramref name="p1"/> and <paramref name="p2"/>.   
+        /// <param name="p1"></param>
+        /// <param name="p2"></param>
+        /// </summary>
+        public void ShowVectorWithoutTransaction(XYZ p1, XYZ p2)
+        {
+            XYZ endPoint = new XYZ(p2.X, p2.Y, p2.Z);
+
+            var vector = (p2 - p1);
+            var length = vector.GetLength();
+            if (length < _minLineLength)
+            {
+                var offsetVector = vector.Normalize().Multiply(_minLineLength);
+                endPoint = p1 + offsetVector;
+            }
+
+            Line mainLine = Line.CreateBound(p1, endPoint);
+            var labelLines = GetArrows(mainLine, endPoint, _labelSize);
+
+            var vectorLabel = new List<Line>
+            {
+                mainLine
+            };
+            vectorLabel.AddRange(labelLines);
+
+            var creator = new ModelCurveCreator(_doc);
+            vectorLabel.ForEach(l => creator.Create(l));
+            if (_refresh) { _doc.Regenerate(); _uiDoc?.RefreshActiveView(); }
+
         }
 
         /// <summary>

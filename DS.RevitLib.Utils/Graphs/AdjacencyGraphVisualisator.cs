@@ -2,6 +2,7 @@
 using Autodesk.Revit.UI;
 using DS.ClassLib.VarUtils.Graphs;
 using DS.RevitLib.Utils.Extensions;
+using DS.RevitLib.Utils.Geometry.Points;
 using QuickGraph;
 using Rhino.Geometry;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
@@ -16,6 +17,7 @@ namespace DS.RevitLib.Utils.Graphs
         private readonly Document _doc;
         private AdjacencyGraph<IVertex, Edge<IVertex>> _graph;
         private readonly UIView _view;
+        private readonly XYZVisualizator _xYZVisulalizator;
         private readonly XYZ _moveVector = new XYZ();
         private readonly static double _labelSize = 100.MMToFeet();
 
@@ -27,6 +29,7 @@ namespace DS.RevitLib.Utils.Graphs
         {
             _doc = doc;
             _view = GetUIView(_doc);
+            _xYZVisulalizator = new XYZVisualizator(new UIDocument(doc));
         }
 
         /// <summary>
@@ -43,6 +46,11 @@ namespace DS.RevitLib.Utils.Graphs
         /// Specified whether show verticies ids or not.
         /// </summary>
         public bool ShowVerticesIds { get; set; } = true;
+
+        /// <summary>
+        /// Specified whether show edges directions or lines.
+        /// </summary>
+        public bool ShowDirecionts { get; set; } = true;
 
         /// <inheritdoc/>
         public IAdjacencyGraphVisulisator<IVertex> Build(AdjacencyGraph<IVertex, Edge<IVertex>> graph)
@@ -100,7 +108,11 @@ namespace DS.RevitLib.Utils.Graphs
                     }
 
                     var line = Autodesk.Revit.DB.Line.CreateBound(xyz1, xyz2);
-                    line.Show(_doc);
+
+                    if (ShowDirecionts)
+                    { _xYZVisulalizator.ShowVectorWithoutTransaction(xyz1, xyz2); }
+                    else
+                    { line.Show(_doc); }
 
                     if (ShowElementIds)
                     {
