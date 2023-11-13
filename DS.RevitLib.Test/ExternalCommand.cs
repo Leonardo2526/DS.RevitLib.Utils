@@ -19,12 +19,17 @@ namespace DS.RevitLib.Test
             Autodesk.Revit.ApplicationServices.Application application = uiapp.Application;
             UIDocument uidoc = uiapp.ActiveUIDocument;
 
+
+            new GetEdgeConnectorsTest(uidoc)
+                .BuildGraph()
+                .GetConnectionSegment();
+
+            //var test = new MEPSystemGraphFactoryTest(uidoc);
             //new GetFamInstLocationTest( uidoc);
             //new MEPSystemGraphFactoryTest(uidoc);
-            var test = new MEPSystemGraphFactoryTest(uidoc);
             //test.Iterate(test.Graph);
             //test.PairIterate(test.Graph);
-            test.SortTest(test.Graph);
+            //test.SortTest(test.Graph);
 
             return Autodesk.Revit.UI.Result.Succeeded;
         }

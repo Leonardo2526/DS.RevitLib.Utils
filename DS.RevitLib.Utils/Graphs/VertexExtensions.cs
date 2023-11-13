@@ -161,6 +161,6 @@ namespace DS.RevitLib.Utils.Graphs
             }
 
             return inElements;
-        }
+        }      
     }
 }

@@ -1,6 +1,9 @@
 ﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.UI;
 using DS.GraphUtils.Entities;
 using DS.RevitLib.Utils.Extensions;
+using DS.RevitLib.Utils.Various;
+using DS.RevitLib.Utils.Various.Selections;
 using MoreLinq;
 using MoreLinq.Extensions;
 using QuickGraph;
@@ -266,6 +269,24 @@ namespace DS.RevitLib.Utils.Graphs
 
                 return length;
             }
+        }
+
+        /// <summary>
+        /// Get first edge occurence from <paramref name="graph"/> edges that contains given <paramref name="point"/>.
+        /// </summary>
+        /// <param name="graph"></param>
+        /// <param name="point"></param>
+        /// <param name="doc"></param>
+        /// <returns>
+        /// <see cref="TaggedEdge{TVertex, TTag}"/> if any edges of <paramref name="graph"/> contains <paramref name="point"/>.
+        /// </returns>
+        public static TaggedEdge<IVertex, int> GetEdge(this IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> graph, 
+            Point3d point, Document doc)
+        {
+            var taggedEdges = graph.Edges.OfType<TaggedEdge<IVertex, int>>();
+            var e = taggedEdges.FirstOrDefault();
+
+            return taggedEdges.FirstOrDefault(e => e.Contains(point, doc));
         }
     }
 }

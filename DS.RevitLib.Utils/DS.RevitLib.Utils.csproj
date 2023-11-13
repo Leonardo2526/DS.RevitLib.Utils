@@ -218,11 +218,11 @@
     <Compile Include="Graphs\MEPSystemGraphFactory.cs" />
     <Compile Include="Graphs\GVertexBuilder.cs" />
     <Compile Include="Graphs\GraphExtensions.cs" />
-    <Compile Include="Graphs\VertexCollisionValidator.cs" />
+    <Compile Include="Graphs\Validators\VertexCollisionValidator.cs" />
     <Compile Include="Graphs\VertexExtensions.cs" />
-    <Compile Include="Graphs\VertexLimitsValidator.cs" />
-    <Compile Include="Graphs\VertexFamInstCategoryValidator.cs" />
-    <Compile Include="Graphs\VertexRelationValidator.cs" />
+    <Compile Include="Graphs\Validators\VertexLimitsValidator.cs" />
+    <Compile Include="Graphs\Validators\VertexFamInstCategoryValidator.cs" />
+    <Compile Include="Graphs\Validators\VertexRelationValidator.cs" />
     <Compile Include="Various\IWindowMessenger.cs" />
     <Compile Include="PathCreators\AlgorithmBuilder\Impl.cs" />
     <Compile Include="PathCreators\XYZPathFinder.cs" />
