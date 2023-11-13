@@ -1,5 +1,5 @@
 ﻿using Autodesk.Revit.DB;
-using DS.ClassLib.VarUtils.Graphs;
+using DS.GraphUtils.Entities;
 using DS.RevitLib.Utils.Extensions;
 using QuickGraph;
 using QuickGraph.Algorithms;
@@ -80,7 +80,7 @@ namespace DS.RevitLib.Utils.Graphs
             var vertex = validationContext.ObjectInstance as IVertex;
 
             if (!IsWithinOutlineLimits(BoundOutline, vertex))
-            { results.Add(new ValidationResult("Vertex is outside bound limits."));  }
+            { results.Add(new ValidationResult("Vertex is outside bound limits.")); }
 
             if (!IsWithinMaxLength(_graph, _parentVertex, vertex))
             { results.Add(new ValidationResult("Vertex is outside MaxLength.")); }

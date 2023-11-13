@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
-using DS.ClassLib.VarUtils.Graphs;
+using DS.GraphUtils.Entities;
 using QuickGraph;
 
 namespace DS.RevitLib.Utils.Graphs

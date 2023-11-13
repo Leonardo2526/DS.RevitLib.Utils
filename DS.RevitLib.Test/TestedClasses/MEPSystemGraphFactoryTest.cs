@@ -1,10 +1,7 @@
 ﻿using Autodesk.Revit.DB;
-using Autodesk.Revit.DB.Mechanical;
 using Autodesk.Revit.UI;
 using DS.ClassLib.VarUtils;
-using DS.ClassLib.VarUtils.Graphs;
-using DS.ClassLib.VarUtils.Graphs.Vertices;
-using DS.ClassLib.VarUtils.GridMap;
+using DS.GraphUtils.Entities;
 using DS.RevitLib.Utils.Collisions.Detectors;
 using DS.RevitLib.Utils.Collisions.Models;
 using DS.RevitLib.Utils.Creation.Transactions;
@@ -14,18 +11,14 @@ using DS.RevitLib.Utils.MEP;
 using DS.RevitLib.Utils.MEP.SystemTree.Relatives;
 using DS.RevitLib.Utils.Various;
 using DS.RevitLib.Utils.Various.Selections;
-using DS.RevitLib.Utils.Visualisators;
 using QuickGraph;
 using QuickGraph.Algorithms;
 using QuickGraph.Algorithms.Search;
-using Rhino.Geometry;
-using Rhino.UI;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.TreeView;
 
 namespace DS.RevitLib.Test.TestedClasses
 {

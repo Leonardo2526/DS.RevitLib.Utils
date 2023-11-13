@@ -1,8 +1,8 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.DirectContext3D;
 using Autodesk.Revit.UI;
-using DS.ClassLib.VarUtils.Graphs;
-using DS.ClassLib.VarUtils.Graphs.Vertices;
+using DS.ClassLib.VarUtils;
+using DS.GraphUtils.Entities;
 using DS.RevitLib.Utils.Creation.Transactions;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.MEP;

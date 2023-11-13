@@ -1,6 +1,6 @@
 ﻿using Autodesk.Revit.DB;
-using DS.ClassLib.VarUtils.Graphs;
-using DS.ClassLib.VarUtils.Graphs.Vertices;
+using DS.ClassLib.VarUtils;
+using DS.GraphUtils.Entities;
 using DS.RevitLib.Utils.Extensions;
 using QuickGraph;
 using System;

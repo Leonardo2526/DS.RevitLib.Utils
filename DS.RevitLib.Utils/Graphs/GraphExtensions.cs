@@ -1,8 +1,6 @@
 ﻿using Autodesk.Revit.DB;
-using DS.ClassLib.VarUtils.Graphs;
-using DS.ClassLib.VarUtils.GridMap;
+using DS.GraphUtils.Entities;
 using DS.RevitLib.Utils.Extensions;
-using DS.RevitLib.Utils.Various.Selections;
 using MoreLinq;
 using MoreLinq.Extensions;
 using QuickGraph;
@@ -12,8 +10,6 @@ using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.Graphs
 {

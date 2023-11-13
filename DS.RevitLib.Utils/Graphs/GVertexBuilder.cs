@@ -1,6 +1,6 @@
 ﻿using Autodesk.Revit.DB;
 using DS.ClassLib.VarUtils;
-using DS.ClassLib.VarUtils.Graphs;
+using DS.GraphUtils.Entities;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.Lines;
 using DS.RevitLib.Utils.MEP;
@@ -127,9 +127,9 @@ namespace DS.RevitLib.Utils.Graphs
                         break;
                     }
                 default: throw new NotImplementedException();
-            }           
+            }
 
-            return  IsValid(v2, parentVertex) ? v2 : null;
+            return IsValid(v2, parentVertex) ? v2 : null;
         }
 
 
@@ -232,8 +232,8 @@ namespace DS.RevitLib.Utils.Graphs
                 var excluded = new List<ElementId>() { pvFamInst.Id };
                 foreach (var c in freeCons)
                 {
-                    var conPoint = c.Origin.ToPoint3d();                  
-                    if (excludedVertexPoins.Any(p => p.Tag.DistanceTo(conPoint) < 0.001) 
+                    var conPoint = c.Origin.ToPoint3d();
+                    if (excludedVertexPoins.Any(p => p.Tag.DistanceTo(conPoint) < 0.001)
                         || mEPCurve.GetFirst(pvLocation, c, excluded) != null)
                     { continue; }
                     else
@@ -267,11 +267,11 @@ namespace DS.RevitLib.Utils.Graphs
         private bool IsValid(IVertex vertex, IVertex parentVertex)
         {
             if (vertex == null) { return false; }
-            if(Validatator is null) { return true; }
+            if (Validatator is null) { return true; }
 
             var context = new ValidationContext(vertex);
             var results = Validatator.SetParent(parentVertex).Validate(context);
-       
+
             return results.Count() == 0;
         }
 

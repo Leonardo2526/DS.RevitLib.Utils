@@ -1,4 +1,4 @@
-﻿using DS.ClassLib.VarUtils.Graphs;
+﻿using DS.GraphUtils.Entities;
 using QuickGraph;
 
 namespace DS.RevitLib.Utils.Graphs

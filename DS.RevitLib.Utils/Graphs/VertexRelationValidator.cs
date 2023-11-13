@@ -1,6 +1,4 @@
-﻿using DS.ClassLib.VarUtils.Graphs.Vertices;
-using DS.ClassLib.VarUtils.Graphs;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -10,6 +8,8 @@ using QuickGraph;
 using DS.RevitLib.Utils.MEP.SystemTree.Relatives;
 using Autodesk.Revit.DB;
 using DS.RevitLib.Utils.Extensions;
+using DS.ClassLib.VarUtils;
+using DS.GraphUtils.Entities;
 
 namespace DS.RevitLib.Utils.Graphs
 {
