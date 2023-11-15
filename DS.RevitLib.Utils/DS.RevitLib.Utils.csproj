@@ -218,6 +218,7 @@
     <Compile Include="Graphs\MEPSystemGraphFactory.cs" />
     <Compile Include="Graphs\GVertexBuilder.cs" />
     <Compile Include="Graphs\GraphExtensions.cs" />
+    <Compile Include="Graphs\SegmentFactory.cs" />
     <Compile Include="Graphs\Validators\VertexCollisionValidator.cs" />
     <Compile Include="Graphs\VertexExtensions.cs" />
     <Compile Include="Graphs\Validators\VertexLimitsValidator.cs" />

@@ -7,6 +7,7 @@ using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.DirectContext3D;
 using DS.ClassLib.VarUtils;
 using DS.GraphUtils.Entities;
+using DS.RevitLib.Utils.Collisions.Detectors.AbstractDetectors;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.MEP;
 using QuickGraph;
@@ -28,13 +29,38 @@ namespace DS.RevitLib.Utils.Graphs
         /// <returns>
         /// Distance between <paramref name="edge"/>'s source and target location points.
         /// </returns>
-        public static double GetLength(this Edge<IVertex> edge, Document doc)
-        {
-            var loc1 = edge.Source.GetLocation(doc);
-            var loc2 = edge.Target.GetLocation(doc);
+        public static double GetLength(this IEdge<IVertex> edge, Document doc)
+            => GetLocationLine(edge, doc).Length;        
 
-            return loc1.DistanceTo(loc2);
+        /// <summary>
+        /// Get <paramref name="edge"/>'s <see cref="Line"/>.
+        /// </summary>
+        /// <param name="edge"></param>
+        /// <param name="doc"></param>
+        /// <returns>
+        /// <see cref="Line"/> built from <paramref name="edge"/>'s source to target locations.
+        /// </returns>
+        public static Line GetLocationLine(this IEdge<IVertex> edge, Document doc)
+        {
+            var loc1 = edge.Source.GetLocation(doc).ToPoint3d();
+            var loc2 = edge.Target.GetLocation(doc).ToPoint3d();
+
+            return new Line(loc1, loc2);
         }
+
+        /// <summary>
+        /// Get <paramref name="edge"/>'s direcion.
+        /// </summary>
+        /// <param name="edge"></param>
+        /// <param name="doc"></param>
+        /// <returns>
+        /// Normilized <see cref="Vector3d"/> that specifies <paramref name="edge"/>'s line direction.
+        /// </returns>
+        public static Vector3d Direction(this IEdge<IVertex> edge, Document doc)
+        {
+            var dir= GetLocationLine(edge, doc).Direction;
+            return Vector3d.Divide(dir, dir.Length); 
+        }        
 
         /// <summary>
         /// Try get <see cref="MEPCurve"/> from <paramref name="edge"/>.
@@ -48,7 +74,7 @@ namespace DS.RevitLib.Utils.Graphs
         /// Otherwise <see langword="null"/>.
         /// </para>
         /// </returns>
-        public static MEPCurve TryGetMEPCurve(this Edge<IVertex> edge, Document doc) =>
+        public static MEPCurve TryGetMEPCurve(this IEdge<IVertex> edge, Document doc) =>
             edge is TaggedEdge<IVertex, int> taggedEdge ?
             doc.GetElement(new ElementId(taggedEdge.Tag)) as MEPCurve :
             null;

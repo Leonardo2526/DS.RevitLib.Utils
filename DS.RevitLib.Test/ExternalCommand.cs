@@ -20,9 +20,13 @@ namespace DS.RevitLib.Test
             UIDocument uidoc = uiapp.ActiveUIDocument;
 
 
-            new GetEdgeConnectorsTest(uidoc)
+            new SegmentFactoryTest(uidoc)
                 .BuildGraph()
-                .GetConnectionSegment();
+                .GetSegements();
+
+            //new GetEdgeConnectorsTest(uidoc)
+            //  .BuildGraph()
+            //  .GetConnectionSegment();
 
             //var test = new MEPSystemGraphFactoryTest(uidoc);
             //new GetFamInstLocationTest( uidoc);

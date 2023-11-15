@@ -201,8 +201,8 @@ namespace DS.RevitLib.Test.TestedClasses
             var txt = "Current vertex id: ";
             while (iteratror.MoveNext())
             {
-                _trfIn.CreateAsync(() =>
-                { _visualisator.ShowLocation(iteratror.Current); _doc.Regenerate(); }, "show");
+                _trfIn.CreateAsync((Action)(() =>
+                { _visualisator.Show(iteratror.Current); _doc.Regenerate(); }), "show");
                 _uiDoc.RefreshActiveView();
                 //Task task = Task.Run(async () => 
                 //await _trfOut.CreateAsync(() => 
@@ -249,8 +249,8 @@ namespace DS.RevitLib.Test.TestedClasses
                 {
                     transaction.Start();
 
-                    _visualisator.ShowLocation(pairIterator.Current.Item1);
-                    _visualisator.ShowLocation(pairIterator.Current.Item2);
+                    _visualisator.Show(pairIterator.Current.Item1);
+                    _visualisator.Show(pairIterator.Current.Item2);
                     _doc.Regenerate();
                     _uiDoc.RefreshActiveView();
 
@@ -424,8 +424,8 @@ namespace DS.RevitLib.Test.TestedClasses
                 {
                     transaction.Start();
 
-                    _visualisator.ShowLocation(pair.Item1);
-                    _visualisator.ShowLocation(pair.Item2);
+                    _visualisator.Show(pair.Item1);
+                    _visualisator.Show(pair.Item2);
                     _doc.Regenerate();
                     _uiDoc.RefreshActiveView();
 
@@ -441,8 +441,8 @@ namespace DS.RevitLib.Test.TestedClasses
                 {
                     transaction.Start();
 
-                    _visualisator.ShowLocation(pairIterator.Current.Item1);
-                    _visualisator.ShowLocation(pairIterator.Current.Item2);
+                    _visualisator.Show(pairIterator.Current.Item1);
+                    _visualisator.Show(pairIterator.Current.Item2);
                     _doc.Regenerate();
                     _uiDoc.RefreshActiveView();
 

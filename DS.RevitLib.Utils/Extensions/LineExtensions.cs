@@ -2,9 +2,11 @@
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.ModelCurveUtils;
 using DS.RevitLib.Utils.Models;
+using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Line = Autodesk.Revit.DB.Line;
 
 namespace DS.RevitLib.Utils.Lines
 {
@@ -159,5 +161,25 @@ namespace DS.RevitLib.Utils.Lines
             var d = rline.DistanceTo(rpoint, true);
             return d < tolerance;
         }
+
+        /// <summary>
+        /// Convert <paramref name="line"/> to <see cref="Rhino.Geometry.Line"/>.
+        /// </summary>
+        /// <param name="line"></param>
+        /// <returns>
+        /// A new <see cref="Rhino.Geometry.Line"/> created by <paramref name="line"/> end points.
+        /// </returns>
+        public static Rhino.Geometry.Line ToRhinoLine(this Line line)
+        => new(line.GetEndPoint(0).ToPoint3d(), line.GetEndPoint(1).ToPoint3d());
+
+        /// <summary>
+        /// Convert <paramref name="line"/> to <see cref="Line"/>.
+        /// </summary>
+        /// <param name="line"></param>
+        /// <returns>
+        /// A new <see cref="Line"/> created by <paramref name="line"/> end points.
+        /// </returns>
+        public static Line ToXYZ(this Rhino.Geometry.Line line)
+        => Line.CreateBound(line.From.ToXYZ(), line.To.ToXYZ());
     }
 }

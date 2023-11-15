@@ -60,7 +60,7 @@ namespace DS.RevitLib.Utils.Graphs
         }
 
         /// <inheritdoc/>
-        public void ShowLocation(IVertex vertex)
+        public void Show(IVertex vertex)
         {
             XYZ xYZPoint = vertex.GetLocation(_doc);
             xYZPoint?.Show(_doc, _labelSize);
@@ -92,8 +92,8 @@ namespace DS.RevitLib.Utils.Graphs
 
                     ElementId defaultTypeId = _doc.GetDefaultElementTypeId(ElementTypeGroup.TextNoteType);
 
-                    ShowLocation(v1);
-                    ShowLocation(v2);
+                    Show(v1);
+                    Show(v2);
 
                     if (ShowElementIds && sTag != 0)
                     { TextNote.Create(_doc, _view.ViewId, xyz1 + _moveVector, sTag.ToString(), defaultTypeId); }
@@ -144,6 +144,24 @@ namespace DS.RevitLib.Utils.Graphs
         {
             var famInst = _doc.GetElement(new ElementId(tag)) as FamilyInstance;
             return famInst.GetLocation();
+        }
+
+        /// <inheritdoc/>
+        public void Show(IEdge<IVertex> edge)
+        {
+            var v1 = edge.Source;
+            var v2 = edge.Target;
+            var xyz1 = v1.GetLocation(_doc);
+            var xyz2 = v2.GetLocation(_doc);
+            var line = Autodesk.Revit.DB.Line.CreateBound(xyz1, xyz2);
+
+            Show(v1);
+            Show(v2);
+
+            if (ShowDirecionts)
+            { _xYZVisulalizator.ShowVectorWithoutTransaction(xyz1, xyz2); }
+            else
+            { line.Show(_doc); }
         }
     }
 }
