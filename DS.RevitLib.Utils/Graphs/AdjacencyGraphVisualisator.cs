@@ -15,7 +15,7 @@ namespace DS.RevitLib.Utils.Graphs
     public class AdjacencyGraphVisualisator : IAdjacencyGraphVisulisator<IVertex>
     {
         private readonly Document _doc;
-        private AdjacencyGraph<IVertex, Edge<IVertex>> _graph;
+        private IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> _graph;
         private readonly UIView _view;
         private readonly XYZVisualizator _xYZVisulalizator;
         private readonly XYZ _moveVector = new XYZ();
@@ -53,7 +53,7 @@ namespace DS.RevitLib.Utils.Graphs
         public bool ShowDirecionts { get; set; } = true;
 
         /// <inheritdoc/>
-        public IAdjacencyGraphVisulisator<IVertex> Build(AdjacencyGraph<IVertex, Edge<IVertex>> graph)
+        public IAdjacencyGraphVisulisator<IVertex> Build(IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> graph)
         {
             _graph = graph;
             return this;

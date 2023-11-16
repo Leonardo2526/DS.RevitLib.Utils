@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace DS.RevitLib.Test.TestedClasses
@@ -29,7 +30,7 @@ namespace DS.RevitLib.Test.TestedClasses
         private readonly ContextTransactionFactory _trfIn;
         private readonly ContextTransactionFactory _trfOut;
 
-        public AdjacencyGraph<IVertex, Edge<IVertex>> Graph { get; private set; }
+        public IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> Graph { get; private set; }
 
         private IAdjacencyGraphVisulisator<IVertex> _visualisator;
 
@@ -106,17 +107,11 @@ namespace DS.RevitLib.Test.TestedClasses
             }
         }
 
-        public AdjacencyGraph<IVertex, Edge<IVertex>> CreateGraphByPoint()
+        public IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> CreateGraphByPoint()
         {
             var selector = new PointSelector(_uiDoc) { AllowLink = true };
             var mEPCurve = selector.Pick() as MEPCurve;
             var point = selector.Point;
-
-            //GVertexBuilder vertexBuilder = GetVertexBuilder();
-            GVertexBuilder vertexBuilder = GetVertexBuilderWithValidator();
-
-            var edgeBuilder = new GEdgeBuilder();
-
             var stopTypes = new List<Type>
             {
                 //typeof(MechanicalEquipment)
@@ -137,48 +132,22 @@ namespace DS.RevitLib.Test.TestedClasses
                 { BuiltInCategory.OST_MechanicalEquipment, accessoryPartTypes }
             };
 
-            var facrory = new MEPSystemGraphFactory(_doc, vertexBuilder, edgeBuilder)
+            var maxLength = 100000.MMToFeet();
+            var maxCount = 100;
+
+            var builder = new MEPGraphBuilder(_doc)
             {
-                TransactionFactory = _trfIn,
-                UIDoc = _uiDoc,
                 StopTypes = stopTypes,
-                StopCategories = stopCategories
+                StopCategories = stopCategories,
+                StopElementRelation = Relation.Parent,
+                MaxLength = maxLength,
+                MaxVerticesCount = maxCount,
+                BoundOutline = null,
+                ExcludedTypes = null,
+                //ExculdedCategories = exculdedCategories,
             };
 
-            var relationValidator = new VertexRelationValidator(_doc, facrory.Graph.ToBidirectionalGraph())
-            {
-                InElementRelation = Relation.Parent
-            };
-            facrory.StopRelationValidator = relationValidator;
-
-            return facrory.Create(mEPCurve, point);
-
-            GVertexBuilder GetVertexBuilderWithValidator()
-            {
-                var maxLength = 100000.MMToFeet();
-                var maxCount = 100;
-
-                var validator = new VertexLimitsValidator(_doc)
-                {
-                    MaxLength = maxLength,
-                    MaxVerticesCount = maxCount,
-                    BoundOutline = null,
-                    ExcludedTypes = null,
-                    ExculdedCategories = null
-                };
-
-                var vertexBuilder = new GVertexBuilder(_doc)
-                {
-                    Validatator = validator
-                };
-                return vertexBuilder;
-            }
-
-            GVertexBuilder GetVertexBuilder()
-            {
-                var vertexBuilder = new GVertexBuilder(_doc);
-                return vertexBuilder;
-            }
+            return builder.Create(mEPCurve, point);
         }
 
         private AdjacencyGraph<IVertex, Edge<IVertex>> AddAxiliaryPoint(AdjacencyGraph<IVertex, Edge<IVertex>> graph)
@@ -212,7 +181,7 @@ namespace DS.RevitLib.Test.TestedClasses
             }
         }
 
-        public void PairIterate(AdjacencyGraph<IVertex, Edge<IVertex>> graph)
+        public void PairIterate(IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> graph)
         {
             //var trimmedGraph = graph;
             //var trimmedGraph = graph.Trim(_doc, stopCategories);
@@ -318,7 +287,7 @@ namespace DS.RevitLib.Test.TestedClasses
             duplicateEdges.ForEach(v => Debug.WriteLine(v.Tag));
         }
 
-        private async void Show(AdjacencyGraph<IVertex, Edge<IVertex>> graph, Document doc, ITransactionFactory trf)
+        private async void Show(IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> graph, Document doc, ITransactionFactory trf)
         {
             Task task = Task.Run(async () =>
             await trf.CreateAsync(() => _visualisator.Show(),
@@ -385,27 +354,35 @@ namespace DS.RevitLib.Test.TestedClasses
             AddAxiliaryPoint(graph);
 
             //Print(graph);
-            Show(graph, _doc, _trfOut);
+            //Show(graph, _doc, _trfOut);
             //return;
 
-            var algorithm = new BreadthFirstSearchAlgorithm<IVertex, Edge<IVertex>>(graph);
+            //var algorithm = new BreadthFirstSearchAlgorithm<IVertex, Edge<IVertex>>(graph);
 
             var cats = GetIterationCategories();
-            var catValidator = new VertexFamInstCategoryValidator(_doc, cats);
-            var bdGraph = graph.ToBidirectionalGraph();
-            var relationValidator = new VertexRelationValidator(_doc, bdGraph)
+            //var catValidator = new VertexFamInstCategoryValidator(_doc, cats);
+            //var bdGraph = graph.ToBidirectionalGraph();
+            //var relationValidator = new VertexRelationValidator(_doc, bdGraph)
+            //{
+            //    InElementRelation = Relation.Child
+            //};
+            //var iterator = new GraphVertexIterator(algorithm)
+            //{
+            //    StartIndex = 1
+            //};
+            //iterator.Validators.Add(catValidator);
+            //iterator.Validators.Add(relationValidator);
+
+            //var pairIterator = new VertexPairIterator(iterator, graph);
+
+
+            var pairIterator = new PairIteratorBuilder(_doc)
             {
+                StartIndex = 1,
+                AvailableCategories = cats,
                 InElementRelation = Relation.Child
-            };
-            var iterator = new GraphVertexIterator(algorithm)
-            {
-                StartIndex = 1
-            };
-            iterator.Validators.Add(catValidator);
-            iterator.Validators.Add(relationValidator);
-
-            var pairIterator = new VertexPairIterator(iterator, graph);
-
+            }
+            .Create(graph);
 
             List<(IVertex, IVertex)> list = new();
 
@@ -451,7 +428,8 @@ namespace DS.RevitLib.Test.TestedClasses
                 Debug.WriteLine(pairIterator.Current.Item1.Id + " - " + pairIterator.Current.Item2.Id);
             }
 
-            Debug.WriteLine("Total visited pairs count is: " + pairIterator.Close.Count);
+            var ir = pairIterator as VertexPairIterator;
+            Debug.WriteLine("Total visited pairs count is: " + ir.Close.Count);
         }
     }
 }

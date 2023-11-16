@@ -212,12 +212,16 @@
     <Compile Include="Geometry\Points\XYZVisualizator.cs" />
     <Compile Include="Geometry\Solids\SolidOffsetExtractor.cs" />
     <Compile Include="Graphs\AdjacencyGraphVisualisator.cs" />
+    <Compile Include="Graphs\IVertexPairIteratorBuilder.cs" />
+    <Compile Include="Graphs\MEPGraphBuilder.cs" />
     <Compile Include="Graphs\EdgeExtensions.cs" />
     <Compile Include="Graphs\GEdgeBuilder.cs" />
+    <Compile Include="Graphs\IMEPGraphBuilder.cs" />
     <Compile Include="Graphs\MEPSystemGraphFactoryBase.cs" />
     <Compile Include="Graphs\MEPSystemGraphFactory.cs" />
     <Compile Include="Graphs\GVertexBuilder.cs" />
     <Compile Include="Graphs\GraphExtensions.cs" />
+    <Compile Include="Graphs\PairIteratorBuilder.cs" />
     <Compile Include="Graphs\SegmentFactory.cs" />
     <Compile Include="Graphs\Validators\VertexCollisionValidator.cs" />
     <Compile Include="Graphs\VertexExtensions.cs" />
