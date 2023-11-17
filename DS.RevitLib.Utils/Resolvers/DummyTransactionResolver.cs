@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.Resolvers
 {
-    public class DummyTransactionResolver : ITaskResolver
+    public class DummyTransactionResolver : ITaskResolver<IResolveTask>
     {
         private readonly List<ISolution> _solutions = new();
         private readonly UIDocument _uIDoc;
