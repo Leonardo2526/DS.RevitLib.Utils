@@ -8,6 +8,7 @@ using DS.RevitLib.Utils.Elements.MEPElements;
 using DS.RevitLib.Utils.MEP;
 using DS.RevitLib.Utils.MEP.Models;
 using QuickGraph;
+using System.Threading.Tasks;
 
 namespace DS.RevitLib.Test
 {
@@ -22,6 +23,14 @@ namespace DS.RevitLib.Test
             UIDocument uidoc = uiapp.ActiveUIDocument;
 
 
+            var resolver = new MultiResolverTest(uidoc)
+                .CreateResolver();
+
+            //resolver.Resolve();
+            //return Result.Succeeded;
+            resolver.ResolveAsync();
+            //Task.Run(async () => { await resolver.ResolveAsync(); });
+
             //new SegmentFactoryTest(uidoc)
             //    .BuildGraph()
             //    .GetSegements();
@@ -30,12 +39,12 @@ namespace DS.RevitLib.Test
             //  .BuildGraph()
             //  .GetConnectionSegment();
 
-            var test = new MEPSystemGraphFactoryTest(uidoc);
+            //var test = new MEPSystemGraphFactoryTest(uidoc);
             //new GetFamInstLocationTest( uidoc);
             //new MEPSystemGraphFactoryTest(uidoc);
             //test.Iterate(test.Graph);
             //test.PairIterate(test.Graph);
-            test.SortTest(test.Graph as AdjacencyGraph<IVertex, Edge<IVertex>>);
+            //test.SortTest(test.Graph as AdjacencyGraph<IVertex, Edge<IVertex>>);
 
             return Autodesk.Revit.UI.Result.Succeeded;
         }
