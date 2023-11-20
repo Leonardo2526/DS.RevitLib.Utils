@@ -14,7 +14,7 @@ namespace DS.RevitCollisions.Models
     /// <summary>
     /// Represents intersection between two <see cref="Autodesk.Revit.DB.MEPCurve"/>'s.
     /// </summary>
-    public class MEPCollision : Collision
+    public class MEPCollision : Collision, IMEPCollision
     {
         private LineOverlapResult? _overlapResult;
         private MEPSystemModel _resolvigMEPSystem;
@@ -48,7 +48,7 @@ namespace DS.RevitCollisions.Models
             }
         }
 
-        public MEPCurveModel ResolvingMEPCurveModel
+        public MEPCurveModel ResolvingModel
         {
             get { return (MEPCurveModel)ResolvingElementModel; }
         }
@@ -65,7 +65,7 @@ namespace DS.RevitCollisions.Models
                 if (_overlapResult == null)
                 {
                     if (StateElementModel.Element is MEPCurve stateMEPCurve)
-                    { _overlapResult = LineUtils.GetOverlapResult(ResolvingMEPCurveModel.Line, stateMEPCurve.GetCenterLine()); }
+                    { _overlapResult = LineUtils.GetOverlapResult(ResolvingModel.Line, stateMEPCurve.GetCenterLine()); }
                     else
                     { _overlapResult = LineOverlapResult.None; }
                 }

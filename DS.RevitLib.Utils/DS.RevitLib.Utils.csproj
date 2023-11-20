@@ -227,7 +227,6 @@
     <Compile Include="Graphs\Validators\VertexLimitsValidator.cs" />
     <Compile Include="Graphs\Validators\VertexFamInstCategoryValidator.cs" />
     <Compile Include="Graphs\Validators\VertexRelationValidator.cs" />
-    <Compile Include="Resolvers\DummyTransactionResolver.cs" />
     <Compile Include="Various\IWindowMessenger.cs" />
     <Compile Include="PathCreators\AlgorithmBuilder\Impl.cs" />
     <Compile Include="PathCreators\XYZPathFinder.cs" />
@@ -372,6 +371,7 @@
   <ItemGroup>
     <Folder Include="Collisions\Solutions\" />
     <Folder Include="Geometry\Points\Models\" />
+    <Folder Include="Resolvers\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

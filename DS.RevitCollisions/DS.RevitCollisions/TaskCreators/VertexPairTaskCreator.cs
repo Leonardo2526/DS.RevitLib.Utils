@@ -1,28 +1,24 @@
-﻿using Autodesk.Revit.Creation;
-using DS.ClassLib.VarUtils.Resolvers;
-using DS.ClassLib.VarUtils.Resolvers.ResolveTasks;
-using DS.GraphUtils.Entities;
+﻿using DS.GraphUtils.Entities;
+using DS.RevitCollisions.Models;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DS.RevitCollisions
 {
-    internal class PathFindTaskCreator : IEnumerator<IResolveTask>
+    internal class VertexPairTaskCreator : IMEPCollisionTaskCreator<(IVertex, IVertex)>, IEnumerator<(IVertex, IVertex)>
     {
         private readonly IEnumerator<(IVertex, IVertex)> _vertexPairIterator;
         private Queue<(IVertex, IVertex)> _initialTasksQueue;
         private int _position = -1;
 
-        public PathFindTaskCreator(IEnumerator<(IVertex, IVertex)> vertexPairIterator)
+        public VertexPairTaskCreator(IEnumerator<(IVertex, IVertex)> vertexPairIterator)
         {
             _vertexPairIterator = vertexPairIterator;
         }
 
-        public IResolveTask Current
+        public (IVertex, IVertex) Current
         {
             get
             {
@@ -32,9 +28,10 @@ namespace DS.RevitCollisions
             }
         }
 
-        object IEnumerator.Current => this.Current;
+        object IEnumerator.Current => Current;
 
-        public List<IResolveTask> Tasks { get; } = new List<IResolveTask>();
+
+        public List<(IVertex, IVertex)> Tasks { get; } = new List<(IVertex, IVertex)>();
 
         public IEnumerable<(IVertex, IVertex)> InitialTasks
         {
@@ -45,6 +42,7 @@ namespace DS.RevitCollisions
                 value.ToList().ForEach(_initialTasksQueue.Enqueue);
             }
         }
+
 
         public void Dispose()
         {
@@ -70,7 +68,7 @@ namespace DS.RevitCollisions
             void AddTask((IVertex, IVertex) currentTask)
             {
                 _position++;
-                var task = new PathFindVertexTask(currentTask.Item1, currentTask.Item2);
+                var task = (currentTask.Item1, currentTask.Item2);
                 Tasks.Add(task);
             }
         }
@@ -78,6 +76,12 @@ namespace DS.RevitCollisions
         public void Reset()
         {
             _position = -1;
+        }
+
+        public (IVertex, IVertex) CreateTask(IMEPCollision item)
+        {
+            MoveNext();
+            return Current;
         }
     }
 }
