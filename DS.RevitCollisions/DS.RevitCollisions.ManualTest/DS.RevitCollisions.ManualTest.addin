@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+	<AddIn Type="Command">
+		<Name>DS.RevitCollisions.ManualTest</Name>
+		<FullClassName>DS.RevitCollisions.ManualTest.ExternalCommand</FullClassName>
+		<Text>RevitCollisionsTest</Text>
+		<Description>Revit collision library test</Description>
+		<VisibilityMode>AlwaysVisible</VisibilityMode>
+		<Assembly>.\DS.RevitCollisions.ManualTest\DS.RevitCollisions.ManualTest.dll</Assembly>
+		<AddInId>94df89da-94c0-4866-954a-a5efd0deb6ad</AddInId>
+		<VendorId>DS</VendorId>
+	</AddIn> 
+</RevitAddIns>

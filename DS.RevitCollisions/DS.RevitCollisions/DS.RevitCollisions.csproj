@@ -101,8 +101,11 @@
   <ItemGroup>
     <Compile Include="CollisionStatus.cs" />
     <Compile Include="ICollisionVisualizator.cs" />
+    <Compile Include="Impl\DummyFactoryBuilder.cs" />
+    <Compile Include="Impl\DummyResolveProcessorBuilder.cs" />
     <Compile Include="Impl\ResolveProcessorBuilder.cs" />
     <Compile Include="Models\Collision.cs" />
+    <Compile Include="Models\DummyCollision.cs" />
     <Compile Include="Models\IElementCollision.cs" />
     <Compile Include="Models\IMEPCollision.cs" />
     <Compile Include="Models\MEPCollision.cs" />
@@ -114,7 +117,9 @@
     <Compile Include="ResolveFactories\CollisionResolveFactory.cs" />
     <Compile Include="ResolveProcessors\CollisionResolveProcessor.cs" />
     <Compile Include="TaskCreators\CollisionTaskCreator.cs" />
+    <Compile Include="TaskCreators\DummyTaskCreator.cs" />
     <Compile Include="TaskCreators\VertexPairTaskCreator.cs" />
+    <Compile Include="TaskResolvers\DummyTaskResolver.cs" />
     <Compile Include="TaskResolvers\PathFindVertexPairResolver.cs" />
     <Compile Include="PathPoints.cs" />
   </ItemGroup>

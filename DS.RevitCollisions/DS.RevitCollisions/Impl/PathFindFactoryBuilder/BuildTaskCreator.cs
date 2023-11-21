@@ -10,7 +10,7 @@ namespace DS.RevitCollisions.Impl
     partial class PathFindFactoryBuilder : MEPCollisionFactoryBuilderBase<(IVertex, IVertex), List<Point3d>>
     {
         /// <inheritdoc/>
-        public override ITaskCreator<IMEPCollision, (IVertex, IVertex)> BuildTaskCreator()
+        protected override ITaskCreator<IMEPCollision, (IVertex, IVertex)> BuildTaskCreator()
         {
 
             IEnumerator<(IVertex, IVertex)> itertor = null;

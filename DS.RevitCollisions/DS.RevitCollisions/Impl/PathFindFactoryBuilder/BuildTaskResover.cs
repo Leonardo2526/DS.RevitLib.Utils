@@ -11,7 +11,7 @@ namespace DS.RevitCollisions.Impl
     partial class PathFindFactoryBuilder : MEPCollisionFactoryBuilderBase<(IVertex, IVertex), List<Point3d>>
     {
         /// <inheritdoc/>
-        public override ITaskResolver<(IVertex, IVertex), List<Point3d>> BuildTaskResover()
+        protected override ITaskResolver<(IVertex, IVertex), List<Point3d>> BuildTaskResover()
         {
             throw new NotImplementedException();
         }
