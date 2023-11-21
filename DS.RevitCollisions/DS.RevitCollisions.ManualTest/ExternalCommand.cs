@@ -20,9 +20,13 @@ namespace DS.RevitCollisions.ManualTest
             Autodesk.Revit.ApplicationServices.Application application = uiapp.Application;
             UIDocument uidoc = uiapp.ActiveUIDocument;
 
+            var test = new ElementCollisionFactoryTest(uiapp);
+            test.BuildFactory();
+            test.CreateCollision();
+            test.CreateCollision();
 
-            var test = new DummyTest(uidoc);
-            test.CreateResolveProcessor();
+            //var test = new DummyTest(uidoc);
+            //test.CreateResolveProcessor();
 
             return Autodesk.Revit.UI.Result.Succeeded;
         }

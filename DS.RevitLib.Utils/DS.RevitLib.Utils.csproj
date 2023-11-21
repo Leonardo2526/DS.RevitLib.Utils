@@ -140,6 +140,7 @@
     <Compile Include="Creation\Transactions\RevitContextOption.cs" />
     <Compile Include="Elements\ConnectedElementFinder.cs" />
     <Compile Include="Elements\ElementsExtractor.cs" />
+    <Compile Include="Elements\ElementsSelector.cs" />
     <Compile Include="Elements\IElementsExtractor.cs" />
     <Compile Include="Elements\MEPElements\Connection\ElementConnectionFactory.cs" />
     <Compile Include="Elements\MEPElements\Connection\ElementStrategies\ConnectWithMEPCurve.cs" />

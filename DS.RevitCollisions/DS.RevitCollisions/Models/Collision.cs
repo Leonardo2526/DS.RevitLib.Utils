@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.DB;
+using DS.ClassLib.VarUtils.Collisions;
 using DS.RevitLib.Utils.Collisions.Detectors.AbstractDetectors;
 using DS.RevitLib.Utils.Elements.Models;
 using DS.RevitLib.Utils.Extensions;
@@ -31,8 +32,8 @@ namespace DS.RevitCollisions.Models
         /// <param name="stateElementModel"></param>
         /// <param name="resolvingElementModel"></param>
         /// <param name="collisionSolid"></param>
-        public Collision(AbstractElementModel stateElementModel,
-            AbstractElementModel resolvingElementModel, Solid collisionSolid)
+        public Collision(AbstractElementModel resolvingElementModel, AbstractElementModel stateElementModel,
+            Solid collisionSolid)
         {
             StateElementModel = stateElementModel;
             ResolvingElementModel = resolvingElementModel;
@@ -72,24 +73,24 @@ namespace DS.RevitCollisions.Models
         }
 
         /// <inheritdoc/>
-        public Element StateElem
+        public Element Item2
         {
             get { return StateElementModel.Element; }
         }
 
         /// <inheritdoc/>
-        public Element ResolvingElem
+        public Element Item1
         {
             get { return ResolvingElementModel.Element; }
         }
 
         /// <summary>
-        /// Id of <see cref="ResolvingElem"/>.
+        /// Id of <see cref="Item1"/>.
         /// </summary>
         public ElementId ResolvingElemId { get; protected set; }
 
         /// <summary>
-        /// Id of <see cref="StateElem"/>.
+        /// Id of <see cref="Item2"/>.
         /// </summary>
         public ElementId StateElemId { get; protected set; }
 
@@ -99,12 +100,12 @@ namespace DS.RevitCollisions.Models
         public int Id { get; set; }
 
         /// <summary>
-        /// Intersection <see cref="Solid"/> between <see cref="ResolvingElem"/> and <see cref="StateElem"/>.
+        /// Intersection <see cref="Solid"/> between <see cref="Item1"/> and <see cref="Item2"/>.
         /// </summary>
         public SolidModel IntersectionSolid { get; }
 
         /// <summary>
-        /// Intersection <see cref="Solid"/> between <see cref="ResolvingElem"/> and <see cref="StateElem"/>
+        /// Intersection <see cref="Solid"/> between <see cref="Item1"/> and <see cref="Item2"/>
         /// with insulation account.
         /// </summary>
         public SolidModel IntersectionSolidWithInsulation
@@ -113,7 +114,7 @@ namespace DS.RevitCollisions.Models
             {
                 return _intersectionSolidWithInsulation is null ?
                    _intersectionSolidWithInsulation =
-                   new SolidModel((ResolvingElem, StateElem).GetIntersectionSolidWithInsulation()) :
+                   new SolidModel((Item1, Item2).GetIntersectionSolidWithInsulation()) :
                     _intersectionSolidWithInsulation;
             }
         }
@@ -157,7 +158,7 @@ namespace DS.RevitCollisions.Models
         /// <summary>
         /// Visualizator used to show collisions in document.
         /// </summary>
-        public ICollisionVisualizator Visualizator { get; set; }
+        public ICollisionVisualizator<Collision> Visualizator { get; set; }
 
         /// <summary>
         /// Specifies if all elements of <see cref="Collision"/> are valid objects.
@@ -165,7 +166,7 @@ namespace DS.RevitCollisions.Models
         public abstract bool IsValid { get; }
 
         /// <summary>
-        /// Specified if <see cref="ResolvingElem"/> and <see cref="StateElem"/> still have intersection.
+        /// Specified if <see cref="Item1"/> and <see cref="Item2"/> still have intersection.
         /// </summary>
         public abstract bool HaveIntersection { get; }
 
@@ -228,13 +229,13 @@ namespace DS.RevitCollisions.Models
         public override int GetHashCode()
         {
             int hashCode = 803821747;
-            hashCode = hashCode * -1521134295 + EqualityComparer<Element>.Default.GetHashCode(StateElem);
-            hashCode = hashCode * -1521134295 + EqualityComparer<Element>.Default.GetHashCode(ResolvingElem);
+            hashCode = hashCode * -1521134295 + EqualityComparer<Element>.Default.GetHashCode(Item2);
+            hashCode = hashCode * -1521134295 + EqualityComparer<Element>.Default.GetHashCode(Item1);
             return hashCode;
         }
 
         /// <summary>
-        /// Set <see cref="ResolvingElem"/> as <see cref="StateElem"/>.
+        /// Set <see cref="Item1"/> as <see cref="Item2"/>.
         /// </summary>
         /// <returns>
         /// <see cref="Collision"/> with swapped elements.
@@ -268,12 +269,12 @@ namespace DS.RevitCollisions.Models
         /// </returns>
         public SolidModel GetIntersectionNeighborSolid(bool insulationAccount, IElementCollisionDetector collisionDetector)
         {
-            var elementsToExclude = new List<Element>() { StateElem };
-            var connectedElements = ConnectorUtils.GetConnectedElements(ResolvingElem, true);
+            var elementsToExclude = new List<Element>() { Item2 };
+            var connectedElements = ConnectorUtils.GetConnectedElements(Item1, true);
             elementsToExclude.AddRange(connectedElements);
 
             collisionDetector.ExcludedElements = elementsToExclude;
-            var collisions = collisionDetector.GetCollisions(ResolvingElem).
+            var collisions = collisionDetector.GetCollisions(Item1).
                 Where(c => c.Item2 is not InsulationLiningBase);
             //var collisions = _factory.GetCollisions(ResolvingElem, elementsToExclude).
             //    Where(c => c.Item2 is not InsulationLiningBase);

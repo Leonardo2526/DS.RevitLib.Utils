@@ -14,7 +14,7 @@ namespace DS.RevitCollisions.Models
     /// <summary>
     /// Represents intersection between two <see cref="Autodesk.Revit.DB.MEPCurve"/>'s.
     /// </summary>
-    public class MEPCollision : Collision, IMEPCollision
+    public class MEPCollision : Collision
     {
         private LineOverlapResult? _overlapResult;
         private MEPSystemModel _resolvigMEPSystem;
@@ -28,9 +28,9 @@ namespace DS.RevitCollisions.Models
         /// <param name="resolvingElementModel"></param>
         /// <param name="collisionSolid"></param>
         /// <param name="planeModel"></param>
-        public MEPCollision(AbstractElementModel stateElementModel, MEPCurveModel resolvingElementModel,
+        public MEPCollision(MEPCurveModel resolvingElementModel, AbstractElementModel stateElementModel,
             Solid collisionSolid) :
-            base(stateElementModel, resolvingElementModel, collisionSolid)
+            base(resolvingElementModel, stateElementModel, collisionSolid)
         {
             var basis = ElementUtils.GetBasis(resolvingElementModel.MEPCurve, stateElementModel.Element);
             Basis = new Basis(basis.basisX, basis.basisY, basis.basisZ, IntersectionSolid.Center);
@@ -38,17 +38,7 @@ namespace DS.RevitCollisions.Models
 
         #region Properties
 
-        public MEPSystemModel ResolvigMEPSystem
-        {
-            get
-            {
-                if (_resolvigMEPSystem == null)
-                { _resolvigMEPSystem = new SimpleMEPSystemBuilder(ResolvingElem).Build(); }
-                return _resolvigMEPSystem;
-            }
-        }
-
-        public MEPCurveModel ResolvingModel
+        public MEPCurveModel Item1Model
         {
             get { return (MEPCurveModel)ResolvingElementModel; }
         }
@@ -65,7 +55,7 @@ namespace DS.RevitCollisions.Models
                 if (_overlapResult == null)
                 {
                     if (StateElementModel.Element is MEPCurve stateMEPCurve)
-                    { _overlapResult = LineUtils.GetOverlapResult(ResolvingModel.Line, stateMEPCurve.GetCenterLine()); }
+                    { _overlapResult = LineUtils.GetOverlapResult(Item1Model.Line, stateMEPCurve.GetCenterLine()); }
                     else
                     { _overlapResult = LineOverlapResult.None; }
                 }
@@ -89,9 +79,8 @@ namespace DS.RevitCollisions.Models
             get
             {
                 return
-                    ResolvingElem.IsValidObject &&
-                    StateElem.IsValidObject &&
-                    ResolvigMEPSystem.Root.IsValid;
+                    Item1.IsValidObject &&
+                    Item2.IsValidObject;
             }
         }
 
@@ -103,7 +92,7 @@ namespace DS.RevitCollisions.Models
                 if (!IsValid) { return false; }
 
                 var intersectionSolid = CollisionUtils.
-                    GetIntersectionSolid(ResolvingElem, StateElem, out Solid elem1Solid, out Solid elem2Solid);
+                    GetIntersectionSolid(Item1, Item2, out Solid elem1Solid, out Solid elem2Solid);
                 return intersectionSolid is not null;
             }
         }
@@ -125,8 +114,8 @@ namespace DS.RevitCollisions.Models
 
             _resolvigMEPSystem = null;
 
-            OnPropertyChanged(nameof(ResolvingElem));
-            OnPropertyChanged(nameof(StateElem));
+            OnPropertyChanged(nameof(Item1));
+            OnPropertyChanged(nameof(Item2));
 
             return this;
         }
