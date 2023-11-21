@@ -60,8 +60,8 @@ namespace DS.RevitLib.Test
             (double width, double heigth) = MEPCurveUtils.GetWidthHeight(mEPCurve1);
             ElementUtils.GetPoints(mEPCurve1, out XYZ p11, out XYZ p12, out XYZ c1);
 
-            startPoint.ShowWithTransaction(_doc, 1);
-            endPoint.ShowWithTransaction(_doc, 1);
+            startPoint.Show(_doc, 1);
+            endPoint.Show(_doc, 1);
             _uIDoc.RefreshActiveView();
 
             List<XYZ> path = IvanovPathFinderTest(mEPCurve1, mEPCurve2, startPoint, endPoint);

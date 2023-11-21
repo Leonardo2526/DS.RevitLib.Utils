@@ -66,14 +66,14 @@ namespace DS.RevitLib.Test.TestedClasses
         {
             Transform transform1 = GetMEPCurveTransfrom(out Basis3d sourceBasis1, out Basis3d targetBasis1);
             XYZ testPoint = (sourceBasis1.Origin + sourceBasis1.X).ToXYZ();
-            testPoint.ShowWithTransaction(_doc);
+            testPoint.Show(_doc);
 
             Transform transform2 = GetMEPCurveTransfrom(out Basis3d sourceBasis2, out Basis3d targetBasis2);
             List<Autodesk.Revit.DB.Transform> transforms = sourceBasis1.GetTransforms(targetBasis2);
             //var transform = transform1 * transform2;
 
             var trPoint = testPoint.Transform(transforms);
-            trPoint.ShowWithTransaction(_doc);
+            trPoint.Show(_doc);
         }
 
         private List<Autodesk.Revit.DB.Transform> GetTransfroms()
@@ -194,7 +194,7 @@ namespace DS.RevitLib.Test.TestedClasses
                 xYZ = transform.OfPoint(xYZ);
             }
 
-            xYZ.ShowWithTransaction(_doc);
+            xYZ.Show(_doc);
             return xYZ;
         }
 

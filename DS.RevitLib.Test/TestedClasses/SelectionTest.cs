@@ -51,7 +51,7 @@ namespace DS.RevitLib.Test.TestedClasses
         {
             var selector = new PointSelector(_uiDoc) { AllowLink = false };
             var element = selector.Pick();
-            selector.Point.ShowWithTransaction(_doc);
+            selector.Point.Show(_doc);
             Debug.WriteLine($"Selected element is: {element.Id}.");
             return element;
         }
@@ -62,7 +62,7 @@ namespace DS.RevitLib.Test.TestedClasses
             var selector = new ElementSelector(_uiDoc) { AllowLink = true };
             var element = selector.Pick();
             var centerPoint = ElementUtils.GetLocationPoint(element);
-            centerPoint.ShowWithTransaction(_doc);
+            centerPoint.Show(_doc);
             Debug.WriteLine($"Selected element is: {element.Id}.");
             return element;
         }

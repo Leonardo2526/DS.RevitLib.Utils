@@ -122,7 +122,7 @@
     <Compile Include="Resolve\TaskCreators\VertexPairTaskCreator.cs" />
     <Compile Include="Resolve\TaskResolvers\DummyTaskResolver.cs" />
     <Compile Include="Resolve\TaskResolvers\PathFindVertexPairResolver.cs" />
-    <Compile Include="PathPoints.cs" />
+    <Compile Include="PointsList.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

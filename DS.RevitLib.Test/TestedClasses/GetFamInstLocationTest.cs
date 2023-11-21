@@ -29,7 +29,7 @@ namespace DS.RevitLib.Test
             if(famInst == null) { return; }
 
             var location = famInst.GetLocation();
-            location.ShowWithTransaction(_doc);
+            location.Show(_doc);
         }
     }
 }

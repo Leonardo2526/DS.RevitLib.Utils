@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.DB;
+using DS.ClassLib.VarUtils.Collisions;
 using DS.RevitLib.Utils;
 using DS.RevitLib.Utils.Elements.Models;
 using DS.RevitLib.Utils.Extensions;
@@ -14,7 +15,7 @@ namespace DS.RevitCollisions.Models
     /// <summary>
     /// Represents intersection between two <see cref="Autodesk.Revit.DB.MEPCurve"/>'s.
     /// </summary>
-    public class MEPCollision : Collision
+    public class MEPCollision : Collision, IMEPCollision
     {
         private LineOverlapResult? _overlapResult;
         private MEPSystemModel _resolvigMEPSystem;
@@ -96,6 +97,8 @@ namespace DS.RevitCollisions.Models
                 return intersectionSolid is not null;
             }
         }
+
+        MEPCurve ICollision<MEPCurve, Element>.Item1 => Item1 as MEPCurve;
 
         #endregion
 

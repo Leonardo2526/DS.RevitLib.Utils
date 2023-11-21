@@ -80,8 +80,7 @@ namespace DS.RevitCollisions
 
         public (IVertex, IVertex) CreateTask(IMEPCollision item)
         {
-            MoveNext();
-            return Current;
+            return MoveNext() ? Current : default;
         }
     }
 }

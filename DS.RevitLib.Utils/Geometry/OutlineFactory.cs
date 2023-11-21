@@ -89,12 +89,12 @@ namespace DS.RevitLib.Utils.Geometry
             ErrorMessage = null;
 
             XYZ p1 = uiDoc.Selection.PickPoint("Укажите первую точку зоны.");
-            p1.ShowWithTransaction(_doc, 200.MMToFeet());
+            p1.Show(_doc, 200.MMToFeet());
             uiDoc.RefreshActiveView();
             if (p1 == null) { return null; }
 
             XYZ p2 = uiDoc.Selection.PickPoint("Укажите вторую точку зоны.");
-            p2.ShowWithTransaction(_doc, 200.MMToFeet());
+            p2.Show(_doc, 200.MMToFeet());
             uiDoc.RefreshActiveView();
             if (p2 == null) { return null; }
 

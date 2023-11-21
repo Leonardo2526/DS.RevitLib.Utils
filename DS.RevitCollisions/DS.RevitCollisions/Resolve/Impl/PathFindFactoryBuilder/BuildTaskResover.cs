@@ -8,12 +8,13 @@ namespace DS.RevitCollisions.Impl
 {
 
     /// <inheritdoc/>
-    partial class PathFindFactoryBuilder : MEPCollisionFactoryBuilderBase<(IVertex, IVertex), List<Point3d>>
+    partial class PathFindFactoryBuilder : MEPCollisionFactoryBuilderBase<(IVertex, IVertex), PointsList>
     {
         /// <inheritdoc/>
-        protected override ITaskResolver<(IVertex, IVertex), List<Point3d>> BuildTaskResover()
+        protected override ITaskResolver<(IVertex, IVertex), PointsList> BuildTaskResover()
         {
-            throw new NotImplementedException();
+            var resolver = new PathFindVertexPairResolver();
+            return resolver;
         }
     }
 }

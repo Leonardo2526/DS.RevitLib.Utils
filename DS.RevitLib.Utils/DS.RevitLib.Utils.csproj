@@ -228,6 +228,7 @@
     <Compile Include="Graphs\Validators\VertexLimitsValidator.cs" />
     <Compile Include="Graphs\Validators\VertexFamInstCategoryValidator.cs" />
     <Compile Include="Graphs\Validators\VertexRelationValidator.cs" />
+    <Compile Include="Graphs\VertexVisualizator.cs" />
     <Compile Include="Various\IWindowMessenger.cs" />
     <Compile Include="PathCreators\AlgorithmBuilder\Impl.cs" />
     <Compile Include="PathCreators\XYZPathFinder.cs" />

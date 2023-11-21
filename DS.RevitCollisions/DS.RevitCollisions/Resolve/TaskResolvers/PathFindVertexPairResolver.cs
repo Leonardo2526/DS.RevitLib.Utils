@@ -12,9 +12,9 @@ using System.Threading.Tasks;
 
 namespace DS.RevitCollisions
 {
-    internal class PathFindVertexPairResolver : ITaskResolver<(IVertex, IVertex), PathPoints>
+    internal class PathFindVertexPairResolver : ITaskResolver<(IVertex, IVertex), PointsList>
     {
-        public IEnumerable<PathPoints> Results => throw new NotImplementedException();
+        public IEnumerable<PointsList> Results => throw new NotImplementedException();
 
         /// <summary>
         /// The core Serilog, used for writing log events.
@@ -27,17 +27,17 @@ namespace DS.RevitCollisions
         /// </summary>
         public CancellationToken CancellationToken { get; set; }
 
-        public PathPoints TryResolve((IVertex, IVertex) task)
+        public PointsList TryResolve((IVertex, IVertex) task)
         {
-            var resultPoints = new PathPoints()
+            var resultPoints = new PointsList()
             {
-                new Point3d()
+                new Point3d(1,0,0)
             };
 
             return resultPoints;
         }
 
-        public Task<PathPoints> TryResolveAsync((IVertex, IVertex) task)
+        public Task<PointsList> TryResolveAsync((IVertex, IVertex) task)
         {
             throw new NotImplementedException();
         }

@@ -86,11 +86,11 @@ namespace DS.RevitLib.Test.TestedClasses
         private Outline GetOutline()
         {
             var p1 = _uiDoc.Selection.PickPoint("Укажите точку 1");
-            p1.ShowWithTransaction(_doc);
+            p1.Show(_doc);
             _uiDoc.RefreshActiveView();
 
             var p2 = _uiDoc.Selection.PickPoint("Укажите точку 2");
-            p2.ShowWithTransaction(_doc);
+            p2.Show(_doc);
             _uiDoc.RefreshActiveView();
 
             var (minPoint, maxPoint) = XYZUtils.CreateMinMaxPoints(new List<XYZ>() { p1, p2 });

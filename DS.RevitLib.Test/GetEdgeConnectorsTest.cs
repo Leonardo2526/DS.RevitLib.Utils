@@ -48,8 +48,8 @@ namespace DS.RevitLib.Test
             var xYZ1 = point1.ToXYZ();
             var xYZ2 = point2.ToXYZ();
 
-            xYZ1.ShowWithTransaction(_doc, 0, _trfIn);
-            xYZ2.ShowWithTransaction(_doc, 0, _trfIn);
+            xYZ1.Show(_doc, 0, _trfIn);
+            xYZ2.Show(_doc, 0, _trfIn);
             return this;
         }
 
@@ -65,8 +65,8 @@ namespace DS.RevitLib.Test
             var xYZ1 = segment.From.ToXYZ();
             var xYZ2 = segment.To.ToXYZ();
 
-            xYZ1.ShowWithTransaction(_doc, 0, _trfIn);
-            xYZ2.ShowWithTransaction(_doc, 0, _trfIn);
+            xYZ1.Show(_doc, 0, _trfIn);
+            xYZ2.Show(_doc, 0, _trfIn);
             return this;
         }
 

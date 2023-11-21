@@ -213,7 +213,7 @@ namespace DS.RevitLib.Utils.Extensions
         /// <param name="transactionBuilder"></param>
         /// <param name="doc"></param>
         /// <param name="labelSize">Size of label's line to show.</param>
-        public static void ShowWithTransaction(this XYZ point, Document doc, double labelSize = 0, ITransactionFactory transactionBuilder = null)
+        public static void Show(this XYZ point, Document doc, double labelSize = 0, ITransactionFactory transactionBuilder = null)
         {
             transactionBuilder ??= new ContextTransactionFactory(doc);
             transactionBuilder.CreateAsync(() => Show(point, doc, labelSize), "ShowPoint");
