@@ -2,6 +2,7 @@
 using Autodesk.Revit.UI;
 using DS.ClassLib.VarUtils;
 using DS.ClassLib.VarUtils.Points;
+using DS.GraphUtils.Entities;
 using DS.PathFinder;
 using DS.PathFinder.Algorithms.Enumeratos;
 using DS.RevitLib.Utils.Collisions.Detectors.AbstractDetectors;
@@ -13,6 +14,7 @@ using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.Geometry;
 using DS.RevitLib.Utils.MEP;
 using DS.RevitLib.Utils.PathCreators.AlgorithmBuilder;
+using QuickGraph;
 using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
@@ -26,13 +28,13 @@ namespace DS.RevitLib.Utils.PathCreators
     /// <summary>
     /// An object that used to find path between <see cref="Autodesk.Revit.DB.XYZ"/> points.
     /// </summary>
-    public class XYZPathFinder : IPathFinder<ConnectionPoint, XYZ>
+    public class XYZVertexPathFinder : IPathFinder<IVertex, XYZ>
     {
         private readonly UIDocument _uIDoc;
         private readonly ITraceSettings _traceSettings;
         private readonly Document _doc;
-        private readonly PathAlgorithmBuilder _pathAlgorithmBuilder;
-        private ISpecifyConnectionPointBoundaries _algorithmBuilder;
+        private readonly PathAlgorithmVertexBuilder _pathAlgorithmBuilder;
+        private ISpecifyVertexBoundaries _algorithmBuilder;
         private IElementCollisionDetector _collisionDetector;
         private List<XYZ> _path = new List<XYZ>();
         private ITransactionFactory _transactionFactory;
@@ -40,18 +42,18 @@ namespace DS.RevitLib.Utils.PathCreators
         /// <summary>
         /// Instantiate an object to find path between <see cref="Autodesk.Revit.DB.XYZ"/> points.
         /// </summary>
-        public XYZPathFinder(UIDocument uIDocument, ITraceSettings traceSettings,
+        public XYZVertexPathFinder(UIDocument uIDocument, ITraceSettings traceSettings,
             IAlgorithmBuilder algorithmBuilder)
         {
             _uIDoc = uIDocument;
             _traceSettings = traceSettings;
             _doc = _uIDoc.Document;
-            if (algorithmBuilder is PathAlgorithmBuilder pathAlgorithmBuilder)
+            if (algorithmBuilder is PathAlgorithmVertexBuilder pathAlgorithmBuilder)
             { _pathAlgorithmBuilder = pathAlgorithmBuilder; }
             else
             {
                 throw new TypeAccessException(
-                    $"algorithmFactory is not {typeof(PathAlgorithmBuilder)} type");
+                    $"algorithmFactory is not {typeof(PathAlgorithmVertexBuilder)} type");
             }
         }
 
@@ -122,6 +124,12 @@ namespace DS.RevitLib.Utils.PathCreators
         /// </summary>
         public bool IsFailedOnStart { get; private set; }
 
+
+        /// <summary>
+        /// Maximum search time in milliseconds.
+        /// </summary>
+        public int MaxTime { get; set; }
+
         #endregion
 
         /// <summary>
@@ -132,7 +140,7 @@ namespace DS.RevitLib.Utils.PathCreators
         /// <param name="basisMEPCurve2"></param>
         /// <param name="objectsToExclude"></param>
         /// <param name="collisionDetector"></param>
-        public void Build(
+        public void Build(IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> graph,
             MEPCurve baseMEPCurve, 
             MEPCurve basisMEPCurve1, 
             MEPCurve basisMEPCurve2, 
@@ -141,15 +149,16 @@ namespace DS.RevitLib.Utils.PathCreators
             _pathAlgorithmBuilder.TransactionFactory = _transactionFactory;
 
             _algorithmBuilder = _pathAlgorithmBuilder.
+                SetGraph(graph).
                 SetBasis(baseMEPCurve, basisMEPCurve1, basisMEPCurve2, AllowSecondElementForBasis).
                 SetExclusions(objectsToExclude, ExludedCathegories).
-                SetExternalToken1(ExternalToken);
+                SetExternalToken2(ExternalToken);
 
             _collisionDetector = collisionDetector;
         }
 
         /// <inheritdoc/>
-        public List<XYZ> FindPath(ConnectionPoint startPoint, ConnectionPoint endPoint)
+        public List<XYZ> FindPath(IVertex startPoint, IVertex endPoint)
         {
             var algorithm = _algorithmBuilder.
                  SetBoundaryConditions(
@@ -163,9 +172,11 @@ namespace DS.RevitLib.Utils.PathCreators
                  SetNodeBuilder().
                  SetSearchLimit().
                  Build(MinimizePathNodes);
-
             if (algorithm is null) { return _path; }
 
+            if(MaxTime > 0) { algorithm.MaxTime = MaxTime; }
+
+            //return _path;
             PathFindEnumerator pathFindEnumerator =
                 GetPathEnumerator(_pathAlgorithmBuilder, _traceSettings, ExternalToken);
 
@@ -184,7 +195,7 @@ namespace DS.RevitLib.Utils.PathCreators
         }
 
         private PathFindEnumerator GetPathEnumerator(
-            PathAlgorithmBuilder pathAlgorithmBuilder, 
+            PathAlgorithmVertexBuilder pathAlgorithmBuilder, 
             ITraceSettings traceSettings, 
             CancellationTokenSource tokenSource)
         {
@@ -215,7 +226,7 @@ namespace DS.RevitLib.Utils.PathCreators
         }
 
         /// <inheritdoc/>
-        public async Task<List<XYZ>> FindPathAsync(ConnectionPoint startPoint, ConnectionPoint endPoint)
+        public async Task<List<XYZ>> FindPathAsync(IVertex startPoint, IVertex endPoint)
         {
             return await Task.Run(() => FindPath(startPoint, endPoint));
         }

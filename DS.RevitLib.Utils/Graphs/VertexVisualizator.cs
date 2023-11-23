@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.Creation.Transactions;
+using Autodesk.Revit.UI;
 
 namespace DS.RevitLib.Utils.Graphs
 {
@@ -24,6 +25,8 @@ namespace DS.RevitLib.Utils.Graphs
         public double LabelSize { get; set; }
         public ITransactionFactory TransactionFactory  { get; set; }
 
+        public UIDocument UiDoc { get;set; }
+
         public void Show((IVertex, IVertex) vertexPair)
         {
             XYZ xYZPoint1 = vertexPair.Item1.GetLocation(_doc);
@@ -38,6 +41,12 @@ namespace DS.RevitLib.Utils.Graphs
                 xYZPoint1?.Show(_doc, LabelSize, TransactionFactory); 
                 xYZPoint2?.Show(_doc, LabelSize, TransactionFactory); 
             }
+            UiDoc.RefreshActiveView();
+        }
+
+        public Task ShowAsync((IVertex, IVertex) item)
+        {
+            throw new NotImplementedException();
         }
     }
 }

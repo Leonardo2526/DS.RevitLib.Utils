@@ -3,6 +3,7 @@ using DS.ClassLib.VarUtils;
 using DS.ClassLib.VarUtils.Basis;
 using DS.ClassLib.VarUtils.Collisions;
 using DS.ClassLib.VarUtils.Points;
+using DS.GraphUtils.Entities;
 using DS.RevitLib.Utils.Collisions.Detectors.AbstractDetectors;
 using DS.RevitLib.Utils.Connections.PointModels;
 using DS.RevitLib.Utils.Creation.Transactions;
@@ -14,6 +15,8 @@ using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using DS.RevitLib.Utils.Graphs;
+using QuickGraph;
 
 namespace DS.RevitLib.Utils.Collisions.Detectors
 {
@@ -26,6 +29,8 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
         private readonly Document _doc;
         private readonly MEPCurve _baseMEPCurve;
         private readonly ITraceSettings _traceSettings;
+        private readonly IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> _graph;
+        private readonly IBidirectionalGraph<IVertex, Edge<IVertex>> _bdGraph;
         private readonly IPoint3dConverter _pointConverter;
         private readonly ITransactionFactory _transactionFactory;
         private readonly IElementCollisionDetector _collisionDetector;
@@ -33,8 +38,8 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
         private BasisXYZ _sourceBasis;
         private Point3d _startPoint;
         private Point3d _endPoint;
-        private ConnectionPoint _startConnectionPoint;
-        private ConnectionPoint _endConnectionPoint;
+        private IVertex _source;
+        private IVertex _target;
         private readonly double _aTolerance = 3.DegToRad();
 
 
@@ -46,10 +51,12 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
         /// <param name="baseMEPCurve"></param>
         /// <param name="traceSettings"></param>
         /// <param name="insulationAccount"></param>
+        /// <param name="graph"></param>
         /// <param name="collisionDetector"></param>
         /// <param name="pointConverter"></param>
         /// <param name="transactionFactory"></param>
-        public CollisionDetectorByTrace(Document doc, MEPCurve baseMEPCurve, ITraceSettings traceSettings, bool insulationAccount,
+        public CollisionDetectorByTrace(Document doc, MEPCurve baseMEPCurve, ITraceSettings traceSettings, bool insulationAccount, 
+            IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> graph,
             IElementCollisionDetector collisionDetector, IPoint3dConverter pointConverter = null,
             ITransactionFactory transactionFactory = null)
         {
@@ -58,6 +65,8 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
             var insulation = insulationAccount ? _baseMEPCurve.GetInsulationThickness() : 0;
             _offset = insulation + traceSettings.B - 0.03;
             _traceSettings = traceSettings;
+            _graph = graph;
+            _bdGraph = graph.ToBidirectionalGraph();
             _pointConverter = pointConverter;
             _transactionFactory = transactionFactory;
             _transactionFactory ??= new ContextTransactionFactory(_doc);
@@ -80,23 +89,23 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
 
         public BestSolidOffsetExtractor SolidExtractor { get; }
 
-        public ConnectionPoint StartConnectionPoint
+        public IVertex Source
         {
-            get => _startConnectionPoint;
+            get => _source;
             set
             {
-                _startConnectionPoint = value;
-                _startPoint = _pointConverter.ConvertToUCS2(value.Point.ToPoint3d());
+                _source = value;
+                _startPoint = _pointConverter.ConvertToUCS2(value.GetLocation(_doc).ToPoint3d());
             }
         }
 
-        public ConnectionPoint EndConnectionPoint
+        public IVertex EndConnectionPoint
         {
-            get => _endConnectionPoint;
+            get => _target;
             set
             {
-                _endConnectionPoint = value;
-                _endPoint = _pointConverter.ConvertToUCS2(value.Point.ToPoint3d());
+                _target = value;
+                _endPoint = _pointConverter.ConvertToUCS2(value.GetLocation(_doc).ToPoint3d());
             }
         }
 
@@ -191,9 +200,10 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
         {
             var point1 = _startPoint;
 
-            if (_startConnectionPoint is null) { return GetCollisions(point1, point2, basis); }
+            if (_source is null) { return GetCollisions(point1, point2, basis); }
 
-            var connectedElements = ConnectorUtils.GetConnectedElements(_startConnectionPoint.Element);
+            var connectedElements = _source.GetElements(_bdGraph, _doc);
+            //var connectedElements = ConnectorUtils.GetConnectedElements(_source.Element);
 
             var cacheExcluded = new List<Element>();
             cacheExcluded.AddRange(ObjectsToExclude);
@@ -224,9 +234,10 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
         {
             var point2 = _endPoint;
 
-            if (_endConnectionPoint is null) { return GetCollisions(point1, point2, basis); }
+            if (_target is null) { return GetCollisions(point1, point2, basis); }
 
-            var connectedElements = ConnectorUtils.GetConnectedElements(_endConnectionPoint.Element);
+            var connectedElements = _target.GetElements(_bdGraph, _doc);
+            //var connectedElements = ConnectorUtils.GetConnectedElements(_target.Element);
 
             var cacheExcluded = new List<Element>();
             cacheExcluded.AddRange(ObjectsToExclude);

@@ -2,6 +2,7 @@
 using Autodesk.Revit.UI;
 using DS.ClassLib.VarUtils;
 using DS.ClassLib.VarUtils.Points;
+using DS.GraphUtils.Entities;
 using DS.PathFinder;
 using DS.PathFinder.Algorithms.AStar;
 using DS.RevitLib.Utils.Bases;
@@ -11,6 +12,7 @@ using DS.RevitLib.Utils.Creation.Transactions;
 using DS.RevitLib.Utils.Elements;
 using DS.RevitLib.Utils.Geometry;
 using DS.RevitLib.Utils.Models;
+using QuickGraph;
 using Rhino.Geometry;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,7 +23,7 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
     /// <summary>
     /// An object to build a new path find algorythm..
     /// </summary>
-    public partial class PathAlgorithmBuilder : IAlgorithmBuilder, IToleranceUpdater
+    public partial class PathAlgorithmVertexBuilder : IAlgorithmBuilder, IToleranceUpdater
     {
         private readonly UIDocument _uiDoc;
         private readonly Document _doc;
@@ -32,6 +34,7 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
         private IDirectionValidator _directionValidator;
         private MEPCurve _baseMEPCurve;
         private ITransactionFactory _transactionFactory;
+        private IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> _graph;
 
         /// <summary>
         /// Instanciate an object to build a new path find algorythm.
@@ -40,7 +43,7 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
         /// <param name="traceSettings"></param>
         /// <param name="basisStrategies"></param>
         /// <param name="quadrantModel"></param>
-        public PathAlgorithmBuilder(
+        public PathAlgorithmVertexBuilder(
             UIDocument uiDoc,
             ITraceSettings traceSettings,
             IEnumerable<IBasisStrategy> basisStrategies,
@@ -99,8 +102,16 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
             set => _transactionFactory = value;
         }
 
+        public bool IsInsulationAccount { get; set; }
 
         #endregion
+
+        public PathAlgorithmVertexBuilder SetGraph(IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> graph)
+        {
+            _graph = graph;
+            return this;
+        }
+
 
         /// <summary>
         /// Set base <see cref="MEPCurve"/> and path find basis.
@@ -118,7 +129,7 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
             _baseMEPCurve = baseMEPCurve;
             BuildBasisStrategy(basisMEPCurve1, basisMEPCurve2, allowSecondElementForBasis, null);
 
-            return new Impl(this);
+            return new ImplVertex(this);
         }
 
         /// <inheritdoc/>
@@ -152,10 +163,11 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
 
     #region Interfaces
 
+
     /// <summary>
     /// The interface to specify boundaries.
     /// </summary>
-    public interface ISpecifyConnectionPointBoundaries
+    public interface ISpecifyVertexBoundaries
     {
         /// <summary>
         /// 
@@ -167,8 +179,8 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
         /// <param name="accountInitialDirections"></param>
         /// <returns></returns>
         ISpecifyParameter SetBoundaryConditions(
-            ConnectionPoint startPoint,
-            ConnectionPoint endPoint,
+            IVertex startPoint,
+            IVertex endPoint,
             IOutlineFactory outlineFactory = null,
             Outline externalOutline = null,
             bool accountInitialDirections = false);

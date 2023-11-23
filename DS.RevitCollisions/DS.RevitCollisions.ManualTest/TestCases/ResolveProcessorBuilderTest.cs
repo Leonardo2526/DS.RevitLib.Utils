@@ -30,6 +30,12 @@ using DS.RevitLib.Utils.Elements.MEPElements;
 using Rhino.UI;
 using DS.RevitLib.Utils.Collisions.Detectors;
 using DS.RevitLib.Utils.Collisions.Models;
+using DS.RevitLib.Utils.PathCreators;
+using DS.RevitLib.Utils.PathCreators.AlgorithmBuilder;
+using DS.RevitLib.Utils.Bases;
+using DS.PathFinder;
+using Serilog.Core;
+using DS.RevitLib.Utils.PathCreators.AlgorithmVertexBuilder;
 
 namespace DS.RevitCollisions.ManualTest.TestCases
 {
@@ -45,7 +51,10 @@ namespace DS.RevitCollisions.ManualTest.TestCases
         private ILogger _logger;
         private ElementCollisionFactory _factory;
         private readonly ICollisionVisualizator<Collision> _collisionVisualizator;
-        private readonly AdjacencyGraphVisualisator _graphVisualisator;
+        private readonly VertexPairVisualizator _taskVisualizator;
+        private readonly IItemVisualisator<IVertexAndEdgeListGraph<IVertex, Edge<IVertex>>> _graphVisualisator;
+        private readonly ITraceSettings _traceSettings;
+        private readonly ElementCollisionDetector _collisionDetector;
 
         public ResolveProcessorBuilderTest(UIApplication uiApp)
         {
@@ -62,13 +71,23 @@ namespace DS.RevitCollisions.ManualTest.TestCases
                  .WriteTo.Debug()
                  .CreateLogger();
 
+            _traceSettings = new TraceSettings();
+
+            _collisionDetector = new ElementCollisionDetector(_doc, new ElementIntersectionFactory(_doc));
             _collisionVisualizator = new CollisionVisualizator(uiApp);
 
-            _graphVisualisator = new AdjacencyGraphVisualisator(_doc)
+            _taskVisualizator = new VertexPairVisualizator(_doc)
+            {
+                TransactionFactory = _trfAuto,
+                UiDoc = _uiDoc
+            };
+
+            _graphVisualisator = new GraphVisulisator(_doc)
             {
                 ShowElementIds = false,
-                ShowVerticesIds = true,
-                ShowDirecionts = true
+                ShowVerticesIds = false,
+                ShowDirecionts = true,
+                TransactionFactory = _trfAuto
             };
         }
 
@@ -79,14 +98,6 @@ namespace DS.RevitCollisions.ManualTest.TestCases
             var processor = CreateProcessor(true);
             var mEPCollision = Collision as IMEPCollision;
             var result = processor.TryResolve(mEPCollision);
-            _uiDoc.RefreshActiveView();
-            result = processor.TryResolve(mEPCollision);
-
-            _uiDoc.RefreshActiveView();
-            result = processor.TryResolve(mEPCollision);
-
-            _uiDoc.RefreshActiveView();
-            result = processor.TryResolve(mEPCollision);
         }
 
         public void RunTestMany()
@@ -94,37 +105,73 @@ namespace DS.RevitCollisions.ManualTest.TestCases
             var processor = CreateProcessor(true);
             var mEPCollision = Collision as IMEPCollision;
 
-            PointsList result = processor.TryResolve(mEPCollision); ;
-            while(result != null)
+            var result = processor.TryResolve(mEPCollision); ;
+            while (result != null)
             {
                 result = processor.TryResolve(mEPCollision);
                 _uiDoc.RefreshActiveView();
             }
         }
 
-        private ResolveProcessor<IMEPCollision, PointsList> CreateProcessor(bool insertAxiliaryPoints = false)
+        private ResolveProcessor<IMEPCollision, IVertexAndEdgeListGraph<IVertex, Edge<IVertex>>> CreateProcessor(bool insertAxiliaryPoints = false)
         {
             _factory = BuildCollisionFactory();
             Collision = CreateCollision(_factory);
             //_collisionVisualizator.Show(Collision);
 
+
             var mEPCollision = Collision as MEPCollision;
 
+            //build Graph
             var graph = GetGraph(_doc, mEPCollision);
-            _graphVisualisator.Build(graph);
 
-            if(insertAxiliaryPoints)
+            if (insertAxiliaryPoints)
             {
-                var traceSettings = new TraceSettings();
-                var collisionDetector = new ElementCollisionDetector(_doc, new ElementIntersectionFactory(_doc));
 
                 InsertPoints(graph, mEPCollision,
-                _doc, traceSettings, collisionDetector);
+                _doc, _traceSettings, _collisionDetector);
             }
 
-            return GetProcessor(graph);
-            _trfAuto.CreateAsync(() => { _graphVisualisator.Show(); }, "ShowGraph");
+            return GetProcessor();
+
+            _trfAuto.CreateAsync(() => { _graphVisualisator.Show(graph); }, "ShowGraph");
             //return null;
+
+            ResolveProcessor<IMEPCollision, IVertexAndEdgeListGraph<IVertex, Edge<IVertex>>> GetProcessor()
+            {
+                //Create and config pathFind factory
+               
+                var pathFindFactory = new XYZVertexPathFinderFactory(_uiDoc)
+                {
+                    TraceSettings = _traceSettings,
+                };
+                var pathFinder = pathFindFactory.GetInstance();
+                pathFinder.AccountInitialDirections = true;
+                pathFinder.MinimizePathNodes = true;
+                pathFinder.AllowSecondElementForBasis = true;
+                pathFinder.MaxTime = 1000000;
+
+                var f1 = new PathFindFactoryBuilder(_uiDoc, _collisionDetector, graph, pathFinder)
+                {
+                    AutoTasks = true,
+                    IterationCategories = GetIterationCategories(),
+                    Logger = _logger,
+                    TaskVisualizator = _taskVisualizator,
+                    ResultVisualizator = _graphVisualisator
+                }.WithCollision(mEPCollision).Create();               
+
+                //add factories
+                var factories = new List<IResolveFactory<IMEPCollision, IVertexAndEdgeListGraph<IVertex, Edge<IVertex>>>>
+            {
+                f1
+            };
+
+                return
+                    new ResolveProcessor<IMEPCollision, IVertexAndEdgeListGraph<IVertex, Edge<IVertex>>>(factories)
+                    {
+                        Logger = _logger
+                    };
+            }
         }
 
         public Collision CreateCollision(ElementCollisionFactory factory)
@@ -133,28 +180,6 @@ namespace DS.RevitCollisions.ManualTest.TestCases
             var e2 = new ElementSelector(_uiDoc).Pick();
 
             return factory.CreateCollision(e1, e2);
-        }
-
-
-
-
-        private ResolveProcessor<IMEPCollision, PointsList> GetProcessor(AdjacencyGraph<IVertex, Edge<IVertex>> graph)
-        {
-            var taskVizualizator = new VertexPairVisualizator(_doc)
-            {
-                TransactionFactory = _trfAuto
-            };
-
-
-            var builder = new ResolveProcessorBuilder(_doc, graph)
-            {
-                IterationCategories = null,
-                TaskVisualizator = taskVizualizator,
-                ResultVisualizator = null,
-                Logger = _logger
-            };
-
-            return builder.GetProcessor();
         }
 
         private ElementCollisionFactory BuildCollisionFactory()
@@ -198,7 +223,7 @@ namespace DS.RevitCollisions.ManualTest.TestCases
         }
 
 
-        public void InsertPoints(AdjacencyGraph<IVertex, Edge<IVertex>> graph, MEPCollision mEPCollision, 
+        public void InsertPoints(AdjacencyGraph<IVertex, Edge<IVertex>> graph, MEPCollision mEPCollision,
             Document doc, ITraceSettings traceSettings, IElementCollisionDetector collisionDetector)
         {
             var mEPCurve = mEPCollision.Item1Model.MEPCurve;
@@ -250,6 +275,26 @@ namespace DS.RevitCollisions.ManualTest.TestCases
             };
 
             return segementFactory;
+        }
+
+        private Dictionary<BuiltInCategory, List<PartType>> GetIterationCategories()
+        {
+            var fittingPartTypes = new List<PartType>()
+            {
+                PartType.Elbow,
+                PartType.Tee,
+                PartType.TapPerpendicular,
+                PartType.TapAdjustable,
+                PartType.SpudPerpendicular,
+                PartType.SpudAdjustable
+            };
+            var verificationCategories = new Dictionary<BuiltInCategory, List<PartType>>()
+            {
+                { BuiltInCategory.OST_DuctFitting, fittingPartTypes },
+                { BuiltInCategory.OST_PipeFitting, fittingPartTypes },
+            };
+
+            return verificationCategories;
         }
     }
 }

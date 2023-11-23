@@ -123,7 +123,7 @@ namespace DS.RevitLib.Utils.Graphs
         }
 
         /// <summary>
-        /// Get inpust <see cref="Autodesk.Revit.DB.Element"/>'s of <paramref name="vertex"/>.
+        /// Get input <see cref="Autodesk.Revit.DB.Element"/>'s of <paramref name="vertex"/>.
         /// </summary>
         /// <param name="vertex"></param>
         /// <param name="bdGraph"></param>
@@ -161,6 +161,73 @@ namespace DS.RevitLib.Utils.Graphs
             }
 
             return inElements;
-        }      
+        }
+
+        /// <summary>
+        /// Get output <see cref="Autodesk.Revit.DB.Element"/>'s of <paramref name="vertex"/>.
+        /// </summary>
+        /// <param name="vertex"></param>
+        /// <param name="graph"></param>
+        /// <param name="doc"></param>
+        /// <returns>
+        /// <see cref="Autodesk.Revit.DB.Element"/>'s of output edges 
+        /// (<see cref="TaggedEdge{TVertex, TTag}"/>) or output vertices (<see cref="TaggedGVertex{TTag}"/>) if output edge is untagged.
+        /// <para>
+        /// Empty list if no output <see cref="Autodesk.Revit.DB.Element"/>'s was found.
+        /// </para>
+        /// </returns>
+        public static IEnumerable<Element> GetOutElements(this IVertex vertex,
+            IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> graph, Document doc)
+        {
+            var outElements = new List<Element>();
+
+            graph.TryGetOutEdges(vertex, out var outEdges);
+            if (outEdges is null) return outElements;
+
+            foreach (var inEdge in outEdges)
+            {
+                Element inElement = null;
+                if (inEdge is TaggedEdge<IVertex, int> tagged)
+                {
+                    inElement = doc.GetElement(new ElementId(tagged.Tag));
+                }
+                else if (inEdge is Edge<IVertex> untagged)
+                {
+                    if (untagged.Source is TaggedGVertex<int> taggedVertex)
+                    { inElement = doc.GetElement(new ElementId(taggedVertex.Tag)); }
+                }
+
+                if (inElement != null)
+                { outElements.Add(inElement); }
+            }
+
+            return outElements;
+        }
+
+        /// <summary>
+        /// Get <see cref="Autodesk.Revit.DB.Element"/>'s of <paramref name="vertex"/>.
+        /// </summary>
+        /// <param name="vertex"></param>
+        /// <param name="bdGraph"></param>
+        /// <param name="doc"></param>
+        /// <returns>
+        /// <see cref="Autodesk.Revit.DB.Element"/>'s edges 
+        /// (<see cref="TaggedEdge{TVertex, TTag}"/>) or vertices (<see cref="TaggedGVertex{TTag}"/>) if input edge is untagged.
+        /// <para>
+        /// Empty list if no <see cref="Autodesk.Revit.DB.Element"/>'s was found.
+        /// </para>
+        /// </returns>
+        public static IEnumerable<Element> GetElements(this IVertex vertex,
+          IBidirectionalGraph<IVertex, Edge<IVertex>> bdGraph, Document doc)
+        {
+            var elements = new List<Element>();
+
+            var inElements = GetInElements(vertex, bdGraph, doc);
+            var outElements = GetOutElements(vertex, bdGraph, doc);
+            elements.AddRange(inElements);
+            elements.AddRange(outElements);
+
+            return elements;
+        }
     }
 }

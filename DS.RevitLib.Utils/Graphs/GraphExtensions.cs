@@ -280,13 +280,50 @@ namespace DS.RevitLib.Utils.Graphs
         /// <returns>
         /// <see cref="TaggedEdge{TVertex, TTag}"/> if any edges of <paramref name="graph"/> contains <paramref name="point"/>.
         /// </returns>
-        public static TaggedEdge<IVertex, int> GetEdge(this IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> graph, 
+        public static TaggedEdge<IVertex, int> GetEdge(this IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> graph,
             Point3d point, Document doc)
         {
             var taggedEdges = graph.Edges.OfType<TaggedEdge<IVertex, int>>();
             var e = taggedEdges.FirstOrDefault();
 
             return taggedEdges.FirstOrDefault(e => e.Contains(point, doc));
+        }
+
+        /// <summary>
+        /// Get <see cref=" Autodesk.Revit.DB.ElementId"/>s between <paramref name="source"/> and <paramref name="target"/>.
+        /// </summary>
+        /// <param name="graph"></param>
+        /// <param name="source"></param>
+        /// <param name="target"></param>
+        /// <param name="doc"></param>
+        /// <returns>
+        /// <see cref="MEPCurve"/>s from <see cref="Edge{TVertex}"/> and 
+        /// <see cref="Autodesk.Revit.DB.FamilyInstance"/>s from <see cref="IVertex"/>s
+        /// of <paramref name="graph"/>.
+        /// <para>
+        /// Empty list if no <see cref=" Autodesk.Revit.DB.ElementId"/>s exist between given <paramref name="source"/> and <paramref name="target"/>.
+        /// </para>
+        /// </returns>
+        public static IEnumerable<ElementId> GetElementIds(this IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> graph,
+            IVertex source, IVertex target, Document doc)
+        {
+            var elements = new List<ElementId>();
+
+            graph.TryGetEdges(source, target, out var edges);
+            if(edges.Count() == 0) { return elements; } 
+
+            foreach (var edge in edges)
+            {
+                var e1 = edge.Source.TryGetFamilyInstance(doc);
+                if (e1 != null) { elements.Add(e1.Id); }
+
+                var mc = edge.TryGetMEPCurve(doc);
+                if (mc != null) { elements.Add(mc.Id); }
+            }
+            var e2 = edges.Last().Target.TryGetFamilyInstance(doc);
+            if (e2 != null) { elements.Add(e2.Id); }
+
+            return elements;
         }
     }
 }

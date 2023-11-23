@@ -39,6 +39,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\DS.GraphUtils\DS.GraphUtils.Entities\DS.GraphUtils.Entities\bin\Debug\DS.GraphUtils.Entities.dll</HintPath>
     </Reference>
+    <Reference Include="DS.PathFinder, Version=1.0.4.0, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\DS.CommonLib.Utils\PathFinders\DS.PathFinder\bin\Debug\DS.PathFinder.dll</HintPath>
+    </Reference>
     <Reference Include="DS.RevitLib.Utils">
       <HintPath>..\..\DS.RevitLib.Utils\bin\Debug\DS.RevitLib.Utils.dll</HintPath>
     </Reference>

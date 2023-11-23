@@ -113,13 +113,31 @@ namespace DS.RevitLib.Utils.Geometry
             startCeilingBound = RebuildOutsideBound(startCeilingBound, startPoint.Point, false);
             if (startCeilingBound is null) { return null; }
 
-            (XYZ endFloorBound, XYZ endCeilingBound) = startPoint.FloorBounds;
+            (XYZ endFloorBound, XYZ endCeilingBound) = endPoint.FloorBounds;
             endFloorBound = RebuildOutsideBound(endFloorBound, endPoint.Point, true);
             if (endFloorBound is null) { return null; }
             endCeilingBound = RebuildOutsideBound(endCeilingBound, endPoint.Point, false);
             if (endCeilingBound is null) { return null; }
 
             return CreateOutline(startPoint.Point, endPoint.Point, startFloorBound, startCeilingBound, endFloorBound, endCeilingBound);
+        }
+
+        /// <inheritdoc/>
+        public Outline Create((XYZ point, (XYZ, XYZ) floorBounds) boundPoint1, (XYZ point, (XYZ, XYZ) floorBounds) boundPoint2)
+        {
+            (XYZ startFloorBound, XYZ startCeilingBound) = boundPoint1.floorBounds;
+            startFloorBound = RebuildOutsideBound(startFloorBound, boundPoint1.point, true);
+            if (startFloorBound is null) { return null; }
+            startCeilingBound = RebuildOutsideBound(startCeilingBound, boundPoint1.point, false);
+            if (startCeilingBound is null) { return null; }
+
+            (XYZ endFloorBound, XYZ endCeilingBound) = boundPoint2.floorBounds;
+            endFloorBound = RebuildOutsideBound(endFloorBound, boundPoint2.point, true);
+            if (endFloorBound is null) { return null; }
+            endCeilingBound = RebuildOutsideBound(endCeilingBound, boundPoint2.point, false);
+            if (endCeilingBound is null) { return null; }
+
+            return CreateOutline(boundPoint1.point, boundPoint2.point, startFloorBound, startCeilingBound, endFloorBound, endCeilingBound);
         }
 
         /// <summary>

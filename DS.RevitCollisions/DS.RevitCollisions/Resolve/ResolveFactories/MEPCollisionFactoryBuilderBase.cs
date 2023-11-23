@@ -4,7 +4,7 @@ using DS.RevitCollisions.Models;
 namespace DS.RevitCollisions
 {
     /// <inheritdoc/>
-    internal abstract class MEPCollisionFactoryBuilderBase<TTask, TResult> :
+    public abstract class MEPCollisionFactoryBuilderBase<TTask, TResult> :
         FactoryBuilderBase<IMEPCollision, TTask, TResult>
     { }
 }

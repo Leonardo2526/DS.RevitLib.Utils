@@ -53,7 +53,7 @@ namespace DS.RevitLib.Utils.Collisions.Models
         {
             get
             {
-                if (ExculdedCategories.Any()) { return new List<ElementId>(); }
+                if (ExculdedCategories is null || !ExculdedCategories.Any()) { return new List<ElementId>(); }
 
                 var excludedCategoriesIds = new List<ElementId>();
                 ExculdedCategories.ForEach(c => excludedCategoriesIds.Add(new ElementId((int)c)));

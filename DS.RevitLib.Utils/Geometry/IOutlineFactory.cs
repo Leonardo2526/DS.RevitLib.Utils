@@ -20,5 +20,13 @@ namespace DS.RevitLib.Utils.Geometry
         /// </para>
         /// </returns>      
         Outline Create(ConnectionPoint startPoint, ConnectionPoint endPoint);
+
+        /// <summary>
+        /// Create <see cref="Autodesk.Revit.DB.Outline"/> by <paramref name="boundPoint1"/> and <paramref name="boundPoint2"/>.
+        /// </summary>
+        /// <param name="boundPoint1"></param>
+        /// <param name="boundPoint2"></param>
+        /// <returns></returns>
+        Outline Create((XYZ point, (XYZ, XYZ) floorBounds) boundPoint1, (XYZ point, (XYZ, XYZ) floorBounds) boundPoint2);
     }
 }
