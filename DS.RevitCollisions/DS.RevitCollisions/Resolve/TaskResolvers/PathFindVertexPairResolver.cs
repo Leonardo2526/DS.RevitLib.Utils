@@ -17,6 +17,7 @@ using DS.RevitLib.Utils.Collisions.Detectors.AbstractDetectors;
 using System.Linq;
 using Rhino.Geometry;
 using QuickGraph.Algorithms;
+using DS.RevitLib.Utils.Graphs;
 
 namespace DS.RevitCollisions
 {
@@ -55,7 +56,7 @@ namespace DS.RevitCollisions
         {
             BuildPathFinderWithTask(_pathFinder, _graph, _mEPCollision, task, _collisionDetector);
             var result = _pathFinder.FindPath(task.Item1, task.Item2);
-            return GetGraph(result);
+            return GetResult(result);
         }
 
 
@@ -63,10 +64,10 @@ namespace DS.RevitCollisions
         {
             BuildPathFinderWithTask(_pathFinder, _graph, _mEPCollision, task, _collisionDetector);
             var result = await _pathFinder.FindPathAsync(task.Item1, task.Item2);
-            return GetGraph(result);
+            return GetResult(result);
         }
 
-        private IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> GetGraph(List<XYZ> pathPoints)
+        private IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> GetResult(List<XYZ> pathPoints)
         {
 
             if (pathPoints == null || pathPoints.Count == 0)
@@ -75,7 +76,7 @@ namespace DS.RevitCollisions
                 return null;
             }
 
-            Logger?.Information("Path length " + pathPoints.Count + " was found.");
+            Logger?.Information("Path with length " + pathPoints.Count + " points was found.");
 
             var resultPoints = new List<Point3d>();
             pathPoints.ForEach(r => resultPoints.Add(r.ToPoint3d()));
@@ -119,12 +120,37 @@ namespace DS.RevitCollisions
             var idsToExclude1 = graph.GetElementIds(root, task.Item1, _doc);
             var idsToExclude2 = graph.GetElementIds(root, task.Item2, _doc);
             idsToExclude.AddRange(idsToExclude1);
-            idsToExclude2 = idsToExclude2.Where(x => !idsToExclude1.Contains(x));
             idsToExclude.AddRange(idsToExclude2);
 
+            //add outElements
+            graph.TryGetOutEdges(task.Item1, out var e1);
+            idsToExclude.AddRange(GetOutIds(e1));
+            graph.TryGetOutEdges(task.Item2, out var e2);
+            idsToExclude.AddRange(GetOutIds(e2));
+
+            idsToExclude = idsToExclude.Distinct().ToList();
             idsToExclude.ForEach(id => objectsToExclude.Add(_doc.GetElement(id)));
 
             return objectsToExclude;
+
+            IEnumerable<ElementId> GetOutIds(IEnumerable<IEdge<IVertex>> outEdges)
+            {
+                var excludeIds= new List<ElementId>();
+
+                foreach (var item in outEdges)
+                {
+                    var mc = item.TryGetMEPCurve(_doc);
+                    if (mc != null) { excludeIds.Add(mc.Id); }
+                    else
+                    {
+                        var famInst = item.Target.TryGetFamilyInstance(_doc);
+                        if (famInst != null)
+                        { excludeIds.Add(famInst.Id); }
+                    }
+                }
+
+                return excludeIds;
+            }
         }
     }
 }

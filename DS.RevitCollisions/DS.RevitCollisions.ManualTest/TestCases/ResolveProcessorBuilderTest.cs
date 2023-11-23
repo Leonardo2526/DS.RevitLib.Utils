@@ -36,6 +36,7 @@ using DS.RevitLib.Utils.Bases;
 using DS.PathFinder;
 using Serilog.Core;
 using DS.RevitLib.Utils.PathCreators.AlgorithmVertexBuilder;
+using Revit.Async;
 
 namespace DS.RevitCollisions.ManualTest.TestCases
 {
@@ -76,18 +77,19 @@ namespace DS.RevitCollisions.ManualTest.TestCases
             _collisionDetector = new ElementCollisionDetector(_doc, new ElementIntersectionFactory(_doc));
             _collisionVisualizator = new CollisionVisualizator(uiApp);
 
-            _taskVisualizator = new VertexPairVisualizator(_doc)
+            _taskVisualizator = new VertexPairVisualizator(_uiDoc)
             {
                 TransactionFactory = _trfAuto,
-                UiDoc = _uiDoc
+                RefreshView = true,
             };
 
-            _graphVisualisator = new GraphVisulisator(_doc)
+            _graphVisualisator = new GraphVisulisator(_uiDoc)
             {
                 ShowElementIds = false,
                 ShowVerticesIds = false,
                 ShowDirecionts = true,
-                TransactionFactory = _trfAuto
+                TransactionFactory = _trfAuto,
+                RefreshView = true
             };
         }
 
@@ -97,7 +99,19 @@ namespace DS.RevitCollisions.ManualTest.TestCases
         {
             var processor = CreateProcessor(true);
             var mEPCollision = Collision as IMEPCollision;
-            var result = processor.TryResolve(mEPCollision);
+            var result = processor?.TryResolve(mEPCollision);
+        }
+
+        public async Task RunTest1ASync()
+        {
+            var processor = CreateProcessor(true);
+            var mEPCollision = Collision as IMEPCollision;
+            var result = await processor.TryResolveAsync(mEPCollision);
+            //_graphVisualisator?.Show(result);
+
+            //await _graphVisualisator?.ShowAsync(result);
+            //await Task.Run(async () => await RevitTask.RunAsync(() => _graphVisualisator?.Show(result)));
+            //await RevitTask.RunAsync(() => TestTransaction(_doc));
         }
 
         public void RunTestMany()
@@ -132,9 +146,10 @@ namespace DS.RevitCollisions.ManualTest.TestCases
                 _doc, _traceSettings, _collisionDetector);
             }
 
+            //_graphVisualisator.Show(graph);
+            //graph.PrintEdges();
             return GetProcessor();
 
-            _trfAuto.CreateAsync(() => { _graphVisualisator.Show(graph); }, "ShowGraph");
             //return null;
 
             ResolveProcessor<IMEPCollision, IVertexAndEdgeListGraph<IVertex, Edge<IVertex>>> GetProcessor()
@@ -157,7 +172,8 @@ namespace DS.RevitCollisions.ManualTest.TestCases
                     IterationCategories = GetIterationCategories(),
                     Logger = _logger,
                     TaskVisualizator = _taskVisualizator,
-                    ResultVisualizator = _graphVisualisator
+                    ResultVisualizator = _graphVisualisator, 
+                    ResolveParallel = true
                 }.WithCollision(mEPCollision).Create();               
 
                 //add factories
@@ -295,6 +311,26 @@ namespace DS.RevitCollisions.ManualTest.TestCases
             };
 
             return verificationCategories;
+        }
+
+
+        private void TestTransaction(Document doc, bool commitTransaction = true)
+        {
+
+            using (Transaction transaction = new Transaction(doc, "test"))
+            {
+                transaction.Start();
+
+                doc.Regenerate();
+
+                if (transaction.HasStarted())
+                {
+                    if (commitTransaction)
+                    { transaction.Commit(); }
+                    else
+                    { transaction.RollBack(); }
+                }
+            }
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.Architecture;
 using Autodesk.Revit.UI;
 using DS.GraphUtils.Entities;
 using DS.RevitLib.Utils.Extensions;
@@ -13,6 +14,7 @@ using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.Graphs
 {
@@ -309,8 +311,8 @@ namespace DS.RevitLib.Utils.Graphs
         {
             var elements = new List<ElementId>();
 
-            graph.TryGetEdges(source, target, out var edges);
-            if(edges.Count() == 0) { return elements; } 
+            var edges = graph.GetPath(source, target);
+            if (edges.Count() == 0) { return elements; } 
 
             foreach (var edge in edges)
             {

@@ -16,37 +16,47 @@ namespace DS.RevitLib.Utils.Graphs
     public class VertexPairVisualizator : IItemVisualisator<(IVertex, IVertex)>
     {
         private readonly Document _doc;
+        private readonly UIDocument _uiDoc;
 
-        public VertexPairVisualizator(Document doc)
+        public VertexPairVisualizator(UIDocument uiDoc)
         {
-            _doc = doc;
+            _uiDoc = uiDoc;
+            _doc = uiDoc.Document;
         }
 
         public double LabelSize { get; set; }
-        public ITransactionFactory TransactionFactory  { get; set; }
+        public ITransactionFactory TransactionFactory { get; set; }
 
-        public UIDocument UiDoc { get;set; }
+        public bool RefreshView { get; set; }
 
+        /// <inheritdoc/>
         public void Show((IVertex, IVertex) vertexPair)
+        {
+            if (TransactionFactory is null)
+            {
+                ShowPair(vertexPair);
+            }
+            else
+            { TransactionFactory.CreateAsync(() => ShowPair(vertexPair), "showVertexPair"); }
+
+            if (RefreshView) { _uiDoc.RefreshActiveView(); }
+        }
+
+        /// <inheritdoc/>
+        public async Task ShowAsync((IVertex, IVertex) item)
+        {
+            await TransactionFactory?.CreateAsync(() => ShowPair(item), "showVertexPair");
+            if (RefreshView) { _uiDoc.RefreshActiveView(); }
+        }
+
+
+        private void ShowPair((IVertex, IVertex) vertexPair)
         {
             XYZ xYZPoint1 = vertexPair.Item1.GetLocation(_doc);
             XYZ xYZPoint2 = vertexPair.Item2.GetLocation(_doc);
-            if (TransactionFactory is null) 
-            { 
-                xYZPoint1?.Show(_doc, LabelSize); 
-                xYZPoint2?.Show(_doc, LabelSize); 
-            }
-            else 
-            { 
-                xYZPoint1?.Show(_doc, LabelSize, TransactionFactory); 
-                xYZPoint2?.Show(_doc, LabelSize, TransactionFactory); 
-            }
-            UiDoc.RefreshActiveView();
-        }
 
-        public Task ShowAsync((IVertex, IVertex) item)
-        {
-            throw new NotImplementedException();
+            xYZPoint1?.Show(_doc, LabelSize);
+            xYZPoint2?.Show(_doc, LabelSize);
         }
     }
 }

@@ -73,7 +73,10 @@ namespace DS.RevitCollisions.Impl
         /// <inheritdoc/>
         protected override ITaskResolver<(IVertex, IVertex), IVertexAndEdgeListGraph<IVertex, Edge<IVertex>>> BuildTaskResover()
         {
-            var resolver = new PathFindVertexPairResolver(_pathFinder, _graph, _doc, Collision, _collisionDetector);
+            var resolver = new PathFindVertexPairResolver(_pathFinder, _graph, _doc, Collision, _collisionDetector)
+            {
+                Logger = Logger
+            };
             return resolver;
         }
 

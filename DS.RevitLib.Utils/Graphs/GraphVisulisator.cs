@@ -20,7 +20,7 @@ namespace DS.RevitLib.Utils.Graphs
     /// </summary>   
     public class GraphVisulisator : IItemVisualisator<IVertexAndEdgeListGraph<IVertex, Edge<IVertex>>>
     {
-
+        private readonly UIDocument _uiDoc;
         private readonly Document _doc;
         private readonly UIView _view;
         private readonly XYZVisualizator _xYZVisulalizator;
@@ -30,12 +30,13 @@ namespace DS.RevitLib.Utils.Graphs
         /// <summary>
         /// Instansiate a visualisator.
         /// </summary>
-        /// <param name="doc"></param>
-        public GraphVisulisator(Document doc)
+        /// <param name="uiDoc"></param>
+        public GraphVisulisator(UIDocument uiDoc)
         {
-            _doc = doc;
+            _uiDoc = uiDoc;
+            _doc = uiDoc.Document;
             _view = GetUIView(_doc);
-            _xYZVisulalizator = new XYZVisualizator(new UIDocument(doc));
+            _xYZVisulalizator = new XYZVisualizator(new UIDocument(_doc));
         }
 
         /// <summary>
@@ -60,6 +61,8 @@ namespace DS.RevitLib.Utils.Graphs
 
         public ITransactionFactory TransactionFactory { get; set; }
 
+
+        public bool RefreshView { get; set; }
 
         /// <summary>
         /// Show <paramref name="vertex"/> location.
@@ -98,8 +101,18 @@ namespace DS.RevitLib.Utils.Graphs
             if (TransactionFactory is null)
             { ShowGraph(graph); }
             else
-            { TransactionFactory.CreateAsync(() => ShowGraph(graph), "show graph"); }
+            { TransactionFactory.CreateAsync(() => ShowGraph(graph), "showGraph"); }
+
+            if (RefreshView) { _uiDoc.RefreshActiveView(); }
         }
+
+        /// <inheritdoc/>
+        public async Task ShowAsync(IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> graph)
+        {
+            await TransactionFactory?.CreateAsync(() => ShowGraph(graph), "show graph");
+            if (RefreshView) { _uiDoc.RefreshActiveView(); }
+        }
+
 
         private void ShowGraph(IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> graph)
         {
@@ -157,7 +170,6 @@ namespace DS.RevitLib.Utils.Graphs
             }
         }
 
-
         private UIView GetUIView(Document doc)
         {
             var uidoc = new UIDocument(doc);
@@ -173,11 +185,6 @@ namespace DS.RevitLib.Utils.Graphs
                 }
             }
             return uiview;
-        }
-
-        public async Task ShowAsync(IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> graph)
-        {
-            await TransactionFactory?.CreateAsync(() => ShowGraph(graph), "show graph");
         }
     }
 }

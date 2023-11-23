@@ -23,8 +23,10 @@ namespace DS.RevitCollisions.ManualTest
 
 
             var test = new ResolveProcessorBuilderTest(uiapp);
-            //test.RunTest1();
-            test.RunTestMany();
+            test.RunTest1();
+            //Task.Run(() => test.RunTest1ASync());
+            //test.RunTest1ASync();
+            //test.RunTestMany();
 
 
             //var test = new ElementCollisionFactoryTest(uiapp);
