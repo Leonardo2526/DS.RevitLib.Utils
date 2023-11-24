@@ -90,10 +90,10 @@ namespace DS.RevitLib.Utils.Graphs
         /// </returns>
         public static bool ContainsTypes(this IVertex vertex, IEnumerable<Type> types, Document doc)
         {
-            if(types is null || types.Count() == 0 ) return false;
+            if (types is null || types.Count() == 0) return false;
 
             var famInst = vertex.TryGetFamilyInstance(doc);
-            if(famInst == null) { return  false; }
+            if (famInst == null) { return false; }
 
             var type = famInst.GetType();
             return types.Contains(type);
@@ -141,7 +141,7 @@ namespace DS.RevitLib.Utils.Graphs
             var inElements = new List<Element>();
 
             bdGraph.TryGetInEdges(vertex, out var inEdges);
-            if(inEdges is null) return inElements;
+            if (inEdges is null) return inElements;
 
             foreach (var inEdge in inEdges)
             {
@@ -205,14 +205,14 @@ namespace DS.RevitLib.Utils.Graphs
         }
 
         /// <summary>
-        /// Get <see cref="Autodesk.Revit.DB.Element"/>'s of <paramref name="vertex"/>.
+        /// Get all input and output <see cref="Autodesk.Revit.DB.Element"/>'s of <paramref name="vertex"/>.
         /// </summary>
         /// <param name="vertex"></param>
         /// <param name="bdGraph"></param>
         /// <param name="doc"></param>
         /// <returns>
         /// <see cref="Autodesk.Revit.DB.Element"/>'s edges 
-        /// (<see cref="TaggedEdge{TVertex, TTag}"/>) or vertices (<see cref="TaggedGVertex{TTag}"/>) if input edge is untagged.
+        /// (<see cref="TaggedEdge{TVertex, TTag}"/>) or vertices (<see cref="TaggedGVertex{TTag}"/>) if edge is untagged.
         /// <para>
         /// Empty list if no <see cref="Autodesk.Revit.DB.Element"/>'s was found.
         /// </para>
@@ -228,6 +228,50 @@ namespace DS.RevitLib.Utils.Graphs
             elements.AddRange(outElements);
 
             return elements;
+        }
+
+        /// <summary>
+        /// Try to get <see cref="Autodesk.Revit.DB.Element"/> by <paramref name="vertex"/>.
+        /// </summary>
+        /// <param name="vertex"></param>
+        /// <param name="graph"></param>
+        /// <param name="doc"></param>
+        /// <returns>
+        /// <see cref="Autodesk.Revit.DB.FamilyInstance"/> if <paramref name="vertex"/> built by it.
+        /// <para>
+        /// <see cref="MEPCurve"/> from <paramref name="graph"/>'s edge if <paramref name="vertex"/> 
+        /// built by <see cref="Point3d"/> and exits edge that has center line that contains this point.
+        /// </para>
+        /// <para>
+        /// Otherwise <see langword="null"/>.
+        /// </para>
+        /// </returns>
+        public static Element TryGetElementFromGraphAndDoc(this IVertex vertex,
+        IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> graph, Document doc)
+        {
+            Element element = null;
+
+            switch (vertex)
+            {
+                case TaggedGVertex<int> taggedInt:
+                    {
+                        var famInst = taggedInt.TryGetFamilyInstance(doc);
+                        if (famInst != null)
+                        { element = famInst; }
+                        break;
+                    }
+                case TaggedGVertex<Point3d> taggedPoint:
+                    {
+                        var edge = graph.TryGetEdge(taggedPoint.Tag, doc);
+                        if (edge != null)
+                        { element = doc.GetElement(new ElementId(edge.Tag)); }
+                        break;
+                    }
+                default:
+                    break;
+            }
+
+            return element;
         }
     }
 }

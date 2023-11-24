@@ -20,6 +20,7 @@ namespace DS.RevitLib.Utils.Graphs
     {
         private readonly Document _doc;
         private readonly IBidirectionalGraph<IVertex, Edge<IVertex>> _graph;
+        private List<ValidationResult> _validationResults = new();
 
         /// <summary>
         /// Instansiate an object to validate vertex spuds and tees for relations.
@@ -42,19 +43,20 @@ namespace DS.RevitLib.Utils.Graphs
         public Relation InElementRelation { get; set; }
 
         /// <inheritdoc/>
+        public IEnumerable<ValidationResult> ValidationResults => _validationResults;
+
+        /// <inheritdoc/>
         public bool IsValid(IVertex value) =>
             Validate(new ValidationContext(value)).Count() == 0;
 
         /// <inheritdoc/>
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
-            var results = new List<ValidationResult>();
-
             var vertex = validationContext.ObjectInstance as IVertex;
 
             var famInst = vertex.TryGetFamilyInstance(_doc);
             if (famInst == null || (!famInst.IsSpud() && !famInst.IsTee()))
-            { return results; }
+            { return _validationResults; }
 
             var (parents, child) = famInst.GetConnectedElements();
             var parentIds = parents is null ? new List<ElementId>() : parents.Select(x => x.Id);
@@ -69,13 +71,13 @@ namespace DS.RevitLib.Utils.Graphs
                 case Relation.Child:
                     {
                         if (child is not null && !inElementsIds.Any(id => id == child.Id))
-                        { results.Add(new ValidationResult($"No elements with {InElementRelation} relation were found.")); }
+                        { _validationResults.Add(new ValidationResult($"No elements with {InElementRelation} relation were found.")); }
                         break;
                     }
                 case Relation.Parent:
                     {
                         if (parentIds.Count() > 0 && inElementsIds.Intersect(parentIds).Count() == 0)
-                        { results.Add(new ValidationResult($"No elements with {InElementRelation} relation were found.")); }
+                        { _validationResults.Add(new ValidationResult($"No elements with {InElementRelation} relation were found.")); }
                         break;
                     }
                 case Relation.Default:
@@ -84,7 +86,7 @@ namespace DS.RevitLib.Utils.Graphs
                     break;
             }
 
-            return results;
+            return _validationResults;
         }
     }
 }

@@ -211,8 +211,10 @@
     <Compile Include="Geometry\Points\PointVisualisator.cs" />
     <Compile Include="Geometry\Points\XYZVisualizator.cs" />
     <Compile Include="Geometry\Solids\SolidOffsetExtractor.cs" />
+    <Compile Include="Graphs\PairVertexPointer.cs" />
     <Compile Include="Graphs\GraphVisulisator.cs" />
     <Compile Include="Graphs\IVertexPairIteratorBuilder.cs" />
+    <Compile Include="Graphs\IVertexPointer.cs" />
     <Compile Include="Graphs\MEPGraphBuilder.cs" />
     <Compile Include="Graphs\EdgeExtensions.cs" />
     <Compile Include="Graphs\GEdgeBuilder.cs" />
@@ -225,6 +227,7 @@
     <Compile Include="Graphs\SegmentFactory.cs" />
     <Compile Include="Graphs\AdjancyGraphUtils.cs" />
     <Compile Include="Graphs\Validators\VertexCollisionValidator.cs" />
+    <Compile Include="Graphs\Validators\GraphContainsVertexValidator.cs" />
     <Compile Include="Graphs\VertexExtensions.cs" />
     <Compile Include="Graphs\Validators\VertexLimitsValidator.cs" />
     <Compile Include="Graphs\Validators\VertexFamInstCategoryValidator.cs" />
@@ -275,6 +278,7 @@
     <Compile Include="Various\IRevitContext.cs" />
     <Compile Include="Various\Selections\Filters\PointOnElementSelectionFilter.cs" />
     <Compile Include="Various\Selections\PointOnElementSelector.cs" />
+    <Compile Include="Various\TaskDialogMessenger.cs" />
     <Compile Include="Various\VectorPointConverter.cs" />
     <Compile Include="Various\Selections\Filters\ElementInLinkSelectionFilter.cs" />
     <Compile Include="Various\Selections\Filters\PointSelectionFilter.cs" />

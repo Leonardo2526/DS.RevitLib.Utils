@@ -1,5 +1,6 @@
 ﻿using Autodesk.Revit.DB;
 using DS.ClassLib.VarUtils;
+using DS.ClassLib.VarUtils.GridMap;
 using DS.GraphUtils.Entities;
 using DS.RevitLib.Utils.Collisions.Detectors.AbstractDetectors;
 using DS.RevitLib.Utils.Extensions;
@@ -22,6 +23,7 @@ namespace DS.RevitLib.Utils.Graphs
         private readonly IBidirectionalGraph<IVertex, Edge<IVertex>> _graph;
         private readonly IElementCollisionDetector _elementCollisionDetector;
         private readonly IXYZCollisionDetector _xYZCollisionDetector;
+        private readonly List<ValidationResult> _validationResults = new();
 
         /// <summary>
         /// Instansiate object to validate vertex collisions.
@@ -43,23 +45,25 @@ namespace DS.RevitLib.Utils.Graphs
         }
 
         /// <inheritdoc/>
+        public IEnumerable<ValidationResult> ValidationResults => _validationResults;
+
+        /// <inheritdoc/>
         public bool IsValid(IVertex value) =>
             Validate(new ValidationContext(value)).Count() == 0;
 
         /// <inheritdoc/>
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
-            var results = new List<ValidationResult>();
             var vertex = validationContext.ObjectInstance as IVertex;
 
             var collisions = GetCollisions(vertex);
             if (collisions is not null && collisions.Any())
             {
                 var report = GetCollisionsReport(collisions);
-                results.Add(new ValidationResult(report));
+                _validationResults.Add(new ValidationResult(report));
             }
 
-            return results;
+            return _validationResults;
         }
 
         /// <summary>
@@ -77,8 +81,8 @@ namespace DS.RevitLib.Utils.Graphs
                 case TaggedGVertex<Point3d> taggedPoint:
                     {
                         var xYZ = taggedPoint.Tag.ToXYZ();
-                        _graph.TryGetInEdges(vertex, out var inEdeges);
-                        if (inEdeges.FirstOrDefault() is TaggedEdge<IVertex, int> taggedEdge)
+                        var edge = GetEdge(vertex, xYZ);
+                        if (edge is TaggedEdge<IVertex, int> taggedEdge)
                         {
                             if (_doc.GetElement(new ElementId(taggedEdge.Tag)) is MEPCurve mEPCurve)
                             { _xYZCollisionDetector.SetMEPCurve(mEPCurve); }
@@ -101,6 +105,27 @@ namespace DS.RevitLib.Utils.Graphs
             }
 
             return collisions;
+
+            Edge<IVertex> GetEdge(IVertex vertex, XYZ xYZ)
+            {
+                var edges = new List<Edge<IVertex>>();
+
+                if (_graph.ContainsVertex(vertex))
+                {
+                    _graph.TryGetInEdges(vertex, out var inEdges);
+                    if (inEdges != null)
+                    { edges.AddRange(inEdges); }
+                }
+                else
+                {
+                    //if vertex is not a part of a graph
+                    var edge = _graph.TryGetEdge(xYZ.ToPoint3d(), _doc);
+                    if (edge != null)
+                    { edges.Add(edge); }
+                }
+
+                return edges.FirstOrDefault();
+            }
         }
 
         private string GetCollisionsReport(List<(object, Element)> collisions)

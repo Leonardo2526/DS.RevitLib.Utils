@@ -17,6 +17,7 @@ namespace DS.RevitLib.Utils.Graphs
     {
         private readonly Document _doc;
         private readonly Dictionary<BuiltInCategory, List<PartType>> _availableCategories;
+        private readonly List<ValidationResult> _validationResults = new();
 
         /// <summary>
         /// Instansiate object to validate vertex categories.
@@ -33,25 +34,27 @@ namespace DS.RevitLib.Utils.Graphs
         }
 
         /// <inheritdoc/>
+        public IEnumerable<ValidationResult> ValidationResults => _validationResults;
+
+        /// <inheritdoc/>
         public bool IsValid(IVertex value) =>
             Validate(new ValidationContext(value)).Count() == 0;
 
         /// <inheritdoc/>
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
-            var results = new List<ValidationResult>();
             var vertex = validationContext.ObjectInstance as IVertex;
 
             var famInst = vertex.TryGetFamilyInstance(_doc);
             if (famInst == null)
-            { return results; }
+            { return _validationResults; }
 
             if (!famInst.IsCategoryElement(_availableCategories))
-            { results.Add(new ValidationResult("Vertex category is not allow.")); }
+            { _validationResults.Add(new ValidationResult("Vertex category is not allow.")); }
 
           
 
-            return results;
+            return _validationResults;
         }
     }
 }

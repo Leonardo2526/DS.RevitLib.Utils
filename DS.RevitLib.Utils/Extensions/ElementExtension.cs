@@ -762,7 +762,7 @@ namespace DS.RevitLib.Utils.Extensions
 
         /// <summary>
         /// Get (<see cref="Autodesk.Revit.DB.XYZ"/> , <see cref="Autodesk.Revit.DB.XYZ"/>) 
-        /// that specify <see cref="Autodesk.Revit.DB.XYZ"/>'s on floor and ceiling that are closest to <see cref="ConnectionPoint"/>.
+        /// that specify <see cref="Autodesk.Revit.DB.XYZ"/>'s on floor and ceiling that are closest to <paramref name="pointElement"/>.
         /// <para>
         /// If <see cref="Autodesk.Revit.DB.Element"/> of <paramref name="pointElement"/> is <see langword="null"/> the distance to floor/ceiling
         /// will be checked from <see cref="Autodesk.Revit.DB.XYZ"/> of <paramref name="pointElement"/>.
@@ -770,10 +770,10 @@ namespace DS.RevitLib.Utils.Extensions
         /// </summary>
         /// <returns>
         /// (<see cref="Autodesk.Revit.DB.XYZ"/> , <see cref="Autodesk.Revit.DB.XYZ"/>)
-        /// if <see cref="ConnectionPoint"/> is within floor and ceiling limits.
+        /// if <paramref name="pointElement"/> is within floor and ceiling limits.
         /// <para> 
         /// (<see langword="null"/>, <see langword="null"/>) 
-        /// if <see cref="ConnectionPoint"/> is outside floor and ceiling limits.</para>
+        /// if <paramref name="pointElement"/> is outside floor and ceiling limits.</para>
         /// </returns>
         public static (XYZ pointFloorBound, XYZ pointCeilingBound) GetFloorBounds(this (Element element, XYZ point) pointElement,
             Document doc,

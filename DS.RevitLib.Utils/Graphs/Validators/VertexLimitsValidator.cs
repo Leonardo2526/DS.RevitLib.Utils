@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.DB;
+using DS.ClassLib.VarUtils;
 using DS.GraphUtils.Entities;
 using DS.RevitLib.Utils.Extensions;
 using QuickGraph;
@@ -13,11 +14,12 @@ namespace DS.RevitLib.Utils.Graphs
     /// <summary>
     /// Validator for <see cref="IVertex"/> verices.
     /// </summary>
-    public class VertexLimitsValidator : IVertexLimitsValidator, IValidatableObject
+    public class VertexLimitsValidator : IVertexLimitsValidator, IValidator<IVertex>, IValidatableObject
     {
         private readonly Document _doc;
-        private AdjacencyGraph<IVertex, Edge<IVertex>> _graph;
+        private IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> _graph;
         private IVertex _parentVertex;
+        private readonly List<ValidationResult> _validationResults = new();
 
         /// <summary>
         /// Create validator to check <see cref="IVertex"/>  vertices.
@@ -56,11 +58,18 @@ namespace DS.RevitLib.Utils.Graphs
         /// </summary>
         public int MaxVerticesCount { get; set; }
 
+        public bool IsInsulationAccount { get; set; }
+        public double MinDistToFloor { get; set; }
+        public double MinDistToCeiling { get; set; }
+
+        /// <inheritdoc/>
+        public IEnumerable<ValidationResult> ValidationResults => _validationResults;
+
         #endregion
 
 
         /// <inheritdoc/>
-        public void Instansiate(AdjacencyGraph<IVertex, Edge<IVertex>> graph)
+        public void Instansiate(IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> graph)
         {
             _graph = graph;
         }
@@ -85,6 +94,9 @@ namespace DS.RevitLib.Utils.Graphs
             if (!IsWithinMaxLength(_graph, _parentVertex, vertex))
             { results.Add(new ValidationResult("Vertex is outside MaxLength.")); }
 
+            if (!IsWithinFloorsBounds(vertex, _doc, MinDistToFloor, MinDistToCeiling, IsInsulationAccount))
+            { results.Add(new ValidationResult("Excluded types contains vertex.")); }
+
             if (vertex.ContainsCategories(ExculdedCategories, _doc))
             { results.Add(new ValidationResult("Excluded categories contains vertex.")); }
 
@@ -105,14 +117,15 @@ namespace DS.RevitLib.Utils.Graphs
 
         }
 
-        private bool IsWithinMaxLength(AdjacencyGraph<IVertex, Edge<IVertex>> graph, IVertex parentVertex, IVertex vertex)
+        private bool IsWithinMaxLength(IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> graph, IVertex parentVertex, IVertex vertex)
         {
             if (MaxLength == 0 && MaxVerticesCount == 0) { return true; }
 
             var roots = graph.Roots();
             if (roots.Count() == 0) { return true; }
 
-            var gc = graph.Clone();
+            if (graph is not AdjacencyGraph<IVertex, Edge<IVertex>> aGraph) { return true; }
+            var gc = aGraph.Clone();
 
             gc.AddVertex(vertex);
             var edge = new TaggedEdge<IVertex, int>(parentVertex, vertex, 0);
@@ -125,6 +138,38 @@ namespace DS.RevitLib.Utils.Graphs
 
             return isLengthValid && isCountValid;
         }
+
+
+        private bool IsWithinFloorsBounds(IVertex vertex, Document doc,
+        double minDistToFloor, double minDistToCeiling,
+        bool isInsulationAccount, int distnaceToFindFloor = 30)
+        {
+            if (minDistToFloor == 0 && minDistToCeiling == 0) { return true; }
+
+            var element = vertex.TryGetElementFromGraphAndDoc(_graph.ToBidirectionalGraph(), _doc);
+            var point = vertex.GetLocation(doc);
+
+            var (pointFloorBound, pointCeilingBound) =
+                GetFloorBounds((element, point), doc, minDistToFloor, minDistToCeiling, isInsulationAccount, distnaceToFindFloor);
+
+            return pointFloorBound != null && pointCeilingBound != null;
+
+            static (XYZ pointFloorBound, XYZ pointCeilingBound) GetFloorBounds(
+                 (Element, XYZ) pointElement,
+            Document doc,
+            double minDistToFloor, double minDistToCeiling,
+            bool isInsulationAccount,
+            int distnaceToFindFloor)
+            {
+                return pointElement.GetFloorBounds(doc, minDistToFloor, minDistToCeiling,
+                    isInsulationAccount, distnaceToFindFloor);
+            }
+        }
+
+        /// <inheritdoc/>
+        public bool IsValid(IVertex value) =>
+            Validate(new ValidationContext(value)).Count() == 0;
+
 
         #endregion
 

@@ -31,6 +31,11 @@ namespace DS.RevitCollisions.Resolve.Impl.PathFindFactoryBuilder
 
         public ITaskCreator<IMEPCollision, (IVertex, IVertex)> Create()
         {
+            //add ax point to graph here...
+
+
+
+
             var pairIterator = new PairIteratorBuilder(_doc)
             {
                 StartIndex = 1,

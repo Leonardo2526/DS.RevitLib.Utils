@@ -1,6 +1,8 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
+using DS.ClassLib.VarUtils;
 using DS.ClassLib.VarUtils.Resolvers;
+using DS.ClassLib.VarUtils.Resolvers.TaskCreators;
 using DS.GraphUtils.Entities;
 using DS.PathFinder;
 using DS.RevitCollisions.Models;
@@ -10,6 +12,7 @@ using DS.RevitLib.Utils.Collisions.Detectors.AbstractDetectors;
 using DS.RevitLib.Utils.Connections.PointModels;
 using DS.RevitLib.Utils.Creation.Transactions;
 using DS.RevitLib.Utils.Elements;
+using DS.RevitLib.Utils.Elements.MEPElements;
 using DS.RevitLib.Utils.Geometry;
 using DS.RevitLib.Utils.PathCreators;
 using QuickGraph;
@@ -53,6 +56,24 @@ namespace DS.RevitCollisions.Impl
 
         public bool AutoTasks { get; set; }
 
+        /// <summary>
+        /// Messenger to show errors.
+        /// </summary>
+        public IWindowMessenger Messenger { get; set; }
+
+
+        /// <summary>
+        /// Vertex bound of <see cref="Document"/>.
+        /// </summary>
+        public Outline ExternalOutline { get; set; }
+
+        /// <summary>
+        /// Specifies whether allow insulation collisions or not.
+        /// </summary>
+        public bool InsulationAccount { get; set; }
+
+        public ITraceSettings TraceSettings { get; set; }
+
         #endregion
 
 
@@ -66,13 +87,28 @@ namespace DS.RevitCollisions.Impl
         /// <inheritdoc/>
         protected override ITaskCreator<IMEPCollision, (IVertex, IVertex)> BuildTaskCreator()
         {
-            var taskFactory = AutoTasks ? new AutoTaskCreatorFactory(_doc, _graph) : null;
+            ITaskCreatorFactory<IMEPCollision, (IVertex, IVertex)> taskFactory = AutoTasks ? 
+                new AutoTaskCreatorFactory(_doc, _graph)
+                {
+                    IterationCategories = IterationCategories
+                } :
+                new ManualTaskCreatorFactory(_uiDoc, _graph, _collisionDetector)
+                { 
+                    AvailableCategories = IterationCategories,
+                    ExternalOutline = ExternalOutline,
+                    InsulationAccount = InsulationAccount,
+                    TraceSettings = TraceSettings,
+                    Messenger = Messenger,
+                    Logger = Logger
+                };
             return taskFactory.Create();
         }
 
         /// <inheritdoc/>
         protected override ITaskResolver<(IVertex, IVertex), IVertexAndEdgeListGraph<IVertex, Edge<IVertex>>> BuildTaskResover()
         {
+            _pathFinder.ExternalOutline = ExternalOutline;
+            _pathFinder.InsulationAccount = InsulationAccount;
             var resolver = new PathFindVertexPairResolver(_pathFinder, _graph, _doc, Collision, _collisionDetector)
             {
                 Logger = Logger

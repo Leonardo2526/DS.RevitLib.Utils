@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Architecture;
 using Autodesk.Revit.UI;
+using DS.ClassLib.VarUtils.GridMap;
 using DS.GraphUtils.Entities;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.Various;
@@ -11,6 +12,7 @@ using QuickGraph;
 using QuickGraph.Algorithms;
 using QuickGraph.Algorithms.Search;
 using Rhino.Geometry;
+using Serilog.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -40,7 +42,7 @@ namespace DS.RevitLib.Utils.Graphs
         /// <paramref name="location"/> point exists in <paramref name="graph"/>.
         /// </para>
         /// </returns>
-        public static TaggedEdge<IVertex, int> TryGetEdge(this AdjacencyGraph<IVertex, Edge<IVertex>> graph,
+        public static TaggedEdge<IVertex, int> TryGetEdge(this IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> graph,
             Point3d location, Document doc, int edgeTag = -1)
         {
             var edges = graph.Edges.
@@ -63,7 +65,6 @@ namespace DS.RevitLib.Utils.Graphs
 
             return null;
         }
-
 
         /// <summary>
         /// Try to insert <paramref name="pointOnMEPCurve"/> to <paramref name="graph"/>.
@@ -107,6 +108,34 @@ namespace DS.RevitLib.Utils.Graphs
             graph.AddEdge(edgeToAdd2);
 
             return true;
+        }
+
+        /// <summary>
+        /// Try to insert <paramref name="point"/> into <paramref name="graph"/>.
+        /// <para>
+        /// I.e. try to find <paramref name="graph"/>'s edge that has line that contains given <paramref name="point"/>
+        /// and try to split it on two edges and one auxiliary point.
+        /// </para>
+        /// <para>
+        /// Specify <paramref name="edgeTag"/> to get it fast.
+        /// </para>
+        /// </summary>
+        /// <param name="graph"></param>
+        /// <param name="point"></param>
+        /// <param name="doc"></param>
+        /// <param name="edgeTag"></param>
+        /// <returns>
+        /// <see langword="true"/> if insertion was successful.
+        /// <para>
+        /// Otherwise <see langword="false"/>.
+        /// </para>
+        /// </returns>
+        public static bool TryInsert(this AdjacencyGraph<IVertex,Edge<IVertex>> graph, Point3d point, Document doc, int edgeTag = -1)
+        {
+            var edge = graph.TryGetEdge(point, doc, edgeTag);
+            var mc = edge?.TryGetMEPCurve(doc);
+
+            return mc != null && graph.TryInsert(mc, point.ToXYZ());
         }
 
         /// <summary>

@@ -97,7 +97,7 @@ namespace DS.RevitCollisions.ManualTest.TestCases
 
         public void RunTest1()
         {
-            var processor = CreateProcessor(true);
+            var processor = CreateProcessor(false);
             var mEPCollision = Collision as IMEPCollision;
             var result = processor?.TryResolve(mEPCollision);
         }
@@ -168,12 +168,14 @@ namespace DS.RevitCollisions.ManualTest.TestCases
 
                 var f1 = new PathFindFactoryBuilder(_uiDoc, _collisionDetector, graph, pathFinder)
                 {
-                    AutoTasks = true,
+                    AutoTasks = false,
+                    TraceSettings = _traceSettings,
                     IterationCategories = GetIterationCategories(),
                     Logger = _logger,
                     TaskVisualizator = _taskVisualizator,
-                    ResultVisualizator = _graphVisualisator, 
-                    ResolveParallel = true
+                    ResultVisualizator = _graphVisualisator,
+                    ResolveParallel = true,
+                    Messenger = new TaskDialogMessenger()
                 }.WithCollision(mEPCollision).Create();               
 
                 //add factories
