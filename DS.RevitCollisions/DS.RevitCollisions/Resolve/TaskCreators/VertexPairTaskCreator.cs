@@ -1,5 +1,12 @@
-﻿using DS.GraphUtils.Entities;
+﻿using Autodesk.Revit.DB;
+using DS.GraphUtils.Entities;
 using DS.RevitCollisions.Models;
+using DS.RevitCollisions.Resolve.TaskCreators;
+using DS.RevitLib.Utils.Extensions;
+using DS.RevitLib.Utils.Graphs;
+using QuickGraph;
+using QuickGraph.Algorithms;
+using Serilog;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -9,13 +16,33 @@ namespace DS.RevitCollisions
 {
     internal class VertexPairTaskCreator : IMEPCollisionTaskCreator<(IVertex, IVertex)>, IEnumerator<(IVertex, IVertex)>
     {
+        private readonly Document _doc;
         private readonly IEnumerator<(IVertex, IVertex)> _vertexPairIterator;
-        private Queue<(IVertex, IVertex)> _initialTasksQueue;
+        private readonly EdgePointIterator _edgePointIterator;
+        private readonly MEPCurve _baseMEPCurve;
+        private readonly List<Edge<IVertex>> _edges;
+        private readonly AdjacencyGraph<IVertex, Edge<IVertex>> _targetGraph;
         private int _position = -1;
+        private Queue<(IVertex, IVertex)> _priorityQueue;
 
-        public VertexPairTaskCreator(IEnumerator<(IVertex, IVertex)> vertexPairIterator)
+        public VertexPairTaskCreator(
+            Document doc,
+            IEnumerator<(IVertex, IVertex)> vertexPairIterator,
+            EdgePointIterator edgePointIterator,
+            AdjacencyGraph<IVertex, Edge<IVertex>> targetGraph, MEPCurve baseMEPCurve)
         {
+            _doc = doc;
             _vertexPairIterator = vertexPairIterator;
+            _edgePointIterator = edgePointIterator;
+
+            var root = targetGraph.Roots().FirstOrDefault();
+            var outEdges = targetGraph.OutEdges(root).ToList();
+            if (outEdges is null || outEdges.Count() != 2)
+            { throw new InvalidOperationException(); }
+
+            _edges = outEdges;
+            _targetGraph = targetGraph;
+            _baseMEPCurve = baseMEPCurve;
         }
 
         public (IVertex, IVertex) Current
@@ -30,19 +57,10 @@ namespace DS.RevitCollisions
 
         object IEnumerator.Current => Current;
 
-
         public List<(IVertex, IVertex)> Tasks { get; } = new List<(IVertex, IVertex)>();
 
-        public IEnumerable<(IVertex, IVertex)> InitialTasks
-        {
-            get { return _initialTasksQueue; }
-            set
-            {
-                _initialTasksQueue = new Queue<(IVertex, IVertex)>();
-                value.ToList().ForEach(_initialTasksQueue.Enqueue);
-            }
-        }
 
+        public ILogger Logger { get; set; }
 
         public void Dispose()
         {
@@ -51,9 +69,9 @@ namespace DS.RevitCollisions
 
         public bool MoveNext()
         {
-            while (_initialTasksQueue?.Count > 0)
+            while (_priorityQueue?.Count > 0)
             {
-                AddTask(_initialTasksQueue.Dequeue());
+                AddTask(_priorityQueue.Dequeue());
                 return true;
             }
 
@@ -76,11 +94,37 @@ namespace DS.RevitCollisions
         public void Reset()
         {
             _position = -1;
+            _priorityQueue = GetPriorityQueue();
         }
+
 
         public (IVertex, IVertex) CreateTask(IMEPCollision item)
         {
+            _priorityQueue ??= GetPriorityQueue();
             return MoveNext() ? Current : default;
+        }
+
+
+        private PriorityTaskQueue GetPriorityQueue()
+        {
+            _edgePointIterator.Set(_edges[0]);
+            _edgePointIterator.MoveNext();
+            var p1 = _edgePointIterator.Current.ToXYZ();
+
+            _edgePointIterator.Set(_edges[1]);
+            _edgePointIterator.MoveNext();
+            var p2 = _edgePointIterator.Current.ToXYZ();
+
+            if (p1 != null && _targetGraph.TryInsert(_baseMEPCurve, p1))
+            { Logger?.Information($"Closest point {p1} was inserted to graph successfully."); }
+            if (p2 != null && _targetGraph.TryInsert(_baseMEPCurve, p2))
+            { Logger?.Information($"Closest point {p2} was inserted to graph successfully."); }
+
+            //_targetGraph.PrintEdges();
+
+            _vertexPairIterator.Reset();
+
+            return new PriorityTaskQueue(_doc, _vertexPairIterator, _targetGraph, _baseMEPCurve);
         }
     }
 }

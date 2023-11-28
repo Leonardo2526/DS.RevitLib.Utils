@@ -267,7 +267,7 @@ namespace DS.RevitLib.Utils.Graphs
         /// Sorted list where vertices on <see cref="Autodesk.Revit.DB.FamilyInstance"/>'s have highest priority.
         /// </returns>
         public static IEnumerable<(IVertex, IVertex)> SortByTaggedLength(this IEnumerable<(IVertex, IVertex)> vertexPair,
-            AdjacencyGraph<IVertex, Edge<IVertex>> graph, Document doc, double maxRelLength = 25, double sizeFactor = 1)
+            IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> graph, Document doc, double maxRelLength = 25, double sizeFactor = 1)
         {
             var dict = new Dictionary<(IVertex, IVertex), double>();
 

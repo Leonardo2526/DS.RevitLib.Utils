@@ -211,6 +211,7 @@
     <Compile Include="Geometry\Points\PointVisualisator.cs" />
     <Compile Include="Geometry\Points\XYZVisualizator.cs" />
     <Compile Include="Geometry\Solids\SolidOffsetExtractor.cs" />
+    <Compile Include="Graphs\EdgePointIterator.cs" />
     <Compile Include="Graphs\PairVertexPointer.cs" />
     <Compile Include="Graphs\GraphVisulisator.cs" />
     <Compile Include="Graphs\IVertexPairIteratorBuilder.cs" />

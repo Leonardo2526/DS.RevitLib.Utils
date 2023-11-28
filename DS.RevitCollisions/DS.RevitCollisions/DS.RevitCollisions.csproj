@@ -122,6 +122,7 @@
     <Compile Include="Resolve\ResolveProcessors\CollisionResolveProcessor.cs" />
     <Compile Include="Resolve\TaskCreators\CollisionTaskCreator.cs" />
     <Compile Include="Resolve\TaskCreators\DummyTaskCreator.cs" />
+    <Compile Include="Resolve\TaskCreators\PriorityTaskQueue.cs" />
     <Compile Include="Resolve\TaskCreators\VertexPairTaskCreator.cs" />
     <Compile Include="Resolve\TaskResolvers\DummyTaskResolver.cs" />
     <Compile Include="Resolve\TaskResolvers\PathFindVertexPairResolver.cs" />

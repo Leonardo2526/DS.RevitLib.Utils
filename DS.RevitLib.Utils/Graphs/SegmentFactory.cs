@@ -15,7 +15,7 @@ using Line = Rhino.Geometry.Line;
 namespace DS.RevitLib.Utils.Graphs
 {
     /// <summary>
-    /// An object that represents factory to get free segemnts.
+    /// An object that represents factory to get free segments.
     /// </summary>
     public class SegmentFactory
     {
@@ -24,7 +24,7 @@ namespace DS.RevitLib.Utils.Graphs
         private IEnumerable<Line> _segments = new List<Line>();
 
         /// <summary>
-        /// Instansiate an object that represents factory to get free segemnts.
+        /// Instansiate an object that represents factory to get free segments.
         /// <para>
         /// Get segments that hasn't collisions and are content with specified parameters.
         /// </para>

@@ -1,71 +1,99 @@
 ﻿using Autodesk.Revit.DB;
+using DS.ClassLib.VarUtils;
 using DS.ClassLib.VarUtils.Resolvers;
 using DS.ClassLib.VarUtils.Resolvers.TaskCreators;
 using DS.GraphUtils.Entities;
 using DS.RevitCollisions.Models;
+using DS.RevitLib.Utils.Collisions.Detectors.AbstractDetectors;
+using DS.RevitLib.Utils.Creation.Transactions;
 using DS.RevitLib.Utils.Graphs;
 using DS.RevitLib.Utils.MEP.SystemTree.Relatives;
 using QuickGraph;
+using Serilog;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using DS.RevitLib.Utils.MEP;
 
 namespace DS.RevitCollisions.Resolve.Impl.PathFindFactoryBuilder
 {
     internal class AutoTaskCreatorFactory : ITaskCreatorFactory<IMEPCollision, (IVertex, IVertex)>
     {
         private readonly Document _doc;
-        private readonly IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> _graph;
+        private readonly AdjacencyGraph<IVertex, Edge<IVertex>> _graph;
+        private readonly MEPCollision _mEPCollision;
+        private readonly ITraceSettings _traceSettings;
+        private readonly IElementCollisionDetector _collisionDetector;
 
-        public AutoTaskCreatorFactory(Document doc, IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> graph)
+        public AutoTaskCreatorFactory(Document doc, AdjacencyGraph<IVertex,
+            Edge<IVertex>> graph, MEPCollision mEPCollision,
+            ITraceSettings traceSettings, IElementCollisionDetector collisionDetector)
         {
             _doc = doc;
             _graph = graph;
+            _mEPCollision = mEPCollision;
+            _traceSettings = traceSettings;
+            _collisionDetector = collisionDetector;
         }
+
+
+        #region Properties
+
+        /// <summary>
+        /// Specifies whether allow insulation collisions or not.
+        /// </summary>
+        public bool InsulationAccount { get; set; }
+
+        public ILogger Logger { get; set; }
+
+        public ITransactionFactory TransactionFactory { get; set; }
 
         public Dictionary<BuiltInCategory, List<PartType>> IterationCategories { get; set; }
 
+        #endregion
+
+
         public ITaskCreator<IMEPCollision, (IVertex, IVertex)> Create()
         {
-            //add ax point to graph here...
-
-
-
-
             var pairIterator = new PairIteratorBuilder(_doc)
             {
                 StartIndex = 1,
                 AvailableCategories = IterationCategories,
                 InElementRelation = Relation.Child
             }
-         .Create(_graph);
+            .Create(_graph);
 
-            var agraph = (AdjacencyGraph<IVertex, Edge<IVertex>>)_graph;
-            var taskCreator = new VertexPairTaskCreator(pairIterator)
+            var segementFactory = GetFactory(_doc, _collisionDetector,
+                InsulationAccount, _traceSettings, _mEPCollision);
+            var pointIterator = new EdgePointIterator(segementFactory);
+            var baseMEPCurve = _mEPCollision.Item1Model.MEPCurve;
+            var taskCreator = new VertexPairTaskCreator(_doc, pairIterator, pointIterator, _graph, baseMEPCurve)
             {
-                InitialTasks = GetInitialTasks(pairIterator, agraph)
+                Logger = Logger
             };
 
             return taskCreator;
         }
 
-        private IEnumerable<(IVertex, IVertex)> GetInitialTasks(IEnumerator<(IVertex, IVertex)> pairIterator,
-         AdjacencyGraph<IVertex, Edge<IVertex>> graph)
+        public SegmentFactory GetFactory(Document doc, IElementCollisionDetector collisionDetector, bool insulationAccount,
+        ITraceSettings traceSettings, MEPCollision mEPCollision)
         {
-            List<(IVertex, IVertex)> list = new();
+            var model = mEPCollision.Item1Model;
+            var mEPCurveSize = Math.Min(model.Width, model.Height);
+            var insulationThickness = insulationAccount
+                ? model.InsulationThickness
+                : 0;
 
-            while (list.Count != 4 && pairIterator.MoveNext())
-            { list.Add(pairIterator.Current); }
+            var minDistanceToElements = mEPCurveSize / 2 + insulationThickness + traceSettings.C;
+            var minDistanceToConnector = traceSettings.D + model.ElbowRadius;
+            var minDistanceFromSource = (traceSettings.D + 2 * model.ElbowRadius) / Math.Tan(traceSettings.A.DegToRad());
 
-            var firstEdge = graph.Edges.First() as TaggedEdge<IVertex, int>;
-            //return;
-            var baseElement = _doc.GetElement(new ElementId(firstEdge.Tag)) as MEPCurve;
-            double sizeFactor = baseElement.GetMaxSize();
-            return list.SortByTaggedLength(graph, _doc, 25, sizeFactor).ToList();
+            var segementFactory = new SegmentFactory(doc, collisionDetector)
+            {
+                MinDistanceToElements = minDistanceToElements,
+                MinDistanceToConnector = minDistanceToConnector,
+                MinDistanceFromSource = minDistanceFromSource
+            };
+
+            return segementFactory;
         }
     }
 }

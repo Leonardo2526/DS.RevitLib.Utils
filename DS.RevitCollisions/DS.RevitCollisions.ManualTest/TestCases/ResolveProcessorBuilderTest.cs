@@ -97,7 +97,7 @@ namespace DS.RevitCollisions.ManualTest.TestCases
 
         public void RunTest1()
         {
-            var processor = CreateProcessor(false);
+            var processor = CreateProcessor(true);
             var mEPCollision = Collision as IMEPCollision;
             var result = processor?.TryResolve(mEPCollision);
         }
@@ -139,18 +139,11 @@ namespace DS.RevitCollisions.ManualTest.TestCases
             //build Graph
             var graph = GetGraph(_doc, mEPCollision);
 
-            if (insertAxiliaryPoints)
-            {
-
-                InsertPoints(graph, mEPCollision,
-                _doc, _traceSettings, _collisionDetector);
-            }
-
             //_graphVisualisator.Show(graph);
             //graph.PrintEdges();
             return GetProcessor();
 
-            //return null;
+            return null;
 
             ResolveProcessor<IMEPCollision, IVertexAndEdgeListGraph<IVertex, Edge<IVertex>>> GetProcessor()
             {
@@ -168,14 +161,15 @@ namespace DS.RevitCollisions.ManualTest.TestCases
 
                 var f1 = new PathFindFactoryBuilder(_uiDoc, _collisionDetector, graph, pathFinder)
                 {
-                    AutoTasks = false,
+                    AutoTasks = true,
                     TraceSettings = _traceSettings,
                     IterationCategories = GetIterationCategories(),
                     Logger = _logger,
                     TaskVisualizator = _taskVisualizator,
                     ResultVisualizator = _graphVisualisator,
                     ResolveParallel = true,
-                    Messenger = new TaskDialogMessenger()
+                    Messenger = new TaskDialogMessenger(),
+                    TransactionFactory = _trfAuto
                 }.WithCollision(mEPCollision).Create();               
 
                 //add factories
@@ -240,60 +234,6 @@ namespace DS.RevitCollisions.ManualTest.TestCases
             return graph;
         }
 
-
-        public void InsertPoints(AdjacencyGraph<IVertex, Edge<IVertex>> graph, MEPCollision mEPCollision,
-            Document doc, ITraceSettings traceSettings, IElementCollisionDetector collisionDetector)
-        {
-            var mEPCurve = mEPCollision.Item1Model.MEPCurve;
-
-            var root = graph.Roots().FirstOrDefault();
-            var outEdges = graph.OutEdges(root).ToList();
-            if (outEdges is null || outEdges.Count() != 2) { return; }
-
-            var segementFactory = GetFactory(doc, collisionDetector,
-                true, traceSettings, mEPCollision);
-            //{ return null; }
-            var p1 = GetClosesetPoint(segementFactory, outEdges[0]);
-            var p2 = GetClosesetPoint(segementFactory, outEdges[1]);
-
-            if (p1 != null && graph.TryInsert(mEPCurve, p1))
-            { Log.Information($"Closest point {p1} was inserted to graph successfully."); }
-            if (p2 != null && graph.TryInsert(mEPCurve, p2))
-            { Log.Information($"Closest point {p2} was inserted to graph successfully."); }
-
-            XYZ GetClosesetPoint(SegmentFactory segmentFactory, IEdge<IVertex> edge)
-            {
-                var segments = segmentFactory.GetFreeSegments(edge).ToList();
-                var firstSegment = segments.FirstOrDefault();
-
-                return firstSegment.Equals(default) ?
-                    null :
-                    firstSegment.From.ToXYZ();
-            }
-        }
-
-        public SegmentFactory GetFactory(Document doc, IElementCollisionDetector collisionDetector, bool insulationAccount,
-           ITraceSettings traceSettings, MEPCollision mEPCollision)
-        {
-            var model = mEPCollision.Item1Model;
-            var mEPCurveSize = Math.Min(model.Width, model.Height);
-            var insulationThickness = insulationAccount
-                ? model.InsulationThickness
-                : 0;
-
-            var minDistanceToElements = mEPCurveSize / 2 + insulationThickness + traceSettings.C;
-            var minDistanceToConnector = traceSettings.D + model.ElbowRadius;
-            var minDistanceFromSource = (traceSettings.D + 2 * model.ElbowRadius) / Math.Tan(traceSettings.A.DegToRad());
-
-            var segementFactory = new SegmentFactory(doc, collisionDetector)
-            {
-                MinDistanceToElements = minDistanceToElements,
-                MinDistanceToConnector = minDistanceToConnector,
-                MinDistanceFromSource = minDistanceFromSource
-            };
-
-            return segementFactory;
-        }
 
         private Dictionary<BuiltInCategory, List<PartType>> GetIterationCategories()
         {

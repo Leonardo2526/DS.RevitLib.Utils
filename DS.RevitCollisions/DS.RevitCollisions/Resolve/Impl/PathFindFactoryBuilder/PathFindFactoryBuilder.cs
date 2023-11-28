@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using DS.ClassLib.VarUtils;
+using DS.ClassLib.VarUtils.GridMap;
 using DS.ClassLib.VarUtils.Resolvers;
 using DS.ClassLib.VarUtils.Resolvers.TaskCreators;
 using DS.GraphUtils.Entities;
@@ -16,6 +17,7 @@ using DS.RevitLib.Utils.Elements.MEPElements;
 using DS.RevitLib.Utils.Geometry;
 using DS.RevitLib.Utils.PathCreators;
 using QuickGraph;
+using QuickGraph.Algorithms;
 using Rhino.Geometry;
 using System.Collections.Generic;
 using System.Threading;
@@ -32,7 +34,7 @@ namespace DS.RevitCollisions.Impl
         private readonly Document _doc;
         private readonly UIDocument _uiDoc;
         private readonly IElementCollisionDetector _collisionDetector;
-        private readonly IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> _graph;
+        private readonly IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> _sourceGraph;
         private readonly XYZVertexPathFinder _pathFinder;
 
         public PathFindFactoryBuilder(
@@ -44,11 +46,18 @@ namespace DS.RevitCollisions.Impl
             _uiDoc = uiDoc;
             _collisionDetector = collisionDetector;
             _doc = uiDoc.Document;
-            _graph = graph;
+            _sourceGraph = graph;
+            TargetGraph = graph as AdjacencyGraph<IVertex, Edge<IVertex>>;
+            TargetGraph = TargetGraph.Clone();
             _pathFinder = pathFinder;
         }
 
         #region Properties
+
+        /// <summary>
+        /// Modified graph.
+        /// </summary>
+        public AdjacencyGraph<IVertex, Edge<IVertex>> TargetGraph { get; }
 
         public Dictionary<BuiltInCategory, List<PartType>> IterationCategories { get; set; }
 
@@ -74,6 +83,8 @@ namespace DS.RevitCollisions.Impl
 
         public ITraceSettings TraceSettings { get; set; }
 
+        public ITransactionFactory TransactionFactory { get; set; }
+
         #endregion
 
 
@@ -87,12 +98,15 @@ namespace DS.RevitCollisions.Impl
         /// <inheritdoc/>
         protected override ITaskCreator<IMEPCollision, (IVertex, IVertex)> BuildTaskCreator()
         {
-            ITaskCreatorFactory<IMEPCollision, (IVertex, IVertex)> taskFactory = AutoTasks ? 
-                new AutoTaskCreatorFactory(_doc, _graph)
-                {
-                    IterationCategories = IterationCategories
-                } :
-                new ManualTaskCreatorFactory(_uiDoc, _graph, _collisionDetector)
+            ITaskCreatorFactory<IMEPCollision, (IVertex, IVertex)> taskFactory = AutoTasks ?
+                 new AutoTaskCreatorFactory(_doc, TargetGraph, Collision as MEPCollision, TraceSettings, _collisionDetector)
+                 {
+                     IterationCategories = IterationCategories,
+                     InsulationAccount = InsulationAccount,
+                     Logger = Logger,
+                     TransactionFactory = TransactionFactory
+                 } :
+                new ManualTaskCreatorFactory(_uiDoc, TargetGraph, _collisionDetector)
                 { 
                     AvailableCategories = IterationCategories,
                     ExternalOutline = ExternalOutline,
@@ -109,7 +123,7 @@ namespace DS.RevitCollisions.Impl
         {
             _pathFinder.ExternalOutline = ExternalOutline;
             _pathFinder.InsulationAccount = InsulationAccount;
-            var resolver = new PathFindVertexPairResolver(_pathFinder, _graph, _doc, Collision, _collisionDetector)
+            var resolver = new PathFindVertexPairResolver(_pathFinder, TargetGraph, _doc, Collision, _collisionDetector)
             {
                 Logger = Logger
             };
