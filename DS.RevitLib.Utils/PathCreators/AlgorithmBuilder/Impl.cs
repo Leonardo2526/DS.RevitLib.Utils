@@ -93,7 +93,7 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
             private CancellationTokenSource _externalToken;
             private Point3dVisualisator _pointVisualisator;
             private DirectionIterator _dirIterator;
-            private CollisionDetectorByTrace _traceCollisionDetector;
+            private CollisionDetectorByTraceBest _traceCollisionDetector;
             private ConnectionPoint _startConnectionPoint;
             private ConnectionPoint _endConnectionPoint;
             private NodeBuilder _nodeBuilder;
@@ -264,18 +264,18 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
                 collisionDetector.ActiveDocElements = elementsExtractor.ActiveDocElements;
                 collisionDetector.LinkElements = elementsExtractor.LinkElements;
 
-                //_traceCollisionDetector =
-                //    new CollisionDetectorByTrace(_doc,
-                //    _baseMEPCurve,
-                //    _traceSettings,
-                //    insulationAccount, collisionDetector,
-                //    _pointConverter, _transactionFactory)
-                //    {
-                //        ObjectsToExclude = _objectsToExclude,
-                //        OffsetOnEndPoint = false,
-                //        StartConnectionPoint = _startConnectionPoint,
-                //        EndConnectionPoint = _endConnectionPoint,
-                //    };
+                _traceCollisionDetector =
+                    new CollisionDetectorByTraceBest(_doc,
+                    _baseMEPCurve,
+                    _traceSettings,
+                    insulationAccount, collisionDetector,
+                    _pointConverter, _transactionFactory)
+                    {
+                        ObjectsToExclude = _objectsToExclude,
+                        OffsetOnEndPoint = false,
+                        Source = (_startConnectionPoint.Element, _startConnectionPoint.Point),
+                        Target = (_endConnectionPoint.Element, _endConnectionPoint.Point)
+                    };
                 return this;
             }
 
@@ -473,7 +473,8 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
 
             public ISpecifyConnectionPointBoundaries SetExternalToken1(CancellationTokenSource externalCancellationToken)
             {
-                throw new NotImplementedException();
+                _externalToken = externalCancellationToken;
+                return this;
             }
 
             public ISpecifyVertexBoundaries SetExternalToken2(CancellationTokenSource externalCancellationToken)

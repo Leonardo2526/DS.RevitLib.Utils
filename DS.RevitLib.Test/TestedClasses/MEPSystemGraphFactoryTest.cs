@@ -7,6 +7,7 @@ using DS.RevitLib.Utils.Collisions.Models;
 using DS.RevitLib.Utils.Creation.Transactions;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.Graphs;
+using DS.RevitLib.Utils.Graphs.Validators;
 using DS.RevitLib.Utils.MEP;
 using DS.RevitLib.Utils.MEP.SystemTree.Relatives;
 using DS.RevitLib.Utils.Various;
@@ -194,7 +195,7 @@ namespace DS.RevitLib.Test.TestedClasses
             var algorithm = new BreadthFirstSearchAlgorithm<IVertex, Edge<IVertex>>(graph);
 
             var startRoot = graph.Vertices.ToList()[1];
-            var catValidator = new VertexFamInstCategoryValidator(_doc, cats);
+            var catValidator = new VertexCategoryValidator(_doc, cats, graph);
 
             var bdGraph = graph.ToBidirectionalGraph();
             var relationValidator = new VertexRelationValidator(_doc, bdGraph)
@@ -347,7 +348,7 @@ namespace DS.RevitLib.Test.TestedClasses
             var elementCollisionDetector = new ElementCollisionDetector(doc, factory);
             var xYZCollisionDetector = new XYZCollisionDetector(elementCollisionDetector);
 
-            return new VertexCollisionValidator(_doc, elementCollisionDetector, xYZCollisionDetector);
+            return new VertexCollisionValidator(_doc, elementCollisionDetector, xYZCollisionDetector, Graph);
         }
 
 

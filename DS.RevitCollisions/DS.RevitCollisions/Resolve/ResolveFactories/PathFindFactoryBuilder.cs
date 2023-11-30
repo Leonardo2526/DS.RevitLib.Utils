@@ -1,33 +1,25 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using DS.ClassLib.VarUtils;
-using DS.ClassLib.VarUtils.GridMap;
 using DS.ClassLib.VarUtils.Resolvers;
 using DS.ClassLib.VarUtils.Resolvers.TaskCreators;
 using DS.GraphUtils.Entities;
-using DS.PathFinder;
 using DS.RevitCollisions.Models;
-using DS.RevitCollisions.Resolve.Impl.PathFindFactoryBuilder;
+using DS.RevitCollisions.Resolve.TaskCreators;
+using DS.RevitCollisions.Resolve.TaskResolvers;
 using DS.RevitLib.Utils;
 using DS.RevitLib.Utils.Collisions.Detectors.AbstractDetectors;
-using DS.RevitLib.Utils.Connections.PointModels;
 using DS.RevitLib.Utils.Creation.Transactions;
-using DS.RevitLib.Utils.Elements;
-using DS.RevitLib.Utils.Elements.MEPElements;
-using DS.RevitLib.Utils.Geometry;
 using DS.RevitLib.Utils.PathCreators;
 using QuickGraph;
-using QuickGraph.Algorithms;
-using Rhino.Geometry;
 using System.Collections.Generic;
-using System.Threading;
 
-namespace DS.RevitCollisions.Impl
+namespace DS.RevitCollisions.Resolve.ResolveFactories
 {
 
     /// <inheritdoc/>
-    public partial class PathFindFactoryBuilder : 
-        FactoryBuilderBase<IMEPCollision, (IVertex, IVertex), IVertexAndEdgeListGraph<IVertex, Edge<IVertex>>> 
+    public class PathFindFactoryBuilder :
+        FactoryBuilderBase<IMEPCollision, (IVertex, IVertex), IVertexAndEdgeListGraph<IVertex, Edge<IVertex>>>
     {
         private string _name;
         private ITransactionFactory _transactionFactory;
@@ -38,8 +30,8 @@ namespace DS.RevitCollisions.Impl
         private readonly XYZVertexPathFinder _pathFinder;
 
         public PathFindFactoryBuilder(
-            UIDocument uiDoc, 
-            IElementCollisionDetector collisionDetector, 
+            UIDocument uiDoc,
+            IElementCollisionDetector collisionDetector,
             IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> graph,
             XYZVertexPathFinder pathFinder)
         {
@@ -107,7 +99,7 @@ namespace DS.RevitCollisions.Impl
                      TransactionFactory = TransactionFactory
                  } :
                 new ManualTaskCreatorFactory(_uiDoc, TargetGraph, _collisionDetector)
-                { 
+                {
                     BaseMEPCurve = Collision.Item1,
                     AvailableCategories = IterationCategories,
                     ExternalOutline = ExternalOutline,

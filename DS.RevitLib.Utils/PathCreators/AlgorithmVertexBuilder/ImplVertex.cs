@@ -99,7 +99,7 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
             private CancellationTokenSource _externalToken;
             private Point3dVisualisator _pointVisualisator;
             private DirectionIterator _dirIterator;
-            private CollisionDetectorByTrace _traceCollisionDetector;
+            private ITraceCollisionDetector<Point3d> _traceCollisionDetector;
             private IVertex _source;
             private IVertex _target;
             private NodeBuilder _nodeBuilder;
@@ -280,17 +280,31 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
                 collisionDetector.LinkElements = elementsExtractor.LinkElements;
 
                 _traceCollisionDetector =
-                    new CollisionDetectorByTrace(_doc,
+                    new CollisionDetectorByTraceBest(_doc,
                     _baseMEPCurve,
                     _traceSettings,
-                    insulationAccount, _graph, collisionDetector,
+                    insulationAccount, collisionDetector,
                     _pointConverter, _transactionFactory)
                     {
                         ObjectsToExclude = _objectsToExclude,
                         OffsetOnEndPoint = false,
-                        Source = _source,
-                        EndConnectionPoint = _target,
+                        Source = _source.ToGraphXYZElement(_graph, _doc),
+                        Target = _target.ToGraphXYZElement(_graph, _doc)
                     };
+
+                //_traceCollisionDetector =
+                //   new CollisionDetectorByTrace(_doc,
+                //   _baseMEPCurve,
+                //   _traceSettings,
+                //   insulationAccount, _graph, collisionDetector,
+                //   _pointConverter, _transactionFactory)
+                //   {
+                //       ObjectsToExclude = _objectsToExclude,
+                //       OffsetOnEndPoint = false,
+                //       Source = _source,
+                //       EndConnectionPoint = _target,
+                //   };
+
                 return this;
             }
 
@@ -379,7 +393,8 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
                 WithBounds(_lowerBound, _upperBound);
 
                 _algorithm.SourceBasis = sourceBasis;
-                _traceCollisionDetector.SolidExtractor.SetSource(sourceBasisUCS1);
+                if (_traceCollisionDetector is CollisionDetectorByTraceBest old) 
+                { old.SolidExtractor.SetSource(sourceBasisUCS1); }
                 _algorithmBuilder._algorithm = _algorithm;
                 return _algorithm;
             }
@@ -453,49 +468,7 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
 
                 return transform;
             }
-
-            //private Vector3d GetDirection(
-            //    IVertex connectionPoint1,
-            //    IVertex connectionPoint2,
-            //    out Point3d aNP, bool inverse = false)
-            //{
-            //    var mc = connectionPoint1.Element is MEPCurve curve ? curve : connectionPoint1.GetMEPCurve(_objectsToExclude.Select(o => o.Id));
-
-            //    XYZ dirXYZ = connectionPoint1.Direction ??
-            //        connectionPoint1.GetDirection(connectionPoint2.Point, connectionPoint2.Element, _objectsToExclude);
-
-            //    if (inverse) { dirXYZ = dirXYZ.Negate(); }
-            //    //_visualisator.ShowVectorByDirection(connectionPoint1.Point, dirXYZ);
-
-            //    Vector3d dir = _pointConverter.ConvertToUCS2(dirXYZ.ToVector3d());
-
-            //    var dTolerance = Math.Pow(0.1, _cTolerance);
-            //    var cons = ConnectorUtils.GetConnectors(mc);
-            //    var line = mc.GetCenterLine();
-            //    var conPoints = new List<XYZ>();
-            //    cons.ForEach(c => conPoints.Add(line.Project(c.Origin).XYZPoint));
-            //    conPoints = conPoints.OrderBy(c => c.DistanceTo(connectionPoint1.Point)).
-            //        Where(c => c.DistanceTo(connectionPoint1.Point) > dTolerance).ToList();
-
-            //    if (mc.Id != connectionPoint1.Element.Id) { conPoints.RemoveAt(0); }
-            //    var checkDir = inverse ? dirXYZ.Negate() : dirXYZ;
-
-            //    var aTolerance = 3.DegToRad();
-            //    Func<XYZ, bool> func = (c) => Math.Round((connectionPoint1.Point - c).Normalize().AngleTo(checkDir)) == 0;
-            //    var foundCon = conPoints.FirstOrDefault(func);
-            //    if (foundCon == null)
-            //    { aNP = default; }
-            //    else
-            //    {
-            //        aNP = foundCon.ToPoint3d();
-            //        aNP = _pointConverter.ConvertToUCS2(aNP).Round(_tolerance);
-            //        //_pointVisualisator.Show(aNP);
-            //    }
-
-            //    return dir.Round(_tolerance);
-            //}
-
-
+       
             private (XYZ pointFloorBound, XYZ pointCeilingBound) GetFloorBounds(
                 (Element, XYZ) pointElement,
            Document doc,

@@ -13,7 +13,7 @@ using Serilog;
 using System;
 using System.Collections.Generic;
 
-namespace DS.RevitCollisions.Resolve.Impl.PathFindFactoryBuilder
+namespace DS.RevitCollisions.Resolve.TaskCreators
 {
     internal class AutoTaskCreatorFactory : ITaskCreatorFactory<IMEPCollision, (IVertex, IVertex)>
     {

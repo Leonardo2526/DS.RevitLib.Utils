@@ -1,42 +1,26 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
+using DS.ClassLib.VarUtils;
 using DS.ClassLib.VarUtils.Collisions;
 using DS.ClassLib.VarUtils.Resolvers;
-using DS.RevitCollisions.CollisionBuilers;
-using DS.RevitCollisions.Impl;
-using DS.RevitCollisions.Models;
-using DS.RevitLib.Utils;
-using DS.RevitLib.Utils.Creation.Transactions;
-using DS.RevitLib.Utils.Various;
-using Serilog;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using DS.RevitLib.Utils.Graphs;
 using DS.GraphUtils.Entities;
-using DS.RevitLib.Utils.Extensions;
-using DS.RevitLib.Utils.MEP.SystemTree.Relatives;
-using QuickGraph;
-using DS.RevitLib.Utils.Visualisators;
-using DS.ClassLib.VarUtils.GridMap;
-using System.Security.Cryptography;
-using QuickGraph.Algorithms;
-using DS.ClassLib.VarUtils;
-using DS.RevitLib.Utils.Collisions.Detectors.AbstractDetectors;
-using static System.Net.Mime.MediaTypeNames;
-using DS.RevitLib.Utils.Elements.MEPElements;
-using Rhino.UI;
+using DS.RevitCollisions.CollisionBuilers;
+using DS.RevitCollisions.Models;
+using DS.RevitCollisions.Resolve.ResolveFactories;
+using DS.RevitLib.Utils;
 using DS.RevitLib.Utils.Collisions.Detectors;
 using DS.RevitLib.Utils.Collisions.Models;
-using DS.RevitLib.Utils.PathCreators;
-using DS.RevitLib.Utils.PathCreators.AlgorithmBuilder;
-using DS.RevitLib.Utils.Bases;
-using DS.PathFinder;
-using Serilog.Core;
+using DS.RevitLib.Utils.Creation.Transactions;
+using DS.RevitLib.Utils.Elements.MEPElements;
+using DS.RevitLib.Utils.Extensions;
+using DS.RevitLib.Utils.Graphs;
+using DS.RevitLib.Utils.MEP.SystemTree.Relatives;
 using DS.RevitLib.Utils.PathCreators.AlgorithmVertexBuilder;
-using Revit.Async;
+using DS.RevitLib.Utils.Various;
+using QuickGraph;
+using Serilog;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace DS.RevitCollisions.ManualTest.TestCases
 {
@@ -148,7 +132,7 @@ namespace DS.RevitCollisions.ManualTest.TestCases
             ResolveProcessor<IMEPCollision, IVertexAndEdgeListGraph<IVertex, Edge<IVertex>>> GetProcessor()
             {
                 //Create and config pathFind factory
-               
+
                 var pathFindFactory = new XYZVertexPathFinderFactory(_uiDoc)
                 {
                     TraceSettings = _traceSettings,
@@ -170,7 +154,7 @@ namespace DS.RevitCollisions.ManualTest.TestCases
                     ResolveParallel = true,
                     Messenger = new TaskDialogMessenger(),
                     TransactionFactory = _trfAuto
-                }.WithCollision(mEPCollision).Create();               
+                }.WithCollision(mEPCollision).Create();
 
                 //add factories
                 var factories = new List<IResolveFactory<IMEPCollision, IVertexAndEdgeListGraph<IVertex, Edge<IVertex>>>>

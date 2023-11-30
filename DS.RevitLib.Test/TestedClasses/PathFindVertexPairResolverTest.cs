@@ -1,16 +1,24 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
+using DS.ClassLib.VarUtils.Collisions;
+using DS.ClassLib.VarUtils;
+using DS.ClassLib.VarUtils.Resolvers.TaskCreators;
 using DS.GraphUtils.Entities;
 using DS.RevitCollisions;
+using DS.RevitCollisions.Models;
 using DS.RevitCollisions.Resolve.Impl.PathFindFactoryBuilder;
 using DS.RevitLib.Utils.Collisions.Detectors;
 using DS.RevitLib.Utils.Collisions.Models;
 using DS.RevitLib.Utils.Creation.Transactions;
+using DS.RevitLib.Utils.Elements;
 using DS.RevitLib.Utils.Elements.MEPElements;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.Graphs;
 using DS.RevitLib.Utils.MEP.SystemTree.Relatives;
+using DS.RevitLib.Utils.PathCreators.AlgorithmBuilder;
+using DS.RevitLib.Utils.PathCreators;
 using DS.RevitLib.Utils.PathCreators.AlgorithmVertexBuilder;
+using DS.RevitLib.Utils.Resolve.TaskCreators;
 using DS.RevitLib.Utils.Various;
 using QuickGraph;
 using Rhino.Geometry;
@@ -19,6 +27,8 @@ using Serilog.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using DS.ClassLib.VarUtils.GridMap;
+using DS.RevitLib.Utils.Connections.PointModels;
 
 namespace DS.RevitLib.Test.TestedClasses
 {
@@ -91,8 +101,24 @@ namespace DS.RevitLib.Test.TestedClasses
                 targetGraph = targetGraph.Clone();
             }
 
+            if (sourceGraph == null)
+            {
+                FindPath(baseMEPCurve);
+            }
+            else
+            {
+                FindPathWithGraph(baseMEPCurve, sourceGraph, targetGraph);
+            }
+
+
+        }
+
+        private void FindPathWithGraph(MEPCurve baseMEPCurve,
+            IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> sourceGraph,
+            AdjacencyGraph<IVertex, Edge<IVertex>> targetGraph)
+        {
             //build task
-            var taskCreatorFactory = new ManualTaskCreatorFactory(_uiDoc, _collisionDetector)
+            var taskCreatorFactory = new ManualVertexTaskCreatorFactory(_uiDoc, targetGraph, _collisionDetector)
             {
                 AvailableCategories = GetIterationCategories(),
                 ExternalOutline = null,
@@ -101,29 +127,19 @@ namespace DS.RevitLib.Test.TestedClasses
                 Messenger = new TaskDialogMessenger(),
                 Logger = _logger,
                 BaseMEPCurve = baseMEPCurve,
-                Graph = targetGraph
             };
-            //var taskCreator =  taskCreatorFactory.Create() as ManualTaskCreator;
+
             var taskCreator = taskCreatorFactory.Create();
             var task = taskCreator.CreateTask(null);
 
-            _taskVisualizator.Show(task);
-            _uiDoc.RefreshActiveView();
-
-            //Try get base MEPCurve
-            //MEPCurve baseMEPCurve = task.Item1 is TaggedGVertex<(int, Point3d)> taggedIntPointVertex1 ? 
-            //    _doc.GetElement(new ElementId(taggedIntPointVertex1.Tag.Item1)) as MEPCurve : 
-            //    null;
-            //baseMEPCurve ??= task.Item2 is TaggedGVertex<(int, Point3d)> taggedIntPointVertex2 ?
-            //  _doc.GetElement(new ElementId(taggedIntPointVertex2.Tag.Item1)) as MEPCurve :
-            //  null;        
-
-            //TryAddVertex(task.Item2, sourceGraph);
             if (targetGraph != null)
             {
                 targetGraph.PrintEdges();
                 targetGraph.PrintEdgesVerticesTags();
             }
+
+            _taskVisualizator.Show(task);
+            _uiDoc.RefreshActiveView();
 
             //return;
             //build result
@@ -153,6 +169,88 @@ namespace DS.RevitLib.Test.TestedClasses
             _graphVisualisator.Show(result);
         }
 
+        private void FindPath(MEPCurve baseMEPCurve)
+        {
+            //build task
+            var taskCreatorFactory = new ManualXYZElementTaskCreatorFactory(_uiDoc, _collisionDetector)
+            {
+                AvailableCategories = GetIterationCategories(),
+                ExternalOutline = null,
+                InsulationAccount = true,
+                TraceSettings = _traceSettings,
+                Messenger = new TaskDialogMessenger(),
+                Logger = _logger,
+                BaseMEPCurve = baseMEPCurve,
+            };
+
+            var taskCreator = taskCreatorFactory.Create();
+            var task = taskCreator.CreateTask(null);
+
+            task.Item1.Item2.Show(_doc, 0, _trfAuto);
+            task.Item2.Item2.Show(_doc, 0, _trfAuto);
+            _uiDoc.RefreshActiveView();
+
+
+            var pathFindFactory = new XYZPathFinderFactory(_uiDoc)
+            {
+                TraceSettings = _traceSettings,
+            };
+            var pathFinder = pathFindFactory.GetInstance();
+            pathFinder.AccountInitialDirections = true;
+            pathFinder.MinimizePathNodes = true;
+            pathFinder.AllowSecondElementForBasis = true;
+            pathFinder.MaxTime = 1000000;
+            pathFinder.ExternalOutline = null;
+            pathFinder.InsulationAccount = true;
+            pathFinder.AllowSecondElementForBasis = false;
+            pathFinder.OutlineFactory = null;
+
+            List<Element> objectsToExclude = new List<Element>()
+            {
+                task.Item1.Item1,
+                task.Item2.Item1
+            };
+
+            pathFinder.Build(
+                baseMEPCurve,
+                baseMEPCurve,
+                null,
+                objectsToExclude, _collisionDetector);
+
+            var c1 = new ConnectionPoint(task.Item1.Item1, task.Item1.Item2);
+            c1.GetFloorBounds(_doc, 0, 0);
+            var c2 = new ConnectionPoint(task.Item2.Item1, task.Item2.Item2);
+            c2.GetFloorBounds(_doc, 0, 0);
+
+            var resultPoints = pathFinder.FindPath(c1, c2);
+            if (resultPoints != null && resultPoints.Count >0)
+            {
+                var graph = GetResult(resultPoints);
+                _graphVisualisator.Show(graph);
+            }
+            else
+            {
+                _logger.Error("Path is null!");
+            }
+
+            IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> GetResult(List<XYZ> pathPoints)
+            {
+
+                if (pathPoints == null || pathPoints.Count == 0)
+                {
+                    _logger?.Warning("Failed to find path.");
+                    return null;
+                }
+
+                _logger?.Information("Path with length " + pathPoints.Count + " points was found.");
+
+                var resultPoints = new List<Point3d>();
+                pathPoints.ForEach(r => resultPoints.Add(r.ToPoint3d()));
+
+                var graph = AdjancyGraphUtils.CreateSimpleChainGraph(resultPoints);
+                return graph;
+            }
+        }
 
         private Dictionary<BuiltInCategory, List<PartType>> GetIterationCategories()
         {

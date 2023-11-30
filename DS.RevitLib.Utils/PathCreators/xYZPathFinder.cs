@@ -122,6 +122,11 @@ namespace DS.RevitLib.Utils.PathCreators
         /// </summary>
         public bool IsFailedOnStart { get; private set; }
 
+        /// <summary>
+        /// Maximum search time in milliseconds.
+        /// </summary>
+        public int MaxTime { get; set; }
+
         #endregion
 
         /// <summary>
@@ -165,6 +170,8 @@ namespace DS.RevitLib.Utils.PathCreators
                  Build(MinimizePathNodes);
 
             if (algorithm is null) { return _path; }
+
+            if (MaxTime > 0) { algorithm.MaxTime = MaxTime; }
 
             PathFindEnumerator pathFindEnumerator =
                 GetPathEnumerator(_pathAlgorithmBuilder, _traceSettings, ExternalToken);

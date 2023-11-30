@@ -1,18 +1,11 @@
 ﻿using DS.ClassLib.VarUtils.Resolvers;
-using DS.GraphUtils.Entities;
 using DS.RevitCollisions.Models;
-using DS.RevitCollisions.TaskCreators;
-using DS.RevitCollisions.TaskResolvers;
-using Rhino.Geometry;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using DS.RevitCollisions.Resolve.TaskCreators;
+using DS.RevitCollisions.Resolve.TaskResolvers;
 
-namespace DS.RevitCollisions.Impl
+namespace DS.RevitCollisions.Resolve.ResolveFactories
 {
-    internal class DummyFactoryBuilder : MEPCollisionFactoryBuilderBase<string, string>
+    internal class DummyFactoryBuilder : FactoryBuilderBase<IMEPCollision, string, string>
     {
         protected override ITaskCreator<IMEPCollision, string> BuildTaskCreator()
         {

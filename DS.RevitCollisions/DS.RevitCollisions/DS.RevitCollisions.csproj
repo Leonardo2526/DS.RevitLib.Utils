@@ -109,23 +109,20 @@
     <Compile Include="CollisionVisualizator.cs" />
     <Compile Include="GraphResult.cs" />
     <Compile Include="Models\ElementCollision.cs" />
-    <Compile Include="Resolve\Impl\DummyFactoryBuilder.cs" />
-    <Compile Include="Resolve\Impl\DummyResolveProcessorBuilder.cs" />
-    <Compile Include="Resolve\Impl\PathFindFactoryBuilder\AutoTaskCreatorFactory.cs" />
-    <Compile Include="Resolve\Impl\PathFindFactoryBuilder\ManualTaskCreator.cs" />
-    <Compile Include="Resolve\Impl\PathFindFactoryBuilder\ManualTaskCreatorFactory.cs" />
+    <Compile Include="Resolve\ResolveFactories\DummyFactoryBuilder.cs" />
+    <Compile Include="Resolve\ResolveProcessors\DummyResolveProcessorBuilder.cs" />
+    <Compile Include="Resolve\TaskCreators\Factories\AutoTaskCreatorFactory.cs" />
+    <Compile Include="Resolve\TaskCreators\Factories\ManualTaskCreatorFactory.cs" />
     <Compile Include="Models\Collision.cs" />
     <Compile Include="Models\DummyCollision.cs" />
     <Compile Include="Models\IElementCollision.cs" />
     <Compile Include="Models\IMEPCollision.cs" />
     <Compile Include="Models\MEPCollision.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Resolve\Impl\PathFindFactoryBuilder\PathFindFactoryBuilder.cs" />
-    <Compile Include="Resolve\ResolveFactories\MEPCollisionFactoryBuilderBase.cs" />
+    <Compile Include="Resolve\ResolveFactories\PathFindFactoryBuilder.cs" />
     <Compile Include="Resolve\ResolveProcessors\CollisionResolveProcessor.cs" />
-    <Compile Include="Resolve\TaskCreators\CollisionTaskCreator.cs" />
     <Compile Include="Resolve\TaskCreators\DummyTaskCreator.cs" />
-    <Compile Include="Resolve\TaskCreators\PriorityTaskQueue.cs" />
+    <Compile Include="Resolve\PriorityTaskQueue.cs" />
     <Compile Include="Resolve\TaskCreators\VertexPairTaskCreator.cs" />
     <Compile Include="Resolve\TaskResolvers\DummyTaskResolver.cs" />
     <Compile Include="Resolve\TaskResolvers\PathFindVertexPairResolver.cs" />
@@ -143,7 +140,9 @@
       <Name>DS.RevitLib.Utils</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Resolve\TaskResolvers\Factories\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

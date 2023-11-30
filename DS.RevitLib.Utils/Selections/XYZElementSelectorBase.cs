@@ -80,7 +80,7 @@ namespace DS.RevitLib.Utils.Various.Selections
         /// 
         /// </summary>
         /// <param name="validators"></param>
-        protected void ShowResults(IEnumerable<IValidator<(Element, XYZ)>> validators)
+        protected void ShowResults<T>(IEnumerable<IValidator<T>> validators)
         {
             if (Messenger == null) { return; }
 

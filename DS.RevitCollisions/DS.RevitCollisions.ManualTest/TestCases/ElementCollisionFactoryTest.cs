@@ -2,17 +2,11 @@
 using Autodesk.Revit.UI;
 using DS.ClassLib.VarUtils.Collisions;
 using DS.RevitCollisions.CollisionBuilers;
-using DS.RevitCollisions.Impl;
 using DS.RevitCollisions.Models;
 using DS.RevitLib.Utils;
 using DS.RevitLib.Utils.Creation.Transactions;
 using DS.RevitLib.Utils.Various;
 using Serilog;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DS.RevitCollisions.ManualTest.TestCases
 {

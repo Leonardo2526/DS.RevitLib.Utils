@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using DS.RevitLib.Utils.MEP;
 using DS.RevitLib.Utils.Graphs;
 
-namespace DS.RevitCollisions.Resolve.TaskCreators
+namespace DS.RevitCollisions.Resolve
 {
     internal class PriorityTaskQueue : Queue<(IVertex, IVertex)>
     {

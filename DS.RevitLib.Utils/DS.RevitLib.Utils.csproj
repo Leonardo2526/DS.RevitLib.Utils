@@ -115,6 +115,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Collisions\Detectors\AbstractDetectors\IXYZCollisionDetector.cs" />
+    <Compile Include="Collisions\Detectors\CollisionDetectorByTraceBest.cs" />
     <Compile Include="Collisions\Detectors\ElementCollisionDetector.cs" />
     <Compile Include="Collisions\Detectors\XYZCollisionDetector.cs" />
     <Compile Include="Collisions\ElementIntersectionFactory.cs" />
@@ -239,9 +240,14 @@
     <Compile Include="PathCreators\AlgorithmBuilder\PathAlgorithmBuilder.cs" />
     <Compile Include="PathCreators\AlgorithmVertexBuilder\ImplVertex.cs" />
     <Compile Include="PathCreators\AlgorithmVertexBuilder\PathAlgorithmVertexBuilder.cs" />
+    <Compile Include="PathCreators\AlgorithmVertexBuilder\XYZPathFinderFactory.cs" />
     <Compile Include="PathCreators\AlgorithmVertexBuilder\XYZVertexPathFinderFactory.cs" />
     <Compile Include="PathCreators\IAlgorithmBuildersSpecify.cs" />
     <Compile Include="PathCreators\XYZVertexPathFinder.cs" />
+    <Compile Include="Resolve\TaskCreators\GraphTaskCreator.cs" />
+    <Compile Include="Resolve\TaskCreators\ManualXYZElementTaskCreatorFactory.cs" />
+    <Compile Include="Resolve\TaskCreators\ManualXYZElementTaskCreator.cs" />
+    <Compile Include="Resolve\TaskCreators\ValidatableTaskCreatorFactoryBase.cs" />
     <Compile Include="Selections\Validators\XYZElementValidators\XYZElementCategoryValidator.cs" />
     <Compile Include="Selections\Validators\XYZElementValidators\XYZElementLimitsValidator.cs" />
     <Compile Include="Selections\XYZElementSelectorBase.cs" />
@@ -390,7 +396,6 @@
   <ItemGroup>
     <Folder Include="Collisions\Solutions\" />
     <Folder Include="Geometry\Points\Models\" />
-    <Folder Include="Resolvers\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

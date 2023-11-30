@@ -20,7 +20,7 @@ using QuickGraph.Algorithms;
 using DS.RevitLib.Utils.Graphs;
 using DS.ClassLib.VarUtils.GridMap;
 
-namespace DS.RevitCollisions
+namespace DS.RevitCollisions.Resolve.TaskResolvers
 {
     public class PathFindGraphVertexPairResolver : PathFindVertexPairResolverBase
     {

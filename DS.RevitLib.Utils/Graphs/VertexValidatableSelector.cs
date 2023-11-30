@@ -52,6 +52,9 @@ namespace DS.RevitLib.Utils.Graphs
 
             var vertex = pointElement.ToVertex(_index);
 
+            var isValid = Validators.ToList().TrueForAll(v => v.IsValid(vertex));
+            ShowResults(Validators);
+
             return
                 Validators.ToList().TrueForAll(v => v.IsValid(vertex)) ?
                 vertex :

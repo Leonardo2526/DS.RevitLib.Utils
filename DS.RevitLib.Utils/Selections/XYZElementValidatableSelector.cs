@@ -43,8 +43,10 @@ namespace DS.RevitLib.Utils.Various.Selections
 
             if (pointElement.element == null) { return (null, null); }
 
-            return 
-                Validators.ToList().TrueForAll(v => v.IsValid(pointElement)) ? 
+            var isValid = Validators.ToList().TrueForAll(v => v.IsValid(pointElement));
+            ShowResults(Validators);
+            return
+                isValid ? 
                 pointElement : 
                 (null, null);
         }

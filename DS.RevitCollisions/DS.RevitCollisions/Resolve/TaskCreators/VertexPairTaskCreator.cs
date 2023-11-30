@@ -1,7 +1,8 @@
 ﻿using Autodesk.Revit.DB;
+using DS.ClassLib.VarUtils.Resolvers;
 using DS.GraphUtils.Entities;
 using DS.RevitCollisions.Models;
-using DS.RevitCollisions.Resolve.TaskCreators;
+using DS.RevitCollisions.Resolve;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.Graphs;
 using QuickGraph;
@@ -12,9 +13,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace DS.RevitCollisions
+namespace DS.RevitCollisions.Resolve.TaskCreators
 {
-    internal class VertexPairTaskCreator : IMEPCollisionTaskCreator<(IVertex, IVertex)>, IEnumerator<(IVertex, IVertex)>
+    internal class VertexPairTaskCreator : ITaskCreator<IMEPCollision, (IVertex, IVertex)>, IEnumerator<(IVertex, IVertex)>
     {
         private readonly Document _doc;
         private readonly IEnumerator<(IVertex, IVertex)> _vertexPairIterator;

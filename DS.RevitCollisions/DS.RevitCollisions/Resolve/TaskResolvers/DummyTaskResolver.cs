@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DS.RevitCollisions.TaskResolvers
+namespace DS.RevitCollisions.Resolve.TaskResolvers
 {
     internal class DummyTaskResolver : ITaskResolver<string, string>
     {

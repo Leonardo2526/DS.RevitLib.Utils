@@ -20,7 +20,7 @@ using QuickGraph.Algorithms;
 using DS.RevitLib.Utils.Graphs;
 using DS.ClassLib.VarUtils.GridMap;
 
-namespace DS.RevitCollisions
+namespace DS.RevitCollisions.Resolve.TaskResolvers
 {
     public class PathFindVertexPairResolver : PathFindVertexPairResolverBase
     {
@@ -28,9 +28,9 @@ namespace DS.RevitCollisions
         private readonly IMEPCollision _mEPCollision;
         private readonly List<MEPCurve> _baseMEPCurves = new List<MEPCurve>();
 
-        public PathFindVertexPairResolver(XYZVertexPathFinder pathFinder, 
-            Document doc, IElementCollisionDetector collisionDetector, 
-            MEPCurve baseMEPCurve, MEPCurve basisMEPCurve1, MEPCurve basisMEPCurve2 = null) : 
+        public PathFindVertexPairResolver(XYZVertexPathFinder pathFinder,
+            Document doc, IElementCollisionDetector collisionDetector,
+            MEPCurve baseMEPCurve, MEPCurve basisMEPCurve1, MEPCurve basisMEPCurve2 = null) :
             base(pathFinder, doc, collisionDetector)
         {
             _baseMEPCurves = new List<MEPCurve>()
@@ -44,7 +44,10 @@ namespace DS.RevitCollisions
         protected override XYZVertexPathFinder BuildPathFinderWithTask(XYZVertexPathFinder pathFinder,
           (IVertex, IVertex) task, IElementCollisionDetector collisionDetector)
         {
-            List<Element> objectsToExclude = GetElementsToExclude(task);
+            
+            List<Element> objectsToExclude = Graph is null ? 
+                GetElementsToExclude(task) : 
+                GetExcludededByGraph(Graph, task);
 
             var basisMEPCurve2 = _baseMEPCurves.Count > 2 ? _baseMEPCurves[2] : null;
 
@@ -67,17 +70,13 @@ namespace DS.RevitCollisions
         {
             var objectsToExclude = new List<Element>();
 
-            if(_graph is null) 
-            {
-                var excluded1 = GetExcluded(task.Item1);
-                var excluded2 = GetExcluded(task.Item2);
-                objectsToExclude.AddRange(excluded1);
-                objectsToExclude.AddRange(excluded2);
+            var excluded1 = GetExcluded(task.Item1);
+            var excluded2 = GetExcluded(task.Item2);
+            objectsToExclude.AddRange(excluded1);
+            objectsToExclude.AddRange(excluded2);
 
-                return objectsToExclude; 
-            }
-            else
-            { return GetExcludededByGraph(Graph, task); }
+            return objectsToExclude;
+
 
             IEnumerable<Element> GetExcluded(IVertex vertex)
             {
@@ -93,13 +92,13 @@ namespace DS.RevitCollisions
                             break;
                         }
                     case TaggedGVertex<Point3d> taggedPoint:
-                        {                           
+                        {
                             break;
                         }
                     case TaggedGVertex<(int, Point3d)> taggedIntPoint:
                         {
                             var element = _doc.GetElement(new ElementId(taggedIntPoint.Tag.Item1));
-                            if(element != null)
+                            if (element != null)
                             { objectsToExclude.Add(element); }
                             break;
                         }

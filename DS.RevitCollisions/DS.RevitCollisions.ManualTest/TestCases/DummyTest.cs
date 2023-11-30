@@ -1,15 +1,10 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
-using DS.RevitCollisions.Impl;
 using DS.RevitCollisions.Models;
+using DS.RevitCollisions.Resolve.ResolveProcessors;
 using DS.RevitLib.Utils;
 using DS.RevitLib.Utils.Creation.Transactions;
 using Serilog;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DS.RevitCollisions.ManualTest.TestCases
 {
@@ -38,7 +33,7 @@ namespace DS.RevitCollisions.ManualTest.TestCases
                  .CreateLogger();
         }
 
-       public void CreateResolveProcessor()
+        public void CreateResolveProcessor()
         {
             var builder = new DummyResolveProcessorBuilder()
             {
@@ -50,7 +45,7 @@ namespace DS.RevitCollisions.ManualTest.TestCases
 
             var result = p.TryResolve(dummyCollision);
 
-            _logger.Information(result.ToString()); 
+            _logger.Information(result.ToString());
         }
     }
 }

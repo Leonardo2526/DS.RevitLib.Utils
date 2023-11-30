@@ -15,7 +15,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace DS.RevitCollisions
+namespace DS.RevitCollisions.Resolve.TaskResolvers
 {
     public abstract class PathFindVertexPairResolverBase : 
         ITaskResolver<(IVertex, IVertex), IVertexAndEdgeListGraph<IVertex, Edge<IVertex>>>
