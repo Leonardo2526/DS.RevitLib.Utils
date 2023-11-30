@@ -1,21 +1,11 @@
 ﻿using Autodesk.Revit.DB;
-using Autodesk.Revit.DB.DirectContext3D;
-using DS.ClassLib.VarUtils;
-using DS.ClassLib.VarUtils.GridMap;
 using DS.ClassLib.VarUtils.Resolvers;
 using DS.GraphUtils.Entities;
 using DS.RevitCollisions.Models;
-using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.Graphs;
+using DS.RevitLib.Utils.Various;
 using QuickGraph;
-using Rhino.Geometry;
-using Rhino.UI;
 using Serilog;
-using Serilog.Core;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography;
 
 namespace DS.RevitCollisions.Resolve.Impl.PathFindFactoryBuilder
 {
@@ -24,7 +14,7 @@ namespace DS.RevitCollisions.Resolve.Impl.PathFindFactoryBuilder
     /// </summary>
     public class ManualTaskCreator : ITaskCreator<IMEPCollision, (IVertex, IVertex)>
     {
-        private readonly IVertexPointer _pointer;
+        private readonly IValidatableSelector<IVertex> _selector;
         private readonly IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> _graph;
         private readonly Document _doc;
 
@@ -32,11 +22,11 @@ namespace DS.RevitCollisions.Resolve.Impl.PathFindFactoryBuilder
         /// Instantiate an object for manual create tasks to resolve collision.
         /// </summary>
         /// <param name="collision"></param>
-        /// <param name="pointStrategy"></param>
-        public ManualTaskCreator(IVertexPointer pointStrategy,
+        /// <param name="selector"></param>
+        public ManualTaskCreator(IValidatableSelector<IVertex> selector,
             IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> graph, Document doc)
         {
-            _pointer = pointStrategy;
+            _selector = selector;
             _graph = graph;
             _doc = doc;
         }
@@ -48,31 +38,16 @@ namespace DS.RevitCollisions.Resolve.Impl.PathFindFactoryBuilder
 
         public (IVertex, IVertex) CreateTask(IMEPCollision item)
         {
-            var v1 = _pointer.Point("1");
+            var v1 = _selector.Select();
             if (v1 == null) { return (null, null); }
 
-            var v2 = _pointer.Point("2");
+            var v2 = _selector.Select();
             if (v2 == null) { return (null, null); }
 
-            var graphVertex1 = TryGetGraphVertex(v1);
-            var graphVertex2 = TryGetGraphVertex(v2);
+            var graphVertex1 = v1.ToGraphVertex(_graph, _doc);
+            var graphVertex2 = v2.ToGraphVertex(_graph, _doc);
 
             return (graphVertex1, graphVertex2);
         }
-
-        private IVertex TryGetGraphVertex(IVertex initVertex)
-        {
-            if (!initVertex.TryFindTaggedVertex(_graph, out var foundVertex))
-            {
-                var aGraph = _graph as AdjacencyGraph<IVertex, Edge<IVertex>>;
-                var location = initVertex.GetLocation(_doc).ToPoint3d();
-                if (aGraph.TryInsert(location, _doc))
-                { foundVertex = aGraph.Vertices.Last(); }
-            }
-
-            return foundVertex;
-        }
-
-
     }
 }

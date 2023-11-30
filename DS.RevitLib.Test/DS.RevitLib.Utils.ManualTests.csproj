@@ -112,7 +112,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="GetEdgeConnectorsTest.cs" />
-    <Compile Include="TestedClasses\MultiResolverTest.cs" />
     <Compile Include="TestedClasses\GetFamInstLocationTest.cs" />
     <Compile Include="TestedClasses\GetFloorDistTest.cs" />
     <Compile Include="TestedClasses\AlignMEPCurvesTest.cs" />
@@ -124,6 +123,7 @@
     <Compile Include="TestedClasses\ConnectedElementFinderTest.cs" />
     <Compile Include="TestedClasses\GetConnectionDirectionTest.cs" />
     <Compile Include="TestedClasses\MEPSystemGraphFactoryTest.cs" />
+    <Compile Include="TestedClasses\PathFindVertexPairResolverTest.cs" />
     <Compile Include="TestedClasses\ReplaceMEPCurveTest.cs" />
     <Compile Include="TestedClasses\GetOverlapResultTest.cs" />
     <Compile Include="TestedClasses\LinesIntersectionTest.cs" />
@@ -154,6 +154,10 @@
     <Compile Include="TestedClasses\ZoomTest.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\DS.RevitCollisions\DS.RevitCollisions\DS.RevitCollisions.csproj">
+      <Project>{342f5182-3456-49ce-83ea-74d1e110b2e0}</Project>
+      <Name>DS.RevitCollisions</Name>
+    </ProjectReference>
     <ProjectReference Include="..\DS.RevitLib.Utils\DS.RevitLib.Utils.csproj">
       <Project>{9873f185-f630-4bb2-94a4-d9665f32b802}</Project>
       <Name>DS.RevitLib.Utils</Name>

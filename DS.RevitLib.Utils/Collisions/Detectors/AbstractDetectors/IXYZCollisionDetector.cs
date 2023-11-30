@@ -13,7 +13,7 @@ namespace DS.RevitLib.Utils.Collisions.Detectors.AbstractDetectors
         List<(XYZ, Element)> GetCollisions(XYZ point);
 
         /// <summary>
-        /// Set <paramref name="mEPCurve"/> on point.
+        /// Set <paramref name="mEPCurve"/> to check collisions at point.
         /// </summary>
         /// <param name="mEPCurve"></param>
         IXYZCollisionDetector SetMEPCurve(MEPCurve mEPCurve);

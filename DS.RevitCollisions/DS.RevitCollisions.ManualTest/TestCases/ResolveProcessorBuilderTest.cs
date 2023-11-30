@@ -161,7 +161,7 @@ namespace DS.RevitCollisions.ManualTest.TestCases
 
                 var f1 = new PathFindFactoryBuilder(_uiDoc, _collisionDetector, graph, pathFinder)
                 {
-                    AutoTasks = true,
+                    AutoTasks = false,
                     TraceSettings = _traceSettings,
                     IterationCategories = GetIterationCategories(),
                     Logger = _logger,

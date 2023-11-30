@@ -58,7 +58,7 @@ namespace DS.RevitLib.Utils.Bases
                 MEPCurve1 ??= new MEPCurveSelector(_uiDoc) { AllowLink = false }.Pick("Выберите элемент 1 для получения базиса.");
                 MEPCurve2 ??= new MEPCurveSelector(_uiDoc) { AllowLink = true }.Pick("Выберите элемент 2 для получения базиса.");
             }
-            catch (OperationCanceledException)
+            catch (Autodesk.Revit.Exceptions.OperationCanceledException)
             { return (null, null, null); }
 
             if (MEPCurve1.Id == MEPCurve2.Id)

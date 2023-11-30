@@ -108,6 +108,7 @@ namespace DS.RevitCollisions.Impl
                  } :
                 new ManualTaskCreatorFactory(_uiDoc, TargetGraph, _collisionDetector)
                 { 
+                    BaseMEPCurve = Collision.Item1,
                     AvailableCategories = IterationCategories,
                     ExternalOutline = ExternalOutline,
                     InsulationAccount = InsulationAccount,
@@ -123,7 +124,7 @@ namespace DS.RevitCollisions.Impl
         {
             _pathFinder.ExternalOutline = ExternalOutline;
             _pathFinder.InsulationAccount = InsulationAccount;
-            var resolver = new PathFindVertexPairResolver(_pathFinder, TargetGraph, _doc, Collision, _collisionDetector)
+            var resolver = new PathFindGraphVertexPairResolver(_pathFinder, _doc, _collisionDetector, TargetGraph, Collision)
             {
                 Logger = Logger
             };

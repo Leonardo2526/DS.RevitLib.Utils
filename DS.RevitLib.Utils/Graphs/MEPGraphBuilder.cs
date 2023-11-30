@@ -107,7 +107,7 @@ namespace DS.RevitLib.Utils.Graphs
 
         private IVertexBuilder<IVertex, TaggedGVertex<int>> CreateVertexBuider(Document doc)
         {
-            var validator = new VertexLimitsValidator(doc)
+            var validator = new VertexAllLimitsValidator(doc)
             {
                 MaxLength = MaxLength,
                 MaxVerticesCount = MaxVerticesCount,

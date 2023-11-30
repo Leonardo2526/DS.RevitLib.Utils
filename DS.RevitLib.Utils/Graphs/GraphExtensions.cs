@@ -341,7 +341,7 @@ namespace DS.RevitLib.Utils.Graphs
             var elements = new List<ElementId>();
 
             var edges = graph.GetPath(source, target);
-            if (edges.Count() == 0) { return elements; } 
+            if (edges is null || edges.Count() == 0) { return elements; } 
 
             foreach (var edge in edges)
             {

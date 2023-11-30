@@ -25,7 +25,7 @@ namespace DS.RevitLib.Test.TestedClasses
         private readonly Document _doc;
         private readonly ContextTransactionFactory _trfIn;
         private readonly ContextTransactionFactory _trfOut;
-        private IAdjacencyGraphVisulisator<IVertex> _graphVisualisator;
+        private GraphVisulisator _graphVisualisator;
 
         public SegmentFactoryTest(UIDocument uiDoc)
         {
@@ -43,13 +43,12 @@ namespace DS.RevitLib.Test.TestedClasses
         {
             Graph = CreateGraphByPoint();
 
-            _graphVisualisator = new AdjacencyGraphVisualisator(_doc)
+            _graphVisualisator = new GraphVisulisator(_uiDoc)
             {
                 ShowElementIds = false,
                 ShowVerticesIds = true,
                 ShowDirecionts = true
-            }
-             .Build(Graph);
+            };
 
             return this;
         }

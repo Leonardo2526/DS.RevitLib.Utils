@@ -29,10 +29,11 @@ namespace DS.RevitLib.Test.TestedClasses
         private readonly Document _doc;
         private readonly ContextTransactionFactory _trfIn;
         private readonly ContextTransactionFactory _trfOut;
+        private readonly ContextTransactionFactory _trfAuto;
 
         public IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> Graph { get; private set; }
 
-        private IAdjacencyGraphVisulisator<IVertex> _visualisator;
+        private GraphVisulisator _visualisator;
 
         public MEPSystemGraphFactoryTest(UIDocument uidoc)
         {
@@ -41,16 +42,18 @@ namespace DS.RevitLib.Test.TestedClasses
 
             _trfIn = new ContextTransactionFactory(_doc, Utils.RevitContextOption.Inside);
             _trfOut = new ContextTransactionFactory(_doc, Utils.RevitContextOption.Outside);
+            _trfAuto = new ContextTransactionFactory(_doc);
             //Graph = CreateGraphByElelment();
             Graph = CreateGraphByPoint();
 
-            _visualisator = new AdjacencyGraphVisualisator(_doc)
+            _visualisator = new GraphVisulisator(uidoc)
             {
                 ShowElementIds = false,
-                ShowVerticesIds = true,
-                ShowDirecionts = true
-            }
-               .Build(Graph);
+                ShowVerticesIds = false,
+                ShowDirecionts = true,
+                TransactionFactory = _trfAuto,
+                RefreshView = true
+            };
 
             //Print(Graph);
 
@@ -290,7 +293,7 @@ namespace DS.RevitLib.Test.TestedClasses
         private async void Show(IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> graph, Document doc, ITransactionFactory trf)
         {
             Task task = Task.Run(async () =>
-            await trf.CreateAsync(() => _visualisator.Show(),
+            await trf.CreateAsync(() => _visualisator.Show(graph),
             "show"));
             _uiDoc.RefreshActiveView();
             await task;
@@ -344,7 +347,7 @@ namespace DS.RevitLib.Test.TestedClasses
             var elementCollisionDetector = new ElementCollisionDetector(doc, factory);
             var xYZCollisionDetector = new XYZCollisionDetector(elementCollisionDetector);
 
-            return new VertexCollisionValidator(_doc, bdGraph, elementCollisionDetector, xYZCollisionDetector);
+            return new VertexCollisionValidator(_doc, elementCollisionDetector, xYZCollisionDetector);
         }
 
 

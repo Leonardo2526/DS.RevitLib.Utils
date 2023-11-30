@@ -78,7 +78,7 @@ namespace DS.RevitLib.Utils.Graphs
         {
             if (AvailableCategories != null && AvailableCategories.Count > 0)
             {
-                var catValidator = new VertexFamInstCategoryValidator(_doc, AvailableCategories);
+                var catValidator = new VertexCategoryValidator(_doc, AvailableCategories, _graph);
                 _iterator.Validators.Add(catValidator);
             }
 

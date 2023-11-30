@@ -1,7 +1,9 @@
 ﻿using Autodesk.Revit.DB;
+using DS.ClassLib.VarUtils.Collisions;
 using DS.ClassLib.VarUtils.GridMap;
 using DS.GraphUtils.Entities;
 using DS.RevitLib.Utils.Extensions;
+using DS.RevitLib.Utils.MEP;
 using QuickGraph;
 using Rhino.Geometry;
 using System;
@@ -9,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace DS.RevitLib.Utils.Graphs
 {
@@ -272,6 +275,159 @@ namespace DS.RevitLib.Utils.Graphs
             }
 
             return element;
+        }
+
+        /// <summary>
+        /// Get <see cref="Autodesk.Revit.DB.ElementId"/> from <paramref name="vertex"/>'s tag.
+        /// <para>
+        /// <paramref name="vertex"/> must be of <see cref="TaggedGVertex{TTag}"/> <see cref="Type"/>.
+        /// </para>
+        /// </summary>
+        /// <param name="vertex"></param>
+        /// <param name="doc"></param>
+        /// <returns>
+        /// <see cref="Autodesk.Revit.DB.ElementId"/> if <paramref name="vertex"/>'s tag contains <see cref="int"/> value.
+        /// <para>
+        /// Otherwise <see langword="null"/>.
+        /// </para>
+        /// </returns>
+        public static ElementId TryGetTagId(this IVertex vertex, Document doc)
+        {
+            Element element = null;
+            switch (vertex)
+            {
+                case TaggedGVertex<int>:
+                    {
+                        element = TryGetFamilyInstance(vertex, doc);
+                        break;
+                    }
+                case TaggedGVertex<(int, Point3d)> taggedIntPoint:
+                    {
+                        element = doc.GetElement(new ElementId(taggedIntPoint.Tag.Item1));
+                        break;
+                    }
+                default:
+                    break;
+            }
+
+            return element?.Id;
+        }
+
+        /// <summary>
+        /// Convert <paramref name="vertex"/> to 
+        /// (<see cref="Autodesk.Revit.DB.Element"/>,<see cref="Autodesk.Revit.DB.XYZ"/>).
+        /// </summary>
+        /// <param name="vertex"></param>
+        /// <param name="doc"></param>
+        /// <returns>
+        /// (<see cref="Autodesk.Revit.DB.Element"/>,<see cref="Autodesk.Revit.DB.XYZ"/>)
+        /// if it was succefull to get <see cref="Autodesk.Revit.DB.Element"/> 
+        /// and <see cref="Autodesk.Revit.DB.XYZ"/> from <paramref name="vertex"/>.
+        /// <para>
+        /// Otherwise (<see langword="null"/>, <see langword="null"/>).
+        /// </para>
+        /// </returns>
+        public static (Element, XYZ) ToXYZElement(this IVertex vertex, Document doc)
+        {
+            (Element element, XYZ point) pointElement = (null, null);
+
+            switch (vertex)
+            {
+                case TaggedGVertex<(int, Point3d)> taggedIntPoint:
+                    {
+                        var element = doc.GetElement(new ElementId(taggedIntPoint.Tag.Item1));
+                        if (element != null)
+                        { pointElement = (element, taggedIntPoint.Tag.Item2.ToXYZ()); }
+                        break;
+                    }
+                case TaggedGVertex<int> taggedInt:
+                    {
+                        var element = doc.GetElement(new ElementId(taggedInt.Tag));
+                        var lp = vertex.GetLocation(doc);
+                        if (element != null)
+                        { pointElement = (element, lp); }
+                        break;
+                    }
+                default:
+                    break;
+            }
+
+            return pointElement;
+        }
+
+        /// <summary>
+        /// Convert <paramref name="graph"/>'s <paramref name="vertex"/> to 
+        /// (<see cref="Autodesk.Revit.DB.Element"/>,<see cref="Autodesk.Revit.DB.XYZ"/>).
+        /// </summary>
+        /// <param name="vertex"></param>
+        /// <param name="graph"></param>
+        /// <param name="doc"></param>
+        /// <returns>
+        /// (<see cref="Autodesk.Revit.DB.Element"/>,<see cref="Autodesk.Revit.DB.XYZ"/>)
+        /// if it was succefull to get <see cref="Autodesk.Revit.DB.Element"/> 
+        /// and <see cref="Autodesk.Revit.DB.XYZ"/> from <paramref name="vertex"/>.
+        /// <para>
+        /// Otherwise (<see langword="null"/>, <see langword="null"/>).
+        /// </para>
+        /// </returns>
+        public static (Element, XYZ) ToGraphXYZElement(this IVertex vertex,
+            IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> graph, Document doc)
+        {
+            (Element element, XYZ point) pointElement = (null, null);
+
+            switch (vertex)
+            {
+                case TaggedGVertex<Point3d> taggedPoint:
+                    {
+                        var elems = GetElements(vertex, graph.ToBidirectionalGraph(), doc);
+                        var mc = elems.FirstOrDefault(e => e is MEPCurve);
+                        if (mc != null)
+                        { pointElement = (mc, taggedPoint.Tag.ToXYZ()); }
+                        break;
+                    }
+                case TaggedGVertex<int> taggedInt:
+                    {
+                        var famInst = vertex.TryGetFamilyInstance(doc);
+                        var lp = vertex.GetLocation(doc);
+                        if (famInst != null)
+                        { pointElement = (famInst, lp); }
+                        break;
+                    }
+                default:
+                    break;
+            }
+
+            return pointElement;
+        }
+
+        /// <summary>
+        /// Convert <paramref name="vertex"/> to <see cref="IVertex"/> from <paramref name="graph"/>.
+        /// </summary>
+        /// <param name="vertex"></param>
+        /// <param name="graph"></param>
+        /// <param name="doc"></param>
+        /// <returns>
+        /// <see cref="IVertex"/> if <paramref name="vertex"/> tag id was found through <paramref name="graph"/>'s vertices tags.     
+        /// <para>
+        /// Otherwise default value.
+        /// </para>
+        /// </returns>
+        public static IVertex ToGraphVertex(this IVertex vertex,
+            IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> graph, Document doc)
+        {
+            vertex = vertex is TaggedGVertex<(int, Point3d)> taggedIntPointVertex ?
+             taggedIntPointVertex.ToVertexPoint() :
+             vertex;
+
+            if (!vertex.TryFindTaggedVertex(graph, out var foundVertex))
+            {
+                var aGraph = graph as AdjacencyGraph<IVertex, Edge<IVertex>>;
+                var location = vertex.GetLocation(doc).ToPoint3d();
+                if (aGraph.TryInsert(location, doc))
+                { foundVertex = aGraph.Vertices.Last(); }
+            }
+
+            return foundVertex;
         }
     }
 }

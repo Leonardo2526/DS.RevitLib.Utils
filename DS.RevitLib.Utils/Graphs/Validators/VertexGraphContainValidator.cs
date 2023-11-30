@@ -13,7 +13,7 @@ namespace DS.RevitLib.Utils.Graphs
     /// <summary>
     /// The object to validate whether graph contains vertex. 
     /// </summary>
-    public class GraphContainsVertexValidator : IValidator<IVertex>, IValidatableObject
+    public class VertexGraphContainValidator : IValidator<IVertex>, IValidatableObject
     {
         private readonly Document _doc;
         private readonly IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> _graph;
@@ -28,7 +28,7 @@ namespace DS.RevitLib.Utils.Graphs
         /// <param name="doc"></param>
         /// <param name="graph"></param>
         /// <exception cref="ArgumentNullException"></exception>
-        public GraphContainsVertexValidator(Document doc, IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> graph)
+        public VertexGraphContainValidator(Document doc, IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> graph)
         {
             _doc = doc;
             _graph = graph ?? throw new ArgumentNullException(nameof(graph));

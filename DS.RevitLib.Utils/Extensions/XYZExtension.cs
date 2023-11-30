@@ -215,38 +215,39 @@ namespace DS.RevitLib.Utils.Extensions
         /// <param name="labelSize">Size of label's line to show.</param>
         public static void Show(this XYZ point, Document doc, double labelSize = 0, ITransactionFactory transactionBuilder = null)
         {
-            transactionBuilder ??= new ContextTransactionFactory(doc);
-            transactionBuilder.CreateAsync(() => Show(point, doc, labelSize), "ShowPoint");
+            if (transactionBuilder is null)
+            {
+                ShowPoint(point, doc, labelSize);
+            }
+            else
+            {
+                transactionBuilder.CreateAsync(() => ShowPoint(point, doc, labelSize), "ShowPoint");
+            }
+
+            static void ShowPoint(XYZ point, Document doc, double labelSize = 0)
+            {
+                labelSize = labelSize == 0 ? 100.MMToFeet() : labelSize;
+
+                Line line1 = Line.CreateBound(
+                    point + XYZ.BasisX.Multiply(labelSize / 2),
+                    point - XYZ.BasisX.Multiply(labelSize / 2));
+
+                Line line2 = Line.CreateBound(
+                   point + XYZ.BasisY.Multiply(labelSize / 2),
+                   point - XYZ.BasisY.Multiply(labelSize / 2));
+
+                Line line3 = Line.CreateBound(
+                   point + XYZ.BasisZ.Multiply(labelSize / 2),
+                   point - XYZ.BasisZ.Multiply(labelSize / 2));
+
+                var creator = new ModelCurveCreator(doc);
+                creator.Create(line1);
+                creator.Create(line2);
+                creator.Create(line3);
+
+            }
         }
 
-        /// <summary>
-        /// Show current point in model as 3 crossing line in this <paramref name="point"/>.
-        /// </summary>
-        /// <param name="point"></param>
-        /// <param name="doc"></param>
-        /// <param name="labelSize">Size of label's line to show.</param>
-        public static void Show(this XYZ point, Document doc, double labelSize = 0)
-        {
-            labelSize = labelSize == 0 ? 100.MMToFeet() : labelSize;
-
-            Line line1 = Line.CreateBound(
-                point + XYZ.BasisX.Multiply(labelSize / 2),
-                point - XYZ.BasisX.Multiply(labelSize / 2));
-
-            Line line2 = Line.CreateBound(
-               point + XYZ.BasisY.Multiply(labelSize / 2),
-               point - XYZ.BasisY.Multiply(labelSize / 2));
-
-            Line line3 = Line.CreateBound(
-               point + XYZ.BasisZ.Multiply(labelSize / 2),
-               point - XYZ.BasisZ.Multiply(labelSize / 2));
-
-            var creator = new ModelCurveCreator(doc);
-            creator.Create(line1);
-            creator.Create(line2);
-            creator.Create(line3);
-
-        }
 
         /// <summary>
         /// Convert <paramref name="point"/> to <see cref="Point3D"/>.

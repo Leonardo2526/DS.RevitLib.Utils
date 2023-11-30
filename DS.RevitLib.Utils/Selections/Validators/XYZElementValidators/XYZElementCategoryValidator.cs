@@ -1,31 +1,33 @@
 ﻿using Autodesk.Revit.DB;
 using DS.ClassLib.VarUtils;
-using DS.GraphUtils.Entities;
 using DS.RevitLib.Utils.Extensions;
-using QuickGraph;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 
-namespace DS.RevitLib.Utils.Graphs
+namespace DS.RevitLib.Utils.Selections.Validators
 {
     /// <summary>
-    /// The object to validate vertex categories.
+    /// Validator to check (<see cref="Autodesk.Revit.DB.Element"/>,<see cref="Autodesk.Revit.DB.XYZ"/>) categories.
     /// </summary>
-    public class VertexFamInstCategoryValidator : IValidator<IVertex>, IValidatableObject
+    public class XYZElementCategoryValidator : IValidator<(Element, XYZ)>, IValidatableObject
     {
-        private readonly Document _doc;
+        /// <summary>
+        /// Current active document.
+        /// </summary>
+        protected readonly Document _doc;
         private readonly Dictionary<BuiltInCategory, List<PartType>> _availableCategories;
         private readonly List<ValidationResult> _validationResults = new();
 
         /// <summary>
-        /// Instansiate object to validate vertex categories.
+        /// Instansiate validator to check 
+        /// (<see cref="Autodesk.Revit.DB.Element"/>,<see cref="Autodesk.Revit.DB.XYZ"/>) categories.
         /// </summary>
         /// <param name="doc"></param>
         /// <param name="availableCategories"></param>
         /// <exception cref="ArgumentNullException"></exception>
-        public VertexFamInstCategoryValidator(Document doc, Dictionary<BuiltInCategory,
+        public XYZElementCategoryValidator(Document doc, Dictionary<BuiltInCategory,
             List<PartType>> availableCategories)
         {
             _doc = doc;
@@ -37,22 +39,18 @@ namespace DS.RevitLib.Utils.Graphs
         public IEnumerable<ValidationResult> ValidationResults => _validationResults;
 
         /// <inheritdoc/>
-        public bool IsValid(IVertex value) =>
+        public bool IsValid((Element, XYZ) value) =>
             Validate(new ValidationContext(value)).Count() == 0;
 
         /// <inheritdoc/>
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
-            var vertex = validationContext.ObjectInstance as IVertex;
-
-            var famInst = vertex.TryGetFamilyInstance(_doc);
-            if (famInst == null)
+            if (validationContext.ObjectInstance is not ValueTuple<Element, XYZ> pointElement)
             { return _validationResults; }
 
-            if (!famInst.IsCategoryElement(_availableCategories))
-            { _validationResults.Add(new ValidationResult("Vertex category is not allow.")); }
-
-          
+            if (pointElement.Item1 is FamilyInstance && 
+                !pointElement.Item1.IsCategoryElement(_availableCategories))
+            { _validationResults.Add(new ValidationResult("Element category is not allowed.")); }
 
             return _validationResults;
         }

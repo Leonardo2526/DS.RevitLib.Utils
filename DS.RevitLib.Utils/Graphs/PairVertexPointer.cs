@@ -20,6 +20,9 @@ using DS.RevitLib.Utils.Connections.PointModels;
 using System.ComponentModel.DataAnnotations;
 using Serilog;
 using System.Data;
+using DS.RevitLib.Utils.MEP;
+using System.Security.Cryptography;
+using Rhino.UI;
 
 namespace DS.RevitLib.Utils.Graphs
 {
@@ -50,6 +53,7 @@ namespace DS.RevitLib.Utils.Graphs
         /// </summary>
         public ILogger Logger { get; set; }
 
+
         /// <inheritdoc/>
         public IVertex Point(string pointMessage = null)
         {
@@ -62,19 +66,40 @@ namespace DS.RevitLib.Utils.Graphs
             catch (Autodesk.Revit.Exceptions.OperationCanceledException)
             {
                 (element, point) = PickPoint(pointMessage);
-            }           
+            }
 
             if (element == null) { return null; }
 
             int.TryParse(pointMessage, out int id);
             IVertex vertex = CreateVertex(id, point, element);
 
-            return IsValid(vertex) ? vertex : null;
+            ConfigValidators(vertex, Validators);
+
+            var vertexToCheck = vertex is TaggedGVertex<(int, Point3d)> taggedIntPointVertex ?
+              taggedIntPointVertex.ToVertexPoint() :
+              vertex;
+
+            return IsValid(vertexToCheck) ? vertex : null;
 
             static IVertex CreateVertex(int id, XYZ point, Element element)
-                => element is FamilyInstance ?
-                    new TaggedGVertex<int>(id, element.Id.IntegerValue) :
-                    new TaggedGVertex<Point3d>(id, point.ToPoint3d());
+            {
+                switch (element)
+                {
+                    case FamilyInstance:
+                        {
+                            return new TaggedGVertex<int>(id, element.Id.IntegerValue);
+                        }
+                    case MEPCurve:
+                        {
+                            var tag = (element.Id.IntegerValue, point.ToPoint3d());
+                            return new TaggedGVertex<(int, Point3d)>(id, tag);
+                        }
+
+                    default:
+                        break;
+                }
+                return null;
+            }
         }
 
         public (Element element, XYZ point) CenterPoint(string pointId)
@@ -122,5 +147,46 @@ namespace DS.RevitLib.Utils.Graphs
             }
         }
 
+        private void ConfigValidators(IVertex vertex, IEnumerable<IValidator<IVertex>> validators)
+        {
+
+            //config collision validator
+            var collisionValidator = validators.
+                           OfType<VertexCollisionValidator>().
+                           FirstOrDefault();
+            if (collisionValidator != null)
+            {
+                var excludedIds = new List<ElementId>();
+
+                var id = vertex.TryGetTagId(_doc);
+                if (id == null)
+                { return; }
+
+                excludedIds.Add(id);
+                if (vertex is TaggedGVertex<int> taggedInt)
+                {
+                    var famInst = _doc.GetElement(id);
+                    var connectedMEPCurves =
+                                    ConnectorUtils.GetConnectedElements(famInst, true).
+                                    OfType<MEPCurve>();
+                    excludedIds.AddRange(connectedMEPCurves.Select(e => e.Id));
+                }
+
+                collisionValidator.ExcludeIds = excludedIds;
+            }
+
+            //config limitsValidator
+            {
+                var limitValidator = validators.
+                       OfType<VertexLimitsValidator>().
+                       FirstOrDefault();
+                if(limitValidator != null && limitValidator.Graph == null) 
+                {
+                    var id = vertex.TryGetTagId(_doc);
+                    if (id != null)
+                    { limitValidator.ElementOnVertex =  _doc.GetElement(id); }
+                }
+            }
+        }
     }
 }

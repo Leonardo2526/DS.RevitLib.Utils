@@ -16,6 +16,7 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
         private readonly Document _activeDocument;
         private readonly IElementIntersectionFactory _intersectionFactory;
         private readonly List<(RevitLinkInstance, Transform, List<Element>)> _loadedLinksDict = new();
+        private IEnumerable<ElementId> _idsExclude;
 
         /// <summary>
         /// Instantiate a new object to find collisions (intersections) between <see cref="object"/>'s and <see cref="Autodesk.Revit.DB.Element"/>'s.
@@ -87,6 +88,26 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
                     _intersectionFactory.ExculdedTypes.Add(typeof(InsulationLiningBase));
                 }
 
+            }
+        }
+
+        /// <inheritdoc/>
+        public IEnumerable<ElementId> ExcludedIds
+        {
+            get => _intersectionFactory.ExcludedElements.Select(x => x.Id);
+            set
+            {
+                _intersectionFactory.ExcludedElements.Clear();
+                foreach (var item in value)
+                {
+                    var e = _activeDocument.GetElement(item);
+                    if (e != null && e.IsValidObject)
+                    { _intersectionFactory.ExcludedElements.Add(e); }
+                    else
+                    {
+                        throw new InvalidOperationException($"Element with {item} id doesn't exists in active document.");
+                    }
+                }
             }
         }
 

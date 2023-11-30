@@ -22,6 +22,11 @@ namespace DS.RevitLib.Utils.Collisions
         /// <summary>
         /// Elements to exclude.
         /// </summary>
-        public List<Element> ExcludedElements { get; set; } 
+        public List<Element> ExcludedElements { get; set; }
+
+        /// <summary>
+        /// <see cref="Autodesk.Revit.DB.ElementId"/>s to exclude.
+        /// </summary>
+        public IEnumerable<ElementId> ExcludedIds { get; set; }
     }
 }

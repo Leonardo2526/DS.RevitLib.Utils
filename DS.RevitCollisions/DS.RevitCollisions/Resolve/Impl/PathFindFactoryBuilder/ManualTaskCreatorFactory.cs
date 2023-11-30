@@ -18,6 +18,7 @@ using DS.RevitLib.Utils.Collisions.Detectors;
 using DS.RevitLib.Utils.MEP.SystemTree.Relatives;
 using QuickGraph.Algorithms;
 using Serilog;
+using DS.RevitLib.Utils.Graphs.Validators;
 
 namespace DS.RevitCollisions.Resolve.Impl.PathFindFactoryBuilder
 {
@@ -76,45 +77,49 @@ namespace DS.RevitCollisions.Resolve.Impl.PathFindFactoryBuilder
         /// </summary>
         public ILogger Logger { get; set; }
 
+        /// <summary>
+        /// <see cref="MEPCurve"/> to get collisions on point.
+        /// </summary>
+        public MEPCurve BaseMEPCurve { get; set; }  
 
         public ITaskCreator<IMEPCollision, (IVertex, IVertex)> Create()
         {
             var validators = new List<IValidator<IVertex>>();
 
             _xYZCollisionDetector.ElementClearance = TraceSettings.B;
-            var collisionValidator = new VertexCollisionValidator(_doc, _bdGraph, _elementCollisionDetector, _xYZCollisionDetector);
-            var limitsValidator = new VertexLimitsValidator(_doc)
+            var collisionValidator = new VertexCollisionValidator(_doc, _elementCollisionDetector, _xYZCollisionDetector, _graph)
+            { BaseMEPCurve = BaseMEPCurve };
+            var limitsValidator = new VertexLimitsValidator(_doc, _graph)
             {
                 BoundOutline = ExternalOutline,
-                MaxVerticesCount = MaxVerticesCount,
                 IsInsulationAccount = InsulationAccount,
-                MaxLength = MaxLength,
                 MinDistToFloor = TraceSettings.H,
-                MinDistToCeiling = TraceSettings.B,
+                MinDistToCeiling = TraceSettings.B
             };
-            limitsValidator.Instansiate(_graph);
-            limitsValidator.SetParent(_graph.Roots().First());
-
-            var famInstCategoryValidator = new VertexFamInstCategoryValidator(_doc, AvailableCategories);
+           
+            var famInstCategoryValidator = new VertexCategoryValidator(_doc, AvailableCategories, _graph);
             var relationValidator = new VertexRelationValidator(_doc, _bdGraph)
             { InElementRelation = Relation.Child };
-            var graphContainsValidator = new GraphContainsVertexValidator(_doc, _graph);
+            var graphContainsValidator = new VertexGraphContainValidator(_doc, _graph);
+            var vertexGraphLimitsValidator =  new VertexGraphLimitsValidator(_doc, _graph)
+            { MaxLength = MaxLength, MaxVerticesCount = MaxVerticesCount };
 
             validators.Add(collisionValidator);
             validators.Add(limitsValidator);
             validators.Add(famInstCategoryValidator); 
             validators.Add(relationValidator);
             validators.Add(graphContainsValidator);
+            validators.Add(vertexGraphLimitsValidator);
 
 
-            var pointer = new PairVertexPointer(_uIDoc)
+            var selector = new VertexValidatableSelector(_uIDoc)
             {
                 Validators = validators,
                 Messenger = Messenger,
-                Logger = Logger,
-
+                Logger = Logger
             };
-            return new ManualTaskCreator(pointer, _graph, _doc);
+
+            return new ManualTaskCreator(selector, _graph, _doc);
         }
     }
 }

@@ -3,6 +3,7 @@ using Autodesk.Revit.DB.Electrical;
 using Autodesk.Revit.DB.Mechanical;
 using Autodesk.Revit.DB.Plumbing;
 using DS.ClassLib.VarUtils;
+using DS.GraphUtils.Entities;
 using DS.RevitLib.Utils.Connection;
 using DS.RevitLib.Utils.Connections.PointModels;
 using DS.RevitLib.Utils.MEP;
@@ -799,6 +800,43 @@ namespace DS.RevitLib.Utils.Extensions
             XYZ pointCeilingBound = point.GetXYZBound(doc, minHCeiling, distnaceToFindFloor);
 
             return (pointFloorBound, pointCeilingBound);
+        }
+
+        /// <summary>
+        /// Convert <paramref name="pointElement"/> to <see cref="IVertex"/>.
+        /// </summary>
+        /// <param name="pointElement"></param>
+        /// <param name="vertexId"></param>
+        /// <returns>
+        /// <see cref="TaggedGVertex{TTag}"/> with <see cref="Point3d"/> tag if <see cref="Autodesk.Revit.DB.Element"/>
+        /// is <see cref="MEPCurve"/>.
+        /// <para>
+        /// <see cref="TaggedGVertex{TTag}"/> with <see cref="int"/> tag as element id if <see cref="Autodesk.Revit.DB.Element"/>
+        /// is <see cref="Autodesk.Revit.DB.FamilyInstance"/>.
+        /// </para>
+        /// <para>
+        /// Otherwise <see langword="null"/>.
+        /// </para>
+        /// </returns>
+        public static IVertex ToVertex(this (Element element, XYZ point) pointElement, int vertexId)
+        {
+            var element = pointElement.element;
+            switch (element)
+            {
+                case FamilyInstance:
+                    {
+                        return new TaggedGVertex<int>(vertexId, element.Id.IntegerValue);
+                    }
+                case MEPCurve:
+                    {
+                        var tag = (element.Id.IntegerValue, pointElement.point.ToPoint3d());
+                        return new TaggedGVertex<(int, Rhino.Geometry.Point3d)>(vertexId, tag);
+                    }
+
+                default:
+                    break;
+            }
+            return null;
         }
     }
 }

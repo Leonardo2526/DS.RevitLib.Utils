@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Mechanical;
 using Autodesk.Revit.DB.Plumbing;
+using DS.ClassLib.VarUtils.Collisons;
 using DS.RevitLib.Utils.Extensions;
 using System;
 using System.Collections.Generic;
@@ -58,6 +59,26 @@ namespace DS.RevitLib.Utils.Collisions.Models
                 var excludedCategoriesIds = new List<ElementId>();
                 ExculdedCategories.ForEach(c => excludedCategoriesIds.Add(new ElementId((int)c)));
                 return excludedCategoriesIds;
+            }
+        }
+
+        /// <inheritdoc/>
+        public IEnumerable<ElementId> ExcludedIds
+        {
+            get => ExcludedElements.Select(x => x.Id);
+            set
+            {
+                ExcludedElements.Clear();
+                foreach (var item in value)
+                {
+                    var e = _activeDocument.GetElement(item);
+                    if (e != null && e.IsValidObject)
+                    { ExcludedElements.Add(e); }
+                    else
+                    {
+                        throw new InvalidOperationException($"Element with {item} id doesn't exists in active document.");
+                    }
+                }
             }
         }
 

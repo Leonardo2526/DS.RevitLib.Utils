@@ -23,12 +23,12 @@ namespace DS.RevitLib.Test
             UIDocument uidoc = uiapp.ActiveUIDocument;
 
 
-            var resolver = new MultiResolverTest(uidoc)
-                .CreateResolver();
+            var test= new PathFindVertexPairResolverTest(uidoc);
+            test.RunCase1();
 
             //resolver.Resolve();
             //return Result.Succeeded;
-            resolver.ResolveAsync();
+            //resolver.ResolveAsync();
             //Task.Run(async () => { await resolver.ResolveAsync(); });
 
             //new SegmentFactoryTest(uidoc)

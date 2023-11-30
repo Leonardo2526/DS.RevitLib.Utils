@@ -43,6 +43,10 @@
     <Reference Include="DS.ClassLib.VarUtils">
       <HintPath>..\..\..\DS.CommonLib.Utils\DS.ClassLib.VarUtils\bin\Debug\DS.ClassLib.VarUtils.dll</HintPath>
     </Reference>
+    <Reference Include="DS.GraphUtils.Entities, Version=1.0.0.0, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\DS.GraphUtils\DS.GraphUtils.Entities\DS.GraphUtils.Entities\bin\Debug\DS.GraphUtils.Entities.dll</HintPath>
+    </Reference>
     <Reference Include="DS.PathFinder, Version=1.0.4.0, Culture=neutral, processorArchitecture=AMD64">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\DS.CommonLib.Utils\PathFinders\DS.PathFinder\bin\Debug\DS.PathFinder.dll</HintPath>
@@ -108,7 +112,6 @@
     <Compile Include="Resolve\Impl\DummyFactoryBuilder.cs" />
     <Compile Include="Resolve\Impl\DummyResolveProcessorBuilder.cs" />
     <Compile Include="Resolve\Impl\PathFindFactoryBuilder\AutoTaskCreatorFactory.cs" />
-    <Compile Include="Resolve\Impl\PathFindFactoryBuilder\IPointStrategy.cs" />
     <Compile Include="Resolve\Impl\PathFindFactoryBuilder\ManualTaskCreator.cs" />
     <Compile Include="Resolve\Impl\PathFindFactoryBuilder\ManualTaskCreatorFactory.cs" />
     <Compile Include="Models\Collision.cs" />
@@ -126,17 +129,15 @@
     <Compile Include="Resolve\TaskCreators\VertexPairTaskCreator.cs" />
     <Compile Include="Resolve\TaskResolvers\DummyTaskResolver.cs" />
     <Compile Include="Resolve\TaskResolvers\PathFindVertexPairResolver.cs" />
+    <Compile Include="Resolve\TaskResolvers\PathFindGraphVertexPairResolver.cs" />
     <Compile Include="PointsList.cs" />
+    <Compile Include="Resolve\TaskResolvers\PathFindVertexPairResolverBase.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\DS.GraphUtils\DS.GraphUtils.Entities\DS.GraphUtils.Entities\DS.GraphUtils.Entities.csproj">
-      <Project>{3f3c36e6-646a-47b2-ad46-81268ead25b0}</Project>
-      <Name>DS.GraphUtils.Entities</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\DS.RevitLib.Utils\DS.RevitLib.Utils.csproj">
       <Project>{9873f185-f630-4bb2-94a4-d9665f32b802}</Project>
       <Name>DS.RevitLib.Utils</Name>

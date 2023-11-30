@@ -50,14 +50,14 @@ namespace DS.RevitLib.Test
             //Show line points
             foreach (var point in _linePoints)
             {
-                point.Show(_doc);
+                point.Show(_doc, 0, null);
             }
 
 
             //Get and show bb
             var bb = ElementUtils.GetBoundingBox(_lines, _offset);
-            bb.Min.Show(_doc);
-            bb.Max.Show(_doc);
+            bb.Min.Show(_doc,0 ,null);
+            bb.Max.Show(_doc, 0, null);
             _transactionBuilder.Build(() =>
             {
                 var visualizator = new BoundingBoxVisualisator(bb, _doc);
@@ -70,15 +70,15 @@ namespace DS.RevitLib.Test
             var points = new List<XYZ>();
 
             XYZ point1 = _uiDoc.Selection.PickPoint();
-            point1.Show(_doc);
+            point1.Show(_doc, 0, null);
             _uiDoc.RefreshActiveView();
 
             XYZ point2 = _uiDoc.Selection.PickPoint();
-            point2.Show(_doc);
+            point2.Show(_doc, 0, null);
             _uiDoc.RefreshActiveView();
 
             XYZ point3 = _uiDoc.Selection.PickPoint();
-            point3.Show(_doc);
+            point3.Show(_doc, 0, null);
             _uiDoc.RefreshActiveView();
 
             points.Add(point1);
@@ -87,8 +87,8 @@ namespace DS.RevitLib.Test
 
             //Get and show bb
             var bb = ElementUtils.GetBoundingBox(points, _offset);
-            bb.Min.Show(_doc);
-            bb.Max.Show(_doc);
+            bb.Min.Show(_doc, 0, null);
+            bb.Max.Show(_doc, 0, null);
             _transactionBuilder.Build(() =>
             {
                 var visualizator = new BoundingBoxVisualisator(bb, _doc);
@@ -125,7 +125,7 @@ namespace DS.RevitLib.Test
             var offsetPoints1 = arc.Tessellate();
             foreach (var point in offsetPoints1)
             {
-                point.Show(_doc);
+                point.Show(_doc, 0, null);
             }
         }
     }
