@@ -213,7 +213,6 @@
     <Compile Include="Geometry\Points\XYZVisualizator.cs" />
     <Compile Include="Geometry\Solids\SolidOffsetExtractor.cs" />
     <Compile Include="Graphs\EdgePointIterator.cs" />
-    <Compile Include="Graphs\VertexValidatableSelector.cs" />
     <Compile Include="Graphs\GraphVisulisator.cs" />
     <Compile Include="Graphs\IVertexPairIteratorBuilder.cs" />
     <Compile Include="Graphs\MEPGraphBuilder.cs" />
@@ -236,6 +235,7 @@
     <Compile Include="Graphs\VertexExtensions.cs" />
     <Compile Include="Graphs\Validators\VertexRelationValidator.cs" />
     <Compile Include="Graphs\VertexVisualizator.cs" />
+    <Compile Include="Graphs\VertexSelectors.cs" />
     <Compile Include="PathCreators\AlgorithmBuilder\Impl.cs" />
     <Compile Include="PathCreators\AlgorithmBuilder\PathAlgorithmBuilder.cs" />
     <Compile Include="PathCreators\AlgorithmVertexBuilder\ImplVertex.cs" />
@@ -246,12 +246,10 @@
     <Compile Include="PathCreators\XYZVertexPathFinder.cs" />
     <Compile Include="Resolve\TaskCreators\GraphTaskCreator.cs" />
     <Compile Include="Resolve\TaskCreators\ManualXYZElementTaskCreatorFactory.cs" />
-    <Compile Include="Resolve\TaskCreators\ManualXYZElementTaskCreator.cs" />
     <Compile Include="Resolve\TaskCreators\ValidatableTaskCreatorFactoryBase.cs" />
     <Compile Include="Selections\Validators\XYZElementValidators\XYZElementCategoryValidator.cs" />
     <Compile Include="Selections\Validators\XYZElementValidators\XYZElementLimitsValidator.cs" />
-    <Compile Include="Selections\XYZElementSelectorBase.cs" />
-    <Compile Include="Various\IWindowMessenger.cs" />
+    <Compile Include="Selections\XYZElementSelectors.cs" />
     <Compile Include="PathCreators\XYZPathFinder.cs" />
     <Compile Include="Various\Bases\BasisExtensions.cs" />
     <Compile Include="Various\Bases\BasisXYZ.cs" />
@@ -290,7 +288,6 @@
     <Compile Include="Selections\Filters\PointOnElementSelectionFilter.cs" />
     <Compile Include="Selections\PointOnElementSelector.cs" />
     <Compile Include="Selections\Validators\XYZElementValidators\XYZElementCollisionValidator.cs" />
-    <Compile Include="Selections\XYZElementValidatableSelector.cs" />
     <Compile Include="Various\TaskDialogMessenger.cs" />
     <Compile Include="Various\VectorPointConverter.cs" />
     <Compile Include="Selections\Filters\ElementInLinkSelectionFilter.cs" />

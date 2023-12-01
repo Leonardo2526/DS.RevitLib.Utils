@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace DS.RevitLib.Utils.Various.Selections
 {
     /// <inheritdoc/>
-    public class PointOnElementSelector : SelectorBase<Element>
+    public class PointOnElementSelector : Various.SelectorBase<Element>
     {
         /// <inheritdoc/>
         public PointOnElementSelector(UIDocument uiDoc) : base(uiDoc)
