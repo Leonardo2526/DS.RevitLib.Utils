@@ -6,7 +6,6 @@ using DS.ClassLib.VarUtils.Resolvers.TaskCreators;
 using DS.GraphUtils.Entities;
 using DS.RevitCollisions;
 using DS.RevitCollisions.Models;
-using DS.RevitCollisions.Resolve.Impl.PathFindFactoryBuilder;
 using DS.RevitLib.Utils.Collisions.Detectors;
 using DS.RevitLib.Utils.Collisions.Models;
 using DS.RevitLib.Utils.Creation.Transactions;
@@ -29,12 +28,14 @@ using System.Collections.Generic;
 using System.Linq;
 using DS.ClassLib.VarUtils.GridMap;
 using DS.RevitLib.Utils.Connections.PointModels;
+using DS.RevitCollisions.Resolve.TaskResolvers;
+using DS.RevitCollisions.Resolve.TaskCreators;
 
 namespace DS.RevitLib.Test.TestedClasses
 {
     internal class PathFindVertexPairResolverTest
     {
-        private readonly bool _deleteInsideElements = true;
+        private readonly bool _deleteInsideElements = false;
         private readonly UIDocument _uiDoc;
         private readonly Document _doc;
         private readonly ContextTransactionFactory _trfIn;
@@ -118,7 +119,7 @@ namespace DS.RevitLib.Test.TestedClasses
             AdjacencyGraph<IVertex, Edge<IVertex>> targetGraph)
         {
             //build task
-            var taskCreatorFactory = new ManualVertexTaskCreatorFactory(_uiDoc, targetGraph, _collisionDetector)
+            var taskCreatorFactory = new ManualTaskCreatorFactory(_uiDoc, targetGraph, _collisionDetector)
             {
                 AvailableCategories = GetIterationCategories(),
                 ExternalOutline = null,

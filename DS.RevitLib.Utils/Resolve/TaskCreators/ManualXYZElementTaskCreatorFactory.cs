@@ -2,16 +2,18 @@
 using Autodesk.Revit.UI;
 using DS.ClassLib.VarUtils;
 using DS.ClassLib.VarUtils.Resolvers;
+using DS.ClassLib.VarUtils.Selectors;
 using DS.RevitLib.Utils.Collisions.Detectors;
 using DS.RevitLib.Utils.Collisions.Detectors.AbstractDetectors;
 using DS.RevitLib.Utils.Selections.Validators;
 using DS.RevitLib.Utils.Various.Selections;
+using System;
 using System.Collections.Generic;
 
 namespace DS.RevitLib.Utils.Resolve.TaskCreators
 {
     /// <inheritdoc/>
-    public class ManualXYZElementTaskCreatorFactory : 
+    public class ManualXYZElementTaskCreatorFactory :
         ValidatableTaskCreatorFactoryBase<object, (Element, XYZ)>
     {
         private readonly IElementCollisionDetector _elementCollisionDetector;
@@ -28,8 +30,16 @@ namespace DS.RevitLib.Utils.Resolve.TaskCreators
         /// <inheritdoc/>
         public override ITaskCreator<object, ((Element, XYZ), (Element, XYZ))> Create()
         {
+            var xyzSelectors = new XYZElementSelectors(_uIDoc)
+            { AllowLink = false, Logger = Logger };
+            var selectors = new List<Func<(Element, XYZ)>>()
+            {
+                xyzSelectors.SelectElement,
+                xyzSelectors.SelectPointOnElement
+            };
+
             var validators = GetValidators();
-            var selector = new XYZElementValidatableSelector(_uIDoc)
+            var selector = new ValidatableSelector<(Element, XYZ)>(selectors)
             {
                 Validators = validators,
                 Messenger = Messenger,

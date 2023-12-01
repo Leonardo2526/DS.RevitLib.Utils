@@ -61,6 +61,8 @@ namespace DS.RevitLib.Utils.Graphs
             var results = new List<ValidationResult>();
 
             var vertex = validationContext.ObjectInstance as IVertex;
+            vertex = vertex.ToGraphVertex(_graph, _doc);
+            if(vertex == null) { return results; }
 
             if (!IsWithinMaxLength(_graph, _parentVertex, vertex))
             { results.Add(new ValidationResult("Vertex is outside MaxLength.")); }

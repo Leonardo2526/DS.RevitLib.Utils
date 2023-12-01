@@ -1,6 +1,8 @@
-﻿using Autodesk.Revit.UI;
+﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.UI;
 using DS.ClassLib.VarUtils;
 using DS.ClassLib.VarUtils.Resolvers;
+using DS.ClassLib.VarUtils.Selectors;
 using DS.GraphUtils.Entities;
 using DS.RevitCollisions.Models;
 using DS.RevitLib.Utils.Collisions.Detectors;
@@ -9,7 +11,9 @@ using DS.RevitLib.Utils.Graphs;
 using DS.RevitLib.Utils.Graphs.Validators;
 using DS.RevitLib.Utils.MEP.SystemTree.Relatives;
 using DS.RevitLib.Utils.Resolve.TaskCreators;
+using DS.RevitLib.Utils.Various.Selections;
 using QuickGraph;
+using System;
 using System.Collections.Generic;
 
 namespace DS.RevitCollisions.Resolve.TaskCreators
@@ -41,14 +45,23 @@ namespace DS.RevitCollisions.Resolve.TaskCreators
 
         /// <inheritdoc/>
         public override ITaskCreator<IMEPCollision, (IVertex, IVertex)> Create()
-        {
+        {           
+            var vertexSelectors = new VertexSelectors(_uIDoc)
+            { AllowLink = false, Logger = Logger };
+            var selectors = new List<Func<IVertex>>()
+            {
+                vertexSelectors.SelectVertexOnElement,
+                vertexSelectors.SelectVertexOnElementPoint
+            };
+
             var validators = GetValidators();
-            var selector = new VertexValidatableSelector(_uIDoc)
+            var selector = new ValidatableSelector<IVertex>(selectors)
             {
                 Validators = validators,
                 Messenger = Messenger,
                 Logger = Logger
             };
+
             return new GraphTaskCreator<IMEPCollision>(selector, _graph, _doc);
         }
 

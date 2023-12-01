@@ -46,6 +46,9 @@ namespace DS.RevitLib.Utils.Graphs
         {
             var vertex = validationContext.ObjectInstance as IVertex;
 
+            vertex = vertex.ToGraphVertex(_graph, _doc);
+            if (vertex == null) { AddMessage(); }
+
             switch (vertex)
             {
                 case TaggedGVertex<Point3d> taggedPoint:

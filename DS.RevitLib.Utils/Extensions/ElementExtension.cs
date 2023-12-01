@@ -460,7 +460,7 @@ namespace DS.RevitLib.Utils.Extensions
                 intersectionPoint = maxPoint;
             }
 
-            return centerLine.Distance(intersectionPoint);
+            return intersectionPoint is null ? 0 : centerLine.Distance(intersectionPoint);
         }
 
         /// <summary>

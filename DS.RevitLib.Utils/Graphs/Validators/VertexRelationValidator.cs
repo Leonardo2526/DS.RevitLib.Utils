@@ -10,6 +10,7 @@ using Autodesk.Revit.DB;
 using DS.RevitLib.Utils.Extensions;
 using DS.ClassLib.VarUtils;
 using DS.GraphUtils.Entities;
+using Autodesk.Revit.UI;
 
 namespace DS.RevitLib.Utils.Graphs
 {
@@ -53,6 +54,8 @@ namespace DS.RevitLib.Utils.Graphs
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
             var vertex = validationContext.ObjectInstance as IVertex;
+            vertex = vertex.ToGraphVertex(_graph, _doc);
+            if (vertex == null) { return _validationResults; }
 
             var famInst = vertex.TryGetFamilyInstance(_doc);
             if (famInst == null || (!famInst.IsSpud() && !famInst.IsTee()))
