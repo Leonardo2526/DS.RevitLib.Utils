@@ -26,7 +26,6 @@ namespace DS.RevitCollisions.Resolve.TaskCreators
         private readonly IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> _graph;
         private readonly IElementCollisionDetector _elementCollisionDetector;
         private readonly XYZCollisionDetector _xYZCollisionDetector;
-        private readonly IBidirectionalGraph<IVertex, Edge<IVertex>> _bdGraph;
 
         /// <inheritdoc/>
         public ManualTaskCreatorFactory(UIDocument uIDoc,
@@ -37,11 +36,11 @@ namespace DS.RevitCollisions.Resolve.TaskCreators
             _graph = graph;
             _elementCollisionDetector = elementCollisionDetector;
             _xYZCollisionDetector = new XYZCollisionDetector(elementCollisionDetector);
-            _bdGraph = graph.ToBidirectionalGraph();
+            
         }
 
-        public double MaxLength { get; private set; }
-        public int MaxVerticesCount { get; private set; }
+        public double MaxLength { get;  set; }
+        public int MaxVerticesCount { get; set; }
 
         /// <inheritdoc/>
         public override ITaskCreator<IMEPCollision, (IVertex, IVertex)> Create()
@@ -80,13 +79,18 @@ namespace DS.RevitCollisions.Resolve.TaskCreators
                 MinDistToFloor = TraceSettings.H,
                 MinDistToCeiling = TraceSettings.B
             };
+            var famInstCategoryValidator = new VertexCategoryValidator(_doc, AvailableCategories);
 
-            var famInstCategoryValidator = new VertexCategoryValidator(_doc, AvailableCategories, _graph);
-            var relationValidator = new VertexRelationValidator(_doc, _bdGraph)
-            { InElementRelation = Relation.Child };
-            var graphContainsValidator = new VertexGraphContainValidator(_doc, _graph);
+            //graph validators
+            var graphContainsValidator = new VertexGraphContainValidator(_doc, _graph);//always first through graph validators.
+            var relationValidator = new VertexRelationValidator(_doc, _graph)
+            { InElementRelation = Relation.Child, CheckVertexContainment = true };
             var vertexGraphLimitsValidator = new VertexGraphLimitsValidator(_doc, _graph)
-            { MaxLength = MaxLength, MaxVerticesCount = MaxVerticesCount };
+            {
+                CheckVertexContainment = true,
+                MaxLength = MaxLength, 
+                MaxVerticesCount = MaxVerticesCount 
+            };
 
             validators.Add(collisionValidator);
             validators.Add(limitsValidator);

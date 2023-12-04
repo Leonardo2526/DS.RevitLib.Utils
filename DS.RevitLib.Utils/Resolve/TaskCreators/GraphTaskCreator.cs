@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.DirectContext3D;
 using DS.ClassLib.VarUtils.Resolvers;
 using DS.ClassLib.VarUtils.Selectors;
 using DS.GraphUtils.Entities;
@@ -6,6 +7,7 @@ using DS.RevitLib.Utils.Graphs;
 using DS.RevitLib.Utils.Resolve.TaskCreators;
 using DS.RevitLib.Utils.Various;
 using QuickGraph;
+using Rhino.Geometry;
 using System;
 
 namespace DS.RevitLib.Utils.Resolve.TaskCreators
@@ -24,7 +26,7 @@ namespace DS.RevitLib.Utils.Resolve.TaskCreators
         /// <param name="graph"></param>
         /// <param name="doc"></param>
         public GraphTaskCreator(IValidatableSelector<IVertex> selector,
-            IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> graph, Document doc) : 
+            IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> graph, Document doc) :
             base(selector)
         {
             _graph = graph;
@@ -33,6 +35,14 @@ namespace DS.RevitLib.Utils.Resolve.TaskCreators
 
         /// <inheritdoc/>
         protected override IVertex Convert(IVertex item)
-        => item.ToGraphVertex(_graph, _doc);
+        {
+            item = item is TaggedGVertex<(int, Point3d)> taggedIntPointVertex ?
+            taggedIntPointVertex.ToVertexPoint(_graph.VertexCount) :
+            item;
+
+            item.TryFindTaggedVertex(_graph, out var foundVertex);
+           
+            return foundVertex ?? _graph.TryInsert(item, _doc);
+        }
     }
 }

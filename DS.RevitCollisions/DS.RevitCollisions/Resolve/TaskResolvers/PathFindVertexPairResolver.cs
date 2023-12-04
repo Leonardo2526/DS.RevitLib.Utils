@@ -24,34 +24,31 @@ namespace DS.RevitCollisions.Resolve.TaskResolvers
 {
     public class PathFindVertexPairResolver : PathFindVertexPairResolverBase
     {
-        private IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> _graph;
         private readonly IMEPCollision _mEPCollision;
         private readonly List<MEPCurve> _baseMEPCurves = new List<MEPCurve>();
 
-        public PathFindVertexPairResolver(XYZVertexPathFinder pathFinder,
-            Document doc, IElementCollisionDetector collisionDetector,
+        public PathFindVertexPairResolver(XYZPathFinder pathFinder,
+            Document doc, IElementCollisionDetector collisionDetector, IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> graph,
             MEPCurve baseMEPCurve, MEPCurve basisMEPCurve1, MEPCurve basisMEPCurve2 = null) :
-            base(pathFinder, doc, collisionDetector)
+            base(pathFinder, doc, collisionDetector, graph)
         {
             _baseMEPCurves = new List<MEPCurve>()
                 {baseMEPCurve, basisMEPCurve1};
             if (basisMEPCurve2 != null) { _baseMEPCurves.Add(basisMEPCurve2); }
         }
 
-        public IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> Graph 
-        { get => _graph; set => _graph = value; }
-
-        protected override XYZVertexPathFinder BuildPathFinderWithTask(XYZVertexPathFinder pathFinder,
+        protected override XYZPathFinder BuildPathFinderWithTask(XYZPathFinder pathFinder,
           (IVertex, IVertex) task, IElementCollisionDetector collisionDetector)
         {
-            
-            List<Element> objectsToExclude = Graph is null ? 
-                GetElementsToExclude(task) : 
-                GetExcludededByGraph(Graph, task);
+            List<Element> objectsToExclude = GetElementsToExclude(task);
+
+            //List<Element> objectsToExclude = Graph is null ? 
+            //    GetElementsToExclude(task) : 
+            //    GetExcludededByGraph(Graph, task);
 
             var basisMEPCurve2 = _baseMEPCurves.Count > 2 ? _baseMEPCurves[2] : null;
-
-            pathFinder.Build(_graph,
+            pathFinder.Graph = _graph;
+            pathFinder.Build(
                 _baseMEPCurves[0],
                 _baseMEPCurves[1],
                 basisMEPCurve2,

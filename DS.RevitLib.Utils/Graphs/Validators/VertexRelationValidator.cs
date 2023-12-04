@@ -11,6 +11,9 @@ using DS.RevitLib.Utils.Extensions;
 using DS.ClassLib.VarUtils;
 using DS.GraphUtils.Entities;
 using Autodesk.Revit.UI;
+using Rhino.Geometry;
+using QuickGraph.Algorithms;
+using Autodesk.Revit.DB.Visual;
 
 namespace DS.RevitLib.Utils.Graphs
 {
@@ -20,8 +23,9 @@ namespace DS.RevitLib.Utils.Graphs
     public class VertexRelationValidator : IValidator<IVertex>, IValidatableObject
     {
         private readonly Document _doc;
-        private readonly IBidirectionalGraph<IVertex, Edge<IVertex>> _graph;
+        private readonly IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> _graph;
         private List<ValidationResult> _validationResults = new();
+        private IBidirectionalGraph<IVertex, Edge<IVertex>> _tempGraph;
 
         /// <summary>
         /// Instansiate an object to validate vertex spuds and tees for relations.
@@ -32,10 +36,11 @@ namespace DS.RevitLib.Utils.Graphs
         /// <param name="doc"></param>
         /// <param name="graph"></param>
         /// <exception cref="ArgumentNullException"></exception>
-        public VertexRelationValidator(Document doc, IBidirectionalGraph<IVertex, Edge<IVertex>> graph)
+        public VertexRelationValidator(Document doc, IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> graph)
         {
             _doc = doc;
             _graph = graph ?? throw new ArgumentNullException(nameof(graph));
+            _tempGraph = graph.ToBidirectionalGraph();
         }
 
         /// <summary>
@@ -50,11 +55,32 @@ namespace DS.RevitLib.Utils.Graphs
         public bool IsValid(IVertex value) =>
             Validate(new ValidationContext(value)).Count() == 0;
 
+        public bool CheckVertexContainment { get; set; } = false;
+
         /// <inheritdoc/>
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
             var vertex = validationContext.ObjectInstance as IVertex;
-            vertex = vertex.ToGraphVertex(_graph, _doc);
+
+            if (CheckVertexContainment)
+            {
+                if (!_graph.TryFindItemByTag(vertex, _doc, out var foundVertex, out var foundEdge) || foundVertex == null)
+                {
+                    //insert vertex temporary
+                    var aGraph = _graph as AdjacencyGraph<IVertex, Edge<IVertex>>;
+                    aGraph = aGraph.Clone();
+                    var vertexToInsert = vertex is TaggedGVertex<(int, Point3d)> taggedIntPointVertex ?
+                        taggedIntPointVertex.ToVertexPoint(aGraph.VertexCount) :
+                        vertex;
+                    vertex = aGraph.TryInsert(vertexToInsert, _doc);
+                    _tempGraph = aGraph.ToBidirectionalGraph();
+                }
+                else
+                {
+                    vertex = foundVertex;
+                }
+            }
+
             if (vertex == null) { return _validationResults; }
 
             var famInst = vertex.TryGetFamilyInstance(_doc);
@@ -64,9 +90,9 @@ namespace DS.RevitLib.Utils.Graphs
             var (parents, child) = famInst.GetConnectedElements();
             var parentIds = parents is null ? new List<ElementId>() : parents.Select(x => x.Id);
 
-            _graph.TryGetInEdges(vertex, out var inEdges);
+            _tempGraph.TryGetInEdges(vertex, out var inEdges);
 
-            var inElements = vertex.GetInElements(_graph, _doc);
+            var inElements = vertex.GetInElements(_tempGraph, _doc);
             var inElementsIds = inElements.Select(x => x.Id);
 
             switch (InElementRelation)

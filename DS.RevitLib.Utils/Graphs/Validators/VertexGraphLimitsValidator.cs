@@ -4,6 +4,7 @@ using DS.GraphUtils.Entities;
 using DS.RevitLib.Utils.Extensions;
 using QuickGraph;
 using QuickGraph.Algorithms;
+using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -18,6 +19,7 @@ namespace DS.RevitLib.Utils.Graphs
     {
         private readonly Document _doc;
         private readonly IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> _graph;
+        private IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> _tempGraph;
         private readonly List<ValidationResult> _validationResults = new();
         private IVertex _parentVertex;
 
@@ -30,6 +32,7 @@ namespace DS.RevitLib.Utils.Graphs
         {
             _doc = doc;
             _graph = graph;
+            _tempGraph = _graph;
         }
 
 
@@ -53,21 +56,39 @@ namespace DS.RevitLib.Utils.Graphs
         /// <inheritdoc/>
         public IEnumerable<ValidationResult> ValidationResults => _validationResults;
 
+        public bool CheckVertexContainment { get; set; } = false;
+
         #endregion
 
         /// <inheritdoc/>
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
-            var results = new List<ValidationResult>();
-
             var vertex = validationContext.ObjectInstance as IVertex;
-            vertex = vertex.ToGraphVertex(_graph, _doc);
-            if(vertex == null) { return results; }
 
-            if (!IsWithinMaxLength(_graph, _parentVertex, vertex))
-            { results.Add(new ValidationResult("Vertex is outside MaxLength.")); }
 
-            return results;
+            if (CheckVertexContainment)
+            {
+                if (!_graph.TryFindItemByTag(vertex, _doc, out var foundVertex, out var foundEdge) || foundVertex == null)
+                {
+                    //insert vertex temporary
+                    var aGraph = _graph as AdjacencyGraph<IVertex, Edge<IVertex>>;
+                    _tempGraph = aGraph.Clone();
+                    var tempVertex = vertex is TaggedGVertex<(int, Point3d)> taggedIntPointVertex ?
+                        taggedIntPointVertex.ToVertexPoint(aGraph.VertexCount) :
+                        vertex;
+                    vertex = _tempGraph.TryInsert(tempVertex, _doc);
+                }
+                else
+                {
+                    vertex = foundVertex;
+                }
+            }
+            if (vertex == null) { return _validationResults; }
+
+            if (!IsWithinMaxLength(_tempGraph, _parentVertex, vertex))
+            { _validationResults.Add(new ValidationResult("Vertex is outside MaxLength.")); }
+
+            return _validationResults;
         }
 
 
@@ -85,7 +106,7 @@ namespace DS.RevitLib.Utils.Graphs
             var gc = aGraph.Clone();
 
             gc.AddVertex(vertex);
-            parentVertex ??= _graph.Roots().First();
+            parentVertex ??= _tempGraph.Roots().First();
             var edge = new TaggedEdge<IVertex, int>(parentVertex, vertex, 0);
             gc.AddEdge(edge);
 

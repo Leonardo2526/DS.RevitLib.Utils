@@ -11,6 +11,7 @@ using DS.RevitLib.Utils;
 using DS.RevitLib.Utils.Collisions.Detectors.AbstractDetectors;
 using DS.RevitLib.Utils.Creation.Transactions;
 using DS.RevitLib.Utils.PathCreators;
+using DS.RevitLib.Utils.PathCreators.AlgorithmVertexBuilder;
 using QuickGraph;
 using System.Collections.Generic;
 
@@ -27,13 +28,13 @@ namespace DS.RevitCollisions.Resolve.ResolveFactories
         private readonly UIDocument _uiDoc;
         private readonly IElementCollisionDetector _collisionDetector;
         private readonly IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> _sourceGraph;
-        private readonly XYZVertexPathFinder _pathFinder;
+        private readonly XYZPathFinder _pathFinder;
 
         public PathFindFactoryBuilder(
             UIDocument uiDoc,
             IElementCollisionDetector collisionDetector,
             IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> graph,
-            XYZVertexPathFinder pathFinder)
+            XYZPathFinder pathFinder)
         {
             _uiDoc = uiDoc;
             _collisionDetector = collisionDetector;
@@ -105,6 +106,8 @@ namespace DS.RevitCollisions.Resolve.ResolveFactories
                     ExternalOutline = ExternalOutline,
                     InsulationAccount = InsulationAccount,
                     TraceSettings = TraceSettings,
+                    MaxLength = default,
+                    MaxVerticesCount = default,
                     Messenger = Messenger,
                     Logger = Logger
                 };
@@ -114,8 +117,8 @@ namespace DS.RevitCollisions.Resolve.ResolveFactories
         /// <inheritdoc/>
         protected override ITaskResolver<(IVertex, IVertex), IVertexAndEdgeListGraph<IVertex, Edge<IVertex>>> BuildTaskResover()
         {
-            _pathFinder.ExternalOutline = ExternalOutline;
-            _pathFinder.InsulationAccount = InsulationAccount;
+            //_pathFinder.ExternalOutline = ExternalOutline;
+            //_pathFinder.InsulationAccount = InsulationAccount;
             var resolver = new PathFindGraphVertexPairResolver(_pathFinder, _doc, _collisionDetector, TargetGraph, Collision)
             {
                 Logger = Logger

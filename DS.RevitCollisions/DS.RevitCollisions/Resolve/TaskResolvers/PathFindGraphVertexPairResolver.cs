@@ -28,16 +28,16 @@ namespace DS.RevitCollisions.Resolve.TaskResolvers
         private readonly IMEPCollision _mEPCollision;
         private readonly List<MEPCurve> _baseMEPCurves = new List<MEPCurve>();
 
-        public PathFindGraphVertexPairResolver(XYZVertexPathFinder pathFinder, 
+        public PathFindGraphVertexPairResolver(XYZPathFinder pathFinder, 
             Document doc, IElementCollisionDetector collisionDetector, 
             IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> graph, IMEPCollision mEPCollision) : 
-            base(pathFinder, doc, collisionDetector)
+            base(pathFinder, doc, collisionDetector, graph)
         {
             _graph = graph;
             _mEPCollision = mEPCollision;
         }
 
-        protected override XYZVertexPathFinder BuildPathFinderWithTask(XYZVertexPathFinder pathFinder,
+        protected override XYZPathFinder BuildPathFinderWithTask(XYZPathFinder pathFinder,
           (IVertex, IVertex) task, IElementCollisionDetector collisionDetector)
         {
             var baseMEPCurve = _mEPCollision.Item1;
@@ -45,7 +45,8 @@ namespace DS.RevitCollisions.Resolve.TaskResolvers
 
             List<Element> objectsToExclude = GetElementsToExclude(task);
 
-            pathFinder.Build(_graph,
+            pathFinder.Graph = _graph;
+            pathFinder.Build(
                 baseMEPCurve,
                 baseMEPCurve,
                 stateMEPCurve,

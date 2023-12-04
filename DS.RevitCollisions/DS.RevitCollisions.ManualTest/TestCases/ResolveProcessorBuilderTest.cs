@@ -133,7 +133,17 @@ namespace DS.RevitCollisions.ManualTest.TestCases
             {
                 //Create and config pathFind factory
 
-                var pathFindFactory = new XYZVertexPathFinderFactory(_uiDoc)
+                //var pathFindFactory = new XYZVertexPathFinderFactory(_uiDoc)
+                //{
+                //    TraceSettings = _traceSettings,
+                //};
+                //var pathFinder = pathFindFactory.GetInstance();
+                //pathFinder.AccountInitialDirections = true;
+                //pathFinder.MinimizePathNodes = true;
+                //pathFinder.AllowSecondElementForBasis = true;
+                //pathFinder.MaxTime = 1000000;
+
+                var pathFindFactory = new XYZPathFinderFactory(_uiDoc)
                 {
                     TraceSettings = _traceSettings,
                 };
@@ -142,6 +152,10 @@ namespace DS.RevitCollisions.ManualTest.TestCases
                 pathFinder.MinimizePathNodes = true;
                 pathFinder.AllowSecondElementForBasis = true;
                 pathFinder.MaxTime = 1000000;
+                pathFinder.ExternalOutline = null;
+                pathFinder.InsulationAccount = true;
+                pathFinder.AllowSecondElementForBasis = false;
+                pathFinder.OutlineFactory = null;
 
                 var f1 = new PathFindFactoryBuilder(_uiDoc, _collisionDetector, graph, pathFinder)
                 {

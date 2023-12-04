@@ -1,5 +1,6 @@
 ﻿using Autodesk.Revit.DB;
 using DS.ClassLib.VarUtils;
+using DS.ClassLib.VarUtils.GridMap;
 using DS.GraphUtils.Entities;
 using QuickGraph;
 using Rhino.Geometry;
@@ -20,9 +21,10 @@ namespace DS.RevitLib.Utils.Graphs
         private List<ValidationResult> _validationResults = new();
 
         /// <summary>
-        /// Instansiate an object to validate whether <paramref name="graph"/> contains vertex.
+        /// Instansiate an object to validate whether <paramref name="graph"/> can contains vertex.
         /// <para>
-        /// All other elements will be valid by default.
+        /// If graph doesnt'n contains vertex it tries to insert it into graph.
+        /// if it was failed, add validation error.
         /// </para>
         /// </summary>
         /// <param name="doc"></param>
@@ -37,6 +39,8 @@ namespace DS.RevitLib.Utils.Graphs
         /// <inheritdoc/>
         public IEnumerable<ValidationResult> ValidationResults => _validationResults;
 
+        //public bool CanModifyGraph { get; set; } = false;
+
         /// <inheritdoc/>
         public bool IsValid(IVertex value) =>
             Validate(new ValidationContext(value)).Count() == 0;
@@ -46,32 +50,10 @@ namespace DS.RevitLib.Utils.Graphs
         {
             var vertex = validationContext.ObjectInstance as IVertex;
 
-            vertex = vertex.ToGraphVertex(_graph, _doc);
-            if (vertex == null) { AddMessage(); }
-
-            switch (vertex)
-            {
-                case TaggedGVertex<Point3d> taggedPoint:
-                    {
-                        var onEdge = _graph.TryGetEdge(taggedPoint.Tag, _doc);
-                        if (onEdge == null) { AddMessage(); }
-                        break;
-                    }
-                case TaggedGVertex<int> taggedPoint:
-                    {
-                        var onVertex = _graph.Vertices.OfType<TaggedGVertex<int>>().FirstOrDefault(v => v.Tag == taggedPoint.Tag);
-                        if (onVertex.Equals(default)) { AddMessage(); }
-                        break;
-                    }
-
-                default:
-                    break;
-            }
-
+            if (!_graph.TryFindItemByTag(vertex, _doc, out var foundVertex, out var foundEdge))
+            { _validationResults.Add(new ValidationResult($"Graph doesn't contains vertex.")); }
             return _validationResults;
 
-            void AddMessage()
-            { _validationResults.Add(new ValidationResult($"Graph doesn't contains vertex.")); }
         }
     }
 }

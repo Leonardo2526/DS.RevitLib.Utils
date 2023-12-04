@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.DirectContext3D;
 using DS.ClassLib.VarUtils;
+using DS.ClassLib.VarUtils.Extensions.Tuples;
 using DS.GraphUtils.Entities;
 using DS.RevitLib.Utils.Collisions.Detectors.AbstractDetectors;
 using DS.RevitLib.Utils.Extensions;
@@ -30,7 +31,7 @@ namespace DS.RevitLib.Utils.Graphs
         /// Distance between <paramref name="edge"/>'s source and target location points.
         /// </returns>
         public static double GetLength(this IEdge<IVertex> edge, Document doc)
-            => GetLocationLine(edge, doc).Length;        
+            => GetLocationLine(edge, doc).Length;
 
         /// <summary>
         /// Get <paramref name="edge"/>'s <see cref="Line"/>.
@@ -58,9 +59,9 @@ namespace DS.RevitLib.Utils.Graphs
         /// </returns>
         public static Vector3d Direction(this IEdge<IVertex> edge, Document doc)
         {
-            var dir= GetLocationLine(edge, doc).Direction;
-            return Vector3d.Divide(dir, dir.Length); 
-        }        
+            var dir = GetLocationLine(edge, doc).Direction;
+            return Vector3d.Divide(dir, dir.Length);
+        }
 
         /// <summary>
         /// Try get <see cref="MEPCurve"/> from <paramref name="edge"/>.

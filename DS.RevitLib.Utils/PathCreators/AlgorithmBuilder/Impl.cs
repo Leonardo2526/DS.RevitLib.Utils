@@ -4,6 +4,7 @@ using DS.ClassLib.VarUtils;
 using DS.ClassLib.VarUtils.Collisions;
 using DS.ClassLib.VarUtils.Enumerables;
 using DS.ClassLib.VarUtils.Points;
+using DS.GraphUtils.Entities;
 using DS.PathFinder;
 using DS.PathFinder.Algorithms.AStar;
 using DS.RevitLib.Utils.Bases;
@@ -15,6 +16,7 @@ using DS.RevitLib.Utils.Elements;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.Geometry;
 using DS.RevitLib.Utils.Geometry.Points;
+using DS.RevitLib.Utils.Graphs;
 using DS.RevitLib.Utils.MEP;
 using DS.RevitLib.Utils.Various.Bases;
 using Rhino.Geometry;
@@ -106,6 +108,7 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
             private Point3d _startANP;
             private Vector3d _endDirection;
             private Point3d _endANP;
+            private INextConnectionPointStrategy _nextPointStrategy;
 
             #endregion
 
@@ -220,34 +223,68 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
 
                 if (accountInitialDirections)
                 {
-                    var startMEPCurve = startconnectionPoint.GetMEPCurve(_objectsToExclude.Select(o => o.Id));
-                    var endMEPCurve = endConnectionPoint.GetMEPCurve(_objectsToExclude.Select(o => o.Id));
-                    if (startMEPCurve == null || endMEPCurve == null)
-                    { throw new ArgumentNullException("Failed to find MEPCurve on connection point."); }
+                    //var startMEPCurve = startconnectionPoint.GetMEPCurve(_objectsToExclude.Select(o => o.Id));
+                    //var endMEPCurve = endConnectionPoint.GetMEPCurve(_objectsToExclude.Select(o => o.Id));
+                    //if (startMEPCurve == null || endMEPCurve == null)
+                    //{ throw new ArgumentNullException("Failed to find MEPCurve on connection point."); }
                     WithInitialDirections();
                 }
 
                 void WithInitialDirections()
                 {
-                    var startDir = GetDirection(
-                        _startConnectionPoint, _endConnectionPoint,
-                        out Point3d startANP);
-                    var endDir = GetDirection(
-                        _endConnectionPoint, _startConnectionPoint,
-                        out Point3d endANP, true);
+                    //var startDir = GetDirection(
+                    //    _startConnectionPoint, _endConnectionPoint,
+                    //    out Point3d startANP);
+                    //var endDir = GetDirection(
+                    //    _endConnectionPoint, _startConnectionPoint,
+                    //    out Point3d endANP, true);
 
                     if (!_startConnectionPoint.Element.IsCategoryElement(_stopCategories))
                     {
-                        _startDirection = startDir;
-                        _startANP = startANP;
+                        (Point3d _startANP, Vector3d _startDirection) = _algorithmBuilder.NextPointStrategy.
+                            GetPoint(_startConnectionPoint.Element, _startConnectionPoint.Point);
+                        _startDirection = - _startDirection;
                     }
 
                     if (!_endConnectionPoint.Element.IsCategoryElement(_stopCategories))
                     {
-                        _endDirection = endDir;
-                        _endANP = endANP;
+                        (Point3d _endANP, Vector3d _endDirection) = _algorithmBuilder.NextPointStrategy.
+                         GetPoint(_endConnectionPoint.Element, _endConnectionPoint.Point);
                     }
                 }
+
+                //void WithInitialDirections()
+                //{
+                //    if (!accountInitialDirections)
+                //    { return; }
+
+                //    (_startDirection, _startANP) = GetDirection(source, true);
+                //    (_endDirection, _endANP) = GetDirection(target);
+
+                //    (Vector3d dir, Point3d ANP) GetDirection(IVertex vertex, bool inverse = false)
+                //    {
+                //        Graph.TryGetOutEdges(vertex, out var outEdges);
+                //        var firstEdge = outEdges.FirstOrDefault();
+                //        if (firstEdge == null)
+                //        {
+                //            Graph.ToBidirectionalGraph().TryGetInEdges(vertex, out var inEdges);
+                //            firstEdge = inEdges.FirstOrDefault();
+                //        }
+
+                //        var mEPCurve = firstEdge.TryGetMEPCurve(_doc) ??
+                //            throw new ArgumentNullException("Failed to find MEPCurve on connection point.");
+
+                //        var dir = firstEdge.Direction(_doc);
+                //        dir = inverse ? -dir : dir;
+
+                //        (Point3d sourcePoint1, Point3d targetPoint1) = firstEdge.GetConnectorsLocation(_doc);
+                //        var location = vertex.GetLocation(_doc).ToPoint3d();
+                //        var ANP = location.DistanceTo(targetPoint1) < 0.001 ? default : targetPoint1;
+
+                //        return (dir, ANP);
+                //    }
+
+                //}
 
 
                 return this;

@@ -212,6 +212,7 @@
     <Compile Include="Geometry\Points\PointVisualisator.cs" />
     <Compile Include="Geometry\Points\XYZVisualizator.cs" />
     <Compile Include="Geometry\Solids\SolidOffsetExtractor.cs" />
+    <Compile Include="Graphs\GraphFindItemsExtenstions.cs" />
     <Compile Include="Graphs\EdgePointIterator.cs" />
     <Compile Include="Graphs\GraphVisulisator.cs" />
     <Compile Include="Graphs\IVertexPairIteratorBuilder.cs" />
@@ -243,6 +244,8 @@
     <Compile Include="PathCreators\AlgorithmVertexBuilder\XYZPathFinderFactory.cs" />
     <Compile Include="PathCreators\AlgorithmVertexBuilder\XYZVertexPathFinderFactory.cs" />
     <Compile Include="PathCreators\IAlgorithmBuildersSpecify.cs" />
+    <Compile Include="PathCreators\INextConnectionPointStrategy.cs" />
+    <Compile Include="PathCreators\NextConnectionPointStrategy.cs" />
     <Compile Include="PathCreators\XYZVertexPathFinder.cs" />
     <Compile Include="Resolve\TaskCreators\GraphTaskCreator.cs" />
     <Compile Include="Resolve\TaskCreators\ManualXYZElementTaskCreatorFactory.cs" />

@@ -16,17 +16,14 @@ namespace DS.RevitLib.Utils.Graphs
     /// </summary>
     public class VertexCategoryValidator : XYZElementCategoryValidator, IValidator<IVertex>
     {
-        private readonly IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> _graph;
 
         /// <summary>
         /// Instansiate validator to check <see cref="IVertex"/> categories.
         /// </summary>
         public VertexCategoryValidator(Document doc, 
-            Dictionary<BuiltInCategory, List<PartType>> availableCategories,
-            IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> graph) : 
+            Dictionary<BuiltInCategory, List<PartType>> availableCategories) : 
             base(doc, availableCategories)
         {
-            _graph = graph;
         }
 
         /// <inheritdoc/>

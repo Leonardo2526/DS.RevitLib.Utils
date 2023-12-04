@@ -4,6 +4,7 @@ using DS.ClassLib.VarUtils.Resolvers;
 using DS.GraphUtils.Entities;
 using DS.RevitCollisions.Models;
 using DS.RevitLib.Utils.Collisions.Detectors.AbstractDetectors;
+using DS.RevitLib.Utils.Connections.PointModels;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.Graphs;
 using DS.RevitLib.Utils.PathCreators;
@@ -17,22 +18,25 @@ using System.Threading.Tasks;
 
 namespace DS.RevitCollisions.Resolve.TaskResolvers
 {
-    public abstract class PathFindVertexPairResolverBase : 
+    public abstract class PathFindVertexPairResolverBase :
         ITaskResolver<(IVertex, IVertex), IVertexAndEdgeListGraph<IVertex, Edge<IVertex>>>
     {
         protected readonly IElementCollisionDetector _collisionDetector;
+        protected readonly IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> _graph;
         protected readonly Document _doc;
-        protected readonly XYZVertexPathFinder _pathFinder;
+        protected readonly XYZPathFinder _pathFinder;
         private readonly List<IVertexAndEdgeListGraph<IVertex, Edge<IVertex>>> _results = new();
 
         public PathFindVertexPairResolverBase(
-           XYZVertexPathFinder pathFinder,
+           XYZPathFinder pathFinder,
            Document doc,
-           IElementCollisionDetector collisionDetector)
+           IElementCollisionDetector collisionDetector,
+            IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> graph)
         {
             _pathFinder = pathFinder;
             _doc = doc;
             _collisionDetector = collisionDetector;
+            _graph = graph;
         }
 
         /// <summary>
@@ -45,32 +49,41 @@ namespace DS.RevitCollisions.Resolve.TaskResolvers
 
         public IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> TryResolve((IVertex, IVertex) task)
         {
-            BuildPathFinderWithTask(_pathFinder, task, _collisionDetector); 
-            var result = _pathFinder.FindPath(task.Item1, task.Item2);
+            BuildPathFinderWithTask(_pathFinder, task, _collisionDetector);
+
+            var c1 = ToConnectionPoint(task.Item1, _graph, _doc);
+            var c2 = ToConnectionPoint(task.Item2, _graph, _doc);
+
+            var result = _pathFinder.FindPath(c1, c2);
             return GetResult(result);
+
         }
 
 
         public async Task<IVertexAndEdgeListGraph<IVertex, Edge<IVertex>>> TryResolveAsync((IVertex, IVertex) task)
         {
             BuildPathFinderWithTask(_pathFinder, task, _collisionDetector);
-            var result = await _pathFinder.FindPathAsync(task.Item1, task.Item2);
+
+            var c1 = ToConnectionPoint(task.Item1, _graph, _doc);
+            var c2 = ToConnectionPoint(task.Item2, _graph, _doc);
+
+            var result = await _pathFinder.FindPathAsync(c1, c2);
             return GetResult(result);
         }
 
-        protected abstract XYZVertexPathFinder BuildPathFinderWithTask(XYZVertexPathFinder pathFinder,
+        protected abstract XYZPathFinder BuildPathFinderWithTask(XYZPathFinder pathFinder,
             (IVertex, IVertex) task, IElementCollisionDetector collisionDetector);
-        
+
 
         protected abstract List<Element> GetElementsToExclude((IVertex, IVertex) task);
 
-            /// <summary>
-            /// Get elements to exclude from collisions by <paramref name="graph"/>.
-            /// </summary>
-            /// <param name="graph"></param>
-            /// <param name="task"></param>
-            /// <returns></returns>
-        protected List<Element> GetExcludededByGraph(IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> graph,  
+        /// <summary>
+        /// Get elements to exclude from collisions by <paramref name="graph"/>.
+        /// </summary>
+        /// <param name="graph"></param>
+        /// <param name="task"></param>
+        /// <returns></returns>
+        protected List<Element> GetExcludededByGraph(IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> graph,
             (IVertex, IVertex) task)
         {
             var objectsToExclude = new List<Element>();
@@ -131,6 +144,16 @@ namespace DS.RevitCollisions.Resolve.TaskResolvers
             _results.Add(graph);
 
             return graph;
+        }
+
+
+        private ConnectionPoint ToConnectionPoint(IVertex vertex,
+            IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> graph, Document doc)
+        {
+            var pe1 = vertex.ToGraphXYZElement(graph, doc);
+            var c1 = new ConnectionPoint(pe1.Item1, pe1.Item2);
+            c1.GetFloorBounds(doc, 0, 0); //!!!!!
+            return c1;
         }
     }
 }

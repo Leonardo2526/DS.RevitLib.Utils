@@ -2,6 +2,7 @@
 using Autodesk.Revit.UI;
 using DS.ClassLib.VarUtils;
 using DS.ClassLib.VarUtils.Points;
+using DS.GraphUtils.Entities;
 using DS.PathFinder;
 using DS.PathFinder.Algorithms.Enumeratos;
 using DS.RevitLib.Utils.Collisions.Detectors.AbstractDetectors;
@@ -13,6 +14,7 @@ using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.Geometry;
 using DS.RevitLib.Utils.MEP;
 using DS.RevitLib.Utils.PathCreators.AlgorithmBuilder;
+using QuickGraph;
 using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
@@ -127,6 +129,8 @@ namespace DS.RevitLib.Utils.PathCreators
         /// </summary>
         public int MaxTime { get; set; }
 
+        public IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> Graph { get; set; }
+
         #endregion
 
         /// <summary>
@@ -149,6 +153,12 @@ namespace DS.RevitLib.Utils.PathCreators
                 SetBasis(baseMEPCurve, basisMEPCurve1, basisMEPCurve2, AllowSecondElementForBasis).
                 SetExclusions(objectsToExclude, ExludedCathegories).
                 SetExternalToken1(ExternalToken);
+
+            _pathAlgorithmBuilder.NextPointStrategy = new NextConnectionPointStrategy(_doc)
+            {
+                Graph = Graph,
+                PointConverter = _pathAlgorithmBuilder.PointConverter
+            };
 
             _collisionDetector = collisionDetector;
         }

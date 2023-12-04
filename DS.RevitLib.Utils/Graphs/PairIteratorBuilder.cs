@@ -78,7 +78,7 @@ namespace DS.RevitLib.Utils.Graphs
         {
             if (AvailableCategories != null && AvailableCategories.Count > 0)
             {
-                var catValidator = new VertexCategoryValidator(_doc, AvailableCategories, _graph);
+                var catValidator = new VertexCategoryValidator(_doc, AvailableCategories);
                 _iterator.Validators.Add(catValidator);
             }
 
@@ -89,7 +89,7 @@ namespace DS.RevitLib.Utils.Graphs
         {
             if (InElementRelation != Relation.Default)
             {
-                var relationValidator = new VertexRelationValidator(_doc, _graph.ToBidirectionalGraph())
+                var relationValidator = new VertexRelationValidator(_doc, _graph)
                 {
                     InElementRelation = InElementRelation
                 };

@@ -2,6 +2,7 @@
 using Autodesk.Revit.UI;
 using DS.ClassLib.VarUtils;
 using DS.ClassLib.VarUtils.Points;
+using DS.GraphUtils.Entities;
 using DS.PathFinder;
 using DS.PathFinder.Algorithms.AStar;
 using DS.RevitLib.Utils.Bases;
@@ -11,6 +12,7 @@ using DS.RevitLib.Utils.Creation.Transactions;
 using DS.RevitLib.Utils.Elements;
 using DS.RevitLib.Utils.Geometry;
 using DS.RevitLib.Utils.Models;
+using QuickGraph;
 using Rhino.Geometry;
 using System.Collections.Generic;
 using System.Linq;
@@ -98,6 +100,11 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
             }
             set => _transactionFactory = value;
         }
+
+        /// <summary>
+        /// Strategy to get next connection point on source and target.
+        /// </summary>
+        public INextConnectionPointStrategy NextPointStrategy { get; set; }
 
 
         #endregion

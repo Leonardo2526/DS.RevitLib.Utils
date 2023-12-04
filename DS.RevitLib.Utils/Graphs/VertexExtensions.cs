@@ -405,29 +405,23 @@ namespace DS.RevitLib.Utils.Graphs
         /// </summary>
         /// <param name="vertex"></param>
         /// <param name="graph"></param>
-        /// <param name="doc"></param>
         /// <returns>
-        /// <see cref="IVertex"/> if <paramref name="vertex"/> tag id was found through <paramref name="graph"/>'s vertices tags.     
+        /// <see cref="IVertex"/> if <paramref name="vertex"/> tag id was found through <paramref name="graph"/>'s vertices tags.
         /// <para>
         /// Otherwise default value.
         /// </para>
         /// </returns>
         public static IVertex ToGraphVertex(this IVertex vertex,
-            IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> graph, Document doc)
+            IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> graph)
         {
             vertex = vertex is TaggedGVertex<(int, Point3d)> taggedIntPointVertex ?
-             taggedIntPointVertex.ToVertexPoint() :
+             taggedIntPointVertex.ToVertexPoint(graph.VertexCount) :
              vertex;
 
-            if (!vertex.TryFindTaggedVertex(graph, out var foundVertex))
-            {
-                var aGraph = graph as AdjacencyGraph<IVertex, Edge<IVertex>>;
-                var location = vertex.GetLocation(doc).ToPoint3d();
-                if (aGraph.TryInsert(location, doc))
-                { foundVertex = aGraph.Vertices.Last(); }
-            }
-
+            vertex.TryFindTaggedVertex(graph, out var foundVertex);
             return foundVertex;
         }
+
+       
     }
 }

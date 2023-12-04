@@ -126,7 +126,7 @@ namespace DS.RevitLib.Utils.Graphs
 
         private MEPSystemGraphFactoryBase<AdjacencyGraph<IVertex, Edge<IVertex>>> WithRelationValidator()
         {
-            var relationValidator = new VertexRelationValidator(_doc, _graphFactory.Graph.ToBidirectionalGraph())
+            var relationValidator = new VertexRelationValidator(_doc, _graphFactory.Graph)
             {
                 InElementRelation = Relation.Parent
             };

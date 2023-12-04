@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Architecture;
 using Autodesk.Revit.UI;
+using DS.ClassLib.VarUtils.Extensions.Tuples;
 using DS.ClassLib.VarUtils.GridMap;
 using DS.GraphUtils.Entities;
 using DS.RevitLib.Utils.Extensions;
@@ -17,6 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using System.Windows.Forms.VisualStyles;
+using System.Security.Cryptography;
 
 namespace DS.RevitLib.Utils.Graphs
 {
@@ -53,17 +57,44 @@ namespace DS.RevitLib.Utils.Graphs
             if (edges.Count() == 0) { return null; }
 
             var xYZLocation = location.ToXYZ();
-            foreach (var e in edges)
+            foreach (var edge in edges)
             {
-                var l1 = e.Source.GetLocation(doc);
-                var l2 = e.Target.GetLocation(doc);
-
-                var line = Autodesk.Revit.DB.Line.CreateBound(l1, l2);
-                if (line.Distance(xYZLocation) < 0.001)
-                { return e; }
+                var found = edge.Contains(location, doc);
+                if (found)  { return edge; } 
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Try to find edge from <paramref name="graph"/> that contains <paramref name="tag"/>.
+        /// </summary>
+        /// <param name="graph"></param>
+        /// <param name="tag"></param>
+        /// <param name="doc"></param>
+        /// <param name="foundEdge"></param>
+        /// <param name="tolerance"></param>
+        /// <returns>
+        /// <see langword="true"/> if edge was found.
+        /// <para>
+        /// Otherwise <see langword="false"/> .
+        /// </para>
+        /// </returns>
+        public static bool TryFindEdge(this IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> graph,
+           (int id, Point3d point) tag, Document doc, out Edge<IVertex> foundEdge, double tolerance = 0.001)
+        {
+            foundEdge = null;
+
+            var edge = graph.Edges.OfType<TaggedEdge<IVertex, int>>().ToList().
+               FirstOrDefault(v => v.Tag == tag.id);
+
+            if (edge == null || edge.IsTupleNull())
+            { return false; }
+
+            var found = edge.Contains(tag.point, doc, tolerance);
+            if (found) { foundEdge = edge; }
+
+            return found;
         }
 
         /// <summary>
@@ -130,12 +161,43 @@ namespace DS.RevitLib.Utils.Graphs
         /// Otherwise <see langword="false"/>.
         /// </para>
         /// </returns>
-        public static bool TryInsert(this AdjacencyGraph<IVertex,Edge<IVertex>> graph, Point3d point, Document doc, int edgeTag = -1)
+        public static bool TryInsert(this AdjacencyGraph<IVertex, Edge<IVertex>> graph, Point3d point, Document doc, int edgeTag = -1)
         {
             var edge = graph.TryGetEdge(point, doc, edgeTag);
             var mc = edge?.TryGetMEPCurve(doc);
 
             return mc != null && graph.TryInsert(mc, point.ToXYZ());
+        }
+
+        /// <summary>
+        /// Try to insert <paramref name="vertex"/> into <paramref name="graph"/>.
+        /// </summary>
+        /// <param name="vertex"></param>
+        /// <param name="graph"></param>
+        /// <param name="doc"></param>
+        /// <returns>
+        /// <see cref="IVertex"/> inserted into <paramref name="graph"/>.
+        /// <para>
+        /// <see langword="null"/> if <paramref name="vertex"/> tag id was found in <paramref name="graph"/>'s vertices tags
+        /// or it was failed to insert <see cref="IVertex"/>.
+        /// </para>
+        /// </returns>
+        public static IVertex TryInsert(this IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> graph,
+            IVertex vertex, Document doc)
+        {
+            if (vertex is not TaggedGVertex<int> && vertex is not TaggedGVertex<Point3d>)
+            { throw new ArgumentException($"Vertex {vertex} has wrong type to be inserted in to graph."); }
+
+            if (vertex.TryFindTaggedVertex(graph, out _))
+            { return null; }
+            else
+            {
+                var aGraph = graph as AdjacencyGraph<IVertex, Edge<IVertex>>;
+                var location = vertex.GetLocation(doc).ToPoint3d();
+                if (aGraph.TryInsert(location, doc))
+                { return aGraph.Vertices.Last(); }
+                else { return null; }
+            }
         }
 
         /// <summary>
@@ -311,14 +373,14 @@ namespace DS.RevitLib.Utils.Graphs
         /// <returns>
         /// <see cref="TaggedEdge{TVertex, TTag}"/> if any edges of <paramref name="graph"/> contains <paramref name="point"/>.
         /// </returns>
-        public static TaggedEdge<IVertex, int> GetEdge(this IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> graph,
-            Point3d point, Document doc)
-        {
-            var taggedEdges = graph.Edges.OfType<TaggedEdge<IVertex, int>>();
-            var e = taggedEdges.FirstOrDefault();
+        //public static TaggedEdge<IVertex, int> GetEdge(this IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> graph,
+        //    Point3d point, Document doc)
+        //{
+        //    var taggedEdges = graph.Edges.OfType<TaggedEdge<IVertex, int>>();
+        //    var e = taggedEdges.FirstOrDefault();
 
-            return taggedEdges.FirstOrDefault(e => e.Contains(point, doc));
-        }
+        //    return taggedEdges.FirstOrDefault(e => e.Contains(point, doc));
+        //}
 
         /// <summary>
         /// Get <see cref=" Autodesk.Revit.DB.ElementId"/>s between <paramref name="source"/> and <paramref name="target"/>.
@@ -341,7 +403,7 @@ namespace DS.RevitLib.Utils.Graphs
             var elements = new List<ElementId>();
 
             var edges = graph.GetPath(source, target);
-            if (edges is null || edges.Count() == 0) { return elements; } 
+            if (edges is null || edges.Count() == 0) { return elements; }
 
             foreach (var edge in edges)
             {
@@ -355,6 +417,50 @@ namespace DS.RevitLib.Utils.Graphs
             if (e2 != null) { elements.Add(e2.Id); }
 
             return elements;
+        }
+
+        /// <summary>
+        /// Check if <paramref name="graph"/> has vertices or edges that contains <paramref name="vertexToFind"/>'s tag.
+        /// </summary>
+        /// <typeparam name="Ivertex"></typeparam>
+        /// <param name="graph"></param>
+        /// <param name="vertexToFind"></param>
+        /// <param name="doc"></param>
+        /// <param name="foundVertex"></param>
+        /// <param name="foundEdge"></param>
+        /// <param name="tolerance"></param>
+        /// <returns></returns>
+        public static bool TryFindItemByTag<Ivertex>(this IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> graph, Ivertex vertexToFind, Document doc,
+           out IVertex foundVertex, out Edge<IVertex> foundEdge, int tolerance = 3)
+        {
+            foundVertex = null;
+            foundEdge = null;
+            bool found = false;
+
+            switch (vertexToFind)
+            {
+                case TaggedGVertex<int> taggedId:
+                    {
+                        found = graph.TryFindVertex(taggedId.Tag, out var foundIntVertex);
+                        foundVertex = foundIntVertex;
+                        break;
+                    }
+                case TaggedGVertex<Point3d> taggedPoint:
+                    {
+                        found = graph.TryFindVertex(taggedPoint.Tag, doc, out foundVertex);
+                        break;
+                    }
+                case TaggedGVertex<(int, Point3d)> taggedTuple:
+                    {
+                        found = graph.TryFindItems(taggedTuple.Tag, doc, out foundVertex, out var foundEdges, tolerance);
+                        foundEdge = foundEdges.FirstOrDefault();
+                        break;
+                    }
+                default:
+                    break;
+            }
+
+            return found;
         }
     }
 }

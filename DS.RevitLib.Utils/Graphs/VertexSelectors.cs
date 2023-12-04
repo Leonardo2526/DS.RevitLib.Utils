@@ -23,12 +23,12 @@ namespace DS.RevitLib.Utils.Various.Selections
         /// Select <see cref="IVertex"/> on <see cref="Autodesk.Revit.DB.Element"/>.
         /// </summary>
         /// <returns></returns>
-        public IVertex SelectVertexOnElement() => SelectElement().ToVertex(0);
+        public IVertex SelectVertexOnElement() => SelectElement().ToVertex(-1);
 
         /// <summary>
         /// Select <see cref="IVertex"/> on <see cref="Autodesk.Revit.DB.XYZ"/>.
         /// </summary>
         /// <returns></returns>
-        public IVertex SelectVertexOnElementPoint() => SelectPointOnElement().ToVertex(0);
+        public IVertex SelectVertexOnElementPoint() => SelectPointOnElement().ToVertex(-1);
     }
 }

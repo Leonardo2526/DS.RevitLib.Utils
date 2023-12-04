@@ -20,7 +20,6 @@ namespace DS.RevitLib.Utils.Graphs
         /// <param name="points"></param>
         /// <returns></returns>
         public static IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> CreateSimpleChainGraph(IEnumerable<Point3d> points)        
-            => new SimpleChainGraphFactory(points).CreateGraph();
-        
+            => new SimpleChainGraphFactory(points).CreateGraph();        
     }
 }
