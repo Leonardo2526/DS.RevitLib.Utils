@@ -7,6 +7,7 @@ using DS.RevitLib.Utils.Graphs;
 using DS.RevitLib.Utils.MEP.SystemTree.Relatives;
 using DS.RevitLib.Utils.Various.Selections;
 using QuickGraph;
+using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,6 +23,9 @@ namespace DS.RevitLib.Test
         private readonly Document _doc;
         private readonly ContextTransactionFactory _trfIn;
         private readonly ContextTransactionFactory _trfOut;
+
+        private static Func<IVertex, Point3d> GetLocation(Document doc)
+    => (v) => v.GetLocation(doc).ToPoint3d();
 
         public AdjacencyGraph<IVertex, Edge<IVertex>> Graph { get; private set; }
 
@@ -42,7 +46,8 @@ namespace DS.RevitLib.Test
         public GetEdgeConnectorsTest GetConnectorsLocation()
         {
             var point = GetPoint(out _).ToPoint3d();
-            var edge = Graph.GetEdge(point, _doc);
+            Graph.TryFindEdges(point, GetLocation(_doc), out var edges);
+            var edge = edges.FirstOrDefault();
             var (point1, point2) = edge.GetConnectorsLocation(_doc);
 
             var xYZ1 = point1.ToXYZ();
@@ -56,7 +61,8 @@ namespace DS.RevitLib.Test
         public GetEdgeConnectorsTest GetConnectionSegment()
         {
             var point = GetPoint(out _).ToPoint3d();
-            var edge = Graph.GetEdge(point, _doc);
+            Graph.TryFindEdges(point, GetLocation(_doc), out var edges);
+            var edge = edges.FirstOrDefault();
 
             double offsetFromSourceCon = 100.MMToFeet();
             double offsetFromTargetCon = 300.MMToFeet();

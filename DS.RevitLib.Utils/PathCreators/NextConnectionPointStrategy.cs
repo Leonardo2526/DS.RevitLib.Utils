@@ -1,7 +1,9 @@
 ﻿using Autodesk.Revit.DB;
+using DS.ClassLib.VarUtils;
 using DS.ClassLib.VarUtils.GridMap;
 using DS.ClassLib.VarUtils.Points;
 using DS.GraphUtils.Entities;
+using DS.RevitLib.Utils.Connections.PointModels;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.Graphs;
 using DS.RevitLib.Utils.MEP;
@@ -11,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -75,7 +78,8 @@ namespace DS.RevitLib.Utils.PathCreators
 
         private (Point3d point, Vector3d dir) GetWithDefaultPoint(Element element, XYZ point)
         {
-            MEPCurve mc = element.GetBestConnected().OfType<MEPCurve>().FirstOrDefault();
+            MEPCurve mc = element as MEPCurve;
+            mc ??= element.GetBestConnected().OfType<MEPCurve>().FirstOrDefault();
             var dir = mc is null ? Vector3d.Zero : mc.Direction().ToVector3d();
 
             return (Point3d.Origin, dir);

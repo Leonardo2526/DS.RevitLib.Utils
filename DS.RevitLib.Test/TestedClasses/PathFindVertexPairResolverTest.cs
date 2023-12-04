@@ -35,7 +35,7 @@ namespace DS.RevitLib.Test.TestedClasses
 {
     internal class PathFindVertexPairResolverTest
     {
-        private readonly bool _deleteInsideElements = false;
+        private readonly bool _deleteInsideElements = true;
         private readonly UIDocument _uiDoc;
         private readonly Document _doc;
         private readonly ContextTransactionFactory _trfIn;
@@ -144,7 +144,7 @@ namespace DS.RevitLib.Test.TestedClasses
 
             //return;
             //build result
-            var pathFindFactory = new XYZVertexPathFinderFactory(_uiDoc)
+            var pathFindFactory = new XYZPathFinderFactory(_uiDoc)
             {
                 TraceSettings = _traceSettings,
             };
@@ -157,14 +157,11 @@ namespace DS.RevitLib.Test.TestedClasses
             pathFinder.InsulationAccount = true;
             pathFinder.AllowSecondElementForBasis = false;
 
-            var resolver = new PathFindVertexPairResolver(pathFinder, _doc, _collisionDetector, baseMEPCurve, baseMEPCurve)
+            var resolver = new PathFindGraphVertexPairResolver(pathFinder, _doc, 
+                _collisionDetector, targetGraph, baseMEPCurve, baseMEPCurve)
             {
                 Logger = _logger
             };
-
-            //if sourceGraph contains task's vertices then this vertices added to target.
-            if (sourceGraph?.VertexCount != targetGraph?.VertexCount)
-            { resolver.Graph = targetGraph; }
 
             var result = resolver.TryResolve(task);
             _graphVisualisator.Show(result);

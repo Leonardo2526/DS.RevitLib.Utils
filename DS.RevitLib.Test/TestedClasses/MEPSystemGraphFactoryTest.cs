@@ -195,7 +195,7 @@ namespace DS.RevitLib.Test.TestedClasses
             var algorithm = new BreadthFirstSearchAlgorithm<IVertex, Edge<IVertex>>(graph);
 
             var startRoot = graph.Vertices.ToList()[1];
-            var catValidator = new VertexCategoryValidator(_doc, cats, graph);
+            var catValidator = new VertexCategoryValidator(_doc, cats);
 
             var bdGraph = graph.ToBidirectionalGraph();
             var relationValidator = new VertexRelationValidator(_doc, bdGraph)

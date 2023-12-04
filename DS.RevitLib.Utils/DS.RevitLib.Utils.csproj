@@ -239,14 +239,10 @@
     <Compile Include="Graphs\VertexSelectors.cs" />
     <Compile Include="PathCreators\AlgorithmBuilder\Impl.cs" />
     <Compile Include="PathCreators\AlgorithmBuilder\PathAlgorithmBuilder.cs" />
-    <Compile Include="PathCreators\AlgorithmVertexBuilder\ImplVertex.cs" />
-    <Compile Include="PathCreators\AlgorithmVertexBuilder\PathAlgorithmVertexBuilder.cs" />
     <Compile Include="PathCreators\AlgorithmVertexBuilder\XYZPathFinderFactory.cs" />
-    <Compile Include="PathCreators\AlgorithmVertexBuilder\XYZVertexPathFinderFactory.cs" />
     <Compile Include="PathCreators\IAlgorithmBuildersSpecify.cs" />
     <Compile Include="PathCreators\INextConnectionPointStrategy.cs" />
     <Compile Include="PathCreators\NextConnectionPointStrategy.cs" />
-    <Compile Include="PathCreators\XYZVertexPathFinder.cs" />
     <Compile Include="Resolve\TaskCreators\GraphTaskCreator.cs" />
     <Compile Include="Resolve\TaskCreators\ManualXYZElementTaskCreatorFactory.cs" />
     <Compile Include="Resolve\TaskCreators\ValidatableTaskCreatorFactoryBase.cs" />

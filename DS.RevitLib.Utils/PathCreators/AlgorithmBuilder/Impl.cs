@@ -514,11 +514,6 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
                 return this;
             }
 
-            public ISpecifyVertexBoundaries SetExternalToken2(CancellationTokenSource externalCancellationToken)
-            {
-                throw new NotImplementedException();
-            }
-
             #endregion
 
         }

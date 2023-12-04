@@ -27,6 +27,9 @@ namespace DS.RevitLib.Test.TestedClasses
         private readonly ContextTransactionFactory _trfOut;
         private GraphVisulisator _graphVisualisator;
 
+        private static Func<IVertex, Point3d> GetLocation(Document doc)
+     => (v) => v.GetLocation(doc).ToPoint3d();
+
         public SegmentFactoryTest(UIDocument uiDoc)
         {
             _uiDoc = uiDoc;
@@ -66,7 +69,8 @@ namespace DS.RevitLib.Test.TestedClasses
             };
 
             var point = GetPoint(out _).ToPoint3d();
-            var edge = Graph.GetEdge(point, _doc);
+            Graph.TryFindEdges(point, GetLocation(_doc), out var edges);
+            var edge = edges.FirstOrDefault();
 
             var segments = sf.GetFreeSegments(edge).ToList();
             var lines = new List<Autodesk.Revit.DB.Line>();

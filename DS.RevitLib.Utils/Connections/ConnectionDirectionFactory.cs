@@ -59,11 +59,14 @@ namespace DS.RevitLib.Utils.Connections
             XYZ dir = GetDirectionAtFreeConnetor();
             if (dir is not null) { return dir; }
 
-            dir = GetDirection(refElement);
-            if (dir is not null) { return dir; }
+            if (refPoint != null && refElement != null)
+            {
+                dir = GetDirection(refElement);
+                if (dir is not null) { return dir; }
 
-            dir = GetDirection(refPoint);
-            if (dir is not null) { return dir; }
+                dir = GetDirection(refPoint);
+                if (dir is not null) { return dir; }
+            }
 
             dir = GetDirectionManual(_uiDoc);
             if (dir is not null) { return dir; }
