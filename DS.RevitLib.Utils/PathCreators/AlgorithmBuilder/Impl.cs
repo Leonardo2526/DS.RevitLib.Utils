@@ -108,7 +108,6 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
             private Point3d _startANP;
             private Vector3d _endDirection;
             private Point3d _endANP;
-            private INextConnectionPointStrategy _nextPointStrategy;
 
             #endregion
 
@@ -223,69 +222,18 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
 
                 if (accountInitialDirections)
                 {
-                    //var startMEPCurve = startconnectionPoint.GetMEPCurve(_objectsToExclude.Select(o => o.Id));
-                    //var endMEPCurve = endConnectionPoint.GetMEPCurve(_objectsToExclude.Select(o => o.Id));
-                    //if (startMEPCurve == null || endMEPCurve == null)
-                    //{ throw new ArgumentNullException("Failed to find MEPCurve on connection point."); }
-                    WithInitialDirections();
-                }
-
-                void WithInitialDirections()
-                {
-                    //var startDir = GetDirection(
-                    //    _startConnectionPoint, _endConnectionPoint,
-                    //    out Point3d startANP);
-                    //var endDir = GetDirection(
-                    //    _endConnectionPoint, _startConnectionPoint,
-                    //    out Point3d endANP, true);
-
                     if (!_startConnectionPoint.Element.IsCategoryElement(_stopCategories))
                     {
-                        (Point3d _startANP, Vector3d _startDirection) = _algorithmBuilder.NextPointStrategy.
+                        (_startANP, _startDirection) = _algorithmBuilder.NextPointStrategy.
                             GetPoint(_startConnectionPoint.Element, _startConnectionPoint.Point);
-                        _startDirection = - _startDirection;
                     }
 
                     if (!_endConnectionPoint.Element.IsCategoryElement(_stopCategories))
                     {
-                        (Point3d _endANP, Vector3d _endDirection) = _algorithmBuilder.NextPointStrategy.
+                        (_endANP, _endDirection) = _algorithmBuilder.NextPointStrategy.
                          GetPoint(_endConnectionPoint.Element, _endConnectionPoint.Point);
                     }
                 }
-
-                //void WithInitialDirections()
-                //{
-                //    if (!accountInitialDirections)
-                //    { return; }
-
-                //    (_startDirection, _startANP) = GetDirection(source, true);
-                //    (_endDirection, _endANP) = GetDirection(target);
-
-                //    (Vector3d dir, Point3d ANP) GetDirection(IVertex vertex, bool inverse = false)
-                //    {
-                //        Graph.TryGetOutEdges(vertex, out var outEdges);
-                //        var firstEdge = outEdges.FirstOrDefault();
-                //        if (firstEdge == null)
-                //        {
-                //            Graph.ToBidirectionalGraph().TryGetInEdges(vertex, out var inEdges);
-                //            firstEdge = inEdges.FirstOrDefault();
-                //        }
-
-                //        var mEPCurve = firstEdge.TryGetMEPCurve(_doc) ??
-                //            throw new ArgumentNullException("Failed to find MEPCurve on connection point.");
-
-                //        var dir = firstEdge.Direction(_doc);
-                //        dir = inverse ? -dir : dir;
-
-                //        (Point3d sourcePoint1, Point3d targetPoint1) = firstEdge.GetConnectorsLocation(_doc);
-                //        var location = vertex.GetLocation(_doc).ToPoint3d();
-                //        var ANP = location.DistanceTo(targetPoint1) < 0.001 ? default : targetPoint1;
-
-                //        return (dir, ANP);
-                //    }
-
-                //}
-
 
                 return this;
             }
@@ -423,6 +371,10 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
                 outlineFactory.ZOffset = defaultOffset;
                 outlineFactory.IsPointEnableOutside = false;
 
+                
+                point1.GetFloorBounds(_doc, _traceSettings.H, _traceSettings.B, _algorithmBuilder.InsulationAccount);
+                point2.GetFloorBounds(_doc, _traceSettings.H, _traceSettings.B, _algorithmBuilder.InsulationAccount);
+
                 var outline = outlineFactory.Create(point1, point2);
                 //outline.Show(_doc, _transactionFactory);
                 if (String.IsNullOrEmpty(outlineFactory.ErrorMessage))
@@ -467,46 +419,6 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
                 return transform;
             }
 
-            private Vector3d GetDirection(
-                ConnectionPoint connectionPoint1,
-                ConnectionPoint connectionPoint2,
-                out Point3d aNP, bool inverse = false)
-            {
-                var mc = connectionPoint1.Element is MEPCurve curve ? curve : connectionPoint1.GetMEPCurve(_objectsToExclude.Select(o => o.Id));
-
-                XYZ dirXYZ = connectionPoint1.Direction ??
-                    connectionPoint1.GetDirection(connectionPoint2.Point, connectionPoint2.Element, _objectsToExclude);
-
-                if (inverse) { dirXYZ = dirXYZ.Negate(); }
-                //_visualisator.ShowVectorByDirection(connectionPoint1.Point, dirXYZ);
-
-                Vector3d dir = _pointConverter.ConvertToUCS2(dirXYZ.ToVector3d());
-
-                var dTolerance = Math.Pow(0.1, _cTolerance);
-                var cons = ConnectorUtils.GetConnectors(mc);
-                var line = mc.GetCenterLine();
-                var conPoints = new List<XYZ>();
-                cons.ForEach(c => conPoints.Add(line.Project(c.Origin).XYZPoint));
-                conPoints = conPoints.OrderBy(c => c.DistanceTo(connectionPoint1.Point)).
-                    Where(c => c.DistanceTo(connectionPoint1.Point) > dTolerance).ToList();
-
-                if (mc.Id != connectionPoint1.Element.Id) { conPoints.RemoveAt(0); }
-                var checkDir = inverse ? dirXYZ.Negate() : dirXYZ;
-
-                var aTolerance = 3.DegToRad();
-                Func<XYZ, bool> func = (c) => Math.Round((connectionPoint1.Point - c).Normalize().AngleTo(checkDir)) == 0;
-                var foundCon = conPoints.FirstOrDefault(func);
-                if (foundCon == null)
-                { aNP = default; }
-                else
-                {
-                    aNP = foundCon.ToPoint3d();
-                    aNP = _pointConverter.ConvertToUCS2(aNP).Round(_tolerance);
-                    //_pointVisualisator.Show(aNP);
-                }
-
-                return dir.Round(_tolerance);
-            }
 
             public ISpecifyConnectionPointBoundaries SetExternalToken1(CancellationTokenSource externalCancellationToken)
             {

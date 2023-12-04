@@ -119,7 +119,7 @@ namespace DS.RevitCollisions.Resolve.ResolveFactories
         {
             //_pathFinder.ExternalOutline = ExternalOutline;
             //_pathFinder.InsulationAccount = InsulationAccount;
-            var resolver = new PathFindGraphVertexPairResolver(_pathFinder, _doc, _collisionDetector, TargetGraph,
+            var resolver = new PathFindGraphResolver(_pathFinder, _doc, _collisionDetector, TargetGraph,
                 Collision.Item1, Collision.Item1, Collision.Item2 as MEPCurve)
             {
                 Logger = Logger

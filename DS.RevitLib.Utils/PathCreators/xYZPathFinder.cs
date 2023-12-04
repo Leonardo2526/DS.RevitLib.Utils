@@ -148,7 +148,7 @@ namespace DS.RevitLib.Utils.PathCreators
             List<Element> objectsToExclude, IElementCollisionDetector collisionDetector)
         {
             _pathAlgorithmBuilder.TransactionFactory = _transactionFactory;
-
+            _pathAlgorithmBuilder.InsulationAccount = InsulationAccount;
             _algorithmBuilder = _pathAlgorithmBuilder.
                 SetBasis(baseMEPCurve, basisMEPCurve1, basisMEPCurve2, AllowSecondElementForBasis).
                 SetExclusions(objectsToExclude, ExludedCathegories).

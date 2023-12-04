@@ -107,6 +107,11 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
         public INextConnectionPointStrategy NextPointStrategy { get; set; }
 
 
+        /// <summary>
+        /// Specifies whether allow insulation collisions on resolving or not.
+        /// </summary>
+        public bool InsulationAccount { get; set; }
+
         #endregion
 
         /// <summary>

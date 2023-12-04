@@ -142,8 +142,7 @@ namespace DS.RevitLib.Test.TestedClasses
             _taskVisualizator.Show(task);
             _uiDoc.RefreshActiveView();
 
-            //return;
-            //build result
+            //build resolver
             var pathFindFactory = new XYZPathFinderFactory(_uiDoc)
             {
                 TraceSettings = _traceSettings,
@@ -157,12 +156,13 @@ namespace DS.RevitLib.Test.TestedClasses
             pathFinder.InsulationAccount = true;
             pathFinder.AllowSecondElementForBasis = false;
 
-            var resolver = new PathFindGraphVertexPairResolver(pathFinder, _doc, 
+            var resolver = new PathFindGraphResolver(pathFinder, _doc,
                 _collisionDetector, targetGraph, baseMEPCurve, baseMEPCurve)
             {
                 Logger = _logger
             };
 
+            //find path
             var result = resolver.TryResolve(task);
             _graphVisualisator.Show(result);
         }
@@ -188,7 +188,7 @@ namespace DS.RevitLib.Test.TestedClasses
             task.Item2.Item2.Show(_doc, 0, _trfAuto);
             _uiDoc.RefreshActiveView();
 
-
+            //build resolver
             var pathFindFactory = new XYZPathFinderFactory(_uiDoc)
             {
                 TraceSettings = _traceSettings,
@@ -203,51 +203,17 @@ namespace DS.RevitLib.Test.TestedClasses
             pathFinder.AllowSecondElementForBasis = false;
             pathFinder.OutlineFactory = null;
 
-            List<Element> objectsToExclude = new List<Element>()
-            {
-                task.Item1.Item1,
-                task.Item2.Item1
-            };
-
-            pathFinder.Build(
-                baseMEPCurve,
-                baseMEPCurve,
-                null,
-                objectsToExclude, _collisionDetector);
-
-            var c1 = new ConnectionPoint(task.Item1.Item1, task.Item1.Item2);
-            c1.GetFloorBounds(_doc, 0, 0);
-            var c2 = new ConnectionPoint(task.Item2.Item1, task.Item2.Item2);
-            c2.GetFloorBounds(_doc, 0, 0);
-
-            var resultPoints = pathFinder.FindPath(c1, c2);
-            if (resultPoints != null && resultPoints.Count >0)
-            {
-                var graph = GetResult(resultPoints);
-                _graphVisualisator.Show(graph);
-            }
-            else
-            {
-                _logger.Error("Path is null!");
-            }
-
-            IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> GetResult(List<XYZ> pathPoints)
-            {
-
-                if (pathPoints == null || pathPoints.Count == 0)
+            var resolver =
+                new PathFindResolver(pathFinder, _doc, _collisionDetector, baseMEPCurve, baseMEPCurve, null)
                 {
-                    _logger?.Warning("Failed to find path.");
-                    return null;
-                }
+                    Logger = _logger,
+                };
+            var c1 = new ConnectionPoint(task.Item1.Item1, task.Item1.Item2);
+            var c2 = new ConnectionPoint(task.Item2.Item1, task.Item2.Item2);
 
-                _logger?.Information("Path with length " + pathPoints.Count + " points was found.");
-
-                var resultPoints = new List<Point3d>();
-                pathPoints.ForEach(r => resultPoints.Add(r.ToPoint3d()));
-
-                var graph = AdjancyGraphUtils.CreateSimpleChainGraph(resultPoints);
-                return graph;
-            }
+            //find path
+            var graph = resolver.TryResolve((c1, c2));
+            _graphVisualisator.Show(graph);
         }
 
         private Dictionary<BuiltInCategory, List<PartType>> GetIterationCategories()

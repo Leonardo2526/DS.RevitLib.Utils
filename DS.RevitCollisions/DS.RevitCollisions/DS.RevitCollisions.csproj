@@ -125,10 +125,7 @@
     <Compile Include="Resolve\PriorityTaskQueue.cs" />
     <Compile Include="Resolve\TaskCreators\VertexPairTaskCreator.cs" />
     <Compile Include="Resolve\TaskResolvers\DummyTaskResolver.cs" />
-    <Compile Include="Resolve\TaskResolvers\PathFindVertexPairResolver.cs" />
-    <Compile Include="Resolve\TaskResolvers\PathFindGraphVertexPairResolver.cs" />
     <Compile Include="PointsList.cs" />
-    <Compile Include="Resolve\TaskResolvers\PathFindVertexPairResolverBase.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
