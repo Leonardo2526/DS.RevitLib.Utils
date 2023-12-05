@@ -20,7 +20,7 @@ namespace DS.RevitCollisions.Resolve.TaskCreators
 {
     /// <inheritdoc/>
     public class ManualTaskCreatorFactory :
-        ValidatableTaskCreatorFactoryBase<IMEPCollision, IVertex>
+        ValidatableTaskCreatorFactoryBase<IVertex>
 
     {
         private readonly IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> _graph;
@@ -43,7 +43,7 @@ namespace DS.RevitCollisions.Resolve.TaskCreators
         public int MaxVerticesCount { get; set; }
 
         /// <inheritdoc/>
-        public override ITaskCreator<IMEPCollision, (IVertex, IVertex)> Create()
+        public override ITaskCreator<(IVertex, IVertex)> Create()
         {           
             var vertexSelectors = new VertexSelectors(_uIDoc)
             { AllowLink = false, Logger = Logger };
@@ -61,7 +61,7 @@ namespace DS.RevitCollisions.Resolve.TaskCreators
                 Logger = Logger
             };
 
-            return new GraphTaskCreator<IMEPCollision>(selector, _graph, _doc);
+            return new GraphTaskCreator(selector, _graph, _doc);
         }
 
         /// <inheritdoc/>

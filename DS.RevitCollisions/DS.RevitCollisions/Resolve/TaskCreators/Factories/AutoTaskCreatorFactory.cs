@@ -15,7 +15,7 @@ using System.Collections.Generic;
 
 namespace DS.RevitCollisions.Resolve.TaskCreators
 {
-    internal class AutoTaskCreatorFactory : ITaskCreatorFactory<IMEPCollision, (IVertex, IVertex)>
+    internal class AutoTaskCreatorFactory : ITaskCreatorFactory<(IVertex, IVertex)>
     {
         private readonly Document _doc;
         private readonly AdjacencyGraph<IVertex, Edge<IVertex>> _graph;
@@ -51,7 +51,7 @@ namespace DS.RevitCollisions.Resolve.TaskCreators
         #endregion
 
 
-        public ITaskCreator<IMEPCollision, (IVertex, IVertex)> Create()
+        public ITaskCreator<(IVertex, IVertex)> Create()
         {
             var pairIterator = new PairIteratorBuilder(_doc)
             {

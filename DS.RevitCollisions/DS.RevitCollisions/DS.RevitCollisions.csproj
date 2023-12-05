@@ -120,7 +120,6 @@
     <Compile Include="Models\MEPCollision.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Resolve\ResolveFactories\PathFindFactoryBuilder.cs" />
-    <Compile Include="Resolve\ResolveProcessors\CollisionResolveProcessor.cs" />
     <Compile Include="Resolve\TaskCreators\DummyTaskCreator.cs" />
     <Compile Include="Resolve\PriorityTaskQueue.cs" />
     <Compile Include="Resolve\TaskCreators\VertexPairTaskCreator.cs" />

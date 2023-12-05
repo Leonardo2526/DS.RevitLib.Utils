@@ -14,7 +14,7 @@ namespace DS.RevitLib.Utils.Resolve.TaskCreators
 {
     /// <inheritdoc/>
     public class ManualXYZElementTaskCreatorFactory :
-        ValidatableTaskCreatorFactoryBase<object, (Element, XYZ)>
+        ValidatableTaskCreatorFactoryBase<(Element, XYZ)>
     {
         private readonly IElementCollisionDetector _elementCollisionDetector;
         private readonly XYZCollisionDetector _xYZCollisionDetector;
@@ -28,7 +28,7 @@ namespace DS.RevitLib.Utils.Resolve.TaskCreators
         }
 
         /// <inheritdoc/>
-        public override ITaskCreator<object, ((Element, XYZ), (Element, XYZ))> Create()
+        public override ITaskCreator<((Element, XYZ), (Element, XYZ))> Create()
         {
             var xyzSelectors = new XYZElementSelectors(_uIDoc)
             { AllowLink = false, Logger = Logger };
@@ -45,7 +45,7 @@ namespace DS.RevitLib.Utils.Resolve.TaskCreators
                 Messenger = Messenger,
                 Logger = Logger
             };
-            return new TupleValidatableTaskCreator<object, (Element, XYZ)>(selector);
+            return new TupleValidatableTaskCreator<(Element, XYZ)>(selector);
         }
 
         /// <inheritdoc/>

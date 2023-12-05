@@ -18,7 +18,7 @@ namespace DS.RevitCollisions.Resolve.ResolveProcessors
 {
     public class DummyResolveProcessorBuilder
     {
-        public ResolveProcessor<IMEPCollision, string> Processor { get; private set; }
+        public ResolveProcessor<string> Processor { get; private set; }
 
 
         /// <summary>
@@ -26,9 +26,9 @@ namespace DS.RevitCollisions.Resolve.ResolveProcessors
         /// </summary>
         public ILogger Logger { get; set; }
 
-        public ResolveProcessor<IMEPCollision, string> GetProcessor()
+        public ResolveProcessor< string> GetProcessor()
         {
-            var factories = new List<IResolveFactory<IMEPCollision, string>>();
+            var factories = new List<IResolveFactory<string>>();
 
 
             //add factories
@@ -36,10 +36,10 @@ namespace DS.RevitCollisions.Resolve.ResolveProcessors
             {
                 Logger = Logger
             };
-            IResolveFactory<IMEPCollision, string> resolveFactory1 = factoryBuilder.Create();
+            IResolveFactory<string> resolveFactory1 = factoryBuilder.Create();
             factories.Add(resolveFactory1);
 
-            var p = new ResolveProcessor<IMEPCollision, string>(factories)
+            var p = new ResolveProcessor<string>(factories)
             {
                 Logger = Logger
             };

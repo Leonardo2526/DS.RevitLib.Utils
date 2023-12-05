@@ -147,7 +147,7 @@ namespace DS.RevitLib.Test.TestedClasses
             {
                 TraceSettings = _traceSettings,
             };
-            var pathFinder = pathFindFactory.GetInstance();
+            var pathFinder = pathFindFactory.GetPathFinder();
             pathFinder.AccountInitialDirections = true;
             pathFinder.MinimizePathNodes = true;
             pathFinder.AllowSecondElementForBasis = true;
@@ -193,7 +193,7 @@ namespace DS.RevitLib.Test.TestedClasses
             {
                 TraceSettings = _traceSettings,
             };
-            var pathFinder = pathFindFactory.GetInstance();
+            var pathFinder = pathFindFactory.GetPathFinder();
             pathFinder.AccountInitialDirections = true;
             pathFinder.MinimizePathNodes = true;
             pathFinder.AllowSecondElementForBasis = true;

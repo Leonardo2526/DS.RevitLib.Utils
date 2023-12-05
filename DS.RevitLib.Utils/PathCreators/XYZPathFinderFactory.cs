@@ -56,7 +56,7 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmVertexBuilder
         /// </summary>
         public CancellationTokenSource ExternalToken { get; set; } = new CancellationTokenSource();
 
-        public XYZPathFinder GetInstance()
+        public XYZPathFinder GetPathFinder()
         {
             AlgorithmBuilder ??=
                 new PathAlgorithmBuilder(_uiDoc, TraceSettings, BasisStrategies, DirectionValidator);

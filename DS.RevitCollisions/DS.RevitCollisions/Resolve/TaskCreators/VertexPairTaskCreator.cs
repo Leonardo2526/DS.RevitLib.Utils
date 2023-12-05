@@ -15,7 +15,7 @@ using System.Linq;
 
 namespace DS.RevitCollisions.Resolve.TaskCreators
 {
-    internal class VertexPairTaskCreator : ITaskCreator<IMEPCollision, (IVertex, IVertex)>, IEnumerator<(IVertex, IVertex)>
+    internal class VertexPairTaskCreator : ITaskCreator<(IVertex, IVertex)>, IEnumerator<(IVertex, IVertex)>
     {
         private readonly Document _doc;
         private readonly IEnumerator<(IVertex, IVertex)> _vertexPairIterator;
@@ -99,7 +99,7 @@ namespace DS.RevitCollisions.Resolve.TaskCreators
         }
 
 
-        public (IVertex, IVertex) CreateTask(IMEPCollision item)
+        public (IVertex, IVertex) CreateTask()
         {
             _priorityQueue ??= GetPriorityQueue();
             return MoveNext() ? Current : default;

@@ -83,14 +83,14 @@ namespace DS.RevitCollisions.ManualTest.TestCases
         {
             var processor = CreateProcessor(true);
             var mEPCollision = Collision as IMEPCollision;
-            var result = processor?.TryResolve(mEPCollision);
+            var result = processor?.TryResolve();
         }
 
         public async Task RunTest1ASync()
         {
             var processor = CreateProcessor(true);
             var mEPCollision = Collision as IMEPCollision;
-            var result = await processor.TryResolveAsync(mEPCollision);
+            var result = await processor.TryResolveAsync();
             //_graphVisualisator?.Show(result);
 
             //await _graphVisualisator?.ShowAsync(result);
@@ -103,15 +103,15 @@ namespace DS.RevitCollisions.ManualTest.TestCases
             var processor = CreateProcessor(true);
             var mEPCollision = Collision as IMEPCollision;
 
-            var result = processor.TryResolve(mEPCollision); ;
+            var result = processor.TryResolve(); ;
             while (result != null)
             {
-                result = processor.TryResolve(mEPCollision);
+                result = processor.TryResolve();
                 _uiDoc.RefreshActiveView();
             }
         }
 
-        private ResolveProcessor<IMEPCollision, IVertexAndEdgeListGraph<IVertex, Edge<IVertex>>> CreateProcessor(bool insertAxiliaryPoints = false)
+        private ResolveProcessor<IVertexAndEdgeListGraph<IVertex, Edge<IVertex>>> CreateProcessor(bool insertAxiliaryPoints = false)
         {
             _factory = BuildCollisionFactory();
             Collision = CreateCollision(_factory);
@@ -129,7 +129,7 @@ namespace DS.RevitCollisions.ManualTest.TestCases
 
             return null;
 
-            ResolveProcessor<IMEPCollision, IVertexAndEdgeListGraph<IVertex, Edge<IVertex>>> GetProcessor()
+            ResolveProcessor<IVertexAndEdgeListGraph<IVertex, Edge<IVertex>>> GetProcessor()
             {
                 //Create and config pathFind factory
 
@@ -147,7 +147,7 @@ namespace DS.RevitCollisions.ManualTest.TestCases
                 {
                     TraceSettings = _traceSettings,
                 };
-                var pathFinder = pathFindFactory.GetInstance();
+                var pathFinder = pathFindFactory.GetPathFinder();
                 pathFinder.AccountInitialDirections = true;
                 pathFinder.MinimizePathNodes = true;
                 pathFinder.AllowSecondElementForBasis = true;
@@ -159,7 +159,7 @@ namespace DS.RevitCollisions.ManualTest.TestCases
 
                 var f1 = new PathFindFactoryBuilder(_uiDoc, _collisionDetector, graph, pathFinder)
                 {
-                    AutoTasks = true,
+                    AutoTasks = false,
                     TraceSettings = _traceSettings,
                     IterationCategories = GetIterationCategories(),
                     Logger = _logger,
@@ -171,13 +171,13 @@ namespace DS.RevitCollisions.ManualTest.TestCases
                 }.WithCollision(mEPCollision).Create();
 
                 //add factories
-                var factories = new List<IResolveFactory<IMEPCollision, IVertexAndEdgeListGraph<IVertex, Edge<IVertex>>>>
+                var factories = new List<IResolveFactory<IVertexAndEdgeListGraph<IVertex, Edge<IVertex>>>>
             {
                 f1
             };
 
                 return
-                    new ResolveProcessor<IMEPCollision, IVertexAndEdgeListGraph<IVertex, Edge<IVertex>>>(factories)
+                    new ResolveProcessor<IVertexAndEdgeListGraph<IVertex, Edge<IVertex>>>(factories)
                     {
                         Logger = _logger
                     };

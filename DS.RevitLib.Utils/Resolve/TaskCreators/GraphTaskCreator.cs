@@ -13,7 +13,7 @@ using System;
 namespace DS.RevitLib.Utils.Resolve.TaskCreators
 {
     /// <inheritdoc/>
-    public class GraphTaskCreator<TItem> : TupleValidatableTaskCreator<TItem, IVertex>
+    public class GraphTaskCreator : TupleValidatableTaskCreator<IVertex>
     {
         private readonly IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> _graph;
         private readonly Document _doc;

@@ -9,11 +9,10 @@ using System.Collections.Generic;
 namespace DS.RevitLib.Utils.Resolve.TaskCreators
 {
     /// <summary>
-    /// The base class to produce <see cref="ITaskCreator{TItem, TTask}"/>.
+    /// The base class to produce validatable <see cref="ITaskCreator{TTask}"/>.
     /// </summary>
-    /// <typeparam name="TItem"></typeparam>
     /// <typeparam name="TTask"></typeparam>   
-    public abstract class ValidatableTaskCreatorFactoryBase<TItem, TTask> : ITaskCreatorFactory<TItem, (TTask,TTask)>
+    public abstract class ValidatableTaskCreatorFactoryBase<TTask> : ITaskCreatorFactory<(TTask,TTask)>
     {
         /// <summary>
         /// 
@@ -26,7 +25,7 @@ namespace DS.RevitLib.Utils.Resolve.TaskCreators
         protected readonly UIDocument _uIDoc;
 
         /// <summary>
-        /// Instantiate a factory to produce <see cref="ITaskCreator{TItem, TTask}"/>.
+        /// Instantiate a factory to produce validatable <see cref="ITaskCreator{TTask}"/>.
         /// </summary>
         /// <param name="uIDoc"></param>
         public ValidatableTaskCreatorFactoryBase(UIDocument uIDoc)
@@ -76,7 +75,7 @@ namespace DS.RevitLib.Utils.Resolve.TaskCreators
         #endregion
 
         /// <inheritdoc/>
-        public abstract ITaskCreator<TItem, (TTask,TTask)> Create();
+        public abstract ITaskCreator<(TTask,TTask)> Create();
 
         /// <summary>
         /// Get <typeparamref name="TTask"/> validators.

@@ -43,7 +43,7 @@ namespace DS.RevitCollisions.ManualTest.TestCases
 
             var dummyCollision = new DummyCollision();
 
-            var result = p.TryResolve(dummyCollision);
+            var result = p.TryResolve();
 
             _logger.Information(result.ToString());
         }

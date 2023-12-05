@@ -20,7 +20,7 @@ namespace DS.RevitCollisions.Resolve.ResolveFactories
 
     /// <inheritdoc/>
     public class PathFindFactoryBuilder :
-        FactoryBuilderBase<IMEPCollision, (IVertex, IVertex), IVertexAndEdgeListGraph<IVertex, Edge<IVertex>>>
+        FactoryBuilderBase<(IVertex, IVertex), IVertexAndEdgeListGraph<IVertex, Edge<IVertex>>>
     {
         private string _name;
         private ITransactionFactory _transactionFactory;
@@ -89,9 +89,9 @@ namespace DS.RevitCollisions.Resolve.ResolveFactories
 
 
         /// <inheritdoc/>
-        protected override ITaskCreator<IMEPCollision, (IVertex, IVertex)> BuildTaskCreator()
+        protected override ITaskCreator<(IVertex, IVertex)> BuildTaskCreator()
         {
-            ITaskCreatorFactory<IMEPCollision, (IVertex, IVertex)> taskFactory = AutoTasks ?
+            ITaskCreatorFactory<(IVertex, IVertex)> taskFactory = AutoTasks ?
                  new AutoTaskCreatorFactory(_doc, TargetGraph, Collision as MEPCollision, TraceSettings, _collisionDetector)
                  {
                      IterationCategories = IterationCategories,

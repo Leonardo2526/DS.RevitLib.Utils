@@ -5,9 +5,9 @@ using DS.RevitCollisions.Resolve.TaskResolvers;
 
 namespace DS.RevitCollisions.Resolve.ResolveFactories
 {
-    internal class DummyFactoryBuilder : FactoryBuilderBase<IMEPCollision, string, string>
+    internal class DummyFactoryBuilder : FactoryBuilderBase<string, string>
     {
-        protected override ITaskCreator<IMEPCollision, string> BuildTaskCreator()
+        protected override ITaskCreator<string> BuildTaskCreator()
         {
             return new DummyTaskCreator();
         }

@@ -9,9 +9,9 @@ using System.Threading.Tasks;
 
 namespace DS.RevitCollisions.Resolve.TaskCreators
 {
-    internal class DummyTaskCreator : ITaskCreator<IMEPCollision, string>
+    internal class DummyTaskCreator : ITaskCreator<string>
     {
-        public string CreateTask(IMEPCollision item)
+        public string CreateTask()
         {
             return "";
         }
