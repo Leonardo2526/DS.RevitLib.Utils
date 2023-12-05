@@ -27,6 +27,7 @@ namespace DS.RevitCollisions.ManualTest.TestCases
 
     internal class ResolveProcessorBuilderTest
     {
+        private readonly bool _autoTask = false;
         private readonly UIDocument _uiDoc;
         private readonly Document _doc;
         private readonly ContextTransactionFactory _trfIn;
@@ -132,17 +133,6 @@ namespace DS.RevitCollisions.ManualTest.TestCases
             ResolveProcessor<IVertexAndEdgeListGraph<IVertex, Edge<IVertex>>> GetProcessor()
             {
                 //Create and config pathFind factory
-
-                //var pathFindFactory = new XYZVertexPathFinderFactory(_uiDoc)
-                //{
-                //    TraceSettings = _traceSettings,
-                //};
-                //var pathFinder = pathFindFactory.GetInstance();
-                //pathFinder.AccountInitialDirections = true;
-                //pathFinder.MinimizePathNodes = true;
-                //pathFinder.AllowSecondElementForBasis = true;
-                //pathFinder.MaxTime = 1000000;
-
                 var pathFindFactory = new XYZPathFinderFactory(_uiDoc)
                 {
                     TraceSettings = _traceSettings,
@@ -157,23 +147,41 @@ namespace DS.RevitCollisions.ManualTest.TestCases
                 pathFinder.AllowSecondElementForBasis = false;
                 pathFinder.OutlineFactory = null;
 
-                var f1 = new PathFindFactoryBuilder(_uiDoc, _collisionDetector, graph, pathFinder)
+                IResolveFactory<IVertexAndEdgeListGraph<IVertex, Edge<IVertex>>> resolveFactory;
+                if (_autoTask)
                 {
-                    AutoTasks = false,
-                    TraceSettings = _traceSettings,
-                    IterationCategories = GetIterationCategories(),
-                    Logger = _logger,
-                    TaskVisualizator = _taskVisualizator,
-                    ResultVisualizator = _graphVisualisator,
-                    ResolveParallel = true,
-                    Messenger = new TaskDialogMessenger(),
-                    TransactionFactory = _trfAuto
-                }.WithCollision(mEPCollision).Create();
+                    resolveFactory = new PathFindCollisionFactoryBuilder(_uiDoc, _collisionDetector, graph, pathFinder, mEPCollision)
+                    {
+                        TraceSettings = _traceSettings,
+                        IterationCategories = GetIterationCategories(),
+                        Logger = _logger,
+                        TaskVisualizator = _taskVisualizator,
+                        ResultVisualizator = _graphVisualisator,
+                        ResolveParallel = true,
+                        Messenger = new TaskDialogMessenger(),
+                        TransactionFactory = _trfAuto
+                    }.Create();
+                }
+                else
+                {
+                    resolveFactory = new PathFindGraphFactoryBuilder(_uiDoc, _collisionDetector, graph, pathFinder,
+                        mEPCollision.Item1Model.MEPCurve, mEPCollision.Item1Model.MEPCurve, mEPCollision.Item2 as MEPCurve)
+                    {
+                        TraceSettings = _traceSettings,
+                        IterationCategories = GetIterationCategories(),
+                        Logger = _logger,
+                        TaskVisualizator = _taskVisualizator,
+                        ResultVisualizator = _graphVisualisator,
+                        ResolveParallel = true,
+                        Messenger = new TaskDialogMessenger(),
+                        TransactionFactory = _trfAuto
+                    }.Create();
+                }
 
                 //add factories
                 var factories = new List<IResolveFactory<IVertexAndEdgeListGraph<IVertex, Edge<IVertex>>>>
             {
-                f1
+                resolveFactory
             };
 
                 return

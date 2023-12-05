@@ -1,23 +1,17 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
-using DS.ClassLib.VarUtils.Collisions;
-using DS.ClassLib.VarUtils;
-using DS.ClassLib.VarUtils.Resolvers.TaskCreators;
+using DS.ClassLib.VarUtils.Resolvers;
 using DS.GraphUtils.Entities;
-using DS.RevitCollisions;
-using DS.RevitCollisions.Models;
+using DS.RevitCollisions.Resolve.ResolveFactories;
 using DS.RevitLib.Utils.Collisions.Detectors;
 using DS.RevitLib.Utils.Collisions.Models;
 using DS.RevitLib.Utils.Creation.Transactions;
-using DS.RevitLib.Utils.Elements;
 using DS.RevitLib.Utils.Elements.MEPElements;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.Graphs;
 using DS.RevitLib.Utils.MEP.SystemTree.Relatives;
-using DS.RevitLib.Utils.PathCreators.AlgorithmBuilder;
 using DS.RevitLib.Utils.PathCreators;
 using DS.RevitLib.Utils.PathCreators.AlgorithmVertexBuilder;
-using DS.RevitLib.Utils.Resolve.TaskCreators;
 using DS.RevitLib.Utils.Various;
 using QuickGraph;
 using Rhino.Geometry;
@@ -25,11 +19,6 @@ using Serilog;
 using Serilog.Core;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using DS.ClassLib.VarUtils.GridMap;
-using DS.RevitLib.Utils.Connections.PointModels;
-using DS.RevitCollisions.Resolve.TaskResolvers;
-using DS.RevitCollisions.Resolve.TaskCreators;
 
 namespace DS.RevitLib.Test.TestedClasses
 {
@@ -46,6 +35,7 @@ namespace DS.RevitLib.Test.TestedClasses
         private readonly TraceSettings _traceSettings;
         private readonly Logger _logger;
         private readonly VertexPairVisualizator _taskVisualizator;
+        private readonly ElementPointPairVisualizator _xYZTaskVisualizator;
 
         public PathFindVertexPairResolverTest(UIDocument uiDoc)
         {
@@ -71,6 +61,12 @@ namespace DS.RevitLib.Test.TestedClasses
                 RefreshView = true,
             };
 
+            _xYZTaskVisualizator = new ElementPointPairVisualizator(_uiDoc)
+            {
+                TransactionFactory = _trfAuto,
+                RefreshView = true,
+            };
+
             _graphVisualisator = new GraphVisulisator(uiDoc)
             {
                 ShowElementIds = false,
@@ -81,7 +77,14 @@ namespace DS.RevitLib.Test.TestedClasses
             };
         }
 
-        public void RunCase1()
+
+        public void RunTest1()
+        {
+            var processor = CreateProcessor();
+            var result = processor?.TryResolve();
+        }
+
+        public ResolveProcessor<IVertexAndEdgeListGraph<IVertex, Edge<IVertex>>> CreateProcessor()
         {
             MEPCurve baseMEPCurve;
             try
@@ -90,105 +93,12 @@ namespace DS.RevitLib.Test.TestedClasses
                     Pick("Выберите базовый линейный элемент внутри удаляемого диапазона.");
             }
             catch (Exception)
-            { return; }
+            { return null; }
 
-            IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> sourceGraph = null;
-            AdjacencyGraph<IVertex, Edge<IVertex>> targetGraph = null;
-            if (_deleteInsideElements)
-            {
-                //Create graph
-                sourceGraph = CreateGraphByMEPCurve(baseMEPCurve);
-                targetGraph = sourceGraph as AdjacencyGraph<IVertex, Edge<IVertex>>;
-                targetGraph = targetGraph.Clone();
-            }
+            //build Graph
+            var sourceGraph = _deleteInsideElements ? CreateGraphByMEPCurve(baseMEPCurve) : null;
 
-            if (sourceGraph == null)
-            {
-                FindPath(baseMEPCurve);
-            }
-            else
-            {
-                FindPathWithGraph(baseMEPCurve, sourceGraph, targetGraph);
-            }
-
-
-        }
-
-        private void FindPathWithGraph(MEPCurve baseMEPCurve,
-            IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> sourceGraph,
-            AdjacencyGraph<IVertex, Edge<IVertex>> targetGraph)
-        {
-            //build task
-            var taskCreatorFactory = new ManualTaskCreatorFactory(_uiDoc, targetGraph, _collisionDetector)
-            {
-                AvailableCategories = GetIterationCategories(),
-                ExternalOutline = null,
-                InsulationAccount = true,
-                TraceSettings = _traceSettings,
-                Messenger = new TaskDialogMessenger(),
-                Logger = _logger,
-                BaseMEPCurve = baseMEPCurve,
-            };
-
-            var taskCreator = taskCreatorFactory.Create();
-            var task = taskCreator.CreateTask(null);
-
-            if (targetGraph != null)
-            {
-                targetGraph.PrintEdges();
-                targetGraph.PrintEdgesVerticesTags();
-            }
-
-            _taskVisualizator.Show(task);
-            _uiDoc.RefreshActiveView();
-
-            //build resolver
-            var pathFindFactory = new XYZPathFinderFactory(_uiDoc)
-            {
-                TraceSettings = _traceSettings,
-            };
-            var pathFinder = pathFindFactory.GetPathFinder();
-            pathFinder.AccountInitialDirections = true;
-            pathFinder.MinimizePathNodes = true;
-            pathFinder.AllowSecondElementForBasis = true;
-            pathFinder.MaxTime = 1000000;
-            pathFinder.ExternalOutline = null;
-            pathFinder.InsulationAccount = true;
-            pathFinder.AllowSecondElementForBasis = false;
-
-            var resolver = new PathFindGraphResolver(pathFinder, _doc,
-                _collisionDetector, targetGraph, baseMEPCurve, baseMEPCurve)
-            {
-                Logger = _logger
-            };
-
-            //find path
-            var result = resolver.TryResolve(task);
-            _graphVisualisator.Show(result);
-        }
-
-        private void FindPath(MEPCurve baseMEPCurve)
-        {
-            //build task
-            var taskCreatorFactory = new ManualXYZElementTaskCreatorFactory(_uiDoc, _collisionDetector)
-            {
-                AvailableCategories = GetIterationCategories(),
-                ExternalOutline = null,
-                InsulationAccount = true,
-                TraceSettings = _traceSettings,
-                Messenger = new TaskDialogMessenger(),
-                Logger = _logger,
-                BaseMEPCurve = baseMEPCurve,
-            };
-
-            var taskCreator = taskCreatorFactory.Create();
-            var task = taskCreator.CreateTask(null);
-
-            task.Item1.Item2.Show(_doc, 0, _trfAuto);
-            task.Item2.Item2.Show(_doc, 0, _trfAuto);
-            _uiDoc.RefreshActiveView();
-
-            //build resolver
+            //create and config pathFind factory
             var pathFindFactory = new XYZPathFinderFactory(_uiDoc)
             {
                 TraceSettings = _traceSettings,
@@ -203,17 +113,56 @@ namespace DS.RevitLib.Test.TestedClasses
             pathFinder.AllowSecondElementForBasis = false;
             pathFinder.OutlineFactory = null;
 
-            var resolver =
-                new PathFindResolver(pathFinder, _doc, _collisionDetector, baseMEPCurve, baseMEPCurve, null)
+            //get processor
+            var resolveFactory = GetResolveFactory(sourceGraph, pathFinder, baseMEPCurve);
+            var factories = new List<IResolveFactory<IVertexAndEdgeListGraph<IVertex, Edge<IVertex>>>>
+            {
+                resolveFactory
+            };
+            return
+                new ResolveProcessor<IVertexAndEdgeListGraph<IVertex, Edge<IVertex>>>(factories)
                 {
-                    Logger = _logger,
+                    Logger = _logger
                 };
-            var c1 = new ConnectionPoint(task.Item1.Item1, task.Item1.Item2);
-            var c2 = new ConnectionPoint(task.Item2.Item1, task.Item2.Item2);
+        }
 
-            //find path
-            var graph = resolver.TryResolve((c1, c2));
-            _graphVisualisator.Show(graph);
+        private IResolveFactory<IVertexAndEdgeListGraph<IVertex, Edge<IVertex>>> GetResolveFactory
+            (IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> sourceGraph, XYZPathFinder pathFinder, MEPCurve baseMEPCurve)
+        {
+            IResolveFactory<IVertexAndEdgeListGraph<IVertex, Edge<IVertex>>> resolveFactory;
+
+            if (sourceGraph == null)
+            {
+                resolveFactory = new PathFindPointElementFactoryBuilder(_uiDoc, _collisionDetector, pathFinder,
+                   baseMEPCurve, baseMEPCurve)
+                {
+                    TraceSettings = _traceSettings,
+                    IterationCategories = GetIterationCategories(),
+                    Logger = _logger,
+                    TaskVisualizator = _xYZTaskVisualizator,
+                    ResultVisualizator = _graphVisualisator,
+                    ResolveParallel = true,
+                    Messenger = new TaskDialogMessenger(),
+                    TransactionFactory = _trfAuto
+                }.Create();
+            }
+            else
+            {
+                resolveFactory = new PathFindGraphFactoryBuilder(_uiDoc, _collisionDetector, sourceGraph, pathFinder,
+                     baseMEPCurve, baseMEPCurve)
+                {
+                    TraceSettings = _traceSettings,
+                    IterationCategories = GetIterationCategories(),
+                    Logger = _logger,
+                    TaskVisualizator = _taskVisualizator,
+                    ResultVisualizator = _graphVisualisator,
+                    ResolveParallel = true,
+                    Messenger = new TaskDialogMessenger(),
+                    TransactionFactory = _trfAuto
+                }.Create();
+            }
+
+            return resolveFactory;
         }
 
         private Dictionary<BuiltInCategory, List<PartType>> GetIterationCategories()
@@ -311,23 +260,6 @@ namespace DS.RevitLib.Test.TestedClasses
 
             var point = mEPCurve.GetCenterPoint();
             return builder.Create(mEPCurve, point);
-        }
-
-        private IVertex TryAddVertex(IVertex vertexToAdd, IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> graph)
-        {
-            var vertex = vertexToAdd is TaggedGVertex<(int, Point3d)> taggedIntPointVertex ?
-                taggedIntPointVertex.ToVertexPoint() :
-                vertexToAdd;
-
-            if (!vertex.TryFindTaggedVertex(graph, out var foundVertex))
-            {
-                var aGraph = graph as AdjacencyGraph<IVertex, Edge<IVertex>>;
-                var location = vertex.GetLocation(_doc).ToPoint3d();
-                if (aGraph.TryInsert(location, _doc))
-                { foundVertex = aGraph.Vertices.Last(); }
-            }
-
-            return foundVertex;
         }
     }
 }

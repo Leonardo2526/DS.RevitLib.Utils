@@ -23,7 +23,7 @@ namespace DS.RevitLib.Utils.PathCreators
     /// Resolver to resolve <see cref="ConnectionPoint"/> tasks.
     /// </summary>
     public class PathFindResolver :
-        ITaskResolver<(ConnectionPoint, ConnectionPoint), IVertexAndEdgeListGraph<IVertex, Edge<IVertex>>>
+        ITaskResolver<((Element, XYZ), (Element, XYZ)), IVertexAndEdgeListGraph<IVertex, Edge<IVertex>>>
     {
         /// <summary>
         /// Current active <see cref="Document"/>.
@@ -69,18 +69,23 @@ namespace DS.RevitLib.Utils.PathCreators
         public IEnumerable<IVertexAndEdgeListGraph<IVertex, Edge<IVertex>>> Results => _results;
 
         /// <inheritdoc/>
-        public IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> TryResolve((ConnectionPoint, ConnectionPoint) task)
+        public IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> TryResolve(((Element, XYZ), (Element, XYZ)) task)
         {
-            BuildPathFinderWithTask(_pathFinder, task, _collisionDetector);
+            var c1 = new ConnectionPoint(task.Item1.Item1, task.Item1.Item2);
+            var c2 = new ConnectionPoint(task.Item2.Item1, task.Item2.Item2);
+            BuildPathFinderWithTask(_pathFinder, (c1, c2), _collisionDetector);
 
-            var result = _pathFinder.FindPath(task.Item1, task.Item2);
+            var result = _pathFinder.FindPath(c1, c2);
             return ConvertToGraph(result);
         }
 
         /// <inheritdoc/>
-        public async Task<IVertexAndEdgeListGraph<IVertex, Edge<IVertex>>> TryResolveAsync((ConnectionPoint, ConnectionPoint) task)
+        public async Task<IVertexAndEdgeListGraph<IVertex, Edge<IVertex>>> TryResolveAsync(((Element, XYZ), (Element, XYZ)) task)
         {
-            var result = await _pathFinder.FindPathAsync(task.Item1, task.Item2);
+            var c1 = new ConnectionPoint(task.Item1.Item1, task.Item1.Item2);
+            var c2 = new ConnectionPoint(task.Item2.Item1, task.Item2.Item2);
+            BuildPathFinderWithTask(_pathFinder, (c1, c2), _collisionDetector);
+            var result = await _pathFinder.FindPathAsync(c1, c2);
             return ConvertToGraph(result);
         }
 

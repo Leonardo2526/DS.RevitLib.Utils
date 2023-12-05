@@ -2,16 +2,12 @@
 using Autodesk.Revit.UI;
 using DS.ClassLib.VarUtils;
 using DS.ClassLib.VarUtils.Resolvers;
-using DS.ClassLib.VarUtils.Resolvers.TaskCreators;
 using DS.GraphUtils.Entities;
 using DS.RevitCollisions.Models;
 using DS.RevitCollisions.Resolve.TaskCreators;
-using DS.RevitCollisions.Resolve.TaskResolvers;
-using DS.RevitLib.Utils;
 using DS.RevitLib.Utils.Collisions.Detectors.AbstractDetectors;
 using DS.RevitLib.Utils.Creation.Transactions;
 using DS.RevitLib.Utils.PathCreators;
-using DS.RevitLib.Utils.PathCreators.AlgorithmVertexBuilder;
 using QuickGraph;
 using System.Collections.Generic;
 
@@ -19,22 +15,32 @@ namespace DS.RevitCollisions.Resolve.ResolveFactories
 {
 
     /// <inheritdoc/>
-    public class PathFindFactoryBuilder :
+    public class PathFindCollisionFactoryBuilder :
         FactoryBuilderBase<(IVertex, IVertex), IVertexAndEdgeListGraph<IVertex, Edge<IVertex>>>
     {
-        private string _name;
         private ITransactionFactory _transactionFactory;
         private readonly Document _doc;
         private readonly UIDocument _uiDoc;
         private readonly IElementCollisionDetector _collisionDetector;
         private readonly IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> _sourceGraph;
         private readonly XYZPathFinder _pathFinder;
+        private readonly MEPCollision _mEPCollision;
 
-        public PathFindFactoryBuilder(
+        /// <summary>
+        /// Instansiate a builder to create <see cref="IResolveFactory{TResult}"/> 
+        /// to resolve <see cref="MEPCollision"/>
+        /// by finding path between <paramref name="graph"/>'s vertices.
+        /// </summary>
+        /// <param name="uiDoc"></param>
+        /// <param name="collisionDetector"></param>
+        /// <param name="graph"></param>
+        /// <param name="pathFinder"></param>
+        /// <param name="mEPCollision"></param>
+        public PathFindCollisionFactoryBuilder(
             UIDocument uiDoc,
             IElementCollisionDetector collisionDetector,
             IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> graph,
-            XYZPathFinder pathFinder)
+            XYZPathFinder pathFinder, MEPCollision mEPCollision)
         {
             _uiDoc = uiDoc;
             _collisionDetector = collisionDetector;
@@ -43,6 +49,7 @@ namespace DS.RevitCollisions.Resolve.ResolveFactories
             TargetGraph = graph as AdjacencyGraph<IVertex, Edge<IVertex>>;
             TargetGraph = TargetGraph.Clone();
             _pathFinder = pathFinder;
+            _mEPCollision = mEPCollision;
         }
 
         #region Properties
@@ -53,10 +60,6 @@ namespace DS.RevitCollisions.Resolve.ResolveFactories
         public AdjacencyGraph<IVertex, Edge<IVertex>> TargetGraph { get; }
 
         public Dictionary<BuiltInCategory, List<PartType>> IterationCategories { get; set; }
-
-        public IMEPCollision Collision { get; set; }
-
-        public bool AutoTasks { get; set; }
 
         /// <summary>
         /// Messenger to show errors.
@@ -81,52 +84,25 @@ namespace DS.RevitCollisions.Resolve.ResolveFactories
         #endregion
 
 
-        public PathFindFactoryBuilder WithCollision(IMEPCollision mEPCollision)
-        {
-            Collision = mEPCollision;
-            return this;
-        }
-
 
         /// <inheritdoc/>
-        protected override ITaskCreator<(IVertex, IVertex)> BuildTaskCreator()
-        {
-            ITaskCreatorFactory<(IVertex, IVertex)> taskFactory = AutoTasks ?
-                 new AutoTaskCreatorFactory(_doc, TargetGraph, Collision as MEPCollision, TraceSettings, _collisionDetector)
-                 {
-                     IterationCategories = IterationCategories,
-                     InsulationAccount = InsulationAccount,
-                     Logger = Logger,
-                     TransactionFactory = TransactionFactory
-                 } :
-                new ManualTaskCreatorFactory(_uiDoc, TargetGraph, _collisionDetector)
-                {
-                    BaseMEPCurve = Collision.Item1,
-                    AvailableCategories = IterationCategories,
-                    ExternalOutline = ExternalOutline,
-                    InsulationAccount = InsulationAccount,
-                    TraceSettings = TraceSettings,
-                    MaxLength = default,
-                    MaxVerticesCount = default,
-                    Messenger = Messenger,
-                    Logger = Logger
-                };
-            return taskFactory.Create();
-        }
+        protected override ITaskCreator<(IVertex, IVertex)> BuildTaskCreator() =>
+            new AutoTaskCreatorFactory(_doc, TargetGraph, _mEPCollision, TraceSettings, _collisionDetector)
+            {
+                IterationCategories = IterationCategories,
+                InsulationAccount = InsulationAccount,
+                Logger = Logger,
+                TransactionFactory = TransactionFactory
+            }.Create();
 
         /// <inheritdoc/>
-        protected override ITaskResolver<(IVertex, IVertex), IVertexAndEdgeListGraph<IVertex, Edge<IVertex>>> BuildTaskResover()
-        {
-            //_pathFinder.ExternalOutline = ExternalOutline;
-            //_pathFinder.InsulationAccount = InsulationAccount;
-            var resolver = new PathFindGraphResolver(_pathFinder, _doc, _collisionDetector, TargetGraph,
-                Collision.Item1, Collision.Item1, Collision.Item2 as MEPCurve)
+        protected override ITaskResolver<(IVertex, IVertex),
+            IVertexAndEdgeListGraph<IVertex, Edge<IVertex>>> BuildTaskResover() =>
+            new PathFindGraphResolver(_pathFinder, _doc, _collisionDetector, TargetGraph,
+                _mEPCollision.Item1Model.MEPCurve, _mEPCollision.Item1Model.MEPCurve, _mEPCollision.Item2 as MEPCurve)
             {
                 Logger = Logger
             };
-            return resolver;
-        }
-
 
     }
 }

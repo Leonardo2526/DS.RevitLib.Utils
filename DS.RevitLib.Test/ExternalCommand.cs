@@ -24,7 +24,7 @@ namespace DS.RevitLib.Test
 
 
             var test= new PathFindVertexPairResolverTest(uidoc);
-            test.RunCase1();
+            test.RunTest1();
 
             //resolver.Resolve();
             //return Result.Succeeded;

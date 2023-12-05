@@ -50,7 +50,10 @@ namespace DS.RevitLib.Utils.PathCreators
             var c2 = ToConnectionPoint(task.Item2, _graph, _doc);
             _excluded = GetElementsToExclude(task);
 
-            return TryResolve((c1, c2));
+            var taskItem1 = (c1.Element, c1.Point);
+            var taskItem2 = (c2.Element, c2.Point);
+
+            return TryResolve((taskItem1, taskItem2));
         }
 
         /// <inheritdoc/>
@@ -60,7 +63,10 @@ namespace DS.RevitLib.Utils.PathCreators
             var c2 = ToConnectionPoint(task.Item2, _graph, _doc);
             _excluded = GetElementsToExclude(task);
 
-            return await TryResolveAsync((c1, c2));
+            var taskItem1 = (c1.Element, c1.Point);
+            var taskItem2 = (c2.Element, c2.Point);
+
+            return await TryResolveAsync((taskItem1, taskItem2));
         }
 
         /// <inheritdoc/>

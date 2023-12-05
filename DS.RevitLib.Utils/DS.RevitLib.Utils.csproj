@@ -131,6 +131,7 @@
     <Compile Include="Connections\PointModels\ConnectionPointValidator.cs" />
     <Compile Include="Connections\PointModels\IConnectionPoint.cs" />
     <Compile Include="Connections\PointModels\IConnectionPointValidator.cs" />
+    <Compile Include="Connections\ElementPointPairVisualizator.cs" />
     <Compile Include="Creation\AbstractCreator.cs" />
     <Compile Include="Collisions\BBCollisionUtils.cs" />
     <Compile Include="Creation\MEP\MEPCurveBreaker.cs" />
