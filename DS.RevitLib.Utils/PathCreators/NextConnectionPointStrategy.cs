@@ -22,6 +22,7 @@ namespace DS.RevitLib.Utils.PathCreators
     internal class NextConnectionPointStrategy : INextConnectionPointStrategy
     {
         private readonly Document _doc;
+        private int _tolerance = 5;
 
         public NextConnectionPointStrategy(Document doc)
         {
@@ -31,10 +32,9 @@ namespace DS.RevitLib.Utils.PathCreators
         public IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> Graph { get; set; }
 
         /// <summary>
-        /// Converter to transform geometry objects between UCS.
+        /// Path find tolerance.
         /// </summary>
-        public IPoint3dConverter PointConverter { get; set; }
-
+        public int Tolerance { get => _tolerance; set => _tolerance = value; }
 
         public (Point3d point, Vector3d dir) GetPoint(Element element, XYZ point)
         {
@@ -42,10 +42,7 @@ namespace DS.RevitLib.Utils.PathCreators
                 GetWithDefaultPoint(element, point) :
                 GetWithGraph(element, point, Graph);
 
-            p = PointConverter is null ? p : PointConverter.ConvertToUCS2(p);
-            v = PointConverter is null ? v : PointConverter.ConvertToUCS2(v);
-
-            return (p, v);
+            return (p.Round(_tolerance), v.Round(_tolerance));
         }
 
         ( Point3d point, Vector3d dir) GetWithGraph(Element element, XYZ point, 

@@ -32,7 +32,7 @@ namespace DS.RevitLib.Utils.Extensions
             var offsetDir = (con1.Origin - con2.Origin).Normalize();
 
             _mcBasis = mEPCurve.GetBasisXYZ(offsetDir, con1.Origin);
-
+            SourceBasis3d = _mcBasis.ToBasis3d();
             var sourceSolid = ElementUtils.GetSolid(_mEPCurve);
             _sourceFaceCurves = GetFaceCurves(sourceSolid.Faces, _mcBasis, offset);
         }

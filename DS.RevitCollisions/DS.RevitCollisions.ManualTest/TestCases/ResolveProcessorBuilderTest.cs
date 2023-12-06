@@ -14,6 +14,7 @@ using DS.RevitLib.Utils.Creation.Transactions;
 using DS.RevitLib.Utils.Elements.MEPElements;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.Graphs;
+using DS.RevitLib.Utils.MEP;
 using DS.RevitLib.Utils.MEP.SystemTree.Relatives;
 using DS.RevitLib.Utils.PathCreators.AlgorithmVertexBuilder;
 using DS.RevitLib.Utils.Various;
@@ -27,7 +28,8 @@ namespace DS.RevitCollisions.ManualTest.TestCases
 
     internal class ResolveProcessorBuilderTest
     {
-        private readonly bool _autoTask = false;
+        private readonly bool _autoTask = true;
+        private readonly bool _resolveParallel = false;
         private readonly UIDocument _uiDoc;
         private readonly Document _doc;
         private readonly ContextTransactionFactory _trfIn;
@@ -57,7 +59,11 @@ namespace DS.RevitCollisions.ManualTest.TestCases
                  .WriteTo.Debug()
                  .CreateLogger();
 
-            _traceSettings = new TraceSettings();
+            _traceSettings = new TraceSettings()
+            {
+                A =90,
+                Step = 500.MMToFeet()
+            };
 
             _collisionDetector = new ElementCollisionDetector(_doc, new ElementIntersectionFactory(_doc));
             _collisionVisualizator = new CollisionVisualizator(uiApp);
@@ -72,7 +78,7 @@ namespace DS.RevitCollisions.ManualTest.TestCases
             {
                 ShowElementIds = false,
                 ShowVerticesIds = false,
-                ShowDirecionts = true,
+                ShowDirecionts = false,
                 TransactionFactory = _trfAuto,
                 RefreshView = true
             };
@@ -82,8 +88,17 @@ namespace DS.RevitCollisions.ManualTest.TestCases
 
         public void RunTest1()
         {
+            _factory = BuildCollisionFactory();
+            Collision = CreateCollision(_factory);
+            //_collisionVisualizator.Show(Collision);
+            var mEPCollision = Collision as MEPCollision;
+
+            _traceSettings.R = new ElbowRadiusCalc(mEPCollision.Item1Model, _trfAuto).
+            GetRadius(_traceSettings.A.DegToRad()).Result;
+            _traceSettings.F = 2 * _traceSettings.R + _traceSettings.D;
+
             var processor = CreateProcessor(true);
-            var mEPCollision = Collision as IMEPCollision;
+
             var result = processor?.TryResolve();
         }
 
@@ -114,11 +129,6 @@ namespace DS.RevitCollisions.ManualTest.TestCases
 
         private ResolveProcessor<IVertexAndEdgeListGraph<IVertex, Edge<IVertex>>> CreateProcessor(bool insertAxiliaryPoints = false)
         {
-            _factory = BuildCollisionFactory();
-            Collision = CreateCollision(_factory);
-            //_collisionVisualizator.Show(Collision);
-
-
             var mEPCollision = Collision as MEPCollision;
 
             //build Graph
@@ -144,8 +154,9 @@ namespace DS.RevitCollisions.ManualTest.TestCases
                 pathFinder.MaxTime = 1000000;
                 pathFinder.ExternalOutline = null;
                 pathFinder.InsulationAccount = true;
-                pathFinder.AllowSecondElementForBasis = false;
+                pathFinder.AllowSecondElementForBasis = true;
                 pathFinder.OutlineFactory = null;
+                pathFinder.TransactionFactory = null;
 
                 IResolveFactory<IVertexAndEdgeListGraph<IVertex, Edge<IVertex>>> resolveFactory;
                 if (_autoTask)
@@ -157,7 +168,7 @@ namespace DS.RevitCollisions.ManualTest.TestCases
                         Logger = _logger,
                         TaskVisualizator = _taskVisualizator,
                         ResultVisualizator = _graphVisualisator,
-                        ResolveParallel = true,
+                        ResolveParallel = _resolveParallel,
                         Messenger = new TaskDialogMessenger(),
                         TransactionFactory = _trfAuto
                     }.Create();
@@ -172,7 +183,7 @@ namespace DS.RevitCollisions.ManualTest.TestCases
                         Logger = _logger,
                         TaskVisualizator = _taskVisualizator,
                         ResultVisualizator = _graphVisualisator,
-                        ResolveParallel = true,
+                        ResolveParallel = _resolveParallel,
                         Messenger = new TaskDialogMessenger(),
                         TransactionFactory = _trfAuto
                     }.Create();

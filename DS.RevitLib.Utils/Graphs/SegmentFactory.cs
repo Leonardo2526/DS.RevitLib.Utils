@@ -86,10 +86,18 @@ namespace DS.RevitLib.Utils.Graphs
             var connectionSegment = edge.GetConnectionSegment(_doc, minDistToConnector + sourceOdd, minDistToConnector + targetOdd);
             var deductionSegments = GetIntersectionSegments(mEPCurve, edgeLine, _collisionDetector).ToList();
 
-            //add as option minSourceLine          
-            Line minSourceLine = GetMinLineSource(edge, sourceLoc, MinDistanceFromSource, _doc);
-            if (minSourceLine.Length > 0)
-            { deductionSegments.Add(minSourceLine); }
+            //add as option minSourceLine
+            if (deductionSegments.Any())
+            {
+                deductionSegments = deductionSegments.OrderBy(s => s.PointAtLength(s.Length / 2).DistanceTo(sourceLoc)).ToList();
+                double minLongLeg = MinDistanceFromSource + MinDistanceToConnector;
+                Line minSourceLine1 = GetMinLineSource(edge, deductionSegments.FirstOrDefault().To, minLongLeg, _doc);
+                if (minSourceLine1.Length > 0)
+                { deductionSegments.Add(minSourceLine1); }
+                Line minSourceLine2 = GetMinLineSource(edge, deductionSegments.FirstOrDefault().From, minLongLeg, _doc);
+                if (minSourceLine2.Length > 0)
+                { deductionSegments.Add(minSourceLine2); }
+            }
 
             var freeSegments = LineBooleanTools.Substract(connectionSegment, deductionSegments);
 

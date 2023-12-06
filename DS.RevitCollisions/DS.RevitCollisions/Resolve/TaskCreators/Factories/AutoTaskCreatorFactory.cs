@@ -6,6 +6,7 @@ using DS.GraphUtils.Entities;
 using DS.RevitCollisions.Models;
 using DS.RevitLib.Utils.Collisions.Detectors.AbstractDetectors;
 using DS.RevitLib.Utils.Creation.Transactions;
+using DS.RevitLib.Utils.Elements.MEPElements;
 using DS.RevitLib.Utils.Graphs;
 using DS.RevitLib.Utils.MEP.SystemTree.Relatives;
 using QuickGraph;
@@ -83,8 +84,8 @@ namespace DS.RevitCollisions.Resolve.TaskCreators
                 : 0;
 
             var minDistanceToElements = mEPCurveSize / 2 + insulationThickness + traceSettings.C;
-            var minDistanceToConnector = traceSettings.D + model.ElbowRadius;
-            var minDistanceFromSource = (traceSettings.D + 2 * model.ElbowRadius) / Math.Tan(traceSettings.A.DegToRad());
+            var minDistanceToConnector = traceSettings.D + _traceSettings.R;
+            var minDistanceFromSource = (traceSettings.D + 2 * _traceSettings.R) / Math.Tan(traceSettings.A.DegToRad());
 
             var segementFactory = new SegmentFactory(doc, collisionDetector)
             {

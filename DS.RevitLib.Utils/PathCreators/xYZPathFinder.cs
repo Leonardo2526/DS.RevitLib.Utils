@@ -156,8 +156,7 @@ namespace DS.RevitLib.Utils.PathCreators
 
             _pathAlgorithmBuilder.NextPointStrategy = new NextConnectionPointStrategy(_doc)
             {
-                Graph = Graph,
-                PointConverter = _pathAlgorithmBuilder.PointConverter
+                Graph = Graph
             };
 
             _collisionDetector = collisionDetector;

@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using DS.ClassLib.VarUtils;
+using DS.ClassLib.VarUtils.Basis;
 using DS.ClassLib.VarUtils.Collisions;
 using DS.ClassLib.VarUtils.Enumerables;
 using DS.ClassLib.VarUtils.Points;
@@ -219,19 +220,32 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
                 var ep = new Point3d(endPoint.X, endPoint.Y, endPoint.Z);
                 _endPoint = _algorithmBuilder.EndPoint =
                     _pointConverter.ConvertToUCS2(ep).Round(_tolerance);
-
+               
                 if (accountInitialDirections)
                 {
                     if (!_startConnectionPoint.Element.IsCategoryElement(_stopCategories))
                     {
                         (_startANP, _startDirection) = _algorithmBuilder.NextPointStrategy.
                             GetPoint(_startConnectionPoint.Element, _startConnectionPoint.Point);
+                        _startDirection = -_startDirection;
+                        _startANP = _startANP.Equals(default) ? 
+                            default:  
+                            _pointConverter.ConvertToUCS2(_startANP).Round(_cTolerance);
+                        _startDirection = _startDirection = default ? 
+                            default: 
+                            _pointConverter.ConvertToUCS2(_startDirection).Round(_cTolerance);
                     }
 
                     if (!_endConnectionPoint.Element.IsCategoryElement(_stopCategories))
                     {
                         (_endANP, _endDirection) = _algorithmBuilder.NextPointStrategy.
                          GetPoint(_endConnectionPoint.Element, _endConnectionPoint.Point);
+                        _endANP = _endANP.Equals(default) ? 
+                            default :
+                            _pointConverter.ConvertToUCS2(_endANP).Round(_cTolerance);
+                        _endDirection = _endDirection  == default ? 
+                            default: 
+                            _pointConverter.ConvertToUCS2(_endDirection).Round(_cTolerance);
                     }
                 }
 
@@ -349,7 +363,6 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
                 WithBounds(_lowerBound, _upperBound);
 
                 _algorithm.SourceBasis = sourceBasis;
-                _traceCollisionDetector.SolidExtractor.SetSource(sourceBasisUCS1);
                 _algorithmBuilder._algorithm = _algorithm;
                 return _algorithm;
             }

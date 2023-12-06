@@ -2,6 +2,7 @@
 using Autodesk.Revit.UI;
 using DS.ClassLib.VarUtils;
 using DS.ClassLib.VarUtils.Basis;
+using DS.ClassLib.VarUtils.Points;
 using DS.RevitLib.Utils.Creation.Transactions;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.Geometry.Points;
@@ -47,7 +48,7 @@ namespace DS.RevitLib.Utils.Various.Bases
         /// <param name="labelSize"></param>
         /// <param name="transactionFactory"></param>
         /// <param name="refresh"></param>
-        public static void Show(this Basis3d basis, UIDocument uiDoc, double labelSize = 0, 
+        public static void Show(this Basis3d basis, UIDocument uiDoc, double labelSize = 0,
             ITransactionFactory transactionFactory = null, bool refresh = false)
         {
             var point3dVisualisator =
@@ -75,25 +76,35 @@ namespace DS.RevitLib.Utils.Various.Bases
         /// </returns>
         public static List<Transform> GetTransforms(this Basis3d sourceBasis, Basis3d targetBasis)
         {
-            var xYZTransforms = new List<Transform>();
+            sourceBasis = sourceBasis.Round();
+            targetBasis = targetBasis.Round();
+
+            sourceBasis = sourceBasis.ToRightandedOrthonormal();
+            targetBasis = targetBasis.ToRightandedOrthonormal();
 
             Rhino.Geometry.Transform transform = sourceBasis.GetTransform(targetBasis);
-            transform.GetEulerZYZ(out double alpha1, out double beta1, out double gamma1);
+            if (!transform.GetEulerZYZ(out double alpha1, out double beta1, out double gamma1))
+            { return new List<Transform>();}
 
             double alpha = alpha1.RadToDeg();
             double beta = beta1.RadToDeg();
             double gamma = gamma1.RadToDeg();
 
+            if (alpha == double.NegativeInfinity)
+            { throw new ArgumentException("Failed to transform sourceBasis to targetBasis."); }
+
             BasisXYZ basisXYZ = sourceBasis.ToXYZ();
 
-            xYZTransforms.Add(Transform.CreateRotationAtPoint(basisXYZ.Z, -alpha1, basisXYZ.Origin));
-            xYZTransforms.Add(Transform.CreateRotationAtPoint(basisXYZ.Y, -beta1, basisXYZ.Origin));
-            xYZTransforms.Add(Transform.CreateRotationAtPoint(basisXYZ.Z, -gamma1, basisXYZ.Origin));
+            var xYZTransforms = new List<Transform>
+            {
+                Transform.CreateRotationAtPoint(basisXYZ.Z, -alpha1, basisXYZ.Origin),
+                Transform.CreateRotationAtPoint(basisXYZ.Y, -beta1, basisXYZ.Origin),
+                Transform.CreateRotationAtPoint(basisXYZ.Z, -gamma1, basisXYZ.Origin)
+            };
             var translation = Transform.CreateTranslation((targetBasis.Origin.ToXYZ() - basisXYZ.Origin));
             xYZTransforms.Add(translation);
 
             return xYZTransforms;
         }
-
     }
 }

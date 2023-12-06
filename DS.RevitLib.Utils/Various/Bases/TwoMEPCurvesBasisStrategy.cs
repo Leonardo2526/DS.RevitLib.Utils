@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using DS.ClassLib.VarUtils;
+using DS.ClassLib.VarUtils.Basis;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.Various;
 using System;
@@ -75,7 +76,11 @@ namespace DS.RevitLib.Utils.Bases
             BasisZ = BasisZ.IsZeroLength() ? BasisX.GetPerpendicular() : BasisZ;
             BasisY = BasisZ.CrossProduct(BasisX);
 
-            return (BasisX, BasisY, BasisZ);
+
+            var basis = new Basis3d(BasisX.ToVector3d(), BasisY.ToVector3d(), BasisZ.ToVector3d());
+            basis = basis.ToRightandedOrthonormal();
+
+            return (basis.X.ToXYZ(), basis.Y.ToXYZ(), basis.Z.ToXYZ());
         }
 
         /// <inheritdoc/>
