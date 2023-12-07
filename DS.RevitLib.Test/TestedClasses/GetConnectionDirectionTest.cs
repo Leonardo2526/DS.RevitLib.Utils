@@ -41,7 +41,7 @@ namespace DS.RevitLib.Test.TestedClasses
             ConnectionPoint refConnectionPoint = new ConnectionPoint(refElement, refPoint);
             if (refConnectionPoint == null) { return; }
 
-            var dir = connectionPoint.GetDirection(refPoint, refElement, null, _uiDoc);
+            var dir = connectionPoint.GetDirection(refPoint, refElement, out var isManual, null, _uiDoc);
             _visualisator.ShowVectorByDirection(connectionPoint.Point, dir);
 
             Debug.WriteLineIf(dir is not null, "Connection direction is: " + dir);

@@ -23,6 +23,8 @@ namespace DS.RevitLib.Utils.PathCreators
     {
         private readonly Document _doc;
         private int _tolerance = 5;
+        private int _cTolerance = 3;
+        private bool _inverse;
 
         public NextConnectionPointStrategy(Document doc)
         {
@@ -38,18 +40,19 @@ namespace DS.RevitLib.Utils.PathCreators
 
         public (Point3d point, Vector3d dir) GetPoint(Element element, XYZ point)
         {
-            (Point3d p, Vector3d v) = Graph is null ? 
-                GetWithDefaultPoint(element, point) :
-                GetWithGraph(element, point, Graph);
-
+            (Point3d p, Vector3d v) = Graph is null ?
+                GetWithDefaultPoint(element, point, _inverse) :
+                GetWithGraph(element, point, Graph, _inverse);
+          
+            _inverse = true;
             return (p.Round(_tolerance), v.Round(_tolerance));
         }
 
-        ( Point3d point, Vector3d dir) GetWithGraph(Element element, XYZ point, 
-            IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> graph)
+        (Point3d point, Vector3d dir) GetWithGraph(Element element, XYZ point,
+            IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> graph, bool inverse)
         {
             var pointElement = (element.Id.IntegerValue, point.ToPoint3d());
-            if (!graph.TryFindItems(pointElement, _doc, out var vertex, out var foundEdge) 
+            if (!graph.TryFindItems(pointElement, _doc, out var vertex, out var foundEdge)
                 || vertex == null)
             { throw new ArgumentException("Graph doesn't contains point element."); }
 
@@ -70,16 +73,70 @@ namespace DS.RevitLib.Utils.PathCreators
             var location = vertex.GetLocation(_doc).ToPoint3d();
             var anp = location.DistanceTo(targetPoint1) < 0.001 ? default : targetPoint1;
 
+            dir = inverse ? -dir : dir;
+
             return (anp, dir);
         }
 
-        private (Point3d point, Vector3d dir) GetWithDefaultPoint(Element element, XYZ point)
+        private (Point3d point, Vector3d dir) GetWithDefaultPoint(Element element, XYZ point, bool inverse)
         {
-            MEPCurve mc = element as MEPCurve;
-            mc ??= element.GetBestConnected().OfType<MEPCurve>().FirstOrDefault();
-            var dir = mc is null ? Vector3d.Zero : mc.Direction().ToVector3d();
-
-            return (Point3d.Origin, dir);
+            var dir = GetDirection(new ConnectionPoint(element, point), out var anp, inverse);
+            return (anp, dir);
         }
+
+        //private (Point3d point, Vector3d dir) GetWithDefaultPoint(Element element, XYZ point)
+        //{
+        //    MEPCurve mc = element as MEPCurve;
+        //    mc ??= element.GetBestConnected().OfType<MEPCurve>().FirstOrDefault();
+        //    var dir = mc is null ? Vector3d.Zero : mc.Direction().ToVector3d();
+
+        //    return (Point3d.Origin, dir);
+        //}
+
+        private Vector3d GetDirection(
+               ConnectionPoint connectionPoint1,
+               out Point3d aNP, bool inverse = false)
+        {
+            var mc = connectionPoint1.Element is MEPCurve curve ? curve : connectionPoint1.GetMEPCurve();
+
+            var isManualDir = false;
+            XYZ dirXYZ = connectionPoint1.Direction;
+            if(dirXYZ == null)
+            {
+                dirXYZ= connectionPoint1.GetDirection(null, null, out bool isManual, null, new Autodesk.Revit.UI.UIDocument(_doc));
+                if(dirXYZ == null) { aNP = default; return default; }
+                isManualDir = isManual;
+            }
+            
+            if (inverse && !isManualDir) { dirXYZ = dirXYZ.Negate(); }
+            //_visualisator.ShowVectorByDirection(connectionPoint1.Point, dirXYZ);
+
+            Vector3d dir = dirXYZ.ToVector3d();
+
+            var dTolerance = Math.Pow(0.1, _cTolerance);
+            var cons = ConnectorUtils.GetConnectors(mc);
+            var line = mc.GetCenterLine();
+            var conPoints = new List<XYZ>();
+            cons.ForEach(c => conPoints.Add(line.Project(c.Origin).XYZPoint));
+            conPoints = conPoints.OrderBy(c => c.DistanceTo(connectionPoint1.Point)).
+                Where(c => c.DistanceTo(connectionPoint1.Point) > dTolerance).ToList();
+
+            if (mc.Id != connectionPoint1.Element.Id) { conPoints.RemoveAt(0); }
+            var checkDir = inverse ? dirXYZ.Negate() : dirXYZ;
+
+            var aTolerance = 3.DegToRad();
+            Func<XYZ, bool> func = (c) => Math.Round((connectionPoint1.Point - c).Normalize().AngleTo(checkDir)) == 0;
+            var foundCon = conPoints.FirstOrDefault(func);
+            if (foundCon == null)
+            { aNP = default; }
+            else
+            {
+                aNP = foundCon.ToPoint3d();
+                //_pointVisualisator.Show(aNP);
+            }
+
+            return dir.Round(_tolerance);
+        }
+
     }
 }

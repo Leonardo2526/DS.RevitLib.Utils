@@ -24,7 +24,8 @@ namespace DS.RevitLib.Test.TestedClasses
 {
     internal class PathFindVertexPairResolverTest
     {
-        private readonly bool _deleteInsideElements = true;
+        private readonly bool _deleteInsideElements = false;
+        private readonly bool _resolveParallel = false;
         private readonly UIDocument _uiDoc;
         private readonly Document _doc;
         private readonly ContextTransactionFactory _trfIn;
@@ -141,7 +142,7 @@ namespace DS.RevitLib.Test.TestedClasses
                     Logger = _logger,
                     TaskVisualizator = _xYZTaskVisualizator,
                     ResultVisualizator = _graphVisualisator,
-                    ResolveParallel = true,
+                    ResolveParallel = _resolveParallel,
                     Messenger = new TaskDialogMessenger(),
                     TransactionFactory = _trfAuto
                 }.Create();
@@ -156,7 +157,7 @@ namespace DS.RevitLib.Test.TestedClasses
                     Logger = _logger,
                     TaskVisualizator = _taskVisualizator,
                     ResultVisualizator = _graphVisualisator,
-                    ResolveParallel = true,
+                    ResolveParallel = _resolveParallel,
                     Messenger = new TaskDialogMessenger(),
                     TransactionFactory = _trfAuto
                 }.Create();

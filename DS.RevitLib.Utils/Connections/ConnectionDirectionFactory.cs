@@ -43,6 +43,9 @@ namespace DS.RevitLib.Utils.Connections
             _center = _line.GetCenter();
         }
 
+        public bool IsManualDir { get; set; }
+
+
         /// <summary>
         /// Get direction by <paramref name="refPoint"/> of <paramref name="refElement"/>.
         /// </summary>
@@ -56,6 +59,8 @@ namespace DS.RevitLib.Utils.Connections
         /// </returns>
         public XYZ GetDirection(XYZ refPoint, Element refElement)
         {
+            IsManualDir = false;
+
             XYZ dir = GetDirectionAtFreeConnetor();
             if (dir is not null) { return dir; }
 
@@ -69,7 +74,7 @@ namespace DS.RevitLib.Utils.Connections
             }
 
             dir = GetDirectionManual(_uiDoc);
-            if (dir is not null) { return dir; }
+            if (dir is not null) { IsManualDir = true; return dir; }
 
             return null;
         }

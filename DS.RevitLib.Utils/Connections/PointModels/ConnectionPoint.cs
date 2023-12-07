@@ -93,6 +93,8 @@ namespace DS.RevitLib.Utils.Connections.PointModels
         /// </summary>
         /// <param name="refPoint"></param>
         /// <param name="refElement"></param>
+        /// <param name="isManualDir"></param>
+        /// <param name="objectsToExclude"></param>
         /// <param name="uIDocument"></param>
         /// <remarks>
         /// Specify <paramref name="uIDocument"/> if get direction manually should be enabled.
@@ -103,10 +105,16 @@ namespace DS.RevitLib.Utils.Connections.PointModels
         /// <see langword="null"/> if no direction was found.
         /// </para>
         /// </returns>
-        public XYZ GetDirection(XYZ refPoint, Element refElement, IEnumerable<Element> objectsToExclude = null, UIDocument uIDocument = null)
+        public XYZ GetDirection(XYZ refPoint, Element refElement, out bool isManualDir, IEnumerable<Element> objectsToExclude = null, 
+            UIDocument uIDocument = null)
         {
-            var mc = Element is MEPCurve curve ? curve : GetMEPCurve(objectsToExclude.Select(o => o.Id));
-            return Direction = new ConnectionDirectionFactory(Point, mc, uIDocument).GetDirection(refPoint, refElement);
+            isManualDir = false;
+            var mc = Element is MEPCurve curve ? curve : Element.GetBestConnected().OfType<MEPCurve>().FirstOrDefault();
+            if (mc is null) { return null; }
+            var factory = new ConnectionDirectionFactory(Point, mc, uIDocument);
+            Direction = factory.GetDirection(refPoint, refElement);
+            isManualDir = factory.IsManualDir;
+            return Direction;
         }
 
         /// <summary>

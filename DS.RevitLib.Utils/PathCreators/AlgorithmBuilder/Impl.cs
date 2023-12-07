@@ -227,7 +227,6 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
                     {
                         (_startANP, _startDirection) = _algorithmBuilder.NextPointStrategy.
                             GetPoint(_startConnectionPoint.Element, _startConnectionPoint.Point);
-                        _startDirection = -_startDirection;
                         _startANP = _startANP.Equals(default) ? 
                             default:  
                             _pointConverter.ConvertToUCS2(_startANP).Round(_cTolerance);
