@@ -146,6 +146,7 @@
     <Compile Include="TestedClasses\GetSubComponentTest.cs" />
     <Compile Include="TestedClasses\SegmentFactoryTest.cs" />
     <Compile Include="TestedClasses\SelectionTest.cs" />
+    <Compile Include="TestedClasses\ShowMEPGraphCommandTest.cs" />
     <Compile Include="TestedClasses\ShowVectorTest.cs" />
     <Compile Include="TestedClasses\SimplePathFinderTest.cs" />
     <Compile Include="TestedClasses\GetAllElementsTest.cs" />

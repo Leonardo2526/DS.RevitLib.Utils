@@ -21,6 +21,9 @@ using System.Threading.Tasks;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using System.Windows.Forms.VisualStyles;
 using System.Security.Cryptography;
+using Autodesk.Revit.DB.DirectContext3D;
+using DS.RevitLib.Utils.Creation.Transactions;
+using System.Collections;
 
 namespace DS.RevitLib.Utils.Graphs
 {
@@ -60,7 +63,7 @@ namespace DS.RevitLib.Utils.Graphs
             foreach (var edge in edges)
             {
                 var found = edge.Contains(location, doc);
-                if (found)  { return edge; } 
+                if (found) { return edge; }
             }
 
             return null;
@@ -420,6 +423,37 @@ namespace DS.RevitLib.Utils.Graphs
         }
 
         /// <summary>
+        /// Get all tagged <see cref=" Autodesk.Revit.DB.ElementId"/>s.
+        /// </summary>
+        /// <param name="graph"></param>
+        /// <returns>
+        /// <see cref="MEPCurve"/>s from <see cref="Edge{TVertex}"/> and 
+        /// <see cref="Autodesk.Revit.DB.FamilyInstance"/>s from <see cref="IVertex"/>s
+        /// of <paramref name="graph"/>.
+        /// <para>
+        /// Empty list if no <see cref=" Autodesk.Revit.DB.ElementId"/>s exist.
+        /// </para>
+        /// </returns>
+        public static IEnumerable<ElementId> GetElementIds(this IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> graph)
+        {
+            var ids = new List<ElementId>();
+
+            var taggedVertices = graph.Vertices.OfType<TaggedGVertex<int>>().ToList();
+            taggedVertices.ForEach(v => ids.Add(new ElementId(v.Tag)));
+            var taggedEnumVertices = graph.Vertices.OfType<TaggedGVertex<IEnumerable<int>>>().ToList();
+            foreach (var item in taggedEnumVertices)
+            { item.Tag.ToList().ForEach(id => ids.Add(new ElementId(id)));}
+
+            var taggedEdges = graph.Edges.OfType<TaggedEdge<IVertex, int>>().ToList();
+            taggedEdges.ForEach(e => ids.Add(new ElementId(e.Tag)));
+            var taggedEnumEdges = graph.Edges.OfType<TaggedEdge<IVertex, IEnumerable<int>>>().ToList();
+            foreach (var item in taggedEnumEdges)
+            { item.Tag.ToList().ForEach(id => ids.Add(new ElementId(id))); }
+
+            return ids;
+        }
+
+        /// <summary>
         /// Check if <paramref name="graph"/> has vertices or edges that contains <paramref name="vertexToFind"/>'s tag.
         /// </summary>
         /// <typeparam name="Ivertex"></typeparam>
@@ -459,8 +493,28 @@ namespace DS.RevitLib.Utils.Graphs
                 default:
                     break;
             }
-
             return found;
         }
+
+        /// <summary>
+        /// Delete <paramref name="graph"/> from <paramref name="doc"/>.
+        /// </summary>
+        /// <remarks>
+        /// Delete all <see cref="Autodesk.Revit.DB.ElementId"/>s built by <paramref name="graph"/> items tags.
+        /// </remarks>
+        /// <param name="graph"></param>
+        /// <param name="doc"></param>
+        /// <param name="transactionFactory"></param>
+        /// <returns></returns>
+        public static async Task DeleteFromDoc(this IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> graph,
+            Document doc, ITransactionFactory transactionFactory)
+        {
+            var ids = graph.GetElementIds().
+                Where(id => id.IsValid() && doc.GetElement(id).IsValidObject).
+                ToList();
+
+            await transactionFactory.CreateAsync(() => doc.Delete(ids), "delteGraph");
+        }
+
     }
 }

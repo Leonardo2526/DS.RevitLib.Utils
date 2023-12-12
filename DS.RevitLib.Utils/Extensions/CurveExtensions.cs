@@ -40,10 +40,13 @@ namespace DS.RevitLib.Utils
         /// <param name="curve"></param>
         /// <param name="doc"></param>
         /// <param name="point">Reference point to get curve plane.</param>
-        public static void Show(this Curve curve, Document doc, XYZ point = null)
+        /// <returns>
+        /// Created <see cref="ModelCurve"/>.
+        /// </returns>
+        public static ModelCurve Show(this Curve curve, Document doc, XYZ point = null)
         {
             var creator = new ModelCurveCreator(doc);
-            creator.Create(curve, point);
+           return creator.Create(curve, point);
         }
 
         /// <summary>

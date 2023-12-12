@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.UI;
 using iUtils;
 using System;
 using System.Collections.Generic;
@@ -362,5 +363,32 @@ namespace DS.RevitLib.Utils.Extensions
                 null : totalLinkTransform;
         }
 
+        /// <summary>
+        /// Get <see cref="Autodesk.Revit.UI.UIView"/> from ActiveGraphicalView.
+        /// </summary>
+        /// <param name="doc"></param>
+        /// <returns>
+        /// First occurence from open views that has id equal to 
+        /// ActiveGraphicalView and get <see cref="Autodesk.Revit.UI.UIView"/> by it.
+        /// <para>
+        /// <see langword="null"/> of no occurence was found.
+        /// </para>
+        /// </returns>
+        public static UIView GetUIView(this Document doc)
+        {
+            var uidoc = new UIDocument(doc);
+            var view = uidoc.ActiveGraphicalView;
+            UIView uiview = null;
+            var uiviews = uidoc.GetOpenUIViews();
+            foreach (UIView uv in uiviews)
+            {
+                if (uv.ViewId.Equals(view.Id))
+                {
+                    uiview = uv;
+                    break;
+                }
+            }
+            return uiview;
+        }
     }
 }

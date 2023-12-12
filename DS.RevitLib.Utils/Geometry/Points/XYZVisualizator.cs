@@ -125,8 +125,13 @@ namespace DS.RevitLib.Utils.Geometry.Points
         /// <param name="p1"></param>
         /// <param name="p2"></param>
         /// </summary>
-        public void ShowVectorWithoutTransaction(XYZ p1, XYZ p2)
+        /// <returns>
+        /// Created <see cref="ModelCurve"/> in <see cref="Document"/>.
+        /// </returns>
+        public IEnumerable<ModelCurve> ShowVectorWithoutTransaction(XYZ p1, XYZ p2)
         {
+            var curves = new List<ModelCurve>();
+
             XYZ endPoint = new XYZ(p2.X, p2.Y, p2.Z);
 
             var vector = (p2 - p1);
@@ -147,9 +152,10 @@ namespace DS.RevitLib.Utils.Geometry.Points
             vectorLabel.AddRange(labelLines);
 
             var creator = new ModelCurveCreator(_doc);
-            vectorLabel.ForEach(l => creator.Create(l));
+            vectorLabel.ForEach(l => curves.Add(creator.Create(l)));
             if (_refresh) { _doc.Regenerate(); _uiDoc?.RefreshActiveView(); }
 
+            return curves;
         }
 
         /// <summary>

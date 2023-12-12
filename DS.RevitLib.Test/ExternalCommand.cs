@@ -23,8 +23,8 @@ namespace DS.RevitLib.Test
             UIDocument uidoc = uiapp.ActiveUIDocument;
 
 
-            var test= new PathFindVertexPairResolverTest(uidoc);
-            test.RunTest1();
+            var test= new ShowMEPGraphCommandTest(uidoc);
+            test.Run1();
 
             //resolver.Resolve();
             //return Result.Succeeded;

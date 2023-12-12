@@ -105,6 +105,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CollisionBuilders\MEPElementCollisionFactory.cs" />
     <Compile Include="CollisionBuilders\ElementCollisionFactory.cs" />
     <Compile Include="CollisionVisualizator.cs" />
     <Compile Include="GraphResult.cs" />
