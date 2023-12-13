@@ -64,6 +64,7 @@ namespace DS.RevitLib.Utils.Selections.Validators
         /// <inheritdoc/>
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
+            _validationResults.Clear();
             if (validationContext.ObjectInstance is ValueTuple<Element, XYZ> pointElement)
             {
                 var collisions = GetCollisions(pointElement);

@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using DS.ClassLib.VarUtils;
+using DS.ClassLib.VarUtils.Selectors;
 using Serilog;
 using System;
 using System.Collections.Generic;
@@ -14,7 +15,7 @@ namespace DS.RevitLib.Utils.Various.Selections
     /// The base class to select 
     /// (<see cref="Autodesk.Revit.DB.Element"/>,<see cref="Autodesk.Revit.DB.XYZ"/>) in <see cref="Document"/>.
     /// </summary>
-    public class XYZElementSelectors
+    public class XYZElementSelectors : IResettable
     {
         private readonly UIDocument _uiDoc;
         private readonly Document _doc;
@@ -43,6 +44,13 @@ namespace DS.RevitLib.Utils.Various.Selections
         /// The core Serilog, used for writing log events.
         /// </summary>
         public ILogger Logger { get; set; }
+
+        /// <inheritdoc/>
+        public bool TryReset()
+        {
+            _index1 = 0; _index2 = 0;
+            return true;
+        }
 
         /// <summary>
         /// 

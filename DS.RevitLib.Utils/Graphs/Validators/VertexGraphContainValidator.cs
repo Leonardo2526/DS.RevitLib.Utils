@@ -48,6 +48,7 @@ namespace DS.RevitLib.Utils.Graphs
         /// <inheritdoc/>
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
+            _validationResults.Clear();
             var vertex = validationContext.ObjectInstance as IVertex;
 
             if (!_graph.TryFindItemByTag(vertex, _doc, out var foundVertex, out var foundEdge))

@@ -68,6 +68,7 @@ namespace DS.RevitLib.Utils.Selections.Validators
         /// <inheritdoc/>
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
+            _validationResults.Clear();
             var results = new List<ValidationResult>();
 
             if (validationContext.ObjectInstance is not ValueTuple<Element, XYZ> pointElement)

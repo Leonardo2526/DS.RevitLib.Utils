@@ -45,6 +45,8 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
         /// <inheritdoc/>
         public List<(XYZ, Element)> GetCollisions(XYZ point)
         {
+            Collisions.Clear();
+
             var collisionSolid = _mEPCurveToCheckCollisions is null ?
                  GetDefault(point) :
                  GetSolid(_mEPCurveToCheckCollisions, point, Transform, _tolerance);
