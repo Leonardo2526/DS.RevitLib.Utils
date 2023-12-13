@@ -30,7 +30,7 @@ namespace DS.RevitLib.Utils.PathCreators
         /// </summary>
         protected readonly Document _doc;
 
-        private readonly XYZPathFinder _pathFinder;
+        protected readonly XYZPathFinder _pathFinder;
         private readonly IElementCollisionDetector _collisionDetector;
         private readonly MEPCurve _baseMEPCurve;
         private readonly MEPCurve _basisMEPCurve1;
@@ -85,7 +85,8 @@ namespace DS.RevitLib.Utils.PathCreators
             var c1 = new ConnectionPoint(task.Item1.Item1, task.Item1.Item2);
             var c2 = new ConnectionPoint(task.Item2.Item1, task.Item2.Item2);
             BuildPathFinderWithTask(_pathFinder, (c1, c2), _collisionDetector);
-            var result = await _pathFinder.FindPathAsync(c1, c2);
+            var result = _pathFinder.FindPath(c1, c2);
+            //var result = await _pathFinder.FindPathAsync(c1, c2);
             return ConvertToGraph(result);
         }
 

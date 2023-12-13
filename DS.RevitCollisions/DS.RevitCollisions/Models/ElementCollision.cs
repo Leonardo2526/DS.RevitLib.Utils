@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace DS.RevitCollisions.Models
 {
-    internal class ElementCollision : Collision
+    public class ElementCollision : Collision
     {
         public ElementCollision(AbstractElementModel stateElementModel, AbstractElementModel resolvingElementModel, Solid collisionSolid) : 
             base(stateElementModel, resolvingElementModel, collisionSolid)

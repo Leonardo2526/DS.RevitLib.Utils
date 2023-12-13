@@ -217,11 +217,11 @@ namespace DS.RevitLib.Utils.Extensions
         {
             if (transactionBuilder is null)
             {
-                Show(point, doc, labelSize);
+                ShowPoint(point, doc, labelSize);
             }
             else
             {
-                transactionBuilder.CreateAsync(() => Show(point, doc, labelSize), "ShowPoint");
+                transactionBuilder.CreateAsync(() => ShowPoint(point, doc, labelSize), "ShowPoint");
             }
         }
 

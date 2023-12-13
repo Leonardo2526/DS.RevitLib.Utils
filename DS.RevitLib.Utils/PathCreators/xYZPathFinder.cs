@@ -152,8 +152,8 @@ namespace DS.RevitLib.Utils.PathCreators
             _algorithmBuilder = _pathAlgorithmBuilder.
                 SetBasis(baseMEPCurve, basisMEPCurve1, basisMEPCurve2, AllowSecondElementForBasis).
                 SetExclusions(objectsToExclude, ExludedCathegories).
-                SetExternalToken1(ExternalToken);
-
+                SetExternalToken(ExternalToken);
+            
             _pathAlgorithmBuilder.NextPointStrategy = new NextConnectionPointStrategy(_doc)
             {
                 Graph = Graph

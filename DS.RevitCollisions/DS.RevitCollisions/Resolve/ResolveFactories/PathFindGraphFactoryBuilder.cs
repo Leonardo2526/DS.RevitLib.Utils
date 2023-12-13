@@ -56,7 +56,7 @@ namespace DS.RevitCollisions.Resolve.ResolveFactories
             _sourceGraph = graph;
             TargetGraph = graph as AdjacencyGraph<IVertex, Edge<IVertex>>;
             TargetGraph = TargetGraph.Clone();
-            pathFinder.Graph = TargetGraph;
+            //pathFinder.Graph = TargetGraph;
             _pathFinder = pathFinder;
             _baseMEPCurve = baseMEPCurve;
             _basisMEPCurve1 = basisMEPCurve1;

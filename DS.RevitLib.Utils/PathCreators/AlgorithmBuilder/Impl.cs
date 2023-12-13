@@ -431,13 +431,6 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
                 return transform;
             }
 
-
-            public ISpecifyConnectionPointBoundaries SetExternalToken1(CancellationTokenSource externalCancellationToken)
-            {
-                _externalToken = externalCancellationToken;
-                return this;
-            }
-
             #endregion
 
         }

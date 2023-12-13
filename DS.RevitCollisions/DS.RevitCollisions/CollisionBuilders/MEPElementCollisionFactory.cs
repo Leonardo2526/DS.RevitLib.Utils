@@ -19,6 +19,13 @@ namespace DS.RevitCollisions.CollisionBuilers
     {
         private readonly List<MEPCollision> _collisions = new();
 
+
+        public MEPElementCollisionFactory(ICollisionVisualizator<Collision> visualizator, ILogger logger)
+        {
+            Visualizator = visualizator;
+            Logger = logger;
+        }
+
         public IEnumerable<MEPCollision> Collisions => _collisions;
 
         /// <summary>

@@ -36,6 +36,18 @@ namespace DS.RevitLib.Utils.Graphs.Commands
         }
 
         /// <summary>
+        /// Instansiate an object that represent commands to show graph as <see cref="MEPSystem"/> in <see cref="Document"/>.
+        /// </summary>
+        /// <param name="uiDoc"></param>
+        /// <param name="baseMEPCurve"></param>
+        public ShowMEPGraphCommand(
+            UIDocument uiDoc, MEPCurve baseMEPCurve) : base(uiDoc)
+        {
+            _baseMEPCurve = baseMEPCurve;
+            _mEPCurveCreator = new MEPCurveCreator(_baseMEPCurve);
+        }
+
+        /// <summary>
         /// Specifies whether to show vertices that aren't of <see cref="TaggedGVertex{TTag}"/> type.
         /// </summary>
         public bool ShowUntaggedVertices { get; set; }
@@ -120,16 +132,27 @@ namespace DS.RevitLib.Utils.Graphs.Commands
         public override IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> ShowGraph()
         {
             var edgeGraph = ShowEdges();
-            var edgeCommand = new ShowMEPGraphCommand(edgeGraph, _uiDoc, _baseMEPCurve);
-            return edgeCommand.ShowVertices();
+            var vertexCommand = GetVertexCommand(edgeGraph);
+            return vertexCommand.ShowVertices();
         }
+
 
         /// <inheritdoc/>
         public override async Task<IVertexAndEdgeListGraph<IVertex, Edge<IVertex>>> ShowGraphAsync()
         {
-            var edgeGraph = await _transactionFactory?.CreateAsync(() => ShowEdges(), "show edge");
+            var edgeGraph = _transactionFactory is null ? 
+                ShowEdges() : 
+                await _transactionFactory.CreateAsync(() => ShowEdges(), "show edge");
             //return edgeGraph;
-            var edgeCommand = new ShowMEPGraphCommand(edgeGraph, _uiDoc, _baseMEPCurve)
+            var vertexCommand = GetVertexCommand(edgeGraph);
+            return _transactionFactory is null ?
+                ShowVertices() : 
+                await _transactionFactory.CreateAsync(() => vertexCommand.ShowVertices(), "show vertices");
+        }
+
+        private ShowMEPGraphCommand GetVertexCommand(IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> edgeGraph)
+        {
+            return new ShowMEPGraphCommand(edgeGraph, _uiDoc, _baseMEPCurve)
             {
                 ShowUntaggedVertices = ShowUntaggedVertices,
                 ShowVertexIds = ShowVertexIds,
@@ -137,7 +160,6 @@ namespace DS.RevitLib.Utils.Graphs.Commands
                 ShowVertexTags = ShowVertexTags,
                 TransactionFactory = TransactionFactory
             };
-            return await _transactionFactory?.CreateAsync(() => edgeCommand.ShowVertices(), "show vertices");
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
+using DS.ClassLib.VarUtils;
 using DS.GraphUtils.Entities;
 using DS.GraphUtils.Entities.Command;
 using DS.RevitLib.Utils.Creation.Transactions;
@@ -12,8 +13,11 @@ namespace DS.RevitLib.Utils.Graphs.Commands
     /// An object that represent base commands to show graph in <see cref="Document"/>.
     /// </summary>
     /// <typeparam name="TSourceVertex"></typeparam>
-    public abstract class ShowGraphInDocCommandBase<TSourceVertex> : ShowGraphCommandBase<TSourceVertex>,
-        IShowGraphAsyncCommand<TSourceVertex> where TSourceVertex : IVertex
+    public abstract class ShowGraphInDocCommandBase<TSourceVertex> : 
+        ShowGraphCommandBase<TSourceVertex>,
+        IShowGraphAsyncCommand<TSourceVertex>, 
+        IItemVisualisator<IVertexAndEdgeListGraph<TSourceVertex, Edge<TSourceVertex>>> 
+        where TSourceVertex : IVertex
     {
         protected readonly UIDocument _uiDoc;
         protected readonly Document _doc;
@@ -26,6 +30,17 @@ namespace DS.RevitLib.Utils.Graphs.Commands
         /// <param name="uiDoc"></param>
         protected ShowGraphInDocCommandBase(IVertexAndEdgeListGraph<TSourceVertex, Edge<TSourceVertex>> graph,
             UIDocument uiDoc) : base(graph)
+        {
+            _uiDoc = uiDoc;
+            _doc = uiDoc.Document;
+        }
+
+        /// <summary>
+        /// Instansiate an object that represent base commands to show graph in <see cref="Document"/>.
+        /// </summary>
+        /// <param name="uiDoc"></param>
+        protected ShowGraphInDocCommandBase(
+            UIDocument uiDoc) : base()
         {
             _uiDoc = uiDoc;
             _doc = uiDoc.Document;
@@ -72,5 +87,20 @@ namespace DS.RevitLib.Utils.Graphs.Commands
         /// <inheritdoc/>
         public async Task<IVertexAndEdgeListGraph<IVertex, Edge<IVertex>>> ShowVerticesAsync()
         => await _transactionFactory?.CreateAsync(() => ShowVertices(), "show vertices");
+
+        /// <inheritdoc/>
+        public void Show(IVertexAndEdgeListGraph<TSourceVertex, Edge<TSourceVertex>> graph)
+        {
+            SetGraph(graph);
+            ShowGraph();
+        }
+
+        /// <inheritdoc/>
+        public async Task ShowAsync(IVertexAndEdgeListGraph<TSourceVertex, Edge<TSourceVertex>> graph)
+        {
+            SetGraph(graph);
+            await ShowGraphAsync();
+        }
+
     }
 }

@@ -35,6 +35,17 @@ namespace DS.RevitLib.Utils.Graphs.Commands
         }
 
         /// <summary>
+        /// Instansiate an object that represent commands to show graph as <see cref="ModelCurve"/>s in <see cref="Document"/>.
+        /// </summary>
+        /// <param name="uiDoc"></param>
+        public ShowLineGraphCommand(UIDocument uiDoc) :
+            base(uiDoc)
+        {
+            _view = _doc.GetUIView();
+            _defaultTypeId = _doc.GetDefaultElementTypeId(ElementTypeGroup.TextNoteType);
+        }
+
+        /// <summary>
         /// Labels size.
         /// </summary>
         public double LabelSize
@@ -115,8 +126,8 @@ namespace DS.RevitLib.Utils.Graphs.Commands
         public override IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> ShowGraph()
         {
             var edgeGraph = ShowEdges();
-            var edgeCommand = new ShowLineGraphCommand(edgeGraph, _uiDoc);
-            return edgeCommand.ShowVertices();
+            var vertexCommand = GetVertexCommand(edgeGraph);
+            return vertexCommand.ShowVertices();
         }
 
         /// <inheritdoc/>
@@ -124,7 +135,13 @@ namespace DS.RevitLib.Utils.Graphs.Commands
         {
             var edgeGraph = await _transactionFactory?.CreateAsync(() => ShowEdges(), "show edge");
             //return edgeGraph;
-            var edgeCommand = new ShowLineGraphCommand(edgeGraph, _uiDoc)
+            var vertexCommand = GetVertexCommand(edgeGraph);
+            return await _transactionFactory?.CreateAsync(() => vertexCommand.ShowVertices(), "show vertices");
+        }
+
+        private ShowLineGraphCommand GetVertexCommand(IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> edgeGraph)
+        {
+            return new ShowLineGraphCommand(edgeGraph, _uiDoc)
             {
                 LabelSize = LabelSize,
                 ShowDirecionts = ShowDirecionts,
@@ -133,7 +150,6 @@ namespace DS.RevitLib.Utils.Graphs.Commands
                 ShowVertexTags = ShowVertexTags,
                 TransactionFactory = TransactionFactory
             };
-            return await _transactionFactory?.CreateAsync(() => edgeCommand.ShowVertices(), "show vertices");
         }
     }
 }

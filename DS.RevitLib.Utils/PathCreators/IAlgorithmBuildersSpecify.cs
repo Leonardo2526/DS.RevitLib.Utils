@@ -43,7 +43,7 @@ namespace DS.RevitLib.Utils.PathCreators
         /// </summary>
         /// <param name="externalCancellationToken"></param>
         /// <returns></returns>
-        ISpecifyConnectionPointBoundaries SetExternalToken1(CancellationTokenSource externalCancellationToken);       
+        ISpecifyConnectionPointBoundaries SetExternalToken(CancellationTokenSource externalCancellationToken);       
     }    
 
     /// <summary>

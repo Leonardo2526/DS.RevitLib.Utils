@@ -2,6 +2,7 @@
 using DS.ClassLib.VarUtils.GridMap;
 using DS.ClassLib.VarUtils.Resolvers;
 using DS.GraphUtils.Entities;
+using DS.PathFinder;
 using DS.RevitLib.Utils.Collisions.Detectors.AbstractDetectors;
 using DS.RevitLib.Utils.Connections.PointModels;
 using DS.RevitLib.Utils.Graphs;
@@ -13,6 +14,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TreeView;
 
 namespace DS.RevitLib.Utils.PathCreators
 {
@@ -46,6 +48,8 @@ namespace DS.RevitLib.Utils.PathCreators
         /// <inheritdoc/>
         public IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> TryResolve((IVertex, IVertex) task)
         {
+            _pathFinder.Graph = _graph;
+
             var c1 = ToConnectionPoint(task.Item1, _graph, _doc);
             var c2 = ToConnectionPoint(task.Item2, _graph, _doc);
             _excluded = GetElementsToExclude(task);
@@ -59,6 +63,8 @@ namespace DS.RevitLib.Utils.PathCreators
         /// <inheritdoc/>
         public async Task<IVertexAndEdgeListGraph<IVertex, Edge<IVertex>>> TryResolveAsync((IVertex, IVertex) task)
         {
+            _pathFinder.Graph = _graph;
+
             var c1 = ToConnectionPoint(task.Item1, _graph, _doc);
             var c2 = ToConnectionPoint(task.Item2, _graph, _doc);
             _excluded = GetElementsToExclude(task);
