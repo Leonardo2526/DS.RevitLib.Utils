@@ -109,12 +109,9 @@ namespace DS.RevitCollisions.Resolve.TaskCreators
         private PriorityTaskQueue GetPriorityQueue()
         {
             _edgePointIterator.Set(_edges[0]);
-            _edgePointIterator.MoveNext();
-            var p1 = _edgePointIterator.Current.ToXYZ();
-
+            var p1 = _edgePointIterator.MoveNext() ? _edgePointIterator.Current.ToXYZ() : null;
             _edgePointIterator.Set(_edges[1]);
-            _edgePointIterator.MoveNext();
-            var p2 = _edgePointIterator.Current.ToXYZ();
+            var p2 = _edgePointIterator.MoveNext() ? _edgePointIterator.Current.ToXYZ() : null;
 
             if (p1 != null && _targetGraph.TryInsert(_baseMEPCurve, p1))
             { Logger?.Information($"Closest point {p1} was inserted to graph successfully."); }

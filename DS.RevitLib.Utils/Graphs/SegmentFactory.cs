@@ -90,7 +90,7 @@ namespace DS.RevitLib.Utils.Graphs
             if (deductionSegments.Any())
             {
                 deductionSegments = deductionSegments.OrderBy(s => s.PointAtLength(s.Length / 2).DistanceTo(sourceLoc)).ToList();
-                double minLongLeg = MinDistanceFromSource + MinDistanceToConnector;
+                double minLongLeg = MinDistanceFromSource;
                 Line minSourceLine1 = GetMinLineSource(edge, deductionSegments.FirstOrDefault().To, minLongLeg, _doc);
                 if (minSourceLine1.Length > 0)
                 { deductionSegments.Add(minSourceLine1); }
