@@ -67,7 +67,7 @@ namespace DS.RevitLib.Utils.PathCreators
             var mEPCurve = firstEdge.TryGetMEPCurve(_doc) ??
                 throw new ArgumentNullException("Failed to find MEPCurve on connection point.");
 
-            var dir = firstEdge.Direction(_doc);
+            var dir = - firstEdge.Direction(_doc);
 
             (Point3d sourcePoint1, Point3d targetPoint1) = firstEdge.GetConnectorsLocation(_doc);
             var location = vertex.GetLocation(_doc).ToPoint3d();

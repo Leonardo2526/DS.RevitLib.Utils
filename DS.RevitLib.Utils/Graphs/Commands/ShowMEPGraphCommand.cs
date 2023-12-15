@@ -144,6 +144,19 @@ namespace DS.RevitLib.Utils.Graphs.Commands
                 ShowEdges() : 
                 await _transactionFactory.CreateAsync(() => ShowEdges(), "show edge");
             //return edgeGraph;
+
+            //align MEPCurves
+            var mEPCurves = new List<MEPCurve>();
+            foreach (var edge in edgeGraph.Edges)
+            { mEPCurves.Add(edge.TryGetMEPCurve(_doc)); }
+
+            if (_transactionFactory is null)
+            {MEPCurveUtils.AlignMEPCurves(mEPCurves, _baseMEPCurve);}
+            else
+            {await _transactionFactory.CreateAsync(() => 
+            MEPCurveUtils.AlignMEPCurves(mEPCurves, _baseMEPCurve), "Align ducts");}
+
+
             var vertexCommand = GetVertexCommand(edgeGraph);
             return _transactionFactory is null ?
                 ShowVertices() : 

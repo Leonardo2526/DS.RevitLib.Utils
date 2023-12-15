@@ -54,7 +54,7 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmVertexBuilder
         /// <summary>
         /// Token to cancel finding path operation.
         /// </summary>
-        public CancellationTokenSource ExternalToken { get; set; } = new CancellationTokenSource();
+        public CancellationTokenSource ExternalToken { get; set; }
 
         public XYZPathFinder GetPathFinder()
         {

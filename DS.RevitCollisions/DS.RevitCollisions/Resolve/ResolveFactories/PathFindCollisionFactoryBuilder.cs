@@ -60,12 +60,7 @@ namespace DS.RevitCollisions.Resolve.ResolveFactories
         /// </summary>
         public AdjacencyGraph<IVertex, Edge<IVertex>> TargetGraph { get; }
 
-        public Dictionary<BuiltInCategory, List<PartType>> IterationCategories { get; set; }
-
-        /// <summary>
-        /// Messenger to show errors.
-        /// </summary>
-        public IWindowMessenger Messenger { get; set; }
+        public Dictionary<BuiltInCategory, List<PartType>> IterationCategories { get; set; }       
 
 
         /// <summary>

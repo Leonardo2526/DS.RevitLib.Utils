@@ -3,6 +3,7 @@ using Autodesk.Revit.UI;
 using DS.ClassLib.VarUtils.GridMap;
 using DS.ClassLib.VarUtils.Resolvers;
 using DS.GraphUtils.Entities;
+using DS.PathFinder;
 using DS.RevitLib.Utils.Collisions.Detectors.AbstractDetectors;
 using DS.RevitLib.Utils.Connections.PointModels;
 using DS.RevitLib.Utils.Extensions;
@@ -15,6 +16,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.PathCreators
@@ -69,10 +71,14 @@ namespace DS.RevitLib.Utils.PathCreators
         public IEnumerable<IVertexAndEdgeListGraph<IVertex, Edge<IVertex>>> Results => _results;
 
         /// <inheritdoc/>
+        public CancellationTokenSource CancellationToken { get; set; }
+
+        /// <inheritdoc/>
         public IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> TryResolve(((Element, XYZ), (Element, XYZ)) task)
         {
             var c1 = new ConnectionPoint(task.Item1.Item1, task.Item1.Item2);
             var c2 = new ConnectionPoint(task.Item2.Item1, task.Item2.Item2);
+            _pathFinder.ExternalToken = CancellationToken;
             BuildPathFinderWithTask(_pathFinder, (c1, c2), _collisionDetector);
 
             var result = _pathFinder.FindPath(c1, c2);
@@ -84,7 +90,9 @@ namespace DS.RevitLib.Utils.PathCreators
         {
             var c1 = new ConnectionPoint(task.Item1.Item1, task.Item1.Item2);
             var c2 = new ConnectionPoint(task.Item2.Item1, task.Item2.Item2);
+            _pathFinder.ExternalToken = CancellationToken;
             BuildPathFinderWithTask(_pathFinder, (c1, c2), _collisionDetector);
+
             var result = _pathFinder.FindPath(c1, c2);
             //var result = await _pathFinder.FindPathAsync(c1, c2);
             return ConvertToGraph(result);

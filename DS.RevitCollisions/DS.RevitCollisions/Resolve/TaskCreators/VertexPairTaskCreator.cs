@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.DB;
+using DS.ClassLib.VarUtils;
 using DS.ClassLib.VarUtils.Resolvers;
 using DS.GraphUtils.Entities;
 using DS.RevitCollisions.Models;
@@ -96,6 +97,7 @@ namespace DS.RevitCollisions.Resolve.TaskCreators
         {
             _position = -1;
             _priorityQueue = GetPriorityQueue();
+            Tasks.Clear();
         }
 
 

@@ -357,7 +357,7 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
                     StartANP = _startANP,
                     EndANP = _endANP,
                     DirectionValidator = _algorithmBuilder._directionValidator,
-                    ExternalTokenSource = _externalToken
+                    ExternalToken = _externalToken
                 }.
                 WithBounds(_lowerBound, _upperBound);
 
@@ -397,7 +397,7 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
                 else
                 {
                     Debug.WriteLine(outlineFactory.ErrorMessage);
-                    _externalToken?.Cancel(); return null;
+                    return null;
                 }
             }
 

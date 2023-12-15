@@ -191,6 +191,7 @@ namespace DS.RevitLib.Utils.PathCreators
 
             if (path == null || path.Count == 0)
             {
+                _path = null;
                 IsFailedOnStart = algorithm.IsFailedOnStart;               
             }
             else
@@ -201,8 +202,8 @@ namespace DS.RevitLib.Utils.PathCreators
 
         private PathFindEnumerator GetPathEnumerator(
             PathAlgorithmBuilder pathAlgorithmBuilder, 
-            ITraceSettings traceSettings, 
-            CancellationTokenSource tokenSource)
+            ITraceSettings traceSettings,
+            CancellationTokenSource token)
         {
             var dist = double.MaxValue;
             //var dist = startPoint.Point.DistanceTo(endPoint.Point) / 3;
@@ -225,7 +226,7 @@ namespace DS.RevitLib.Utils.PathCreators
                 pathAlgorithmBuilder.StartPoint,
                 pathAlgorithmBuilder.EndPoint)
             {
-                TokenSource = tokenSource
+                TokenSource = token
             };
             return pathFindEnumerator;
         }

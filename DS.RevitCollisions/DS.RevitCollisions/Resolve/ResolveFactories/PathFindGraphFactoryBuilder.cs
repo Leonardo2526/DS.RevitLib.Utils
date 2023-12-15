@@ -111,7 +111,7 @@ namespace DS.RevitCollisions.Resolve.ResolveFactories
                 Logger = Logger
             }.Create();
 
-
+        
         /// <inheritdoc/>
         protected override ITaskResolver<(IVertex, IVertex),
             IVertexAndEdgeListGraph<IVertex, Edge<IVertex>>> BuildTaskResover() =>

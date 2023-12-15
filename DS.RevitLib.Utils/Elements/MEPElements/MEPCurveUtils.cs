@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.Lines;
+using DS.RevitLib.Utils.MEP.Creator;
 using DS.RevitLib.Utils.Models;
 using System;
 using System.Collections.Generic;
@@ -466,6 +467,23 @@ namespace DS.RevitLib.Utils.MEP
             ElementTransformUtils.RotateElement(sourceMEPCurve.Document, operationMEPCurve.Id, axis, angle);
         }
 
+        /// <summary>
+        /// Align <see cref="MEPCurve"/>s with rectangular profile by <paramref name="baseMEPCurve"/> orientation.
+        /// </summary>
+        /// <param name="mEPCurves"></param>
+        /// <param name="baseMEPCurve"></param>
+        public static void AlignMEPCurves(IEnumerable<MEPCurve> mEPCurves, MEPCurve baseMEPCurve)
+        {
+            if (!baseMEPCurve.IsRectangular())
+            {return;}
+
+            MEPCurve currentBaseCurve = baseMEPCurve;
+            foreach (var mEPCurve in mEPCurves)
+            {
+                AlignMEPCurve(currentBaseCurve, mEPCurve);
+                currentBaseCurve = mEPCurve;
+            }
+        }
 
         /// <summary>
         /// Align <see cref="Basis"/>.Y of <paramref name="sourceMEPCurve"/> with 
