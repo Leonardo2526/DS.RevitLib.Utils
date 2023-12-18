@@ -112,6 +112,7 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Collisions\Detectors\AbstractDetectors\IXYZCollisionDetector.cs" />
@@ -216,9 +217,11 @@
     <Compile Include="Graphs\Commands\ShowGraphInDocCommandBase.cs" />
     <Compile Include="Graphs\Commands\ShowLineGraphCommand.cs" />
     <Compile Include="Graphs\Commands\ShowMEPGraphCommand.cs" />
+    <Compile Include="Graphs\Connection\GraphConnectionService.cs" />
     <Compile Include="Graphs\GraphFindItemsExtenstions.cs" />
     <Compile Include="Graphs\EdgePointIterator.cs" />
     <Compile Include="Graphs\GraphVisulisator.cs" />
+    <Compile Include="Graphs\IGraphResolveProcessorFactory.cs" />
     <Compile Include="Graphs\IVertexPairIteratorBuilder.cs" />
     <Compile Include="Graphs\MEPGraphBuilder.cs" />
     <Compile Include="Graphs\EdgeExtensions.cs" />

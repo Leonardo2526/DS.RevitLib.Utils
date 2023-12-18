@@ -91,7 +91,8 @@ namespace DS.RevitCollisions.Resolve.TaskCreators
             {
                 MinDistanceToElements = minDistanceToElements,
                 MinDistanceToConnector = minDistanceToConnector,
-                MinDistanceFromSource = minDistanceFromSource
+                MinDistanceFromSource = minDistanceFromSource, 
+                IsInsulationAccount = insulationAccount,
             };
 
             return segementFactory;

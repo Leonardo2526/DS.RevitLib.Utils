@@ -51,7 +51,7 @@ namespace DS.RevitLib.Utils.Selections.Validators
 
             if (pointElement.Item1 is FamilyInstance && 
                 !pointElement.Item1.IsCategoryElement(_availableCategories))
-            { _validationResults.Add(new ValidationResult("Element category is not allowed.")); }
+            { _validationResults.Add(new ValidationResult("Данная категория элемента не доступна для выбора.")); }
 
             return _validationResults;
         }

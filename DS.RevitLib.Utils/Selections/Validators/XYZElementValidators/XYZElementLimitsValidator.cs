@@ -69,18 +69,30 @@ namespace DS.RevitLib.Utils.Selections.Validators
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
             _validationResults.Clear();
-            var results = new List<ValidationResult>();
-
             if (validationContext.ObjectInstance is not ValueTuple<Element, XYZ> pointElement)
-            { return results; }
+            { return _validationResults; }
 
             if (!IsWithinOutlineLimits(BoundOutline, pointElement))
-            { results.Add(new ValidationResult("Vertex is outside bound limits.")); }
+            { 
+                var maxX = (BoundOutline.MaximumPoint.X - BoundOutline.MinimumPoint.X).FeetToMM();
+                var maxY = (BoundOutline.MaximumPoint.Y - BoundOutline.MinimumPoint.Y).FeetToMM();
+                var maxZ = (BoundOutline.MaximumPoint.Z - BoundOutline.MinimumPoint.Z).FeetToMM();
+                _validationResults.Add(
+                new ValidationResult("Точка находится вне границы допустимой зоны.\n" +
+                $"maxX - {maxX};\n" +
+                $"maxY - {maxY};\n" +
+                $"maxZ - {maxZ}.")
+                ); }
 
             if (!IsWithinFloorsBounds(pointElement, _doc, MinDistToFloor, MinDistToCeiling, IsInsulationAccount))
-            { results.Add(new ValidationResult("Excluded types contains vertex.")); }
+            { _validationResults.Add(
+                new ValidationResult($"Точка находится вне границы допустимой зоны перекрытия.\n " +
+                $"Hmin(пол) - {MinDistToFloor.FeetToMM()} мм;\n" +
+                $"Hmin(потолок) - {MinDistToCeiling.FeetToMM()} мм.")
+                ); 
+            }
 
-            return results;
+            return _validationResults;
         }
 
 

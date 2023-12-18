@@ -2,10 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Threading;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using DS.RevitLib.Utils.Connections.PointModels;
+using DS.RevitLib.Utils.Creation.Transactions;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.MEP;
 using DS.RevitLib.Utils.Various.Selections;
@@ -73,7 +76,8 @@ namespace DS.RevitLib.Utils.Connections
                 if (dir is not null) { return dir; }
             }
 
-            dir = GetDirectionManual(_uiDoc);
+            if (!Dispatcher.CurrentDispatcher.Thread.IsBackground)
+            { dir = GetDirectionManual(_uiDoc); }
             if (dir is not null) { IsManualDir = true; return dir; }
 
             return null;
