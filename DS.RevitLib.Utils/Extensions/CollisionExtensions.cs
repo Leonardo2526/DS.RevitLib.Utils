@@ -73,7 +73,7 @@ namespace DS.RevitLib.Utils.Extensions
                 insulationIntersectionSolid = Solids.SolidUtils.
                       GetIntersection(rInsSolid, collision.item2.Solid(), minVolume);
             }
-            else if(sInsSolid == null && sInsSolid != null)
+            else if(rInsSolid == null && sInsSolid != null)
             {
                 insulationIntersectionSolid = Solids.SolidUtils.
                      GetIntersection(collision.item1.Solid(), sInsSolid, minVolume);

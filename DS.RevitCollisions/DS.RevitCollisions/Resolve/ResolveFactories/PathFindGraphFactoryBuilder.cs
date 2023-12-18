@@ -108,10 +108,11 @@ namespace DS.RevitCollisions.Resolve.ResolveFactories
                 MaxLength = default,
                 MaxVerticesCount = default,
                 Messenger = Messenger,
-                Logger = Logger
+                Logger = Logger,
+                CheckAllValidators = true
             }.Create();
 
-        
+
         /// <inheritdoc/>
         protected override ITaskResolver<(IVertex, IVertex),
             IVertexAndEdgeListGraph<IVertex, Edge<IVertex>>> BuildTaskResover() =>

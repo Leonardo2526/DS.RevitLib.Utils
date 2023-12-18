@@ -117,7 +117,10 @@ namespace DS.RevitLib.Utils.Graphs
 
             foreach (var collision in collisions)
             {
-                var intersectionSolid = collision.GetIntersectionSolid();
+                var intersectionSolid = IsInsulationAccount ? 
+                    collision.GetIntersectionSolidWithInsulation() :  
+                    collision.GetIntersectionSolid();
+
                 (var sp1, var sp2) = intersectionSolid is null ?
                     (null, null) :
                     intersectionSolid.GetEdgeProjectPoints(xYZLine);

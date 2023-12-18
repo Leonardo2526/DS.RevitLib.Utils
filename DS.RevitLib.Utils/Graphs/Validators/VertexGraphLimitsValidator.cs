@@ -87,7 +87,7 @@ namespace DS.RevitLib.Utils.Graphs
             if (vertex == null) { return _validationResults; }
 
             if (!IsWithinMaxLength(_tempGraph, _parentVertex, vertex))
-            { _validationResults.Add(new ValidationResult("Vertex is outside MaxLength.")); }
+            { _validationResults.Add(new ValidationResult($"Точка не может находиться далее {MaxLength.FeetToMM()} мм от начала.")); }
 
             return _validationResults;
         }

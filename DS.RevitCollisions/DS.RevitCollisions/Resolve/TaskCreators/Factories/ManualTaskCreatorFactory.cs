@@ -39,6 +39,11 @@ namespace DS.RevitCollisions.Resolve.TaskCreators
             
         }
 
+        /// <summary>
+        /// Validate object by all validators or only to first with not valid result.
+        /// </summary>
+        public bool CheckAllValidators { get; set; }
+
         public double MaxLength { get;  set; }
         public int MaxVerticesCount { get; set; }
 
@@ -58,7 +63,8 @@ namespace DS.RevitCollisions.Resolve.TaskCreators
             {
                 Validators = validators,
                 Messenger = Messenger,
-                Logger = Logger
+                Logger = Logger,
+                CheckAllValidators = CheckAllValidators
             };
 
             return new GraphTaskCreator(selector, _graph, _doc);

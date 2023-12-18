@@ -52,7 +52,7 @@ namespace DS.RevitLib.Utils.Graphs
             var vertex = validationContext.ObjectInstance as IVertex;
 
             if (!_graph.TryFindItemByTag(vertex, _doc, out var foundVertex, out var foundEdge))
-            { _validationResults.Add(new ValidationResult($"Graph doesn't contains vertex.")); }
+            { _validationResults.Add(new ValidationResult($"Точка находится на неверном объекте.")); }
             return _validationResults;
 
         }

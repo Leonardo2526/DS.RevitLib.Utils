@@ -89,6 +89,8 @@ namespace DS.RevitLib.Utils.Graphs.Commands
                         if (mEPCurve2 != null)
                         {
                             var famInst = FamInstCreator.CreateElbow(mEPCurve1, mEPCurve2);
+                            if (famInst != null)
+                            {Insulation.Create(_baseMEPCurve, famInst);}
                             resultvertex = new TaggedGVertex<int>(vertex.Id, famInst.Id.IntegerValue);
                         }
                     }
