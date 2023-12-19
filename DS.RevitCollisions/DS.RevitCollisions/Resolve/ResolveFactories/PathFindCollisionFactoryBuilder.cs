@@ -5,8 +5,10 @@ using DS.ClassLib.VarUtils.Resolvers;
 using DS.GraphUtils.Entities;
 using DS.RevitCollisions.Models;
 using DS.RevitCollisions.Resolve.TaskCreators;
+using DS.RevitLib.Utils.Collisions.Detectors;
 using DS.RevitLib.Utils.Collisions.Detectors.AbstractDetectors;
 using DS.RevitLib.Utils.Creation.Transactions;
+using DS.RevitLib.Utils.Graphs.Validators;
 using DS.RevitLib.Utils.PathCreators;
 using QuickGraph;
 using System.Collections.Generic;
@@ -82,14 +84,26 @@ namespace DS.RevitCollisions.Resolve.ResolveFactories
 
 
         /// <inheritdoc/>
-        protected override ITaskCreator<(IVertex, IVertex)> BuildTaskCreator() =>
-            new AutoTaskCreatorFactory(_doc, TargetGraph, _mEPCollision, TraceSettings, _collisionDetector)
+        protected override ITaskCreator<(IVertex, IVertex)> BuildTaskCreator()
+        {
+            var validators =
+               new GraphValidatorSet(_uiDoc, new XYZCollisionDetector(_collisionDetector), TargetGraph, _collisionDetector, TraceSettings)
+               {
+                   AvailableCategories = IterationCategories,
+                   BaseMEPCurve = _mEPCollision.Item1Model.MEPCurve,
+                   ExternalOutline = ExternalOutline,
+                   InsulationAccount = InsulationAccount,
+                   MaxLength = default,
+                   MaxVerticesCount = default,
+               }.Create();
+
+            return new AutoTaskCreatorFactory(_uiDoc, TargetGraph, _mEPCollision, TraceSettings, _collisionDetector, validators)
             {
-                IterationCategories = IterationCategories,
+                AvailableCategories = IterationCategories,
                 InsulationAccount = InsulationAccount,
-                Logger = Logger,
-                TransactionFactory = TransactionFactory
+                Logger = Logger
             }.Create();
+        }
 
         /// <inheritdoc/>
         protected override ITaskResolver<(IVertex, IVertex),

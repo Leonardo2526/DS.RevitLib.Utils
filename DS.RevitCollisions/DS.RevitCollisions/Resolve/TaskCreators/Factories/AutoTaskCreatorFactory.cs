@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.UI;
 using DS.ClassLib.VarUtils;
 using DS.ClassLib.VarUtils.Resolvers;
 using DS.ClassLib.VarUtils.Resolvers.TaskCreators;
@@ -8,56 +9,55 @@ using DS.RevitLib.Utils.Collisions.Detectors.AbstractDetectors;
 using DS.RevitLib.Utils.Creation.Transactions;
 using DS.RevitLib.Utils.Elements.MEPElements;
 using DS.RevitLib.Utils.Graphs;
+using DS.RevitLib.Utils.Graphs.Validators;
 using DS.RevitLib.Utils.MEP.SystemTree.Relatives;
+using DS.RevitLib.Utils.Resolve.TaskCreators;
 using QuickGraph;
 using Serilog;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace DS.RevitCollisions.Resolve.TaskCreators
 {
-    internal class AutoTaskCreatorFactory : ITaskCreatorFactory<(IVertex, IVertex)>
+    internal class AutoTaskCreatorFactory : ValidatableTaskCreatorFactoryBase<IVertex>
     {
-        private readonly Document _doc;
         private readonly AdjacencyGraph<IVertex, Edge<IVertex>> _graph;
         private readonly MEPCollision _mEPCollision;
         private readonly ITraceSettings _traceSettings;
         private readonly IElementCollisionDetector _collisionDetector;
+        private readonly IVertexValidatorSet _validators;
 
-        public AutoTaskCreatorFactory(Document doc, AdjacencyGraph<IVertex,
-            Edge<IVertex>> graph, MEPCollision mEPCollision,
-            ITraceSettings traceSettings, IElementCollisionDetector collisionDetector)
+        public AutoTaskCreatorFactory(UIDocument uIDoc, 
+            AdjacencyGraph<IVertex, Edge<IVertex>> graph, 
+            MEPCollision mEPCollision, 
+            ITraceSettings traceSettings,
+            IElementCollisionDetector collisionDetector, 
+            IVertexValidatorSet validators) : base(uIDoc)
         {
-            _doc = doc;
             _graph = graph;
             _mEPCollision = mEPCollision;
             _traceSettings = traceSettings;
             _collisionDetector = collisionDetector;
+            _validators = validators;
         }
 
-
-        #region Properties
+        /// <summary>
+        /// 
+        /// </summary>
+        public Dictionary<BuiltInCategory, List<PartType>> AvailableCategories { get; set; }
 
         /// <summary>
         /// Specifies whether allow insulation collisions or not.
         /// </summary>
         public bool InsulationAccount { get; set; }
 
-        public ILogger Logger { get; set; }
-
-        public ITransactionFactory TransactionFactory { get; set; }
-
-        public Dictionary<BuiltInCategory, List<PartType>> IterationCategories { get; set; }
-
-        #endregion
-
-
-        public ITaskCreator<(IVertex, IVertex)> Create()
+        public override ITaskCreator<(IVertex, IVertex)> Create()
         {
-            var pairIterator = new PairIteratorBuilder(_doc)
+            var pairIterator = new PairIteratorBuilder(_doc, _validators)
             {
                 StartIndex = 1,
-                AvailableCategories = IterationCategories,
+                AvailableCategories = AvailableCategories,
                 InElementRelation = Relation.Child
             }
             .Create(_graph);
@@ -97,5 +97,7 @@ namespace DS.RevitCollisions.Resolve.TaskCreators
 
             return segementFactory;
         }
+
+        protected override List<IValidator<IVertex>> GetValidators() => _validators.ToList();
     }
 }

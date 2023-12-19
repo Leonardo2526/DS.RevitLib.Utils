@@ -8,8 +8,10 @@ using DS.RevitCollisions.Models;
 using DS.RevitCollisions.Resolve.TaskCreators;
 using DS.RevitCollisions.Resolve.TaskResolvers;
 using DS.RevitLib.Utils;
+using DS.RevitLib.Utils.Collisions.Detectors;
 using DS.RevitLib.Utils.Collisions.Detectors.AbstractDetectors;
 using DS.RevitLib.Utils.Creation.Transactions;
+using DS.RevitLib.Utils.Graphs.Validators;
 using DS.RevitLib.Utils.PathCreators;
 using DS.RevitLib.Utils.PathCreators.AlgorithmVertexBuilder;
 using QuickGraph;
@@ -72,11 +74,6 @@ namespace DS.RevitCollisions.Resolve.ResolveFactories
 
         public Dictionary<BuiltInCategory, List<PartType>> IterationCategories { get; set; }
 
-        /// <summary>
-        /// Messenger to show errors.
-        /// </summary>
-        public IWindowMessenger Messenger { get; set; }
-
 
         /// <summary>
         /// Vertex bound of <see cref="Document"/>.
@@ -97,20 +94,26 @@ namespace DS.RevitCollisions.Resolve.ResolveFactories
 
 
         /// <inheritdoc/>
-        protected override ITaskCreator<(IVertex, IVertex)> BuildTaskCreator() =>
-            new ManualTaskCreatorFactory(_uiDoc, TargetGraph, _collisionDetector)
+        protected override ITaskCreator<(IVertex, IVertex)> BuildTaskCreator()
+        {
+            var validators =
+                new GraphValidatorSet(_uiDoc, new XYZCollisionDetector(_collisionDetector), TargetGraph, _collisionDetector, TraceSettings)
+                {
+                    AvailableCategories = IterationCategories,
+                    BaseMEPCurve = _baseMEPCurve,
+                    ExternalOutline = ExternalOutline,
+                    InsulationAccount = InsulationAccount,
+                    MaxLength = default,
+                    MaxVerticesCount = default,
+                }.Create();
+
+            return new ManualTaskCreatorFactory(_uiDoc, TargetGraph, validators)
             {
-                BaseMEPCurve = _baseMEPCurve,
-                AvailableCategories = IterationCategories,
-                ExternalOutline = ExternalOutline,
-                InsulationAccount = InsulationAccount,
-                TraceSettings = TraceSettings,
-                MaxLength = default,
-                MaxVerticesCount = default,
                 Messenger = Messenger,
                 Logger = Logger,
                 CheckAllValidators = true
             }.Create();
+        }
 
 
         /// <inheritdoc/>

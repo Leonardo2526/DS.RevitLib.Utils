@@ -8,6 +8,11 @@ namespace DS.RevitLib.Utils.Collisions.Detectors.AbstractDetectors
     public interface IXYZCollisionDetector : ICollisionDetector<XYZ, Element>
     {
         /// <summary>
+        /// Clearance between elements or its isolations.
+        /// </summary>
+        public double ElementClearance { get; set; }
+
+        /// <summary>
         /// Get collisions of <paramref name="point"/>.
         /// </summary>
         List<(XYZ, Element)> GetCollisions(XYZ point);

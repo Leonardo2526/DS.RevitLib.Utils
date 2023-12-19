@@ -38,26 +38,6 @@ namespace DS.RevitLib.Utils.Resolve.TaskCreators
         #region Properties
 
         /// <summary>
-        /// 
-        /// </summary>
-        public Dictionary<BuiltInCategory, List<PartType>> AvailableCategories { get; set; }
-
-        /// <summary>
-        /// <see cref="MEPCurve"/> to get collisions on point.
-        /// </summary>
-        public MEPCurve BaseMEPCurve { get; set; }
-
-        /// <summary>
-        /// Vertex bound of <see cref="Document"/>.
-        /// </summary>
-        public Outline ExternalOutline { get; set; }
-
-        /// <summary>
-        /// Specifies whether allow insulation collisions or not.
-        /// </summary>
-        public bool InsulationAccount { get; set; }
-
-        /// <summary>
         /// The core Serilog, used for writing log events.
         /// </summary>
         public ILogger Logger { get; set; }
@@ -67,10 +47,6 @@ namespace DS.RevitLib.Utils.Resolve.TaskCreators
         /// </summary>
         public IWindowMessenger Messenger { get; set; }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        public ITraceSettings TraceSettings { get; set; }
 
         #endregion
 

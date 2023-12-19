@@ -30,6 +30,12 @@ namespace DS.RevitLib.Utils.Graphs
         public bool IsValid(IVertex value)
         {
             var pointElement = value.ToXYZElement(_doc);
+            if (pointElement is (null, null))
+            {
+                var element = value.TryGetElementFromGraphAndDoc(_graph, _doc);
+                if (element is null) { return false; }
+                pointElement = (element, value.GetLocation(_doc));
+            }
             return Validate(new ValidationContext(pointElement)).Count() == 0;
         }
     }

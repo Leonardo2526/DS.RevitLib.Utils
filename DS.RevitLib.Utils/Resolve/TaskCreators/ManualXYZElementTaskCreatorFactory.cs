@@ -27,6 +27,28 @@ namespace DS.RevitLib.Utils.Resolve.TaskCreators
             _xYZCollisionDetector = new XYZCollisionDetector(elementCollisionDetector);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        public Dictionary<BuiltInCategory, List<PartType>> AvailableCategories { get; set; }
+
+        /// <summary>
+        /// <see cref="MEPCurve"/> to get collisions on point.
+        /// </summary>
+        public MEPCurve BaseMEPCurve { get; set; }
+
+        /// <summary>
+        /// Vertex bound of <see cref="Document"/>.
+        /// </summary>
+        public Outline ExternalOutline { get; set; }
+
+        /// <summary>
+        /// Specifies whether allow insulation collisions or not.
+        /// </summary>
+        public bool InsulationAccount { get; set; }
+
+        public ITraceSettings TraceSettings { get; set; }
+
         /// <inheritdoc/>
         public override ITaskCreator<((Element, XYZ), (Element, XYZ))> Create()
         {

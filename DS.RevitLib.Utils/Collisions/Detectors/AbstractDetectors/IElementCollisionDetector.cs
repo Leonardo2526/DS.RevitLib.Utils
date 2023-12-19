@@ -6,8 +6,7 @@ namespace DS.RevitLib.Utils.Collisions.Detectors.AbstractDetectors
 {
     /// <inheritdoc/>
     public interface IElementCollisionDetector : ICollisionDetector<object, Element>, IExclusion
-    {
-        //IElementsExtractor ElementsExtractor { get; set; }
+    {      
 
         /// <summary>
         /// Minimum intersection volume in <see cref="Autodesk.Revit.DB.DisplayUnitType.DUT_CUBIC_CENTIMETERS"/>.

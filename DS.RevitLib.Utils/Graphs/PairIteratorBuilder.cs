@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using DS.ClassLib.VarUtils;
 using DS.GraphUtils.Entities;
+using DS.RevitLib.Utils.Graphs.Validators;
 using DS.RevitLib.Utils.MEP.SystemTree.Relatives;
 using QuickGraph;
 using QuickGraph.Algorithms;
@@ -19,6 +20,7 @@ namespace DS.RevitLib.Utils.Graphs
     public class PairIteratorBuilder : IVertexPairIteratorBuilder
     {
         private readonly Document _doc;
+        private readonly IVertexValidatorSet _validators;
         private IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> _graph;
         private GraphVertexIterator _iterator;
         private VertexPairIterator _pairIterator;
@@ -26,9 +28,10 @@ namespace DS.RevitLib.Utils.Graphs
         /// <summary>
         /// Instansiate an object to iterate through graph.
         /// </summary>
-        public PairIteratorBuilder(Document doc)
+        public PairIteratorBuilder(Document doc, IVertexValidatorSet validators)
         {
             _doc = doc;
+            _validators = validators;
         }
 
         /// <summary>
@@ -52,11 +55,15 @@ namespace DS.RevitLib.Utils.Graphs
         {
             _graph = graph;
 
-            CreateIterator(graph)
-                .WithCategoryValidator()
-                .WithRelationValidator();
+            var algorithm = new BreadthFirstSearchAlgorithm<IVertex, Edge<IVertex>>(graph);
+            _iterator = new GraphVertexIterator(algorithm)
+            {
+                StartIndex = StartIndex
+            };
 
-            return _pairIterator;
+            _validators.ToList().ForEach(_iterator.Validators.Add);
+
+            return new VertexPairIterator(_iterator, graph);
         }
 
 

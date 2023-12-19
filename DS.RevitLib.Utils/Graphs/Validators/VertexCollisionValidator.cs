@@ -29,10 +29,10 @@ namespace DS.RevitLib.Utils.Graphs.Validators
         /// <param name="elementCollisionDetector"></param>
         /// <param name="xYZCollisionDetector"></param>
         /// <param name="graph"></param>
-        public VertexCollisionValidator(Document doc, 
-            IElementCollisionDetector elementCollisionDetector, 
-            IXYZCollisionDetector xYZCollisionDetector, 
-            IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> graph) : 
+        public VertexCollisionValidator(Document doc,
+            IElementCollisionDetector elementCollisionDetector,
+            IXYZCollisionDetector xYZCollisionDetector,
+            IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> graph) :
             base(doc, elementCollisionDetector, xYZCollisionDetector)
         {
             _graph = graph;
@@ -42,7 +42,13 @@ namespace DS.RevitLib.Utils.Graphs.Validators
         public bool IsValid(IVertex value)
         {
             var pointElement = value.ToXYZElement(_doc);
-           return Validate(new ValidationContext(pointElement)).Count() == 0;
+            if (pointElement is (null, null))
+            {
+                var element = value.TryGetElementFromGraphAndDoc(_graph, _doc);
+                if(element is null) { return false; }
+                pointElement = (element, value.GetLocation(_doc));
+            }
+            return Validate(new ValidationContext(pointElement)).Count() == 0;
         }
     }
 }
