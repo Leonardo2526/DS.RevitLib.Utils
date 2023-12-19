@@ -43,11 +43,6 @@ namespace DS.RevitCollisions.Resolve.TaskCreators
         }
 
         /// <summary>
-        /// 
-        /// </summary>
-        public Dictionary<BuiltInCategory, List<PartType>> AvailableCategories { get; set; }
-
-        /// <summary>
         /// Specifies whether allow insulation collisions or not.
         /// </summary>
         public bool InsulationAccount { get; set; }
@@ -56,9 +51,7 @@ namespace DS.RevitCollisions.Resolve.TaskCreators
         {
             var pairIterator = new PairIteratorBuilder(_doc, _validators)
             {
-                StartIndex = 1,
-                AvailableCategories = AvailableCategories,
-                InElementRelation = Relation.Child
+                StartIndex = 1
             }
             .Create(_graph);
 

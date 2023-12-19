@@ -97,7 +97,7 @@ namespace DS.RevitCollisions.Resolve.ResolveFactories
         protected override ITaskCreator<(IVertex, IVertex)> BuildTaskCreator()
         {
             var validators =
-                new GraphValidatorSet(_uiDoc, new XYZCollisionDetector(_collisionDetector), TargetGraph, _collisionDetector, TraceSettings)
+                new VerticedValidatorSet(_uiDoc, new XYZCollisionDetector(_collisionDetector), TargetGraph, _collisionDetector, TraceSettings)
                 {
                     AvailableCategories = IterationCategories,
                     BaseMEPCurve = _baseMEPCurve,

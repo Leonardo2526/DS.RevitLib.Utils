@@ -16,6 +16,7 @@ using DS.RevitLib.Utils.MEP;
 using DS.RevitLib.Utils.PathCreators.AlgorithmBuilder;
 using QuickGraph;
 using Rhino.Geometry;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -117,6 +118,11 @@ namespace DS.RevitLib.Utils.PathCreators
 
         public IElementsExtractor ElementsExtractor { get; set; }
 
+        /// <summary>
+        /// The core Serilog, used for writing log events.
+        /// </summary>
+        public ILogger Logger { get; set; }
+
         public IWindowMessenger Messenger { get; set; }
 
         /// <summary>
@@ -156,7 +162,7 @@ namespace DS.RevitLib.Utils.PathCreators
             
             _pathAlgorithmBuilder.NextPointStrategy = new NextConnectionPointStrategy(_doc)
             {
-                Graph = Graph
+                Graph = Graph, Logger = Logger
             };
 
             _collisionDetector = collisionDetector;
@@ -226,7 +232,7 @@ namespace DS.RevitLib.Utils.PathCreators
                 pathAlgorithmBuilder.StartPoint,
                 pathAlgorithmBuilder.EndPoint)
             {
-                TokenSource = token
+                TokenSource = token, Logger = Logger
             };
             return pathFindEnumerator;
         }

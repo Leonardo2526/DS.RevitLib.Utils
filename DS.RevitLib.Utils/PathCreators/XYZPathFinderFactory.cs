@@ -65,7 +65,7 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmVertexBuilder
             PathFinder = new XYZPathFinder(_uiDoc, TraceSettings, AlgorithmBuilder)
             {
                 ElementsExtractor = ElementsExtractor,
-                ExternalToken = ExternalToken
+                ExternalToken = ExternalToken,
             };
 
 

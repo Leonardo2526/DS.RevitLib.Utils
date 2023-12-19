@@ -210,7 +210,7 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
                     externalOutline,
                     outlineFactory);
                 if (_internalOutline == null) { return null; }
-
+               
                 //_collisionDetector.ElementsExtractor.Outline = _internalOutline;
 
                 //convert start and end points.
@@ -377,10 +377,10 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
                 outlineFactoryBase ??= new OutlineFactory(_doc);
                 if (outlineFactoryBase is not OutlineFactory outlineFactory) { return null; }
 
-                double defaultOffset = 5000.MMToFeet();
+                double defaultOffset = 1000.MMToFeet();
                 outlineFactory.XOffset = defaultOffset;
                 outlineFactory.YOffset = defaultOffset;
-                outlineFactory.ZOffset = defaultOffset;
+                outlineFactory.ZOffset = 2000.MMToFeet();
                 outlineFactory.IsPointEnableOutside = false;
 
                 

@@ -9,6 +9,7 @@ using DS.RevitLib.Utils.Collisions.Detectors;
 using DS.RevitLib.Utils.Collisions.Detectors.AbstractDetectors;
 using DS.RevitLib.Utils.Creation.Transactions;
 using DS.RevitLib.Utils.Graphs.Validators;
+using DS.RevitLib.Utils.MEP.SystemTree.Relatives;
 using DS.RevitLib.Utils.PathCreators;
 using QuickGraph;
 using System.Collections.Generic;
@@ -94,12 +95,12 @@ namespace DS.RevitCollisions.Resolve.ResolveFactories
                    ExternalOutline = ExternalOutline,
                    InsulationAccount = InsulationAccount,
                    MaxLength = default,
-                   MaxVerticesCount = default,
+                   MaxVerticesCount = default, 
+                   InElementRelation = Relation.Child
                }.Create();
 
             return new AutoTaskCreatorFactory(_uiDoc, TargetGraph, _mEPCollision, TraceSettings, _collisionDetector, validators)
             {
-                AvailableCategories = IterationCategories,
                 InsulationAccount = InsulationAccount,
                 Logger = Logger
             }.Create();

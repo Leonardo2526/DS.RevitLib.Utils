@@ -39,17 +39,6 @@ namespace DS.RevitLib.Utils.Graphs
         /// </summary>
         public int StartIndex { get; set; }
 
-        /// <summary>
-        /// Only input spuds and tees with specified relation will be iterated.
-        /// </summary>
-        public Relation InElementRelation { get; set; }
-
-        /// <summary>
-        /// Available vertex iteration categories.
-        /// </summary>
-        public Dictionary<BuiltInCategory, List<PartType>> AvailableCategories { get; set; }
-
-
         /// <inheritdoc/>
         public IEnumerator<(IVertex, IVertex)> Create(IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> graph)
         {
@@ -64,46 +53,6 @@ namespace DS.RevitLib.Utils.Graphs
             _validators.ToList().ForEach(_iterator.Validators.Add);
 
             return new VertexPairIterator(_iterator, graph);
-        }
-
-
-
-        private PairIteratorBuilder CreateIterator(IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> graph)
-        {
-            var algorithm = new BreadthFirstSearchAlgorithm<IVertex, Edge<IVertex>>(graph);
-            _iterator = new GraphVertexIterator(algorithm)
-            {
-                StartIndex = StartIndex
-            };
-
-            _pairIterator = new VertexPairIterator(_iterator, graph);
-
-            return this;
-        }
-
-        private PairIteratorBuilder WithCategoryValidator()
-        {
-            if (AvailableCategories != null && AvailableCategories.Count > 0)
-            {
-                var catValidator = new VertexCategoryValidator(_doc, AvailableCategories);
-                _iterator.Validators.Add(catValidator);
-            }
-
-            return this;
-        }
-
-        private PairIteratorBuilder WithRelationValidator()
-        {
-            if (InElementRelation != Relation.Default)
-            {
-                var relationValidator = new VertexRelationValidator(_doc, _graph)
-                {
-                    InElementRelation = InElementRelation
-                };
-                _iterator.Validators.Add(relationValidator);
-            }
-
-            return this;
         }
     }
 }

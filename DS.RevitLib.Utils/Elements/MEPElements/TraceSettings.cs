@@ -15,7 +15,7 @@ namespace DS.RevitLib.Utils.Elements.MEPElements
         private double _c = 100.MMToFeet();
         private double _d = 50.MMToFeet();
         private double _h = 2000.MMToFeet();
-        private double _s = 500.MMToFeet();
+        private double _s = 200.MMToFeet();
         private List<int> _aList = new List<int>() { 90, 60, 45, 30, 15 };
 
         ///<inheritdoc/>

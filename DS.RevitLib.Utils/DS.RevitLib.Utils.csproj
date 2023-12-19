@@ -235,6 +235,7 @@
     <Compile Include="Graphs\SegmentFactory.cs" />
     <Compile Include="Graphs\AdjancyGraphUtils.cs" />
     <Compile Include="Graphs\Validators\GraphValidatorSet.cs" />
+    <Compile Include="Graphs\Validators\VerticedValidatorSet.cs" />
     <Compile Include="Graphs\Validators\IVertexValidatorSet.cs" />
     <Compile Include="Graphs\Validators\VertexLimitsValidator.cs" />
     <Compile Include="Graphs\Validators\VertexCollisionValidator.cs" />

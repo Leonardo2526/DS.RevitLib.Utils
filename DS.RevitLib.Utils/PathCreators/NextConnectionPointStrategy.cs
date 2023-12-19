@@ -9,8 +9,11 @@ using DS.RevitLib.Utils.Graphs;
 using DS.RevitLib.Utils.MEP;
 using QuickGraph;
 using Rhino.Geometry;
+using Serilog;
+using Serilog.Core;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Runtime.InteropServices.ComTypes;
@@ -38,6 +41,11 @@ namespace DS.RevitLib.Utils.PathCreators
         /// </summary>
         public int Tolerance { get => _tolerance; set => _tolerance = value; }
 
+        /// <summary>
+        /// The core Serilog, used for writing log events.
+        /// </summary>
+        public ILogger Logger { get; set; }
+
         public (Point3d point, Vector3d dir) GetPoint(Element element, XYZ point)
         {
             (Point3d p, Vector3d v) = Graph is null ?
@@ -64,8 +72,12 @@ namespace DS.RevitLib.Utils.PathCreators
                 firstEdge = inEdges.FirstOrDefault();
             }
 
-            var mEPCurve = firstEdge.TryGetMEPCurve(_doc) ??
-                throw new ArgumentNullException("Failed to find MEPCurve on connection point.");
+            var mEPCurve = firstEdge.TryGetMEPCurve(_doc);
+            if (mEPCurve == null)
+            {
+                Logger?.Warning("Failed to find MEPCurve on connection point.");
+                return (default, default); 
+            }
 
             var dir = - firstEdge.Direction(_doc);
 

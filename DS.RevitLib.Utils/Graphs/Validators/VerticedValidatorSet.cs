@@ -20,7 +20,7 @@ using System.Threading.Tasks;
 
 namespace DS.RevitLib.Utils.Graphs.Validators
 {
-    public class GraphValidatorSet : IVertexValidatorSet
+    public class VerticedValidatorSet : IVertexValidatorSet
     {
         private readonly List<IValidator<IVertex>> _validators = new();
         private readonly UIDocument _uIDoc;
@@ -30,7 +30,7 @@ namespace DS.RevitLib.Utils.Graphs.Validators
         private readonly IElementCollisionDetector _elementCollisionDetector;
         private readonly ITraceSettings _traceSettings;
 
-        public GraphValidatorSet(UIDocument uIDoc,
+        public VerticedValidatorSet(UIDocument uIDoc,
             IXYZCollisionDetector xYZCollisionDetector, 
             IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> graph,
            IElementCollisionDetector elementCollisionDetector, ITraceSettings traceSettings)
@@ -44,11 +44,6 @@ namespace DS.RevitLib.Utils.Graphs.Validators
         }
 
         #region Properties
-
-        /// <summary>
-        /// Only input spuds and tees with specified relation will be iterated.
-        /// </summary>
-        public Relation InElementRelation { get; set; }
 
         /// <summary>
         /// 
@@ -82,28 +77,45 @@ namespace DS.RevitLib.Utils.Graphs.Validators
 
         public IVertexValidatorSet Create()
         {
+            SeedVertexValidators();
+            SeedGraphValidators();
+            return this;
+        }
+
+        private void SeedVertexValidators()
+        {
             _xYZCollisionDetector.ElementClearance = _traceSettings.B;
             var collisionValidator = new VertexCollisionValidator(_doc, _elementCollisionDetector, _xYZCollisionDetector, _graph)
             { BaseMEPCurve = BaseMEPCurve };
+            var limitsValidator = new VertexLimitsValidator(_doc, _graph)
+            {
+                BoundOutline = ExternalOutline,
+                IsInsulationAccount = InsulationAccount,
+                MinDistToFloor = _traceSettings.H,
+                MinDistToCeiling = _traceSettings.B
+            };
+            var famInstCategoryValidator = new VertexCategoryValidator(_doc, AvailableCategories);
             _validators.Add(collisionValidator);
-
-            if (AvailableCategories != null && AvailableCategories.Count > 0)
-            {
-                var catValidator = new VertexCategoryValidator(_doc, AvailableCategories);
-                _validators.Add(catValidator);
-            }
-
-
-            if (InElementRelation != Relation.Default)
-            {
-                var relationValidator = new VertexRelationValidator(_doc, _graph)
-                {
-                    InElementRelation = InElementRelation
-                };
-                _validators.Add(relationValidator);
-            }
-
-            return this;
+            //_validators.Add(limitsValidator);
+            _validators.Add(famInstCategoryValidator);
         }
+
+        private void SeedGraphValidators()
+        {
+            var graphContainsValidator = new VertexGraphContainValidator(_doc, _graph);//always first through graph validators.
+            var relationValidator = new VertexRelationValidator(_doc, _graph)
+            { InElementRelation = Relation.Child, CheckVertexContainment = true };
+            var vertexGraphLimitsValidator = new VertexGraphLimitsValidator(_doc, _graph)
+            {
+                CheckVertexContainment = true,
+                MaxLength = MaxLength,
+                MaxVerticesCount = MaxVerticesCount
+            };
+
+            _validators.Add(relationValidator);
+            _validators.Add(graphContainsValidator);
+            _validators.Add(vertexGraphLimitsValidator);
+        }
+
     }
 }
