@@ -96,7 +96,7 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
             private CancellationTokenSource _externalToken;
             private Point3dVisualisator _pointVisualisator;
             private DirectionIterator _dirIterator;
-            private CollisionDetectorByTraceBest _traceCollisionDetector;
+            private CollisionDetectorByTrace _traceCollisionDetector;
             private ConnectionPoint _startConnectionPoint;
             private ConnectionPoint _endConnectionPoint;
             private NodeBuilder _nodeBuilder;
@@ -223,7 +223,7 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
                
                 if (accountInitialDirections)
                 {
-                    if (!_startConnectionPoint.Element.IsCategoryElement(_stopCategories))
+                    //if (!_startConnectionPoint.Element.IsCategoryElement(_stopCategories))
                     {
                         (_startANP, _startDirection) = _algorithmBuilder.NextPointStrategy.
                             GetPoint(_startConnectionPoint.Element, _startConnectionPoint.Point);
@@ -235,7 +235,7 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
                             _pointConverter.ConvertToUCS2(_startDirection).Round(_cTolerance);
                     }
 
-                    if (!_endConnectionPoint.Element.IsCategoryElement(_stopCategories))
+                    //if (!_endConnectionPoint.Element.IsCategoryElement(_stopCategories))
                     {
                         (_endANP, _endDirection) = _algorithmBuilder.NextPointStrategy.
                          GetPoint(_endConnectionPoint.Element, _endConnectionPoint.Point);
@@ -263,7 +263,7 @@ namespace DS.RevitLib.Utils.PathCreators.AlgorithmBuilder
                 collisionDetector.LinkElements = elementsExtractor.LinkElements;
 
                 _traceCollisionDetector =
-                    new CollisionDetectorByTraceBest(_doc,
+                    new CollisionDetectorByTrace(_doc,
                     _baseMEPCurve,
                     _traceSettings,
                     insulationAccount, collisionDetector,

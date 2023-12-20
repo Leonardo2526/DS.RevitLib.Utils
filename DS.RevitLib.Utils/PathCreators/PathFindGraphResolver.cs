@@ -5,6 +5,7 @@ using DS.GraphUtils.Entities;
 using DS.PathFinder;
 using DS.RevitLib.Utils.Collisions.Detectors.AbstractDetectors;
 using DS.RevitLib.Utils.Connections.PointModels;
+using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.Graphs;
 using QuickGraph;
 using QuickGraph.Algorithms;
@@ -99,6 +100,17 @@ namespace DS.RevitLib.Utils.PathCreators
 
             idsToExclude = idsToExclude.Distinct().ToList();
             idsToExclude.ForEach(id => objectsToExclude.Add(_doc.GetElement(id)));
+
+            var subElements = new List<Element>();
+            foreach (var item in objectsToExclude)
+            {
+                if (item is FamilyInstance familyInstance)
+                {
+                    var subElementIds = familyInstance.GetSubAllElementIds();
+                    subElementIds.ForEach(id => subElements.Add(_doc.GetElement(id)));
+                }
+            }
+            objectsToExclude.AddRange(subElements);
 
             return objectsToExclude;
 

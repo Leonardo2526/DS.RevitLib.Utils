@@ -10,6 +10,7 @@ using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.Graphs;
 using QuickGraph;
 using Rhino.Geometry;
+using Rhino.UI;
 using Serilog;
 using Serilog.Core;
 using System;
@@ -123,6 +124,18 @@ namespace DS.RevitLib.Utils.PathCreators
                 task.Item1.Element,
                 task.Item2.Element
             };
+
+            if (task.Item1.Element is FamilyInstance familyInstance1)
+            {
+                var subElementIds = familyInstance1.GetSubAllElementIds();
+                subElementIds.ForEach(id => objectsToExclude.Add(_doc.GetElement(id)));
+            }
+
+            if (task.Item2.Element is FamilyInstance familyInstance2)
+            {
+                var subElementIds = familyInstance2.GetSubAllElementIds();
+                subElementIds.ForEach(id => objectsToExclude.Add(_doc.GetElement(id)));
+            }
 
             return objectsToExclude;
         }

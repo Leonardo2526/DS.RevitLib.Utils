@@ -116,12 +116,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Collisions\Detectors\AbstractDetectors\IXYZCollisionDetector.cs" />
-    <Compile Include="Collisions\Detectors\CollisionDetectorByTraceBest.cs" />
+    <Compile Include="Collisions\Detectors\CollisionDetectorByTrace.cs" />
     <Compile Include="Collisions\Detectors\ElementCollisionDetector.cs" />
     <Compile Include="Collisions\Detectors\XYZCollisionDetector.cs" />
     <Compile Include="Collisions\ElementIntersectionFactory.cs" />
     <Compile Include="Collisions\Detectors\AbstractDetectors\IElementCollisionDetector.cs" />
-    <Compile Include="Collisions\Detectors\CollisionDetectorByTrace.cs" />
     <Compile Include="Collisions\IElementIntersectionFactory.cs" />
     <Compile Include="Collisions\IExclusion.cs" />
     <Compile Include="Collisions\Resolvers\IResolver.cs" />

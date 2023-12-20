@@ -29,8 +29,6 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
         private readonly Document _doc;
         private readonly MEPCurve _baseMEPCurve;
         private readonly ITraceSettings _traceSettings;
-        private readonly IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> _graph;
-        private readonly IBidirectionalGraph<IVertex, Edge<IVertex>> _bdGraph;
         private readonly IPoint3dConverter _pointConverter;
         private readonly ITransactionFactory _transactionFactory;
         private readonly IElementCollisionDetector _collisionDetector;
@@ -38,8 +36,8 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
         private BasisXYZ _sourceBasis;
         private Point3d _startPoint;
         private Point3d _endPoint;
-        private IVertex _source;
-        private IVertex _target;
+        private (Element, XYZ) _source;
+        private (Element, XYZ) _target;
         private readonly double _aTolerance = 3.DegToRad();
 
 
@@ -51,12 +49,10 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
         /// <param name="baseMEPCurve"></param>
         /// <param name="traceSettings"></param>
         /// <param name="insulationAccount"></param>
-        /// <param name="graph"></param>
         /// <param name="collisionDetector"></param>
         /// <param name="pointConverter"></param>
         /// <param name="transactionFactory"></param>
-        public CollisionDetectorByTrace(Document doc, MEPCurve baseMEPCurve, ITraceSettings traceSettings, bool insulationAccount, 
-            IVertexAndEdgeListGraph<IVertex, Edge<IVertex>> graph,
+        public CollisionDetectorByTrace(Document doc, MEPCurve baseMEPCurve, ITraceSettings traceSettings, bool insulationAccount,
             IElementCollisionDetector collisionDetector, IPoint3dConverter pointConverter = null,
             ITransactionFactory transactionFactory = null)
         {
@@ -65,8 +61,6 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
             var insulation = insulationAccount ? _baseMEPCurve.GetInsulationThickness() : 0;
             _offset = insulation + traceSettings.B - 0.03;
             _traceSettings = traceSettings;
-            _graph = graph;
-            _bdGraph = graph.ToBidirectionalGraph();
             _pointConverter = pointConverter;
             _transactionFactory = transactionFactory;
             _transactionFactory ??= new ContextTransactionFactory(_doc);
@@ -89,23 +83,23 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
 
         public BestSolidOffsetExtractor SolidExtractor { get; }
 
-        public IVertex Source
+        public (Element, XYZ) Source
         {
             get => _source;
             set
             {
                 _source = value;
-                _startPoint = _pointConverter.ConvertToUCS2(value.GetLocation(_doc).ToPoint3d());
+                _startPoint = _pointConverter.ConvertToUCS2(value.Item2.ToPoint3d());
             }
         }
 
-        public IVertex EndConnectionPoint
+        public (Element, XYZ) Target
         {
             get => _target;
             set
             {
                 _target = value;
-                _endPoint = _pointConverter.ConvertToUCS2(value.GetLocation(_doc).ToPoint3d());
+                _endPoint = _pointConverter.ConvertToUCS2(value.Item2.ToPoint3d());
             }
         }
 
@@ -200,10 +194,9 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
         {
             var point1 = _startPoint;
 
-            if (_source is null) { return GetCollisions(point1, point2, basis); }
+            if (_source.Item1 is null) { return GetCollisions(point1, point2, basis); }
 
-            var connectedElements = _source.GetElements(_bdGraph, _doc);
-            //var connectedElements = ConnectorUtils.GetConnectedElements(_source.Element);
+            var connectedElements = ConnectorUtils.GetConnectedElements(_source.Item1);
 
             var cacheExcluded = new List<Element>();
             cacheExcluded.AddRange(ObjectsToExclude);
@@ -234,10 +227,9 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
         {
             var point2 = _endPoint;
 
-            if (_target is null) { return GetCollisions(point1, point2, basis); }
+            if (_target.Item1 is null) { return GetCollisions(point1, point2, basis); }
 
-            var connectedElements = _target.GetElements(_bdGraph, _doc);
-            //var connectedElements = ConnectorUtils.GetConnectedElements(_target.Element);
+            var connectedElements = ConnectorUtils.GetConnectedElements(_target.Item1);
 
             var cacheExcluded = new List<Element>();
             cacheExcluded.AddRange(ObjectsToExclude);
