@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using DS.RevitLib.Utils.Extensions;
+using Rhino.UI;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -64,8 +65,8 @@ namespace DS.RevitLib.Utils
             solid1 = element1.Document.IsLinked ?
                 element1.GetTransformed(element1.GetLink(element2.Document)) :
                 ElementUtils.GetSolid(element1);
-            solid2 = element2.Document.IsLinked ? 
-                element2.GetTransformed(element2.GetLink(element1.Document)) : 
+            solid2 = element2.Document.IsLinked ?
+                element2.GetTransformed(element2.GetLink(element1.Document)) :
                 ElementUtils.GetSolid(element2);
 
             Solid intersectionSolid = null;
@@ -79,7 +80,7 @@ namespace DS.RevitLib.Utils
                     //string txt = "Elements have no intersections";
                     //Debug.WriteLine(txt);
                     return null;
-                }               
+                }
             }
             catch (Exception ex)
             {
@@ -87,6 +88,63 @@ namespace DS.RevitLib.Utils
             }
 
             return intersectionSolid;
+        }
+
+        /// <summary>
+        /// Find intersection <see cref="Solid"/> between <paramref name="solid1"/> and <paramref name="solid2"/> with 
+        /// specified minimum <paramref name="minVolume"/> value.
+        /// </summary>
+        /// <param name="activeDocument"></param>
+        /// <param name="doc1"></param>
+        /// <param name="solid1"></param>
+        /// <param name="doc2"></param>
+        /// <param name="solid2"></param>
+        /// <param name="minVolume">Minimum intersection <see cref="Solid"/> volume.</param>
+        /// <returns>Intersection <see cref="Solid"/>.
+        /// <para>
+        /// Returns <see langword="null"/> if intersection volume is less than <paramref name="minVolume"/>.
+        /// </para>
+        /// <para>
+        /// Returns <see langword="null"/> if calculation of intersection <see cref="Solid"/> was <see langword="null"/> or failed.
+        /// </para>
+        /// </returns>
+        /// <exception cref="Exception"></exception>
+        public static Solid GetIntersectionSolid(Document activeDocument, Document doc1, Solid solid1, Document doc2, Solid solid2, double minVolume = 0)
+        {
+            var s1 = doc1.IsLinked ? getLinked(doc1, solid1) : solid1;
+            var s2 = doc2.IsLinked ? getLinked(doc2, solid2) : solid2;
+
+            Solid intersectionSolid = null;
+
+            try
+            {
+                intersectionSolid =
+                    BooleanOperationsUtils.ExecuteBooleanOperation(s1, s2, BooleanOperationsType.Intersect);
+                if (intersectionSolid is null || intersectionSolid.Volume == 0 || intersectionSolid.Volume < minVolume)
+                {
+                    //string txt = "Elements have no intersections";
+                    //Debug.WriteLine(txt);
+                    return null;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+            }
+
+            return intersectionSolid;
+
+            Solid getLinked(Document linkDoc, Solid solidInLink)
+            {
+                var revitLink = activeDocument.TryGetLink(linkDoc);
+                var linkTransform = revitLink.GetTotalTransform();
+                if (!linkTransform.AlmostEqual(Transform.Identity))
+                {
+                    return SolidUtils.CreateTransformed(solidInLink, linkTransform);
+                }
+
+                return solidInLink;
+            }
         }
     }
 }

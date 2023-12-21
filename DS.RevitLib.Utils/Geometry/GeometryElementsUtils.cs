@@ -2,6 +2,7 @@
 using DS.RevitLib.Utils.ModelCurveUtils;
 using DS.RevitLib.Utils.Transactions;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -43,6 +44,48 @@ namespace DS.RevitLib.Utils.Extensions
                 var creator = new ModelCurveCreator(doc);
                 creator.Create(arc);
             }, "Show Arc");
+        }
+
+        /// <summary>
+        /// Get all EdgeArrays from solid.
+        /// </summary>
+        /// <param name="faces"></param>
+        /// <param name="onlyPlanar"></param>
+        /// <returns>Returns all EdgeArrays of <paramref name="faces"/>.</returns>
+        public static List<EdgeArray> GetEdgeArrays(IEnumerable<Face> faces, bool onlyPlanar = false)
+        {
+            var edgeArrays = new List<EdgeArray>();
+            foreach (Face face in faces)
+            {
+                if (onlyPlanar && face is not PlanarFace) { continue; }
+                for (int i = 0; i < face.EdgeLoops.Size; i++)
+                {
+                    EdgeArray edgeArray = face.EdgeLoops.get_Item(i);
+                    edgeArrays.Add(edgeArray);
+                }
+            }
+            return edgeArrays;
+        }
+
+        /// <summary>
+        /// Get all curves from solid.
+        /// </summary>
+        /// <param name="edgeArrays"></param>
+        /// <returns>Returns all curves from edges of <paramref name="edgeArrays"/>.</returns>
+        public static List<Curve> GetCurves(IEnumerable<EdgeArray> edgeArrays)
+        {
+            var curves = new List<Curve>();
+            foreach (EdgeArray edgeArray in edgeArrays)
+            {
+                for (int i = 0; i < edgeArray.Size; i++)
+                {
+                    Edge edge = edgeArray.get_Item(i);
+                    var curve = edge.AsCurve();
+                    curves.Add(curve);
+                }
+            }
+
+            return curves;
         }
     }
 }

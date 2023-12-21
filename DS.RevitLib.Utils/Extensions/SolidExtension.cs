@@ -74,44 +74,25 @@ namespace DS.RevitLib.Utils.Extensions
         /// Get all EdgeArrays from solid.
         /// </summary>
         /// <param name="solid"></param>
+        /// <param name="onlyPlanar"></param>
         /// <returns>Returns all EdgeArrays of <paramref name="solid"/>.</returns>
-        public static List<EdgeArray> GetEdgeArrays(this Solid solid)
+        public static List<EdgeArray> GetEdgeArrays(this Solid solid, bool onlyPlanar = false)
         {
-            var faces = solid.Faces;
-
-            var edgeArrays = new List<EdgeArray>();
-            foreach (Face face in faces)
-            {
-                for (int i = 0; i < face.EdgeLoops.Size; i++)
-                {
-                    EdgeArray edgeArray = face.EdgeLoops.get_Item(i);
-                    edgeArrays.Add(edgeArray);
-                }
-            }
-            return edgeArrays;
+            var faces = (from Face face in solid.Faces
+                         select face).ToList();
+            return GeometryElementsUtils.GetEdgeArrays(faces, onlyPlanar);
         }
 
         /// <summary>
         /// Get all curves from solid.
         /// </summary>
         /// <param name="solid"></param>
+        /// <param name="onlyPlanar"></param>
         /// <returns>Returns all curves from edges of <paramref name="solid"/>.</returns>
-        public static List<Curve> GetCurves(this Solid solid)
+        public static List<Curve> GetCurves(this Solid solid, bool onlyPlanar = false)
         {
-            List<EdgeArray> edgeArrays = solid.GetEdgeArrays();
-
-            var curves = new List<Curve>();
-            foreach (EdgeArray edgeArray in edgeArrays)
-            {
-                for (int i = 0; i < edgeArray.Size; i++)
-                {
-                    Edge edge = edgeArray.get_Item(i);
-                    var curve = edge.AsCurve();
-                    curves.Add(curve);
-                }
-            }
-
-            return curves;
+            List<EdgeArray> edgeArrays = solid.GetEdgeArrays(onlyPlanar);
+            return GeometryElementsUtils.GetCurves(edgeArrays); ;
         }
 
         /// <summary>
@@ -119,10 +100,11 @@ namespace DS.RevitLib.Utils.Extensions
         /// </summary>
         /// <param name="solid"></param>
         /// <param name="doc"></param>
+        /// <param name="onlyPlanar"></param>
         /// <remarks>Transaction is not provided, so methods should be wrapped to transacion.</remarks>
-        public static void ShowEdges(this Solid solid, Document doc)
+        public static void ShowEdges(this Solid solid, Document doc, bool onlyPlanar = false)
         {
-            var curves = solid.GetCurves();
+            var curves = solid.GetCurves(onlyPlanar);
             curves.ForEach(obj => obj.Show(doc));
         }
 
@@ -134,7 +116,7 @@ namespace DS.RevitLib.Utils.Extensions
         public static DirectShape ShowShape(this Solid solid, Document doc)
         {
             DirectShape ds = DirectShape.CreateElement(doc, new ElementId(BuiltInCategory.OST_GenericModel));
-            ds.SetShape(new GeometryObject[] { solid });           
+            ds.SetShape(new GeometryObject[] { solid });
 
             return ds;
         }
@@ -160,13 +142,13 @@ namespace DS.RevitLib.Utils.Extensions
                 if (allowOnSurface)
                 {
                     var prj = face.Project(point)?.XYZPoint;
-                    if(prj is not null && prj.DistanceTo(point) < 0.001) { return true;}
+                    if (prj is not null && prj.DistanceTo(point) < 0.001) { return true; }
                 }
                 if (face.Intersect(line1) == SetComparisonResult.Overlap)
                 { intersectionCount++; }
             }
 
             return intersectionCount % 2 != 0;
-        }       
+        }
     }
 }

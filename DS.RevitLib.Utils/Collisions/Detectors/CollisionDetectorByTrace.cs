@@ -17,6 +17,9 @@ using System.Collections.Generic;
 using System.Linq;
 using DS.RevitLib.Utils.Graphs;
 using QuickGraph;
+using DS.ClassLib.VarUtils.Collisons;
+using static System.Net.Mime.MediaTypeNames;
+using DS.ClassLib.VarUtils.Filters;
 
 namespace DS.RevitLib.Utils.Collisions.Detectors
 {
@@ -38,6 +41,7 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
         private Point3d _endPoint;
         private (Element, XYZ) _source;
         private (Element, XYZ) _target;
+        private Func<(Solid, Element), bool> _collisionFilter;
         private readonly double _aTolerance = 3.DegToRad();
 
 
@@ -105,6 +109,12 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
 
         public int Punishment { get; set; }
 
+        public Func<(Solid, Element), bool> CollisionFilter
+        { get => _collisionFilter; set => _collisionFilter = value; }
+
+
+        public bool WithWallRuleFilter { get; set; }
+
         /// <summary>
         /// 
         /// </summary>
@@ -152,9 +162,22 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
 
             _collisionDetector.ExcludedElements = ObjectsToExclude;
             var collisions = _collisionDetector.GetCollisions(checkSolid);
-            var excludeWallsIds = GetExcludeWalls(collisions, direction);
+            //var excludeWallsIds = GetExcludeWalls(collisions, direction);
 
-            collisions = collisions.Where(c => !excludeWallsIds.Contains(c.Item2.Id)).ToList();
+            if (WithWallRuleFilter)
+            {
+                var uCS1dir = _pointConverter.ConvertToUCS1(direction);
+                var rools = new List<Func<(Solid, Element), bool>>
+                {SolidElementRulesFilterSet.WallTraversableDirectionRule(uCS1dir)};
+                var ruleCollisionFilter = new RulesFilterFactory<Solid, Element>(rools).GetFilter();
+                collisions = collisions.Where(ruleCollisionFilter).ToList();
+            }
+
+            if (_collisionFilter is not null)
+            { 
+                collisions = collisions.Where(_collisionFilter).ToList(); 
+            }
+            //collisions = collisions.Where(c => !excludeWallsIds.Contains(c.Item2.Id)).ToList();
 
             return Collisions = collisions.
                 Select(x => ((object)x.Item1, (object)x.Item2)).ToList();

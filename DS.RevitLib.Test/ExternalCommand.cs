@@ -23,8 +23,10 @@ namespace DS.RevitLib.Test
             UIDocument uidoc = uiapp.ActiveUIDocument;
 
 
-            var test= new ShowMEPGraphCommandTest(uidoc);
-            test.Run1();
+            var test= new WallsCollisionFilterTest(uidoc);
+            test.GetWallEdges();
+            //test.GetOpeningsEdges();
+            //test.RunCase1();
 
             //resolver.Resolve();
             //return Result.Succeeded;

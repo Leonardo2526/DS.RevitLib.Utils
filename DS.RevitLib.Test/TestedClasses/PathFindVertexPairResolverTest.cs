@@ -82,7 +82,7 @@ namespace DS.RevitLib.Test.TestedClasses
         public void RunTest1()
         {
             var processor = CreateProcessor();
-            var result = processor?.TryResolve();
+            //var result = processor?.TryResolve();
         }
 
         public ResolveProcessor<IVertexAndEdgeListGraph<IVertex, Edge<IVertex>>> CreateProcessor()
