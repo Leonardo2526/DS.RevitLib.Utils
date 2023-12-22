@@ -122,6 +122,7 @@
     <Compile Include="TestedClasses\BuilderByPointsTest.cs" />
     <Compile Include="TestedClasses\ConnectedElementFinderTest.cs" />
     <Compile Include="TestedClasses\GetConnectionDirectionTest.cs" />
+    <Compile Include="TestedClasses\GetWallEdgesTest.cs" />
     <Compile Include="TestedClasses\PathFindVertexPairResolverTest.cs" />
     <Compile Include="TestedClasses\ReplaceMEPCurveTest.cs" />
     <Compile Include="TestedClasses\GetOverlapResultTest.cs" />

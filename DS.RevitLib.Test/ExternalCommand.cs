@@ -22,9 +22,12 @@ namespace DS.RevitLib.Test
             Autodesk.Revit.ApplicationServices.Application application = uiapp.Application;
             UIDocument uidoc = uiapp.ActiveUIDocument;
 
+            var wallEdgeTest = new GetWallEdgesTest(uidoc);
+            wallEdgeTest.GetWallMainFaceEdges();
 
-            var test= new WallsCollisionFilterTest(uidoc);
-            test.GetWallEdges();
+            //var wallTest= new WallsCollisionFilterTest(uidoc);
+            //wallTest.GetWallEdges();
+
             //test.GetOpeningsEdges();
             //test.RunCase1();
 

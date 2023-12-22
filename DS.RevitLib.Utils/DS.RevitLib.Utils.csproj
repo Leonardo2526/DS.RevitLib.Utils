@@ -209,11 +209,14 @@
     <Compile Include="Extensions\MEPSystemExtensions.cs" />
     <Compile Include="Extensions\ConnectorExtensions.cs" />
     <Compile Include="Extensions\BoxXYZExtensions.cs" />
+    <Compile Include="Extensions\WallExtensions.cs" />
+    <Compile Include="Geometry\GeometryExtensions.cs" />
     <Compile Include="Geometry\IOutlineFactory.cs" />
     <Compile Include="Geometry\OutlineFactory.cs" />
     <Compile Include="Geometry\Points\Point3dVisualisator.cs" />
     <Compile Include="Geometry\Points\PointVisualisator.cs" />
     <Compile Include="Geometry\Points\XYZVisualizator.cs" />
+    <Compile Include="Geometry\Rectangle3dFactoty.cs" />
     <Compile Include="Geometry\Solids\SolidOffsetExtractor.cs" />
     <Compile Include="Graphs\Commands\ShowGraphInDocCommandBase.cs" />
     <Compile Include="Graphs\Commands\ShowLineGraphCommand.cs" />

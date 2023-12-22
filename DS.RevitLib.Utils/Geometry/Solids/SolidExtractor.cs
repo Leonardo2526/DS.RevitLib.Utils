@@ -5,12 +5,11 @@ namespace DS.RevitLib.Utils.Solids
 {
     internal static class SolidExtractor
     {
-        public static List<Solid> GetSolids(Element element, XYZ moveVector = null)
+        public static List<Solid> GetSolids(Element element, XYZ moveVector = null, Options geomOptions = null)
         {
             List<Solid> solids = new List<Solid>();
 
-            Options options = new Options();
-            options.DetailLevel = ViewDetailLevel.Fine;
+            Options options = geomOptions ?? new Options() { DetailLevel = ViewDetailLevel.Fine };
             GeometryElement geomElem = element.get_Geometry(options);
 
             if (geomElem == null)

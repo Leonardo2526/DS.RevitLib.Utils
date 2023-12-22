@@ -1,12 +1,16 @@
-﻿using Autodesk.Revit.DB;
+﻿using Autodesk.Private.InfoCenter;
+using Autodesk.Revit.DB;
+using DS.RevitLib.Utils.Lines;
 using DS.RevitLib.Utils.ModelCurveUtils;
 using DS.RevitLib.Utils.Transactions;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
 namespace DS.RevitLib.Utils.Extensions
 {
@@ -87,5 +91,96 @@ namespace DS.RevitLib.Utils.Extensions
 
             return curves;
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="edgeArray"></param>
+        /// <param name="offset"></param>
+        /// <param name="referenceVector"></param>
+        /// <returns></returns>
+        public static List<Curve> GetOffsetCurves(EdgeArray edgeArray, double offset, XYZ referenceVector)
+        {
+            var curves = new List<Curve>();
+            for (int i = 0; i < edgeArray.Size; i++)
+            {
+                Edge edge = edgeArray.get_Item(i);
+                var curve = edge.AsCurve();
+                curve = offset == 0 ? 
+                    curve : 
+                    curve.CreateOffset(offset, referenceVector);
+                curves.Add(curve);
+            }
+            //return curves;
+            List<Line> lines = curves.OfType<Line>().ToList();
+
+
+            return lines.Any() ?
+                new LinesConnector(lines).Connect().Cast<Curve>().ToList() :
+                curves;
+        }
+
+        /// <summary>
+        /// Get <see cref="Curve"/>s from <paramref name="wallFace"/> that belong to opening with specified <paramref name="openingId"/>.
+        /// </summary>
+        /// <param name="wallFace"></param>
+        /// <param name="wall"></param>
+        /// <param name="openingId"></param>
+        /// <returns>
+        /// Opening <see cref="Curve"/>s.
+        /// <para>
+        /// Empty list if no <see cref="Curve"/>s belong to opening with <paramref name="openingId"/>.
+        /// </para>
+        /// </returns>
+        public static List<Curve> GetEdgesOnOpening(Face wallFace, Wall wall, ElementId openingId)
+        {
+            var edgesOnOpening = new List<Curve>();
+            var mainEdgeArrays = GetEdgeArrays(new List<Face>() { wallFace });
+
+            for (int i = 0; i < mainEdgeArrays.Count; i++)
+            {
+                EdgeArray edgeArray = mainEdgeArrays[i];
+                var curves = new List<Curve>();
+                for (int j = 0; j < edgeArray.Size; j++)
+                {
+                    Edge edge = edgeArray.get_Item(j);
+                    if (wall.GetGeneratingElementIds(edge).Any(x => x == openingId))
+                    {
+                        var curve = edge.AsCurve();
+                        curves.Add(curve);
+                    }
+                }
+                if (curves.Count > 0)
+                { edgesOnOpening.AddRange(curves); }
+            }
+
+            return edgesOnOpening;
+        }
+
+        /// <summary>
+        /// Get <see cref="Curve"/>s from <paramref name="wallFace"/> that belong to any opening.
+        /// </summary>
+        /// <param name="wallFace"></param>
+        /// <param name="wall"></param>
+        /// <returns>
+        /// Openings <see cref="Curve"/>s.
+        /// <para>
+        /// Empty dictionary if no openings exists or no <see cref="Curve"/>s belong to any opening.
+        /// </para>
+        /// </returns>
+        public static Dictionary<ElementId, List<Curve>> GetEdgesOnOpenings(Face wallFace, Wall wall)
+        {
+            var dict = new Dictionary<ElementId, List<Curve>>();
+
+            var insertsIds = wall.FindInserts(true, false, true, true);
+            foreach (var inId in insertsIds)
+            {
+                var curves = GetEdgesOnOpening(wallFace, wall, inId);
+                dict.Add(inId, curves);
+            }
+
+            return dict;
+        }
+
     }
 }
