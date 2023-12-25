@@ -8,6 +8,7 @@ using DS.ClassLib.VarUtils;
 using DS.RevitLib.Utils.Extensions;
 using Autodesk.Revit.DB;
 using DS.RevitLib.Utils.Lines;
+using Plane = Autodesk.Revit.DB.Plane;
 
 namespace DS.RevitLib.Utils.Geometry
 {
@@ -41,5 +42,26 @@ namespace DS.RevitLib.Utils.Geometry
             var rlines = ToRevitLines(rectangle);
             rlines.ForEach(obj => obj.Show(doc));
         }
+
+        /// <summary>
+        /// Get <see cref="Autodesk.Revit.DB.Plane"/> from <paramref name="planarFace"/>.
+        /// </summary>
+        /// <param name="planarFace"></param>
+        /// <returns>
+        /// <see cref="Autodesk.Revit.DB.Plane"/> created by <paramref name="planarFace"/>'s normal and origin.
+        /// </returns>
+        public static Plane GetPlane(this PlanarFace planarFace)
+            =>Plane.CreateByNormalAndOrigin(planarFace.FaceNormal, planarFace.Origin);
+
+        /// <summary>
+        /// Convert <paramref name="plane"/> to <see cref="Rhino.Geometry.Plane"/>.
+        /// </summary>
+        /// <param name="plane"></param>
+        /// <returns>
+        /// <see cref="Rhino.Geometry.Plane"/> created by <paramref name="plane"/>'s normal and origin.
+        /// </returns>
+        public static Rhino.Geometry.Plane ToRhinoPlane(this Plane plane)
+            => new(plane.Origin.ToPoint3d(), plane.Normal.ToVector3d());
+        
     }
 }

@@ -42,7 +42,7 @@ namespace DS.RevitLib.Test.TestedClasses
                 DetailLevel = ViewDetailLevel.Fine,
                 IncludeNonVisibleObjects = false
             };
-            (List<Face> wallFaces, Dictionary<ElementId, List<Face>> insertsFacesDist) = wall.GetFaces(geomOptions, true);
+            (List<Face> wallFaces, Dictionary<ElementId, List<Face>> insertsFacesDist) = wall.GetFaces(_doc, geomOptions, true);
             var mainWallFace = wallFaces.OfType<PlanarFace>().OrderByDescending(f => f.Area).First();
 
             Debug.WriteLine("wallFaces: " + wallFaces.Count);
@@ -62,7 +62,7 @@ namespace DS.RevitLib.Test.TestedClasses
             return this;
         }
 
-        public GetWallEdgesTest GetWallMainFaceEdges()
+        public (Rectangle3d wallRect, IEnumerable<Rectangle3d> openingsRect) GetWallMainFaceEdges()
         {
             var wallElem = new ElementSelector(_uiDoc).Pick();
             var wall = wallElem as Wall;
@@ -73,14 +73,14 @@ namespace DS.RevitLib.Test.TestedClasses
                 DetailLevel = ViewDetailLevel.Fine,
                 IncludeNonVisibleObjects = false
             };
-            (List<Face> wallFaces, Dictionary<ElementId, List<Face>> insertsFacesDist) = wall.GetFaces(geomOptions, true);
+            (List<Face> wallFaces, Dictionary<ElementId, List<Face>> insertsFacesDist) = wall.GetFaces(_doc, geomOptions, true);
             var mainWallFace = wallFaces.OfType<PlanarFace>().OrderByDescending(f => f.Area).First();
             var mainRectangle = Rectangle3dFactoty.Create(mainWallFace);
 
             var offset =- 1000.MMToFeet();
-            if (!mainRectangle.TryExtend(offset, out var exRectangle))
+            if (!mainRectangle.TryExtend(offset, out var extendedMainRectangle))
             { throw new Exception(""); }
-            _trf.CreateAsync(() => exRectangle.Show(_doc), "ShowWallEdges");
+            _trf.CreateAsync(() => extendedMainRectangle.Show(_doc), "ShowWallEdges");
 
             //show face
             var insertsFaces = insertsFacesDist.Values.SelectMany(x => x).ToList();
@@ -95,7 +95,7 @@ namespace DS.RevitLib.Test.TestedClasses
             var extendedOpeningsRectangles = GetExtendedRectangles(openingsRectangles, openingOffset);
             _trf.CreateAsync(() => { extendedOpeningsRectangles.ForEach(r => r.Show(_doc)); }, "ShowWallEdges");
 
-            return this;
+            return (extendedMainRectangle, extendedOpeningsRectangles);
         }
 
 

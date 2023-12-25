@@ -7,6 +7,7 @@ using DS.GraphUtils.Entities;
 using DS.RevitLib.Utils.Connection;
 using DS.RevitLib.Utils.Connections.PointModels;
 using DS.RevitLib.Utils.MEP;
+using DS.RevitLib.Utils.Solids;
 using DS.RevitLib.Utils.Transactions;
 using DS.RevitLib.Utils.Visualisators;
 using System;
@@ -381,7 +382,7 @@ namespace DS.RevitLib.Utils.Extensions
 
 
             return false;
-        }       
+        }
 
         /// <summary>
         /// Connect <paramref name="elements"/> by common connectors.
@@ -579,7 +580,7 @@ namespace DS.RevitLib.Utils.Extensions
         /// Empty list if <paramref name="element"/> hasn't connected <see cref="Autodesk.Revit.DB.Element"/>'s.
         /// </para>
         /// </returns>
-        public static List<Element> GetBestConnected(this Element element, bool onlySuperb = true ) =>
+        public static List<Element> GetBestConnected(this Element element, bool onlySuperb = true) =>
             ConnectorUtils.GetBestConnectedElements(element, onlySuperb);
 
         /// <summary>
@@ -679,10 +680,35 @@ namespace DS.RevitLib.Utils.Extensions
             var linkTransform = revitLink.GetTotalTransform();
             if (!linkTransform.AlmostEqual(Transform.Identity))
             {
-                solid = SolidUtils.CreateTransformed(solid, linkTransform);
+                solid = Autodesk.Revit.DB.SolidUtils.CreateTransformed(solid, linkTransform);
             }
 
             return solid;
+        }
+
+        /// <summary>
+        /// Get transformed solids from <paramref name="element"/> by <paramref name="revitLink"/>.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <param name="revitLink"></param>
+        /// <param name="geomOptions"></param>
+        /// <returns>
+        /// Real <paramref name="element"/> <see cref="Autodesk.Revit.DB.Solid"/> positions in current document.
+        /// <para>
+        /// Origins solids if no transformations exists in <paramref name="revitLink"/>.
+        /// </para>
+        /// </returns>
+        public static List<Solid> GetTransformedSolids(this Element element, RevitLinkInstance revitLink, Options geomOptions = null)
+        {
+            List<Solid> solidList = SolidExtractor.GetSolids(element, null, geomOptions);
+
+            var linkTransform = revitLink.GetTotalTransform();
+            if (linkTransform.AlmostEqual(Transform.Identity))
+            { return solidList; }
+
+            var linkedSolids = new List<Solid>();
+            solidList.ForEach(s => linkedSolids.Add(Autodesk.Revit.DB.SolidUtils.CreateTransformed(s, linkTransform)));
+            return linkedSolids;
         }
 
         /// <summary>

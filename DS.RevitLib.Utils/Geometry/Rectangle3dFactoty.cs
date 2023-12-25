@@ -70,5 +70,27 @@ namespace DS.RevitLib.Utils.Geometry
             return new Rectangle3d(rgPlane, xLength, yLength);
         }
 
+        /// <summary>
+        /// Create <see cref="Rectangle3d"/> from <paramref name="curveLoop"/> on <paramref name="plane"/>.
+        /// </summary>       
+        /// <param name="curveLoop"></param>
+        /// <param name="rectangle"></param>
+        /// <returns>
+        /// <see langword="true"/> if <paramref name="rectangle"/> was created successfully.
+        /// <para>
+        /// Otherwise <see langword="false"/>.
+        /// </para>
+        /// </returns>
+        public static bool TryCreate(CurveLoop curveLoop, out Rectangle3d rectangle)
+        {
+            rectangle = default;
+            if(curveLoop.IsOpen()) { return false; }
+
+            var curves = curveLoop.ToList();
+
+            rectangle = Create(curves);
+            return true;
+        }
+
     }
 }

@@ -23,7 +23,10 @@ namespace DS.RevitLib.Test
             UIDocument uidoc = uiapp.ActiveUIDocument;
 
             var wallEdgeTest = new GetWallEdgesTest(uidoc);
-            wallEdgeTest.GetWallMainFaceEdges();
+            var (wallRect, openingsRect) =  wallEdgeTest.GetWallMainFaceEdges();
+
+
+
 
             //var wallTest= new WallsCollisionFilterTest(uidoc);
             //wallTest.GetWallEdges();

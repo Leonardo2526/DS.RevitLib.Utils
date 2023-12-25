@@ -37,28 +37,29 @@ namespace DS.RevitLib.Utils.Extensions
                         GetIntersection(collision.item1, solid2, minVolume);
         }
 
-        public static Solid GetIntersectionSolidWithInsulation(this (Element item1, Element item2) collision, double minVolume = 0)
+        public static Solid GetIntersectionSolidWithInsulation(this (Element item1, Element item2) collision, 
+            double minVolume = 0, Document activeDoc = null)
         {
             var intersectionSolid = collision.GetIntersectionSolid(minVolume);
 
             var solids = new List<Solid>()
             {intersectionSolid};
 
-            Document doc = collision.item1.Document.IsLinked ? 
+            activeDoc ??= collision.item1.Document.IsLinked ? 
                 collision.item2.Document : collision.item1.Document;
 
             Solid rInsSolid = null;
             var rIns = collision.item1.GetInsulation();
             if (rIns is not null && rIns.IsValidObject)
             { rInsSolid = rIns.Document.IsLinked ?
-                rIns.GetTransformed(rIns.GetLink(doc)) :
+                rIns.GetTransformed(rIns.GetLink(activeDoc)) :
                 rIns.Solid();}
 
             Solid sInsSolid= null;
             var sIns = collision.item2.GetInsulation();
             if (sIns is not null && sIns.IsValidObject)
             { sInsSolid = sIns.Document.IsLinked ?
-                sIns.GetTransformed(sIns.GetLink(doc)) :
+                sIns.GetTransformed(sIns.GetLink(activeDoc)) :
                 sIns.Solid();
             }
 

@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
+using DS.RevitLib.Utils.Solids;
 
 namespace DS.RevitLib.Utils.Extensions
 {
@@ -18,16 +20,19 @@ namespace DS.RevitLib.Utils.Extensions
         /// if <paramref name="includeInserts"/> is <see langword="true"/>.
         /// </summary>
         /// <param name="wall"></param>
+        /// <param name="activeDoc"></param>
         /// <param name="geomOptions"></param>
         /// <param name="includeInserts"></param>
         /// <returns></returns>
-        public static (List<Face> wallFaces, Dictionary<ElementId, List<Face>> insertsFaces) GetFaces(
-           this Wall wall, Options geomOptions = null, bool includeInserts = false)
+        public static (List<Face> wallFaces, Dictionary<ElementId, List<Face>> insertsFacesCollection) GetFaces(
+           this Wall wall, Document activeDoc, Options geomOptions = null, bool includeInserts = false)
         {
             var insertsFaces = new Dictionary<ElementId, List<Face>>();
+            var faceList = new List<Face>();
 
-            List<Face> faceList = new List<Face>();
-            List<Solid> solidList = SolidExtractor.GetSolids(wall, null, geomOptions);
+            List<Solid> solidList = wall.Document.IsLinked ? 
+                wall.GetTransformedSolids(wall.GetLink(activeDoc)) : 
+                SolidExtractor.GetSolids(wall, null, geomOptions);
 
             var insertsIds = includeInserts ? wall.FindInserts(true, false, true, true) : null;
 
@@ -66,6 +71,24 @@ namespace DS.RevitLib.Utils.Extensions
                 }
                 return inserted;
             }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="wall"></param>
+        /// <returns></returns>
+        public static PlanarFace GetMainPlanarFace(this Wall wall, Document activeDoc)
+        {
+            var geomOptions = new Options()
+            {
+                ComputeReferences = true, // expensive, avoid if not needed
+                DetailLevel = ViewDetailLevel.Fine,
+                IncludeNonVisibleObjects = false
+            };
+            (List<Face> wallFaces, Dictionary<ElementId, List<Face>> insertsFacesDist) = GetFaces(wall, activeDoc, geomOptions, false);
+
+            return wallFaces.OfType<PlanarFace>().OrderByDescending(f => f.Area).First();
         }
     }
 

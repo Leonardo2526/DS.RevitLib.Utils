@@ -251,6 +251,9 @@
     <Compile Include="Graphs\Validators\VertexRelationValidator.cs" />
     <Compile Include="Graphs\VertexVisualizator.cs" />
     <Compile Include="Graphs\VertexSelectors.cs" />
+    <Compile Include="Openings\IOpeningProfileCreator.cs" />
+    <Compile Include="Openings\IWallOpeningRuleBuilder.cs" />
+    <Compile Include="Openings\WallOpeningRuleBuilder.cs" />
     <Compile Include="PathCreators\AlgorithmBuilder\Impl.cs" />
     <Compile Include="PathCreators\AlgorithmBuilder\PathAlgorithmBuilder.cs" />
     <Compile Include="PathCreators\PathFindFactoryBuilder.cs" />
