@@ -2,9 +2,13 @@
 using Autodesk.Revit.UI;
 using DS.ClassLib.VarUtils;
 using DS.ClassLib.VarUtils.Filters;
+using DS.RevitCollisions.CollisionBuilers;
 using DS.RevitLib.Utils;
 using DS.RevitLib.Utils.Collisions;
+using DS.RevitLib.Utils.Collisions.Detectors;
+using DS.RevitLib.Utils.Collisions.Models;
 using DS.RevitLib.Utils.Creation.Transactions;
+using DS.RevitLib.Utils.Elements;
 using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.Geometry;
 using DS.RevitLib.Utils.Lines;
@@ -15,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Numerics;
 namespace DS.RevitLib.Test.TestedClasses
 {
     internal class GetWallEdgesTest
@@ -77,7 +82,7 @@ namespace DS.RevitLib.Test.TestedClasses
             var mainWallFace = wallFaces.OfType<PlanarFace>().OrderByDescending(f => f.Area).First();
             var mainRectangle = Rectangle3dFactoty.Create(mainWallFace);
 
-            var offset =- 1000.MMToFeet();
+            var offset = -1000.MMToFeet();
             if (!mainRectangle.TryExtend(offset, out var extendedMainRectangle))
             { throw new Exception(""); }
             _trf.CreateAsync(() => extendedMainRectangle.Show(_doc), "ShowWallEdges");
@@ -134,12 +139,110 @@ namespace DS.RevitLib.Test.TestedClasses
             return extended;
         }
 
-        private void GetJoints(Wall wall)
+        public void GetJoints()
         {
+            var wallElem = new ElementSelector(_uiDoc).Pick();
+            var wall = wallElem as Wall;
+            var jointsIds = wall.GetJoints();
+
+            var mainFace = wall.GetMainPlanarFace(_doc);
+            var mainRhinoPlane = mainFace.GetPlane().ToRhinoPlane();
+
+            Options geomOptions = new Options()
+            {
+                ComputeReferences = true, // expensive, avoid if not needed
+                DetailLevel = ViewDetailLevel.Fine,
+                IncludeNonVisibleObjects = false
+            };
+
+            var offset = 500.MMToFeet();
+            foreach (var id in jointsIds)
+            {
+                if (_doc.GetElement(id) is Wall jWall)
+                {
+                    (List<Face> jwallFaces, Dictionary<ElementId, List<Face>> jInsertsFacesDist) = jWall.GetFaces(_doc, geomOptions, false);
+                    var pFaces = jwallFaces.OfType<PlanarFace>().OrderByDescending(w => w.Area).ToList();
+                    pFaces.RemoveRange(0, 2);
+                    var at = 3.DegToRad();
+                    var perpFaces = pFaces.Where(f => f.FaceNormal.ToVector3d().IsPerpendicularTo(Vector3d.ZAxis, at)).ToList();
+
+                    var rect1 = Rectangle3dFactoty.Create(perpFaces[0]);
+                    var rect2 = Rectangle3dFactoty.Create(perpFaces[1]);
+                    var rect = mainRhinoPlane.DistanceTo(rect1.Center) < mainRhinoPlane.DistanceTo(rect2.Center) ?
+                        rect1 : rect2;
+
+                    var p1 = rect.Corner(0);
+                    var p2 = rect.Corner(2);
+                    rect = new Rectangle3d(mainRhinoPlane, p1, p2);
+                    if (!rect.TryExtend(offset, out var extendedMainRectangle))
+                    { throw new Exception(""); }
+                    _trf.CreateAsync(() => extendedMainRectangle.Show(_doc), "ShowWallEdges");
+                    _trf.CreateAsync(() => rect.Show(_doc), "ShowWallEdges");
+                }
+            }
+
+        }
+
+        public void GetJointsOld()
+        {
+            var wallElem = new ElementSelector(_uiDoc).Pick();
+            var wall = wallElem as Wall;
+            var jointsIds = wall.GetJoints();
+
+            var mainFace = wall.GetMainPlanarFace(_doc);
+            var mainRhinoPlane = mainFace.GetPlane().ToRhinoPlane();
+
+            Options geomOptions = new Options()
+            {
+                ComputeReferences = true, // expensive, avoid if not needed
+                DetailLevel = ViewDetailLevel.Fine,
+                IncludeNonVisibleObjects = false
+            };
+
+            var projPoints = new List<XYZ>();
+            foreach (var id in jointsIds)
+            {
+                if (_doc.GetElement(id) is Wall jWall)
+                {
+                    (List<Face> jwallFaces, Dictionary<ElementId, List<Face>> jInsertsFacesDist) = jWall.GetFaces(_doc, geomOptions, false);
+                    var closestFace = jwallFaces.OfType<PlanarFace>().
+                        OrderByDescending(w => mainRhinoPlane.DistanceTo(w.Origin.ToPoint3d())).Last();
+                    var rect = Rectangle3dFactoty.Create(closestFace);
+                    var p1 = rect.Corner(0);
+                    var p2 = rect.Corner(2);
+                    rect = new Rectangle3d(mainRhinoPlane, p1, p2);
+
+                    //List<EdgeArray> edgeArrays = GeometryElementsUtils.GetEdgeArrays(wallFaces);
+                    //var curves = GeometryElementsUtils.GetCurves(edgeArrays);
+                    //var points= new List<XYZ>();
+                    //curves.ForEach(c => points.AddRange(c.Tessellate()));
+
+                    //var wProjPoints = new List<XYZ>();
+
+                    //foreach (var p in points)
+                    //{
+                    //    var pp = mainFace.Project(p).XYZPoint;
+                    //    if (pp != null)
+                    //    { projPoints.Add(pp); }
+                    //}
+
+                    var jhLine = jWall.GetHeightLine(_doc);
+                    var center = jWall.GetCenterLine().GetCenter();
+                    var projCenter = mainFace.Project(center).XYZPoint;
+
+
+                }
+            }
+
+            var rhinoPoints = new List<Point3d>();
+            projPoints.ForEach(p => rhinoPoints.Add(p.ToPoint3d()));
+
             //get joints
             var l = wall.Location as LocationCurve;
             var j0 = GetAdjoiningElements(l, wall.Id, 0);
             var j1 = GetAdjoiningElements(l, wall.Id, 1);
+            var j2 = GetAdjoiningElements(l, wall.Id, 2);
+            var j3 = GetAdjoiningElements(l, wall.Id, 3);
         }
 
         /// <summary>

@@ -23,7 +23,8 @@ namespace DS.RevitLib.Test
             UIDocument uidoc = uiapp.ActiveUIDocument;
 
             var wallEdgeTest = new GetWallEdgesTest(uidoc);
-            var (wallRect, openingsRect) =  wallEdgeTest.GetWallMainFaceEdges();
+            wallEdgeTest.GetJoints();
+            //var (wallRect, openingsRect) =  wallEdgeTest.GetWallMainFaceEdges();
 
 
 
