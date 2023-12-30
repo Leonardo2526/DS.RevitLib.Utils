@@ -210,6 +210,7 @@
     <Compile Include="Extensions\ConnectorExtensions.cs" />
     <Compile Include="Extensions\BoxXYZExtensions.cs" />
     <Compile Include="Extensions\WallExtensions.cs" />
+    <Compile Include="FaceFilter.cs" />
     <Compile Include="Geometry\GeometryExtensions.cs" />
     <Compile Include="Geometry\IOutlineFactory.cs" />
     <Compile Include="Geometry\OutlineFactory.cs" />

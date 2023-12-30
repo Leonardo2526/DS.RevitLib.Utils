@@ -112,6 +112,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="GetEdgeConnectorsTest.cs" />
+    <Compile Include="TestedClasses\GetFaceIntersectionTest.cs" />
     <Compile Include="TestedClasses\GetFamInstLocationTest.cs" />
     <Compile Include="TestedClasses\GetFloorDistTest.cs" />
     <Compile Include="TestedClasses\AlignMEPCurvesTest.cs" />

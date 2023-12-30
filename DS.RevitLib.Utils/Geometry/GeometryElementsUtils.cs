@@ -182,5 +182,29 @@ namespace DS.RevitLib.Utils.Extensions
             return dict;
         }
 
+        /// <summary>
+        /// Convert <paramref name="lines"/> to <see cref="Rhino.Geometry.Line"/>s.
+        /// </summary>
+        /// <param name="lines"></param>
+        /// <returns></returns>
+        public static IEnumerable<Rhino.Geometry.Line> ToRhinoLines(IEnumerable<Line> lines)
+        {
+            var result = new List<Rhino.Geometry.Line>();   
+            lines.ToList().ForEach(l => result.Add(l.ToRhinoLine()));
+            return result;
+        }
+
+        /// <summary>
+        /// Convert <paramref name="lines"/> to <see cref="Line"/>s.
+        /// </summary>
+        /// <param name="lines"></param>
+        /// <returns></returns>
+        public static IEnumerable<Line> ToRevitLines(IEnumerable<Rhino.Geometry.Line> lines)
+        {
+            var result = new List<Line>();
+            lines.ToList().ForEach(l => result.Add(l.ToXYZ()));
+            return result;
+        }
+
     }
 }

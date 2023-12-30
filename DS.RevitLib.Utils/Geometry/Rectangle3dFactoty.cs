@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using DS.RevitLib.Utils.Extensions;
 using Rhino.Geometry;
+using Rhino.UI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,23 +16,22 @@ namespace DS.RevitLib.Utils.Geometry
     public static class Rectangle3dFactoty
     {
         /// <summary>
-        /// Create <see cref="Rectangle3d"/> from <paramref name="planarFace"/>'s boundingBox.
+        /// Create <see cref="Rectangle3d"/> from <paramref name="face"/>.
         /// </summary>
-        /// <param name="planarFace"></param>
+        /// <param name="face"></param>
         /// <returns>
-        /// A new <see cref="Rectangle3d"/>.
+        /// A new <see cref="Rectangle3d"/> or it's default value.
         /// </returns>
-        public static Rectangle3d Create(PlanarFace planarFace)
+        public static Rectangle3d Create(PlanarFace face)
         {
-            var box = planarFace.GetBoundingBox();
+            var loops = face.GetEdgesAsCurveLoops();
+            if (loops != null && loops.Count == 1 && !loops[0].IsOpen())
+            {
+                if (TryCreate(loops[0], out var rectangle))
+                { return rectangle; }
+            }
 
-            var p1 = planarFace.Evaluate(box.Min).ToPoint3d();
-            var p2 = planarFace.Evaluate(box.Max).ToPoint3d();
-            var plane = new Rhino.Geometry.Plane(
-                planarFace.Origin.ToPoint3d(), 
-                planarFace.FaceNormal.ToVector3d()
-                );
-           return new Rectangle3d(plane, p1, p2);
+            return default;
         }
 
         /// <summary>

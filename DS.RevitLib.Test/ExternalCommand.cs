@@ -22,8 +22,11 @@ namespace DS.RevitLib.Test
             Autodesk.Revit.ApplicationServices.Application application = uiapp.Application;
             UIDocument uidoc = uiapp.ActiveUIDocument;
 
-            var wallEdgeTest = new GetWallEdgesTest(uidoc);
-            wallEdgeTest.GetJoints();
+            var test = new GetFaceIntersectionTest(uidoc);
+            //test.RunFacesFilter();
+            //test.Run1WithAdj();
+            //test.ProjectJointFace();
+            test.RunToDeleteAdjEdges();
             //var (wallRect, openingsRect) =  wallEdgeTest.GetWallMainFaceEdges();
 
 
