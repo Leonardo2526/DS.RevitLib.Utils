@@ -9,12 +9,15 @@ using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.Geometry;
 using DS.RevitLib.Utils.Lines;
 using DS.RevitLib.Utils.MEP;
+using DS.RevitLib.Utils.Openings;
 using DS.RevitLib.Utils.Various;
 using Rhino.Geometry;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 
 namespace DS.RevitLib.Test.TestedClasses
 {
@@ -69,6 +72,39 @@ namespace DS.RevitLib.Test.TestedClasses
             return new RulesFilterFactory<Solid, Element>(rools).GetFilter();
         }
 
+        private Func<(Solid, Element), bool> GetResultBySolid(Document doc,
+        Solid solid,
+        Element wall,
+        ILogger logger,
+        ITransactionFactory trf)
+        {
+            var profileCreator = new RectangleSolidProfileCreator(doc)
+            {
+                Offset = 100.MMToFeet(),
+                TransactionFactory = trf,
+                Logger = logger
+            };
+            var wBuilder = new WallOpeningProfileValidator<Solid>(doc, profileCreator)
+            {
+                InsertsOffset = 500.MMToFeet(),
+                WallOffset = 1000.MMToFeet(),
+                JointsOffset = 0,
+                Logger = logger,
+                TransactionFactory = trf
+            };
+
+            (Solid, Element) mArg = (solid, wall);
+
+            var b = Func(mArg);
+            if (!wBuilder.ValidationResults.Any()) return b;
+            var sb = new StringBuilder();
+            wBuilder.ValidationResults.ToList().ForEach(r => sb.Append(r.ErrorMessage));
+            logger?.Information(sb.ToString());
+
+            return b;
+
+            bool Func((Solid, Element) f) => f.Item2 is Wall wall1 && wBuilder.IsValid((wall1, f.Item1));
+        }
 
     }
 }

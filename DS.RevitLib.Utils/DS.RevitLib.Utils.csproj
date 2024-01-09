@@ -59,8 +59,8 @@
     <Reference Include="Ivanov.RevitLib.Utils">
       <HintPath>..\..\VAR.RevitLib.Utils\Ivanov.RevitLib.Utils\bin\Release\Ivanov.RevitLib.Utils.dll</HintPath>
     </Reference>
-    <Reference Include="MoreLinq, Version=3.3.2.0, Culture=neutral, PublicKeyToken=384d532d7e88985d, processorArchitecture=MSIL">
-      <HintPath>..\..\Olimproekt\MEPAutoCoordination\DS.RevitLib.SystemConnection\packages\morelinq.3.3.2\lib\net451\MoreLinq.dll</HintPath>
+    <Reference Include="MoreLinq, Version=4.1.0.0, Culture=neutral, PublicKeyToken=384d532d7e88985d, processorArchitecture=MSIL">
+      <HintPath>..\..\DS.RevitApp.Plugins\DS.MEPTools\packages\morelinq.4.1.0\lib\netstandard2.0\MoreLinq.dll</HintPath>
     </Reference>
     <Reference Include="Nito.Collections.Deque, Version=1.1.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\Olimproekt\MEPAutoCoordination\OLMP.MEPAC.Entities.SystemConnection\packages\Nito.Collections.Deque.1.1.1\lib\net461\Nito.Collections.Deque.dll</HintPath>
@@ -68,7 +68,6 @@
     <Reference Include="PathFinderLib">
       <HintPath>..\..\VAR.RevitLib.Utils\Ivanov.RevitLib.Utils\Assemblies\PathFinderLib.dll</HintPath>
     </Reference>
-    <Reference Include="PresentationCore" />
     <Reference Include="QuickGraph, Version=3.6.61114.0, Culture=neutral, PublicKeyToken=f3fb40175eec2af3, processorArchitecture=MSIL">
       <HintPath>..\..\Olimproekt\MEPAutoCoordination\packages\QuickGraph.3.6.61119.7\lib\net4\QuickGraph.dll</HintPath>
     </Reference>
@@ -215,7 +214,6 @@
     <Compile Include="Geometry\IOutlineFactory.cs" />
     <Compile Include="Geometry\OutlineFactory.cs" />
     <Compile Include="Geometry\Points\Point3dVisualisator.cs" />
-    <Compile Include="Geometry\Points\PointVisualisator.cs" />
     <Compile Include="Geometry\Points\XYZVisualizator.cs" />
     <Compile Include="Geometry\Rectangle3dFactoty.cs" />
     <Compile Include="Geometry\Solids\SolidOffsetExtractor.cs" />
@@ -253,7 +251,6 @@
     <Compile Include="Graphs\VertexVisualizator.cs" />
     <Compile Include="Graphs\VertexSelectors.cs" />
     <Compile Include="Openings\IOpeningProfileCreator.cs" />
-    <Compile Include="Openings\WallOpeningProfileValidator.cs" />
     <Compile Include="PathCreators\AlgorithmBuilder\Impl.cs" />
     <Compile Include="PathCreators\AlgorithmBuilder\PathAlgorithmBuilder.cs" />
     <Compile Include="PathCreators\PathFindFactoryBuilder.cs" />
@@ -308,7 +305,6 @@
     <Compile Include="Selections\PointOnElementSelector.cs" />
     <Compile Include="Selections\Validators\XYZElementValidators\XYZElementCollisionValidator.cs" />
     <Compile Include="Various\TaskDialogMessenger.cs" />
-    <Compile Include="Various\VectorPointConverter.cs" />
     <Compile Include="Selections\Filters\ElementInLinkSelectionFilter.cs" />
     <Compile Include="Selections\Filters\PointSelectionFilter.cs" />
     <Compile Include="Selections\Filters\IAdvancedSelectionFilter.cs" />

@@ -17,7 +17,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
-using System.Windows.Media.Media3D;
 using DS.RevitLib.Utils.Lines;
 
 namespace DS.RevitLib.Utils.MEP

@@ -1,22 +1,13 @@
 ﻿using Autodesk.Revit.DB;
 using DS.ClassLib.VarUtils;
-using DS.ClassLib.VarUtils.Collisions;
 using DS.ClassLib.VarUtils.Points;
 using DS.RevitLib.Utils.Creation.Transactions;
-using DS.RevitLib.Utils.Elements.MEPElements;
 using DS.RevitLib.Utils.ModelCurveUtils;
-using DS.RevitLib.Utils.Transactions;
 using MoreLinq;
 using Rhino.Geometry;
-using Rhino.UI;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Drawing;
 using System.Linq;
-using System.Net;
-using System.Windows.Media;
-using System.Windows.Media.Media3D;
 using Line = Autodesk.Revit.DB.Line;
 using Plane = Autodesk.Revit.DB.Plane;
 
@@ -260,16 +251,6 @@ namespace DS.RevitLib.Utils.Extensions
             return curves;
         }
 
-
-        /// <summary>
-        /// Convert <paramref name="point"/> to <see cref="Point3D"/>.
-        /// </summary>
-        /// <param name="point"></param>
-        /// <returns>Returns a new <see cref="Point3D"/> built by <paramref name="point"/> coordinates.</returns>
-        public static Point3D ToPoint3D(this XYZ point)
-        {
-            return new Point3D(point.X, point.Y, point.Z);
-        }
 
         /// <summary>
         /// Convert <paramref name="xYZ"/> to <see cref="Vector3d"/>.
