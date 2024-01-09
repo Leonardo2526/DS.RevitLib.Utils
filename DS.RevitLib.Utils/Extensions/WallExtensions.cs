@@ -170,6 +170,7 @@ namespace DS.RevitLib.Utils.Extensions
         /// Try get <see cref="Autodesk.Revit.DB.Line"/> from <see cref="LocationCurve"/>.
         /// </summary>
         /// <param name="wall"></param>
+        /// <param name="activeDoc"></param>
         /// <param name="line"></param>
         /// <returns>
         /// <see cref="Autodesk.Revit.DB.Line"/> if <paramref name="wall"/> was created from <see cref="PlanarFace"/>s.
@@ -177,12 +178,21 @@ namespace DS.RevitLib.Utils.Extensions
         /// Otherwise <see langword="null"/>.
         /// </para>
         /// </returns>
-        public static bool TryGetLocationLine(this Wall wall, out Rhino.Geometry.Line line)
+        public static bool TryGetLocationLine(this Wall wall, Document activeDoc, out Rhino.Geometry.Line line)
         {
             line = default;
 
             var revitLine = wall.GetCurve() as Line;
             if (revitLine == null) return false;
+
+            if (wall.Document.IsLinked)
+            {
+                var revitLink = wall.GetLink(activeDoc);
+                var linkTransform = revitLink.GetTotalTransform();
+                if (!linkTransform.AlmostEqual(Autodesk.Revit.DB.Transform.Identity))
+                { revitLine = revitLine.CreateTransformed(linkTransform) as Line; }
+            }
+
             line = revitLine.ToRhinoLine();
             return true;
         }
@@ -193,6 +203,7 @@ namespace DS.RevitLib.Utils.Extensions
         /// i.e. the <paramref name="wall"/> can contains only <see cref="PlanarFace"/>s.
         /// </summary>
         /// <param name="wall"></param>
+        /// <param name="activeDoc"></param>
         /// <param name="basis">sdfsdf</param>
         /// <returns>
         /// <see langword="true"/> if <paramref name="basis"/> was created successfully.
@@ -200,11 +211,11 @@ namespace DS.RevitLib.Utils.Extensions
         /// Otherwise <see langword="false"/>.
         /// </para>
         /// </returns>
-        public static bool TryGetBasis(this Wall wall, out Basis3d basis)
+        public static bool TryGetBasis(this Wall wall, Document activeDoc, out Basis3d basis)
         {
             basis = default;
 
-            if (!TryGetLocationLine(wall, out var line))
+            if (!TryGetLocationLine(wall, activeDoc, out var line))
             { return false; }
 
             var origin = line.PointAtLength(line.Length / 2);
@@ -232,7 +243,7 @@ namespace DS.RevitLib.Utils.Extensions
         /// </returns>
         public static IEnumerable<Curve> GetEdges(this Wall wall, Document activeDoc, Options geomOptions = null)
         {
-            var curves = new List<Curve>(); 
+            var curves = new List<Curve>();
             var (wallFaces, insertsFacesCollection) = GetFaces(wall, activeDoc, geomOptions);
             wallFaces.ForEach(f => curves.AddRange(f.GetEdges()));
             return curves;

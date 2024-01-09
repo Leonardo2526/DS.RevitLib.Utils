@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.DB;
+using DS.ClassLib.VarUtils;
 using DS.RevitLib.Utils.Geometry;
 using MoreLinq;
 using System;
@@ -70,7 +71,7 @@ namespace DS.RevitLib.Utils.Extensions
         /// <returns></returns>
         public static IEnumerable<Rhino.Geometry.Point3d> Tesselate(this PlanarFace face)
         {
-            var rect = Rectangle3dFactoty.Create(face);
+            if(!Rectangle3dFactoty.TryCreate(face, out var rect)) { throw new Exception(); }
             return new List<Rhino.Geometry.Point3d>()
             { rect.Corner(0), rect.Corner(1), rect.Corner(2), rect.Corner(3)};
         }
@@ -137,6 +138,83 @@ namespace DS.RevitLib.Utils.Extensions
             { projLine = Line.CreateBound(p1Proj, p2Proj); }
 
             return projLine;
+        }
+
+        /// <summary>
+        /// Project <paramref name="rectangle"/> on <paramref name="face"/> with ability to get projection on 
+        /// closest edge if ordinary projection is <see langword="null"/>.
+        /// </summary>
+        /// <param name="face"></param>
+        /// <param name="rectangle"></param>
+        /// <param name="canProjectOnEdge"></param>
+        /// <param name="projRectangle"></param>
+        /// <returns>
+        /// <see langword="true"/> if projection successful.
+        /// <para>
+        /// Otherwise <see langword="false"/>.
+        /// </para>
+        /// </returns>
+        public static bool TryProject(this Face face, Rhino.Geometry.Rectangle3d rectangle, 
+            bool canProjectOnEdge, out Rhino.Geometry.Rectangle3d projRectangle)
+        {
+            projRectangle = default;
+            var lines = GeometryElementsUtils.ToRevitLines(rectangle.ToLines());
+
+            //get projections
+            var projectEdgesValueResult = new List<Line>();
+            foreach (var edge in lines)
+            {
+                var proj = face.Project(edge, canProjectOnEdge);
+                if (proj != null)
+                { projectEdgesValueResult.Add(proj); }
+            }
+            var rhinoEdges = GeometryElementsUtils.ToRhinoLines(projectEdgesValueResult);
+
+            return GeometryUtils.TryCreateRectangle(rhinoEdges, out projRectangle);
+        }
+
+        /// <summary>
+        /// Get outer boundary of <paramref name="face"/>.
+        /// </summary>
+        /// <param name="face"></param>
+        /// <returns>
+        /// <see cref="Autodesk.Revit.DB.CurveLoop"/> with max length.
+        /// <para>
+        /// <see langword="null"/> if failed to get loops. 
+        /// </para>
+        /// </returns>
+        public static CurveLoop GetOuterLoop(this Face face)
+            => face.GetEdgesAsCurveLoops()?.
+            OrderByDescending(curveLoops => curveLoops.GetExactLength()).
+            First();
+
+        /// <summary>
+        /// Check if <paramref name="planarFace"/> contains <paramref name="line"/>.
+        /// </summary>
+        /// <param name="planarFace"></param>
+        /// <param name="line"></param>
+        /// <param name="tolerance"></param>
+        /// <returns>
+        /// <see langword="true"/> if both <paramref name="line"/>'s ends lie on <paramref name="planarFace"/>;
+        /// <para>
+        /// Otherwise <see langword="false"/>.
+        /// </para>
+        /// </returns>
+        public static bool Contains(this PlanarFace planarFace, Line line, int tolerance = 3)
+        {
+            double t = Math.Pow(0.1, tolerance);
+
+            var p1 = line.GetEndPoint(0);
+            var p2 = line.GetEndPoint(1);
+
+            var pjP1 = planarFace.Project(p1);
+            if(pjP1 is null) { return false; }
+            var pjP2 = planarFace.Project(p2);
+            if (pjP2 is null) { return false; }
+
+            return 
+                pjP1.XYZPoint.DistanceTo(p1) < t 
+                && pjP2.XYZPoint.DistanceTo(p2) < t;
         }
     }
 }

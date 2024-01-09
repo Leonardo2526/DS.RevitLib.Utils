@@ -39,45 +39,22 @@ namespace DS.RevitLib.Test.TestedClasses
         public void RunToDeleteAdjEdges()
         {
             var wall1 = new ElementSelector(_uiDoc).Pick() as Wall;
-            (List<Face> wall1Faces, Dictionary<ElementId, List<Face>> insertsFacesCollection1) = wall1.GetFaces(_doc);
+            var wall1Faces = GeometryElementsUtils.GetFaces(wall1, _doc);
+            //var edges = GeometryElementsUtils.GetEdges(wall1, _doc).ToList();
+            //_trf.CreateAsync(() => { edges.ForEach(r => r.Show(_doc)); }, "ShowInsertsEdges");
+            //return;
+
+            //(List<Face> wall1Faces, Dictionary<ElementId, List<Face>> insertsFacesCollection1) = wall1.GetFaces(_doc);
             var w1PlanarFaces = wall1Faces.OfType<PlanarFace>().ToList();
             var wall1YFaces = w1PlanarFaces.FindAll(FaceFilter.YNormal(wall1));
 
-            var joints = wall1.GetJoints(true);
-            var faceEdges = new Dictionary<Face, IEnumerable<Line>>();
-
-            foreach (var wf1 in wall1YFaces)
-            {
-                var edges1 = wf1.GetEdges().OfType<Line>();
-                var rhinoEdges1 = new List<Rhino.Geometry.Line>();
-                edges1.ToList().ForEach(edge => { rhinoEdges1.Add(edge.ToRhinoLine()); });
-
-                var edgesToAdd = new List<Line>();
-                var rhinoEdges2 = new List<Rhino.Geometry.Line>();
-                foreach (var joint in joints)
-                {
-                    var wall2 = _doc.GetElement(joint) as Wall;
-                    if (wall2 != null)
-                    {
-                        var edges2 = wall2.GetEdges(_doc).OfType<Line>();
-                        edges2.ToList().ForEach(edge => { rhinoEdges2.Add(edge.ToRhinoLine()); });
-                    }
-                }
-
-                var substractEdges = Substract(rhinoEdges1, rhinoEdges2);
-                faceEdges.TryGetValue(wf1, out var edgesValue);
-
-                var revitSubstractEdges = new List<Line>();
-                substractEdges.ToList().ForEach(edge => { revitSubstractEdges.Add(edge.ToXYZ()); });
-                edgesToAdd.AddRange(revitSubstractEdges);
-
-                faceEdges.Add(wf1, edgesToAdd);
-            }
-
-            var edgesValueResult = faceEdges.Values.SelectMany(v => v).ToList();
-            //_trf.CreateAsync(() => { edgesValueResult.ForEach(r => r.Show(_doc)); }, "ShowInsertsEdges");
-
-
+            var (freeEdges, joinElementsEdges) =  GeometryElementsUtils.GetSplitedEdges(wall1, _doc, true);
+            var curvesValueResult = joinElementsEdges.Values.SelectMany(v => v).ToList();
+            //var curvesValueResult = freeEdges.ToList();
+            var edgesValueResult = curvesValueResult.OfType<Line>();
+            //var edgesValueResult = faceEdges.Values.SelectMany(v => v).ToList();
+            //_trf.CreateAsync(() => { edgesValueResult.ToList().ForEach(r => r.Show(_doc)); }, "ShowInsertsEdges");
+            //return;
 
             //get projections
             var mainface = wall1YFaces[0];
@@ -85,28 +62,37 @@ namespace DS.RevitLib.Test.TestedClasses
             var mainRhinoPlane = mainPlane.ToRhinoPlane();
             wall1.TryGetLocationLine(out var line);
             var origin = wall1.GetCenterPoint();
+            var mainOrigin = mainPlane.ProjectOnto(origin);
             //var origin = line.PointAtLength(line.Length);
-            var projOrigin = mainface.Project(origin);
-            var mainOrigin = projOrigin?.XYZPoint;
+            //var projOrigin = mainface.Project(origin);
+            //var mainOrigin = projOrigin?.XYZPoint;
 
             var projectEdgesValueResult = new List<Line>();
             foreach (var edge in edgesValueResult)
             {
                 var proj = mainface.Project(edge, true);
-                projectEdgesValueResult.Add(proj);
+                if(proj != null)
+                {
+                    projectEdgesValueResult.Add(proj);
+                }
+                //projectEdgesValueResult.Add(proj);
             }
             var adjancyRhinoEdges = GeometryElementsUtils.ToRhinoLines(projectEdgesValueResult);
             //_trf.CreateAsync(() => { projectEdgesValueResult.ForEach(r => r.Show(_doc)); }, "ShowInsertsEdges");
             //_uiDoc.RefreshActiveView();
 
-            var mainFaceCurves = mainface.GetEdges();
+            var maxLoop = mainface.GetOuterLoop();
+            var mainFaceEdges = maxLoop.Select(x => x).OfType<Line>();
+            //var mainRectangle= Rectangle3dFactoty.Create(mainface);
+            //var mainFaceCurves = mainRectangle.ToLines();
+            //var mainFaceCurves = mainface.GetEdges();
 
             //_trf.CreateAsync(() => mainface.ShowEdges(_doc), "ShowInsertsEdges");
             //_uiDoc.RefreshActiveView();
 
-            var mainFaceEdges = mainFaceCurves.OfType<Line>();
+            //var mainFaceEdges = mainFaceCurves.OfType<Line>();
             var mainSubstractEdges = new List<Rhino.Geometry.Line>();
-
+           
             var mainRhinoLines = GeometryElementsUtils.ToRhinoLines(mainFaceEdges);
             foreach (var rl in mainRhinoLines)
             {
@@ -125,7 +111,7 @@ namespace DS.RevitLib.Test.TestedClasses
                 GeometryElementsUtils.ToRevitLines(mainSubstractEdges).ToList().
                 ForEach(r => r.Show(_doc));
             }, "ShowInsertsEdges");
-
+            //return;
             GetRectangles(mainSubstractEdges, mainOrigin.ToPoint3d(), mainRhinoPlane, 500.MMToFeet());
         }
 
@@ -240,56 +226,56 @@ namespace DS.RevitLib.Test.TestedClasses
             _trf.CreateAsync(() => { edgesToOffset.ForEach(r => r.Show(_doc)); }, "ShowEdgesToOffset");
         }
 
-        public void Run2()
-        {
-            var at = 3.DegToRad();
+        //public void Run2()
+        //{
+        //    var at = 3.DegToRad();
 
-            var wall1 = new ElementSelector(_uiDoc).Pick() as Wall;
-            (List<Face> wall1Faces, Dictionary<ElementId, List<Face>> insertsFacesCollection1) = wall1.GetFaces(_doc);
+        //    var wall1 = new ElementSelector(_uiDoc).Pick() as Wall;
+        //    (List<Face> wall1Faces, Dictionary<ElementId, List<Face>> insertsFacesCollection1) = wall1.GetFaces(_doc);
 
-            var wloc1 = wall1.GetCenterLine();
-            var xDir1 = wloc1.Direction.ToVector3d();
-            xDir1.Unitize();
-            var wall1PlanarFaces = wall1Faces.OfType<PlanarFace>().
-                        Where(f => f.FaceNormal.ToVector3d().IsParallelTo(Rhino.Geometry.Vector3d.ZAxis, at) == 0 &&
-                        f.FaceNormal.ToVector3d().IsParallelTo(xDir1, at) == 0);
-            //var rect1 = Rectangle3dFactoty.Create(wall1PlanarFaces[0]);
-            //var rect2 = Rectangle3dFactoty.Create(wall1PlanarFaces[1]);
-            //var edges1 = rect1.ToLines();
-            //var edges2 = rect2.ToLines();
-
-
-            var allJoints = new List<ElementId>();
-            var wJoints = wall1.GetJoints();
-            var fJoints = JoinGeometryUtils.GetJoinedElements(_doc, wall1);
-            allJoints.AddRange(wJoints);
-            //allJoints.AddRange(fJoints);
-            var lines = new List<Line>();
-            foreach (var joint in allJoints)
-            {
-                var wall2 = _doc.GetElement(joint) as Wall;
-                if (wall2 != null)
-                {
-                    (List<Face> wall2Faces, Dictionary<ElementId, List<Face>> insertsFacesCollection2) = wall2.GetFaces(_doc);
-                    var wloc = wall2.GetCenterLine();
-                    var xDir = wloc.Direction.ToVector3d();
-                    xDir.Unitize();
-                    var wall2PlanarFaces = wall2Faces.OfType<PlanarFace>().
-                        Where(f => f.FaceNormal.ToVector3d().IsParallelTo(Rhino.Geometry.Vector3d.ZAxis, at) == 0 &&
-                        f.FaceNormal.ToVector3d().IsParallelTo(xDir, at) == 0);
-                    var cfaces = GetCoinicidents(wall1PlanarFaces, wall2PlanarFaces, out List<Line> lines1);
-                    if (lines1.Count() > 0)
-                    {
-                        var maxLine = lines1.OrderByDescending(l => l.Length).First();
-                        //lines.Add(maxLine);
-                        lines.AddRange(lines1);
-                    }
-                }
-            }
+        //    var wloc1 = wall1.GetCenterLine();
+        //    var xDir1 = wloc1.Direction.ToVector3d();
+        //    xDir1.Unitize();
+        //    var wall1PlanarFaces = wall1Faces.OfType<PlanarFace>().
+        //                Where(f => f.FaceNormal.ToVector3d().IsParallelTo(Rhino.Geometry.Vector3d.ZAxis, at) == 0 &&
+        //                f.FaceNormal.ToVector3d().IsParallelTo(xDir1, at) == 0);
+        //    //var rect1 = Rectangle3dFactoty.Create(wall1PlanarFaces[0]);
+        //    //var rect2 = Rectangle3dFactoty.Create(wall1PlanarFaces[1]);
+        //    //var edges1 = rect1.ToLines();
+        //    //var edges2 = rect2.ToLines();
 
 
-            _trf.CreateAsync(() => { lines.ForEach(r => r.Show(_doc)); }, "ShowInsertsEdges");
-        }
+        //    var allJoints = new List<ElementId>();
+        //    var wJoints = wall1.GetJoints();
+        //    var fJoints = JoinGeometryUtils.GetJoinedElements(_doc, wall1);
+        //    allJoints.AddRange(wJoints);
+        //    //allJoints.AddRange(fJoints);
+        //    var lines = new List<Line>();
+        //    foreach (var joint in allJoints)
+        //    {
+        //        var wall2 = _doc.GetElement(joint) as Wall;
+        //        if (wall2 != null)
+        //        {
+        //            (List<Face> wall2Faces, Dictionary<ElementId, List<Face>> insertsFacesCollection2) = wall2.GetFaces(_doc);
+        //            var wloc = wall2.GetCenterLine();
+        //            var xDir = wloc.Direction.ToVector3d();
+        //            xDir.Unitize();
+        //            var wall2PlanarFaces = wall2Faces.OfType<PlanarFace>().
+        //                Where(f => f.FaceNormal.ToVector3d().IsParallelTo(Rhino.Geometry.Vector3d.ZAxis, at) == 0 &&
+        //                f.FaceNormal.ToVector3d().IsParallelTo(xDir, at) == 0);
+        //            var cfaces = GetCoinicidents(wall1PlanarFaces, wall2PlanarFaces, out List<Line> lines1);
+        //            if (lines1.Count() > 0)
+        //            {
+        //                var maxLine = lines1.OrderByDescending(l => l.Length).First();
+        //                //lines.Add(maxLine);
+        //                lines.AddRange(lines1);
+        //            }
+        //        }
+        //    }
+
+
+        //    _trf.CreateAsync(() => { lines.ForEach(r => r.Show(_doc)); }, "ShowInsertsEdges");
+        //}
 
 
         public void RunFacesFilter()
@@ -363,17 +349,6 @@ namespace DS.RevitLib.Test.TestedClasses
         }
 
 
-        private bool IsContains(PlanarFace planarFace, Line line)
-        {
-            var p1 = line.GetEndPoint(0);
-            var p2 = line.GetEndPoint(1);
-
-            var pjP1 = planarFace.Project(p1);
-            var pjP2 = planarFace.Project(p2);
-            return pjP1 is not null && pjP2 is not null &&
-                pjP1.XYZPoint.DistanceTo(p1) < 0.001 && pjP2.XYZPoint.DistanceTo(p2) < 0.001;
-        }
-
         private bool IsContainsOld(PlanarFace planarFace, Line line)
         {
             var p1 = line.GetEndPoint(0).ToPoint3d();
@@ -439,39 +414,39 @@ namespace DS.RevitLib.Test.TestedClasses
         }
 
 
-        private IEnumerable<(PlanarFace, PlanarFace)> GetCoinicidents(IEnumerable<PlanarFace> faces1, IEnumerable<PlanarFace> faces2, out List<Line> lines1)
-        {
-            var coincidentFaces = new List<(PlanarFace, PlanarFace)>();
-            lines1 = new List<Line>();
+        //private IEnumerable<(PlanarFace, PlanarFace)> GetCoinicidents(IEnumerable<PlanarFace> faces1, IEnumerable<PlanarFace> faces2, out List<Line> lines1)
+        //{
+        //    var coincidentFaces = new List<(PlanarFace, PlanarFace)>();
+        //    lines1 = new List<Line>();
 
-            foreach (var f1 in faces1)
-            {
-                var rect1 = Rectangle3dFactoty.Create(f1);
-                var edges1 = rect1.ToLines();
-                foreach (var f2 in faces2)
-                {
-                    var rect2 = Rectangle3dFactoty.Create(f2);
-                    var edges2 = rect2.ToLines();
-                    foreach (var e1 in edges1)
-                    {
-                        if (IsContains(f2, e1.ToXYZ()))
-                        { lines1.Add(e1.ToXYZ()); }
-                        //foreach (var e2 in edges2)
-                        //{
-                        //    if (e1.IsOverlapped(e2))
-                        //    { coincidentFaces.Add((f1, f2)); lines1.Add(e1.ToXYZ()); lines1.Add(e2.ToXYZ()); }
-                        //}
-                    }
-                    foreach (var e2 in edges2)
-                    {
-                        if (IsContains(f1, e2.ToXYZ()))
-                        { lines1.Add(e2.ToXYZ()); }
-                    }
+        //    foreach (var f1 in faces1)
+        //    {
+        //        var rect1 = Rectangle3dFactoty.Create(f1);
+        //        var edges1 = rect1.ToLines();
+        //        foreach (var f2 in faces2)
+        //        {
+        //            var rect2 = Rectangle3dFactoty.Create(f2);
+        //            var edges2 = rect2.ToLines();
+        //            foreach (var e1 in edges1)
+        //            {
+        //                if (IsContains(f2, e1.ToXYZ()))
+        //                { lines1.Add(e1.ToXYZ()); }
+        //                //foreach (var e2 in edges2)
+        //                //{
+        //                //    if (e1.IsOverlapped(e2))
+        //                //    { coincidentFaces.Add((f1, f2)); lines1.Add(e1.ToXYZ()); lines1.Add(e2.ToXYZ()); }
+        //                //}
+        //            }
+        //            foreach (var e2 in edges2)
+        //            {
+        //                if (IsContains(f1, e2.ToXYZ()))
+        //                { lines1.Add(e2.ToXYZ()); }
+        //            }
 
-                }
-            }
+        //        }
+        //    }
 
-            return coincidentFaces;
-        }
+        //    return coincidentFaces;
+        //}
     }
 }

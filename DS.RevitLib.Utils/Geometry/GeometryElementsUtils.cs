@@ -2,6 +2,7 @@
 using Autodesk.Revit.DB;
 using DS.RevitLib.Utils.Lines;
 using DS.RevitLib.Utils.ModelCurveUtils;
+using DS.RevitLib.Utils.Solids;
 using DS.RevitLib.Utils.Transactions;
 using System;
 using System.Collections;
@@ -106,8 +107,8 @@ namespace DS.RevitLib.Utils.Extensions
             {
                 Edge edge = edgeArray.get_Item(i);
                 var curve = edge.AsCurve();
-                curve = offset == 0 ? 
-                    curve : 
+                curve = offset == 0 ?
+                    curve :
                     curve.CreateOffset(offset, referenceVector);
                 curves.Add(curve);
             }
@@ -189,7 +190,7 @@ namespace DS.RevitLib.Utils.Extensions
         /// <returns></returns>
         public static IEnumerable<Rhino.Geometry.Line> ToRhinoLines(IEnumerable<Line> lines)
         {
-            var result = new List<Rhino.Geometry.Line>();   
+            var result = new List<Rhino.Geometry.Line>();
             lines.ToList().ForEach(l => result.Add(l.ToRhinoLine()));
             return result;
         }
@@ -206,5 +207,99 @@ namespace DS.RevitLib.Utils.Extensions
             return result;
         }
 
+        /// <summary>
+        /// Get <see cref="Autodesk.Revit.DB.Face"/>s of <paramref name="element"/>.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <param name="activeDoc"></param>
+        /// <returns>
+        /// List of <paramref name="element"/>'s <see cref="Autodesk.Revit.DB.Face"/>s.
+        /// <para>
+        /// Empty list if failed to get <see cref="Autodesk.Revit.DB.Face"/>s.
+        /// </para>
+        /// </returns>
+        public static IEnumerable<Face> GetFaces(Element element, Document activeDoc)
+        {
+            var result = new List<Face>();
+            Solid solid = element.GetSolidInLink(activeDoc);
+            result.AddRange(from Face item in solid.Faces
+                            select item);
+            return result;
+        }
+
+        /// <summary>
+        /// Get edges from all <paramref name="element"/>'s <see cref="Autodesk.Revit.DB.Face"/>s.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <param name="activeDoc"></param>
+        /// <returns>
+        /// List of <paramref name="element"/>'s edges.
+        /// <para>
+        /// Empty list if failed to get edges.
+        /// </para>
+        /// </returns>
+        public static IEnumerable<Curve> GetEdges(Element element, Document activeDoc)
+        {
+            var curves = new List<Curve>();
+            var faces = GetFaces(element, activeDoc).ToList();
+            faces.ForEach(f => curves.AddRange(f.GetEdges()));
+            return curves;
+        }
+
+        /// <summary>
+        /// Get edges from <paramref name="wall"/>'s <see cref="Autodesk.Revit.DB.Face"/>s and split them on similar with adjancies(joints) 
+        /// and not.
+        /// </summary>
+        /// <param name="wall"></param>
+        /// <param name="doc">Active document</param>
+        /// <param name="onlyExternalEdges"></param>
+        /// <returns>
+        ///  <paramref name="wall"/>'s edges splitted on two collections.
+        /// <para>
+        /// Empty collection if no edges exist.
+        /// </para>
+        /// </returns>
+        public static
+            (IEnumerable<Curve> freeEdges,
+            Dictionary<ElementId, List<Curve>> joinElementsEdges)
+            GetSplitedEdges(Wall wall,
+            Document doc,
+            bool onlyExternalEdges = false)
+        {
+            var freeEdges = new List<Curve>();
+            var jointElementsEdges = new Dictionary<ElementId, List<Curve>>();
+
+            var wallEdges = wall.GetEdges(doc).OfType<Line>();
+
+            //get all faces of joints
+            var jointElementsPlanarFaces = new Dictionary<ElementId, IEnumerable<PlanarFace>>();
+            var jointsIds = new List<ElementId>();
+            var wallJoints = wall.GetJoints(onlyExternalEdges);
+            jointsIds.AddRange(wallJoints);
+            var floorJoints = JoinGeometryUtils.GetJoinedElements(wall.Document, wall);
+            jointsIds.AddRange(floorJoints);
+            jointsIds.ForEach(j => jointElementsPlanarFaces.Add(j, GetFaces(wall.Document.GetElement(j), doc).OfType<PlanarFace>()));
+
+            foreach (var wallEdge in wallEdges)
+            {
+                bool found = false;
+                foreach (var kv in jointElementsPlanarFaces)
+                {
+                    var joinId = kv.Key;
+                    var jointFaces = kv.Value;
+                    if (jointFaces.Any(jf => jf.Contains(wallEdge)))
+                    {
+                        found = true;
+                        if (!jointElementsEdges.TryGetValue(joinId, out var wallJointEdges))
+                        { jointElementsEdges.Add(joinId, new List<Curve>() { wallEdge }); }
+                        else
+                        { wallJointEdges.Add(wallEdge); }
+                    }
+                }
+                if (!found)
+                { freeEdges.Add(wallEdge); }
+            }
+            return (freeEdges, jointElementsEdges);
+        }
     }
 }

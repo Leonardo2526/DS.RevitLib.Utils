@@ -9,7 +9,9 @@ using Serilog;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Drawing;
 using System.Linq;
+using System.Windows.Forms.VisualStyles;
 
 namespace DS.RevitLib.Utils.Openings
 {
@@ -94,52 +96,73 @@ namespace DS.RevitLib.Utils.Openings
 
             var wall = value.Item1;
             var intersectionItem = value.Item2;
+            if (!wall.TryGetBasis(_activeDoc, out var wallBasis)) { throw new Exception(); }
+
+            var wall1Faces = GeometryElementsUtils.GetFaces(wall, _activeDoc);
+            var w1PlanarFaces = wall1Faces.OfType<PlanarFace>().ToList();
+            var wall1YFaces = w1PlanarFaces.FindAll(FaceFilter.YNormal(wall, _activeDoc));
+            var wallFace = wall1YFaces[0];
+            var mainPlane = wallFace.GetPlane();
+            var mainWallRhinoPlane = mainPlane.ToRhinoPlane();
+            var maxLoop = wallFace.GetOuterLoop();
+            var mainFaceEdges = maxLoop.Select(x => x).OfType<Autodesk.Revit.DB.Line>();
 
             if (!TryGetOpeningRectangle(wall, intersectionItem, out Rectangle3d openingRectangle))
-            { return false; }
+            { return true; }
             _transactionFactory.CreateAsync(() => { openingRectangle.Show(_activeDoc); }, "ShowOpeningEdges");
 
-            (List<Face> wallFaces, Dictionary<ElementId, List<Face>> insertsFacesCollection) = wall.GetFaces(_activeDoc, _geomOptions, true);
-            var wallRectangle = GetWallRectangle(wallFaces, out var wallFace);
+            if (!Rectangle3dFactoty.TryCreate(wallFace, out var wallRectangle))
+            { throw new Exception(""); }
             _transactionFactory.CreateAsync(() => { wallRectangle.Show(_activeDoc); }, "ShowWallEdges");
+
+            (List<Face> wallFaces, Dictionary<ElementId, List<Face>> insertsFacesCollection) = wall.GetFaces(_activeDoc, _geomOptions, true);
+            var externalJointRectangels = GetExternalJointRectangels(wall, _activeDoc, wallFace, mainPlane, _wallOffset);
+            _transactionFactory.CreateAsync(() => { externalJointRectangels.ForEach(r => r.Show(_activeDoc)); }, "ShowExternalJointEdges");
 
             var insertsRectangles = GetInsertsRectangles(insertsFacesCollection, wall, wallFace, _insertsOffset);
             _transactionFactory.CreateAsync(() => { insertsRectangles.ForEach(r => r.Show(_activeDoc)); }, "ShowInsertsEdges");
 
-            var jointRectangles = GetJointRectangels(wall, wallRectangle, _activeDoc, _jointsOffset, _geomOptions);
+            var jointRectangles = GetJointRectangels(wall, wall1YFaces[0], wall1YFaces[1], _activeDoc, _jointsOffset, _geomOptions);
             _transactionFactory.CreateAsync(() => { jointRectangles.ForEach(r => r.Show(_activeDoc)); }, "ShowJointsEdges");
 
-            return IsValidOpening(wallRectangle, insertsRectangles, jointRectangles, openingRectangle);
+            return IsValidOpening(wallRectangle, externalJointRectangels, insertsRectangles, jointRectangles, openingRectangle);
         }
 
-        private IEnumerable<Rectangle3d> GetJointRectangels(Wall wall, Rectangle3d wallRectangle, Document doc, double jointsOffset, Options geomOptions)
+        private IEnumerable<Rectangle3d> GetJointRectangels(Wall wall, PlanarFace wallYFace1,
+            PlanarFace wallYFace2, Document doc, double jointsOffset, Options geomOptions)
         {
             var rectangles = new List<Rectangle3d>();
 
-            var at = 3.DegToRad();
-            var mainWallPlane = wallRectangle.Plane;
+            var at = 1.DegToRad();
             var jointsIds = wall.GetJoints();
+            var wallJoints = wall.GetJoints(true);
+            jointsIds = jointsIds.Where(id => !wallJoints.Contains(id));
             var wallDoc = wall.Document;
 
             foreach (var id in jointsIds)
             {
                 if (wallDoc.GetElement(id) is Wall jWall)
                 {
-                    (List<Face> jwallFaces, Dictionary<ElementId, List<Face>> jInsertsFacesDist) =
-                        jWall.GetFaces(doc, geomOptions, false);
-                    var pFaces = jwallFaces.OfType<PlanarFace>().OrderByDescending(w => w.Area).ToList();
-                    pFaces.RemoveRange(0, 2);
-                    var perpFaces = pFaces.Where(f => f.FaceNormal.ToVector3d().IsPerpendicularTo(Vector3d.ZAxis, at)).ToList();
+                    var jointFaces = GeometryElementsUtils.GetFaces(jWall, _activeDoc).OfType<PlanarFace>().ToList();
+                    if (!jWall.TryGetBasis(_activeDoc, out var bBasis)) { throw new Exception(); }
+                    var jointXFaces = jointFaces.Where(f =>
+                    f.FaceNormal.ToVector3d().IsParallelTo(bBasis.Y, at) == 0 &&
+                     f.FaceNormal.ToVector3d().IsPerpendicularTo(bBasis.Z, at)).ToList();
 
-                    var rect1 = Rectangle3dFactoty.Create(perpFaces[0]);
-                    var rect2 = Rectangle3dFactoty.Create(perpFaces[1]);
-                    var rect = mainWallPlane.DistanceTo(rect1.Center) < mainWallPlane.DistanceTo(rect2.Center) ?
-                        rect1 : rect2;
+                    if (!Rectangle3dFactoty.TryCreate(jointXFaces[0], out var rect1))
+                    { throw new Exception("Failed to create rectangle"); }
+                    if (!Rectangle3dFactoty.TryCreate(jointXFaces[1], out var rect2))
+                    { throw new Exception("Failed to create rectangle"); }
+                    var e1 = GeometryElementsUtils.ToRevitLines(rect1.ToLines());
+                    var rect = e1.Any(e => wallYFace1.Contains(e)) || e1.Any(e => wallYFace2.Contains(e)) ?
+                       rect1 : rect2;
 
                     var p1 = rect.Corner(0);
                     var p2 = rect.Corner(2);
-                    rect = new Rectangle3d(mainWallPlane, p1, p2);
-                    if (!rect.TryExtend(jointsOffset, out var exRectangle))
+                    rect = new Rectangle3d(wallYFace1.GetPlane().ToRhinoPlane(), p1, p2);
+                    if (!wallYFace1.TryProject(rect, true, out var projRect)) { throw new Exception(""); }
+
+                    if (!projRect.TryExtend(jointsOffset, out var exRectangle))
                     { throw new Exception(""); }
                     rectangles.Add(exRectangle);
                 }
@@ -148,11 +171,81 @@ namespace DS.RevitLib.Utils.Openings
             return rectangles;
         }
 
-        private Rectangle3d GetWallRectangle(IEnumerable<Face> wallFaces, out PlanarFace wallFace)
-        {
-            wallFace = wallFaces.OfType<PlanarFace>().OrderByDescending(f => f.Area).First();
-            var mainRectangle = Rectangle3dFactoty.Create(wallFace);
 
+        private IEnumerable<Rectangle3d> GetExternalJointRectangels(Wall wall,
+                                                                    Document doc,
+                                                                    PlanarFace mainFace,
+                                                                    Autodesk.Revit.DB.Plane mainPlane,
+                                                                    double wallOffset)
+        {
+            var rectangles = new List<Rhino.Geometry.Rectangle3d>();
+
+            var (freeEdges, joinElementsEdges) = GeometryElementsUtils.GetSplitedEdges(wall, doc, true);
+            var curvesValueResult = joinElementsEdges.Values.SelectMany(v => v).ToList();
+            var edgesValueResult = curvesValueResult.OfType<Autodesk.Revit.DB.Line>();
+
+            var origin = wall.GetCenterPoint();
+            var mainOrigin = mainPlane.ProjectOnto(origin);
+
+            //get projections
+            var projectEdgesValueResult = new List<Autodesk.Revit.DB.Line>();
+            foreach (var edge in edgesValueResult)
+            {
+                var proj = mainFace.Project(edge, true);
+                if (proj != null)
+                { projectEdgesValueResult.Add(proj); }
+            }
+            var adjancyRhinoEdges = GeometryElementsUtils.ToRhinoLines(projectEdgesValueResult);
+            //_trf.CreateAsync(() => { projectEdgesValueResult.ForEach(r => r.Show(_doc)); }, "ShowInsertsEdges");
+            //_uiDoc.RefreshActiveView();
+
+            var maxLoop = mainFace.GetOuterLoop();
+            var mainFaceEdges = maxLoop.Select(x => x).OfType<Autodesk.Revit.DB.Line>();
+            var mainSubstractEdges = new List<Rhino.Geometry.Line>();
+
+            var mainRhinoLines = GeometryElementsUtils.ToRhinoLines(mainFaceEdges);
+            foreach (var rl in mainRhinoLines)
+            {
+                var subs = LineBooleanTools.Substract(rl, adjancyRhinoEdges.ToList());
+                mainSubstractEdges.AddRange(subs);
+            }
+
+            var mainRhinoPlane = mainPlane.ToRhinoPlane();
+            foreach (var edge in mainSubstractEdges)
+            {
+                var r = CreateRectangle(edge, mainOrigin.ToPoint3d(), mainRhinoPlane, -wallOffset);
+                rectangles.Add(r);
+                //break;
+            }
+
+            return rectangles;
+
+            Rhino.Geometry.Rectangle3d CreateRectangle(
+           Rhino.Geometry.Line edge,
+           Rhino.Geometry.Point3d baseOrigin,
+           Rhino.Geometry.Plane plane,
+           double offset)
+            {
+                var eDir = edge.Direction;
+                eDir.Unitize();
+                var centerLine = new Rhino.Geometry.Line(baseOrigin, eDir);
+                centerLine.Extend(1000, 1000);
+                var p1 = edge.From;
+                var cp = centerLine.ClosestPoint(p1, false);
+                var cpLine = new Rhino.Geometry.Line(p1, cp);
+                var rDir = cpLine.Direction;
+                rDir.Unitize();
+
+                var p2 = edge.To + Rhino.Geometry.Vector3d.Multiply(rDir, offset);
+                return new Rhino.Geometry.Rectangle3d(plane, p1, p2);
+            }
+        }
+
+
+        private Rectangle3d GetWallRectangle(PlanarFace wallFace)
+        {
+            if (!Rectangle3dFactoty.TryCreate(wallFace, out var mainRectangle))
+            { throw new Exception(""); }
             if (_wallOffset == 0) { return mainRectangle; }
 
             if (!mainRectangle.TryExtend(_wallOffset, out var extendedMainRectangle))
@@ -179,8 +272,8 @@ namespace DS.RevitLib.Utils.Openings
                 var rectangles = new List<Rectangle3d>();
                 foreach (var item in edgesDict)
                 {
-                    var rectangle = Rectangle3dFactoty.Create(item.Value);
-                    rectangles.Add(rectangle);
+                    if (Rectangle3dFactoty.TryCreate(item.Value, out var rectangle))
+                    { rectangles.Add(rectangle); }
                 }
                 return rectangles;
             }
@@ -206,9 +299,9 @@ namespace DS.RevitLib.Utils.Openings
             var profile = _openingProfileCreator.CreateProfile(wall, intersectionItem);
             if (profile is null)
             {
-                var message = $"Failed to get profile between wall (id = {wall.Id})";
+                var message = $"Failed to get opening profile in wall (id = {wall.Id})";
                 if (intersectionItem is MEPCurve mEPCurve)
-                { message += $" and MEPCurve (id = {mEPCurve.Id})."; }
+                { message += $" with MEPCurve (id = {mEPCurve.Id})."; }
                 _logger?.Warning(message);
                 return false;
             }
@@ -219,39 +312,39 @@ namespace DS.RevitLib.Utils.Openings
             return true;
         }
 
-        private bool IsValidOpening(
-            Rectangle3d wallRectangle,
-            IEnumerable<Rectangle3d> insertsRectangles, IEnumerable<Rectangle3d> jointsRectangles,
-            Rectangle3d openingRectangle)
+        private bool IsValidOpening(Rectangle3d wallRectangle,
+           IEnumerable<Rectangle3d> externalJointRectangels,
+           IEnumerable<Rectangle3d> insertsRectangles, IEnumerable<Rectangle3d> jointsRectangles,
+           Rectangle3d openingRectangle)
         {
-            var oConers = new List<Point3d>()
-            {
-                openingRectangle.Corner(0),
-                openingRectangle.Corner(1),
-                openingRectangle.Corner(2),
-                openingRectangle.Corner(3)
-            };
-
-            //check wall containment
+            //check wall frame containment
+            var oConers = openingRectangle.GetCorners();
             if (oConers.Any(c => wallRectangle.Contains(c) == PointContainment.Outside))
-            { _validationResults.Add(new ValidationResult("Failed to check wall containment")); return false; }
+            { _validationResults.Add(new ValidationResult("Failed to check wall frame containment")); return false; }
+
+
+            //check external joints containment
+            foreach (var externalJointRectangle in externalJointRectangels)
+            {
+                if (openingRectangle.Intersection(externalJointRectangle, false, out var intersectionRectangle))
+                { _validationResults.Add(new ValidationResult("Failed to check external joints containment")); return false; }
+            }
+
+            //check internal joints containment
+            foreach (var jointsRectangle in jointsRectangles)
+            {
+                if (openingRectangle.Intersection(jointsRectangle, false, out var intersectionRectangle))
+                { _validationResults.Add(new ValidationResult("Failed to check internal joints containment")); return false; }
+            }
 
             //check inserts containment
             foreach (var insertsRectangle in insertsRectangles)
             {
-                if (oConers.Any(c => insertsRectangle.Contains(c) == PointContainment.Inside))
+                if (openingRectangle.Intersection(insertsRectangle, false, out var intersectionRectangle))
                 { _validationResults.Add(new ValidationResult("Failed to check inserts containment")); return false; }
-            }
-
-            //check joints containment
-            foreach (var jointsRectangle in jointsRectangles)
-            {
-                if (oConers.Any(c => jointsRectangle.Contains(c) == PointContainment.Inside))
-                { _validationResults.Add(new ValidationResult("Failed to check joints containment")); return false; }
             }
 
             return true;
         }
-
     }
 }

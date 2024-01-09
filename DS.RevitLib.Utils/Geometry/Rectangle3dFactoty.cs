@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.DB;
+using DS.ClassLib.VarUtils;
 using DS.RevitLib.Utils.Extensions;
 using Rhino.Geometry;
 using Rhino.UI;
@@ -16,58 +17,37 @@ namespace DS.RevitLib.Utils.Geometry
     public static class Rectangle3dFactoty
     {
         /// <summary>
-        /// Create <see cref="Rectangle3d"/> from <paramref name="face"/>.
+        /// Create outer boundary as <see cref="Rectangle3d"/> from <paramref name="face"/>.
         /// </summary>
         /// <param name="face"></param>
+        /// <param name="rectangle"></param>
         /// <returns>
         /// A new <see cref="Rectangle3d"/> or it's default value.
         /// </returns>
-        public static Rectangle3d Create(PlanarFace face)
+        public static bool TryCreate(PlanarFace face, out Rectangle3d rectangle)
         {
-            var loops = face.GetEdgesAsCurveLoops();
-            if (loops != null && loops.Count == 1 && !loops[0].IsOpen())
-            {
-                if (TryCreate(loops[0], out var rectangle))
-                { return rectangle; }
-            }
-
-            return default;
+            rectangle = default;
+            var outerLoop = face.GetOuterLoop().Select(x => x).ToList();
+            return outerLoop != null && TryCreate(outerLoop, out rectangle);
         }
 
         /// <summary>
         /// Create <see cref="Rectangle3d"/> from <paramref name="curves"/>.
         /// </summary>
         /// <param name="curves"></param>
+        /// <param name="rectangle"></param>
         /// <returns>
         /// A new <see cref="Rectangle3d"/>.
         /// </returns>
-        public static Rectangle3d Create(List<Autodesk.Revit.DB.Curve> curves)
+        public static bool TryCreate(IEnumerable<Autodesk.Revit.DB.Curve> curves, out Rectangle3d rectangle)
         {
-            if (curves.Count != 4) { throw new Exception(); }
-
+            rectangle = default;
             var lines = new List<Rhino.Geometry.Line>();
-            curves.ForEach(c => lines.Add(
+            curves.ToList().ForEach(c => lines.Add(
                 new Rhino.Geometry.Line(c.GetEndPoint(0).ToPoint3d(), c.GetEndPoint(1).ToPoint3d())
                 ));
 
-            //create plane
-            var origin = lines[0].From;
-
-            var ordered = lines.OrderByDescending(l => l.Length);
-            var xLength = lines[0].Length;
-
-            var xDir = lines[0].To - lines[0].From;
-            xDir.Unitize();
-
-            lines.RemoveAt(0);
-            var oLine = lines.FirstOrDefault(l => l.From.DistanceTo(origin) < 0.001 || l.To.DistanceTo(origin) < 0.001);
-            var yDir = oLine.To - origin;
-            yDir = yDir.Length < 0.001 ? oLine.From - origin : yDir;
-            yDir.Unitize();
-            var yLength = oLine.Length;
-            var rgPlane = new Rhino.Geometry.Plane(origin, xDir, yDir);
-
-            return new Rectangle3d(rgPlane, xLength, yLength);
+            return GeometryUtils.TryCreateRectangle(lines, out rectangle);
         }
 
         /// <summary>
@@ -84,12 +64,9 @@ namespace DS.RevitLib.Utils.Geometry
         public static bool TryCreate(CurveLoop curveLoop, out Rectangle3d rectangle)
         {
             rectangle = default;
-            if(curveLoop.IsOpen()) { return false; }
-
+            if (curveLoop.IsOpen()) { return false; }
             var curves = curveLoop.ToList();
-
-            rectangle = Create(curves);
-            return true;
+            return TryCreate(curves, out rectangle);
         }
 
     }
