@@ -167,8 +167,8 @@ namespace DS.RevitLib.Utils.Collisions.Detectors
             if (WithWallRuleFilter)
             {
                 var uCS1dir = _pointConverter.ConvertToUCS1(direction);
-                var rools = new List<Func<(Solid, Element), bool>>
-                {SolidElementRulesFilterSet.WallTraversableDirectionRule(uCS1dir)};
+                var rools = new List<Func<(Solid, Element), bool>>();
+                //{SolidElementRulesFilterSet.WallTraversableDirectionRule(uCS1dir)};
                 var ruleCollisionFilter = new RulesFilterFactory<Solid, Element>(rools).GetFilter();
                 collisions = collisions.Where(ruleCollisionFilter).ToList();
             }

@@ -51,7 +51,7 @@ namespace DS.RevitLib.Utils.Geometry
         /// <see cref="Autodesk.Revit.DB.Plane"/> created by <paramref name="planarFace"/>'s normal and origin.
         /// </returns>
         public static Plane GetPlane(this PlanarFace planarFace)
-            =>Plane.CreateByNormalAndOrigin(planarFace.FaceNormal, planarFace.Origin);
+            => Plane.CreateByNormalAndOrigin(planarFace.FaceNormal, planarFace.Origin);
 
         /// <summary>
         /// Convert <paramref name="plane"/> to <see cref="Rhino.Geometry.Plane"/>.
@@ -62,6 +62,21 @@ namespace DS.RevitLib.Utils.Geometry
         /// </returns>
         public static Rhino.Geometry.Plane ToRhinoPlane(this Plane plane)
             => new(plane.Origin.ToPoint3d(), plane.Normal.ToVector3d());
-        
+
+        /// <summary>
+        /// Apply the <paramref name="transform"/> to the <paramref name="outline"/> and retun the result.
+        /// </summary>
+        /// <param name="outline"></param>
+        /// <param name="transform"></param>
+        /// <returns>
+        /// The transformed <paramref name="outline"/>.
+        /// </returns>
+        public static Outline Transform(this Outline outline, Autodesk.Revit.DB.Transform transform)
+        {
+            var p1 = transform.OfPoint(outline.MinimumPoint);
+            var p2 = transform.OfPoint(outline.MaximumPoint);
+            (XYZ minPoint, XYZ maxPoint) = XYZUtils.CreateMinMaxPoints(new List<XYZ> { p1, p2 });
+            return new Outline(minPoint, maxPoint);
+        }
     }
 }

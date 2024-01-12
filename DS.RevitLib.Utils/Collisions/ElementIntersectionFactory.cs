@@ -150,17 +150,31 @@ namespace DS.RevitLib.Utils.Collisions.Models
 
         private ElementQuickFilter GetBoundingBoxIntersectsFilter(object checkObject)
         {
-            BoundingBoxXYZ boxXYZ = GetBoxXYZ(checkObject);
+            Solid sourceSolid = null;
+            if (checkObject is Solid solid) { sourceSolid = solid; }
+            else if(checkObject is Element element) { sourceSolid = element.GetSolidInLink(_activeDocument); }
 
-            var transform = boxXYZ.Transform;
-            var p1 = transform.OfPoint(boxXYZ.Min);
-            var p2 = transform.OfPoint(boxXYZ.Max);
+            //BoundingBoxXYZ boxXYZ = GetBoxXYZ(checkObject);
 
-            if (_linkTransform != null)
+            //var transform = boxXYZ.Transform;
+            //var p1 = transform.OfPoint(boxXYZ.Min);
+            //var p2 = transform.OfPoint(boxXYZ.Max);
+
+            BoundingBoxXYZ boxXYZ;
+            if (_linkTransform == null)
             {
-                p1 = _linkTransform.Inverse.OfPoint(p1);
-                p2 = _linkTransform.Inverse.OfPoint(p2);
+                boxXYZ = sourceSolid.GetBoundingBox();
             }
+            else
+            {
+                var linkedSolid = Autodesk.Revit.DB.SolidUtils.CreateTransformed(sourceSolid, _linkTransform.Inverse);
+                boxXYZ = linkedSolid.GetBoundingBox();
+            }
+
+            var transformedOutline = boxXYZ.GetOutline();
+
+            var p1 = transformedOutline.MinimumPoint;
+            var p2 = transformedOutline.MaximumPoint;
 
             (XYZ minPoint, XYZ maxPoint) = DS.RevitLib.Utils.XYZUtils.CreateMinMaxPoints(new List<XYZ> { p1, p2 });
             var outline = new Outline(minPoint, maxPoint);
@@ -168,16 +182,22 @@ namespace DS.RevitLib.Utils.Collisions.Models
             return new BoundingBoxIntersectsFilter(outline, 0);
         }
 
-        private BoundingBoxXYZ GetBoxXYZ(object checkObject)
-        {
-            BoundingBoxXYZ boxXYZ = null;
-            if (checkObject is Element element)
-            { boxXYZ = element.get_BoundingBox(null); }
-            else if (checkObject is Solid solid)
-            { boxXYZ = solid.GetBoundingBox(); }
+        //private BoundingBoxXYZ GetBoxXYZ(object checkObject)
+        //{
+        //    BoundingBoxXYZ boxXYZ = null;
 
-            return boxXYZ;
-        }
+        //    if (checkObject is Element element)
+        //    {
+        //        var linkedSolid = Autodesk.Revit.DB.SolidUtils.CreateTransformed(sourceSolid, transform);
+        //        boxXYZ = element.get_BoundingBox(null); 
+        //    }
+        //    else if (checkObject is Solid solid)
+        //    { 
+        //        boxXYZ = solid.GetBoundingBox(); 
+        //    }
+
+        //    return boxXYZ;
+        //}
 
         private ElementSlowFilter GetElementIntersectsFilter(object checkObject)
         {

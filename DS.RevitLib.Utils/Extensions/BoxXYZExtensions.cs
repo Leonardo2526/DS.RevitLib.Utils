@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.DB;
+using DS.RevitLib.Utils.Geometry;
 using DS.RevitLib.Utils.Visualisators;
 using System;
 using System.Collections.Generic;
@@ -71,6 +72,21 @@ namespace DS.RevitLib.Utils.Extensions
             };
                 return points;
             }
+        }
+
+        /// <summary>
+        /// Get <see cref="Autodesk.Revit.DB.Outline"/> from <paramref name="boxXYZ"/>.
+        /// </summary>        
+        /// <param name="boxXYZ"></param>
+        /// <returns>
+        /// <see cref="Autodesk.Revit.DB.Outline"/> built by min and max points of <paramref name="boxXYZ"/>.
+        /// </returns>
+        public static Outline GetOutline(this BoundingBoxXYZ boxXYZ)
+        {
+            var transform = boxXYZ.Transform;
+            var p1 = transform.OfPoint(boxXYZ.Min);
+            var p2 = transform.OfPoint(boxXYZ.Max);
+            return new Outline(p1, p2);
         }
 
     }
