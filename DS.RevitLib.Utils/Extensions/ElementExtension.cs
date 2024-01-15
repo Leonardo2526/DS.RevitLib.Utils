@@ -864,5 +864,20 @@ namespace DS.RevitLib.Utils.Extensions
             }
             return null;
         }
+
+        /// <summary>
+        /// Convert <paramref name="elementIds"/> of <paramref name="elementDoc"/> to it's <see cref="Autodesk.Revit.DB.Element"/>s
+        /// </summary>
+        /// <param name="elementDoc"></param>
+        /// <param name="elementIds"></param>
+        /// <returns>
+        /// List of <paramref name="elementDoc"/>'s <see cref="Autodesk.Revit.DB.Element"/>s.
+        /// </returns>
+        public static IEnumerable<Element> ToElements(this IEnumerable<ElementId> elementIds, Document elementDoc)
+        {
+            var elements = new List<Element>();
+            elementIds.ToList().ForEach(id => elements.Add(elementDoc.GetElement(id)));
+            return elements;
+        }
     }
 }

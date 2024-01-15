@@ -1,5 +1,6 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
+using DS.RevitLib.Utils.Extensions;
 using DS.RevitLib.Utils.MEP;
 using System;
 using System.Collections.Generic;
@@ -26,7 +27,7 @@ namespace DS.RevitLib.Utils.Solids
             {
                 return null;
             }
-            solids = solids.Where(obj => obj is not null).ToList();            
+            solids = solids.Where(obj => obj is not null).ToList();
             double minVolumeCm = UnitUtils.ConvertToInternalUnits(minVolume, DisplayUnitType.DUT_CUBIC_CENTIMETERS);
 
             Solid initialSolid = solids.FirstOrDefault();
@@ -117,6 +118,36 @@ namespace DS.RevitLib.Utils.Solids
             return null;
         }
 
+        /// <summary>
+        /// Get intersections of <paramref name="solidToFindIntersections"/> with <paramref name="elementsToFindIntersection"/>.
+        /// </summary>
+        /// <param name="solidToFindIntersections"></param>
+        /// <param name="elementsToFindIntersection"></param>
+        /// <param name="activeDoc"></param>
+        /// <param name="minVolume"></param>
+        /// <returns>
+        /// List of intersections of <paramref name="solidToFindIntersections"/> with <paramref name="elementsToFindIntersection"/>.
+        /// <para>
+        /// Empty list if no intersections were found.
+        /// </para>
+        /// </returns>
+        public static IEnumerable<Solid> GetIntersections(
+            Solid solidToFindIntersections,
+            IEnumerable<Element> elementsToFindIntersection,
+            Document activeDoc, double minVolume = 0)
+        {
+            var roomSolids = new List<Solid>();
+
+            foreach (var elem in elementsToFindIntersection)
+            {
+                var elemSolid = elem.GetSolidInLink(activeDoc);
+                var s = GetIntersection(solidToFindIntersections, elemSolid);
+                if (s != null && s.Volume > minVolume)
+                { roomSolids.Add(s); }
+            }
+
+            return roomSolids;
+        }
 
         /// <summary>
         /// Get solid's size by vector from center point of solid. 

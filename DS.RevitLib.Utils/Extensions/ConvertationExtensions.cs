@@ -53,5 +53,44 @@ namespace DS.RevitLib.Utils.Extensions
             double doubleValue = (double)value;
             return doubleValue.MMToFeet();
         }
+
+        /// <summary>
+        /// Convert cubic millimeters to cubic feets.
+        /// </summary>
+        /// <param name="value">Value in feets</param>
+        /// <returns>Returns value in cubic feets.</returns>
+        public static double CubicMMToFeet(this double value)
+            => UnitUtils.Convert(value, DisplayUnitType.DUT_CUBIC_MILLIMETERS, DisplayUnitType.DUT_CUBIC_FEET);
+
+        /// <summary>
+        /// Convert cubic millimeters to cubic feets.
+        /// </summary>
+        /// <param name="value">Value in feets</param>
+        /// <returns>Returns value in cubic feets.</returns>
+        public static double CubicMMToFeet(this int value)
+        {
+            double doubleValue = (double)value;
+            return doubleValue.CubicMMToFeet();
+        }
+
+        /// <summary>
+        /// Convert cubic centimeters to cubic feets.
+        /// </summary>
+        /// <param name="value">Value in feets</param>
+        /// <returns>Returns value in cubic feets.</returns>
+        public static double CubicCMToFeet(this double value)
+            => UnitUtils.Convert(value, DisplayUnitType.DUT_CUBIC_CENTIMETERS, DisplayUnitType.DUT_CUBIC_FEET);
+
+        /// <summary>
+        /// Convert cubic centimeters to cubic feets.
+        /// </summary>
+        /// <param name="value">Value in feets</param>
+        /// <returns>Returns value in cubic feets.</returns>
+        public static double CubicCMToFeet(this int value)
+        {
+            double doubleValue = (double)value;
+            return doubleValue.CubicCMToFeet();
+        }
+
     }
 }

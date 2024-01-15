@@ -11,7 +11,7 @@ namespace DS.RevitLib.Utils.Extensions
     /// <summary>
     /// A new instance of object to extract solid.
     /// </summary>
-    public class BestSolidOffsetExtractor
+    public class BestSolidOffsetExtractor : ISolidOffsetExtractor
     {
         private readonly Document _doc;
         private readonly MEPCurve _mEPCurve;
@@ -67,14 +67,14 @@ namespace DS.RevitLib.Utils.Extensions
         {
             List<Transform> transforms = SourceBasis3d.GetTransforms(targetBasis.ToBasis3d());
 
-            var vector =  startPoint - targetBasis.Origin;
+            var vector = startPoint - targetBasis.Origin;
             var translation = Transform.CreateTranslation(vector);
             transforms.Add(translation);
 
             var trCurves = GetTransformed(_sourceFaceCurves, transforms);
 
             var dir = (endPoint - startPoint).Normalize();
-            return Extract(trCurves,dir , startPoint.DistanceTo(endPoint));
+            return Extract(trCurves, dir, startPoint.DistanceTo(endPoint));
         }
 
 
@@ -121,7 +121,7 @@ namespace DS.RevitLib.Utils.Extensions
                 curve = offset == 0 ? curve : curve.CreateOffset(offset, sourceBasis.X);
                 faceCurves.Add(curve);
             }
-          
+
             return faceCurves;
         }
 
