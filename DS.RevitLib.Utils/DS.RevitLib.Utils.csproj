@@ -212,6 +212,7 @@
     <Compile Include="Extensions\WallExtensions.cs" />
     <Compile Include="FaceFilter.cs" />
     <Compile Include="Geometry\GeometryExtensions.cs" />
+    <Compile Include="IRoomTraverable.cs" />
     <Compile Include="ITOutlineFactory.cs" />
     <Compile Include="Geometry\IOutlineFactory.cs" />
     <Compile Include="Geometry\OutlineFactory.cs" />

@@ -24,18 +24,17 @@ namespace DS.RevitLib.Utils.Extensions
         /// <param name="activeDoc"></param>
         /// <param name="elementIntersectionFactory"></param>
         /// <returns>
-        /// The list of <see cref="Autodesk.Revit.DB.ElementId"/> inside <paramref name="room"/>.
+        /// The list of <see cref="Autodesk.Revit.DB.Element"/> inside <paramref name="room"/>.
         /// <para>
         /// Empty list if no elements exist inside <paramref name="room"/>.
         /// </para>
         /// </returns>
-        public static IEnumerable<ElementId> GetInsideElements(this Room room, 
+        public static IEnumerable<Element> GetInsideElements(this Room room, 
             Document activeDoc, 
             ITIntersectionFactory<Element, Solid> elementIntersectionFactory)
-        {
+        {           
             var roomSolid = room.GetSolidInLink(activeDoc);
-            var elements = elementIntersectionFactory.GetIntersections(roomSolid);
-            return elements.Select(e => e.Id);
+            return elementIntersectionFactory.GetIntersections(roomSolid);
         }
 
         /// <summary>
@@ -59,6 +58,32 @@ namespace DS.RevitLib.Utils.Extensions
             var solid = DS.RevitLib.Utils.Solids.SolidUtils.GetIntersection(roomSolid, checkSolid);
 
             return solid != null && solid.Volume > 0.001;
+        }
+
+        /// <summary>
+        /// Check if <paramref name="room"/> contains <paramref name="point"/>.
+        /// </summary>
+        /// <remarks>
+        /// If <paramref name="room"/> is in <see cref="RevitLinkInstance"/> <paramref name="point"/> will be transformed automatically.
+        /// </remarks>
+        /// <param name="room"></param>
+        /// <param name="activeDoc"></param>
+        /// <param name="point"></param>
+        /// <returns>
+        /// <see langword="true"/> if <paramref name="room"/> contains <paramref name="point"/> or its transformed instance.
+        /// <para>
+        /// Otherwise <see langword="false"/>.
+        /// </para>
+        /// </returns>
+        public static bool IsPointInLinkRoom(this Room room, XYZ point, Document activeDoc)
+        {
+            var revitLink = room.GetLink(activeDoc);
+            var linkTransform = revitLink?.GetTotalTransform();
+            var checkPoint = linkTransform is null || linkTransform.AlmostEqual(Transform.Identity) ? 
+                point : 
+                linkTransform.Inverse.OfPoint(point);
+
+            return room.IsPointInRoom(checkPoint);
         }
     }
 }
